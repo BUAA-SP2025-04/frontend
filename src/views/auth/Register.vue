@@ -24,6 +24,33 @@
             />
           </div>
           <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">性别</label>
+            <div class="flex space-x-6">
+              <label class="inline-flex items-center">
+                <input
+                  v-model="form.gender"
+                  type="radio"
+                  class="form-radio text-indigo-600"
+                  name="gender"
+                  value="male"
+                  required
+                />
+                <span class="ml-2 text-gray-700">男</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input
+                  v-model="form.gender"
+                  type="radio"
+                  class="form-radio text-indigo-600"
+                  name="gender"
+                  value="female"
+                  required
+                />
+                <span class="ml-2 text-gray-700">女</span>
+              </label>
+            </div>
+          </div>
+          <div>
             <label for="email" class="block text-sm font-medium text-gray-700">邮箱地址</label>
             <input
               id="email"
@@ -33,6 +60,7 @@
               class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               placeholder="请输入邮箱地址"
             />
+            <p v-if="emailError" class="text-red-500 text-xs mt-1">{{ emailError }}</p>
           </div>
           <div>
             <label for="institution" class="block text-sm font-medium text-gray-700"
@@ -43,30 +71,10 @@
               v-model="form.institution"
               type="text"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              readonly
+              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md bg-gray-100 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               placeholder="请输入所属机构"
             />
-          </div>
-          <div>
-            <label for="research-field" class="block text-sm font-medium text-gray-700"
-              >研究领域</label
-            >
-            <select
-              id="research-field"
-              v-model="form.researchField"
-              required
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="">请选择研究领域</option>
-              <option value="computer-science">计算机科学</option>
-              <option value="mathematics">数学</option>
-              <option value="physics">物理学</option>
-              <option value="chemistry">化学</option>
-              <option value="biology">生物学</option>
-              <option value="engineering">工程学</option>
-              <option value="medicine">医学</option>
-              <option value="other">其他</option>
-            </select>
           </div>
           <div>
             <label for="password" class="block text-sm font-medium text-gray-700">密码</label>
@@ -133,34 +141,102 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { registerUser } from '@/api/modules/user'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const form = reactive({
   name: '',
+  gender: '',
   email: '',
   institution: '',
-  researchField: '',
   password: '',
   confirmPassword: '',
   agreeTerms: false,
 })
 
+const emailError = ref('')
+const emailDomains = [
+  { domain: /@pku\.edu\.cn$/, institution: '北京大学' },
+  { domain: /@tsinghua\.edu\.cn$/, institution: '清华大学' },
+  { domain: /@mit\.edu$/, institution: '麻省理工学院' },
+  { domain: /@buaa\.edu\.cn$/, institution: '北京航空航天大学' },
+  { domain: /@ustc\.edu\.cn$/, institution: '中国科学技术大学' },
+]
+
+watch(
+  () => form.email,
+  newEmail => {
+    const match = emailDomains.find(item => item.domain.test(newEmail))
+    if (match) {
+      form.institution = match.institution
+      emailError.value = ''
+    } else {
+      form.institution = ''
+      if (newEmail) {
+        emailError.value = '请输入正确的学术邮箱'
+      } else {
+        emailError.value = ''
+      }
+    }
+  }
+)
+
 const handleRegister = async () => {
+  if (
+    !form.name ||
+    !form.gender ||
+    !form.email ||
+    !form.institution ||
+    !form.password ||
+    !form.confirmPassword
+  ) {
+    ElMessage.error('请填写所有必填项')
+    return
+  }
+  if (!form.institution) {
+    ElMessage.error('请输入有效的学术邮箱')
+    return
+  }
   if (form.password !== form.confirmPassword) {
     ElMessage.error('两次输入的密码不一致')
     return
   }
 
   try {
-    // 模拟注册API调用
-    ElMessage.success('注册成功，请登录')
-    router.push('/login')
+    const res = await registerUser({
+      email: form.email,
+      name: form.name,
+      password: form.password,
+      gender: form.gender,
+      institution: form.institution,
+    })
+    const user = res.data[0]
+    localStorage.setItem('token', user.token)
+    userStore.setUser({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatar: user.imageUrl,
+    })
+
+    ElMessage.success('注册成功，即将自动登录')
+    // 这里可以设置已认证状态
+    // userStore.isAuthenticated = true; // 如果需要
+    setTimeout(() => {
+      router.push('/')
+    }, 1000)
   } catch (error) {
-    ElMessage.error('注册失败，请重试')
+    console.log(error)
+    const errMsg =
+      (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+      '注册失败，请重试'
+    ElMessage.error(errMsg)
   }
 }
 </script>
