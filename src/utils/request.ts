@@ -53,19 +53,44 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
-    const { code, status } = response.data || {}
-    if (code === 200 || status === 200 || status === '200') {
-      return response.data // 返回完整对象
+    console.log('原始响应:', response) // 调试日志
+    
+    // 检查响应数据是否存在
+    if (!response.data) {
+      console.error('响应数据为空')
+      ElMessage.error('响应数据为空')
+      return Promise.reject(new Error('响应数据为空'))
+    }
+
+    // 检查是否是标准的API响应格式
+    if (typeof response.data === 'object' && 'code' in response.data) {
+      const { code, data, message } = response.data as ApiResponse
+      
+      console.log('API响应:', { code, message, data }) // 调试日志
+      
+      // 根据业务状态码处理
+      if (code === 200) {
+        return data
+      } else {
+        const errorMsg = message || '请求失败'
+        console.error('业务错误:', errorMsg)
+        ElMessage.error(errorMsg)
+        return Promise.reject(new Error(errorMsg))
+      }
     } else {
-      ElMessage.error(response.data?.message || '请求失败')
-      return Promise.reject(new Error(response.data?.message || '请求失败'))
+      // 如果不是标准格式，直接返回数据
+      console.warn('非标准API响应格式，直接返回数据')
+      return response.data
     }
   },
-  error => {
+  (error) => {
+    console.error('响应错误:', error) // 调试日志
+    
     // 网络错误处理
     if (error.response) {
       const { status, data } = error.response
-
+      console.error('HTTP错误:', status, data)
+      
       switch (status) {
         case 401:
           ElMessage.error('登录已过期，请重新登录')
