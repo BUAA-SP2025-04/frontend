@@ -42,6 +42,8 @@ request.interceptors.request.use(
         _t: Date.now(),
       }
     }
+    
+    console.log('请求配置:', config) // 调试日志
     return config
   },
   error => {
