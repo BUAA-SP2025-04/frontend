@@ -1,0 +1,1143 @@
+<template>
+  <div class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- 搜索栏 -->
+      <div class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-100">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">发现科研人员</h2>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <!-- 搜索范围选择器 -->
+            <div class="relative">
+              <select
+                v-model="searchType"
+                class="appearance-none bg-gradient-to-r from-white to-gray-50 border border-gray-300 hover:border-indigo-400 rounded-lg px-4 py-3 pr-10 text-sm font-medium text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[120px]"
+              >
+                <option value="all" class="py-2">🔍 全体</option>
+                <option value="name" class="py-2">👤 作者名</option>
+                <option value="field" class="py-2">🔬 研究领域</option>
+                <option value="institution" class="py-2">🏢 机构</option>
+                <option value="title" class="py-2">🎓 职称</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg
+                  class="w-4 h-4 text-gray-500 transition-colors duration-200"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+              <!-- 装饰性边框 -->
+              <div
+                class="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 hover:opacity-20 transition-opacity duration-200 pointer-events-none"
+              ></div>
+            </div>
+
+            <div class="flex-1 relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg
+                  class="h-5 w-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <input
+                v-model="searchQuery"
+                type="text"
+                :placeholder="getSearchPlaceholder()"
+                class="block w-full pl-10 pr-4 py-3 bg-gradient-to-r from-white to-gray-50 border border-gray-300 hover:border-indigo-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                @keyup.enter="performSearch"
+              />
+              <!-- 装饰性边框 -->
+              <div
+                class="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 hover:opacity-20 transition-opacity duration-200 pointer-events-none"
+              ></div>
+            </div>
+            <button
+              @click="performSearch"
+              class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg flex items-center justify-center min-w-[100px]"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              搜索
+            </button>
+          </div>
+
+          <!-- 搜索建议标签 -->
+          <div class="mt-4 flex flex-wrap gap-2 justify-center">
+            <button
+              v-for="suggestion in searchSuggestions"
+              :key="suggestion"
+              @click="selectSuggestion(suggestion)"
+              class="px-4 py-2 text-sm bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 text-gray-700 hover:text-indigo-700 rounded-full transition-all duration-200 cursor-pointer border border-gray-200 hover:border-indigo-300 hover:shadow-md transform hover:scale-105 font-medium"
+            >
+              {{ suggestion }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 已应用筛选 -->
+      <div
+        v-if="hasActiveFilters"
+        class="bg-white rounded-xl shadow-sm p-4 mb-8 border border-gray-100 animate-fade-in-down"
+      >
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <span class="font-medium text-gray-700 text-sm whitespace-nowrap">已应用筛选:</span>
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- 研究领域筛选标签 -->
+            <el-tag
+              v-for="fieldValue in filters.selectedFields"
+              :key="`field-${fieldValue}`"
+              type="primary"
+              size="large"
+              effect="light"
+              closable
+              class="custom-filter-tag"
+              @close="removeField(fieldValue)"
+            >
+              {{ fieldValue }}
+            </el-tag>
+            <!-- 机构筛选标签 -->
+            <el-tag
+              v-for="instValue in filters.selectedInstitutions"
+              :key="`inst-${instValue}`"
+              type="success"
+              size="large"
+              effect="light"
+              closable
+              class="custom-filter-tag"
+              @close="removeInstitution(instValue)"
+            >
+              {{ instValue }}
+            </el-tag>
+            <!-- 发表数量筛选标签 -->
+            <el-tag
+              v-if="publicationsFilterText"
+              type="warning"
+              size="large"
+              effect="light"
+              closable
+              class="custom-filter-tag"
+              @close="removePublicationsRange"
+            >
+              发表数: {{ publicationsFilterText }}
+            </el-tag>
+            <!-- 粉丝数筛选标签 -->
+            <el-tag
+              v-if="followersFilterText != '' && followersFilterText != null"
+              type="danger"
+              size="large"
+              effect="light"
+              closable
+              class="custom-filter-tag"
+              @close="removeFollowersRange"
+            >
+              粉丝数: {{ followersFilterText }}
+            </el-tag>
+          </div>
+          <el-button @click="clearFilters" type="primary" link class="ml-auto whitespace-nowrap">
+            全部清除
+          </el-button>
+        </div>
+      </div>
+
+      <div class="flex flex-col lg:flex-row gap-8">
+        <!-- 侧边栏筛选 -->
+        <div class="lg:w-80 space-y-6">
+          <!-- 筛选标题 -->
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900 mb-2">筛选条件</h2>
+            <p class="text-sm text-gray-600">发现符合您需求的科研人员</p>
+          </div>
+
+          <el-collapse v-model="activeCollapse" accordion class="filter-collapse">
+            <!-- 研究领域 -->
+            <el-collapse-item name="1">
+              <template #title>
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <div
+                    class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3"
+                  >
+                    <svg
+                      class="w-4 h-4 text-indigo-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 7.586V5L8 4z"
+                      />
+                    </svg>
+                  </div>
+                  研究领域
+                </h3>
+              </template>
+              <div
+                class="space-y-2 max-h-[300px] overflow-y-auto overflow-x-hidden custom-scrollbar"
+              >
+                <label
+                  v-for="field in sidebarResearchFields"
+                  :key="field.value"
+                  class="flex items-center justify-between cursor-pointer group p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div class="flex items-center">
+                    <input
+                      v-model="filters.selectedFields"
+                      :value="field.value"
+                      type="checkbox"
+                      class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    />
+                    <span class="ml-3 text-sm text-gray-700 group-hover:text-gray-900 font-medium">
+                      {{ field.label }}
+                    </span>
+                  </div>
+                  <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{
+                    field.count
+                  }}</span>
+                </label>
+              </div>
+            </el-collapse-item>
+
+            <!-- 所属机构 -->
+            <el-collapse-item name="2">
+              <template #title>
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <div
+                    class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3"
+                  >
+                    <svg
+                      class="w-4 h-4 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                  </div>
+                  所属机构
+                </h3>
+              </template>
+              <div
+                class="space-y-2 max-h-[300px] overflow-y-auto overflow-x-hidden custom-scrollbar"
+              >
+                <label
+                  v-for="institution in sidebarInstitutions"
+                  :key="institution.value"
+                  class="flex items-center justify-between cursor-pointer group p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div class="flex items-center">
+                    <input
+                      v-model="filters.selectedInstitutions"
+                      :value="institution.value"
+                      type="checkbox"
+                      class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    />
+                    <span class="ml-3 text-sm text-gray-700 group-hover:text-gray-900 font-medium">
+                      {{ institution.label }}
+                    </span>
+                  </div>
+                  <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{
+                    institution.count
+                  }}</span>
+                </label>
+              </div>
+            </el-collapse-item>
+
+            <!-- 学术指标 -->
+            <el-collapse-item name="3">
+              <template #title>
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <div class="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center mr-3">
+                    <svg
+                      class="w-4 h-4 text-pink-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      ></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      ></path>
+                    </svg>
+                  </div>
+                  粉丝数
+                </h3>
+              </template>
+              <div class="space-y-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">粉丝数范围</label>
+                <input
+                  v-model.number="filters.followersRange.min"
+                  type="number"
+                  placeholder="最小值"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  @blur="validateFollowersRange"
+                />
+                <div class="flex items-center justify-center text-gray-400">
+                  <div class="w-6 h-px bg-gray-300"></div>
+                  <span class="mx-2 text-xs">至</span>
+                  <div class="w-6 h-px bg-gray-300"></div>
+                </div>
+                <input
+                  v-model.number="filters.followersRange.max"
+                  type="number"
+                  placeholder="最大值"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  @blur="validateFollowersRange"
+                />
+              </div>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="flex-1">
+          <!-- 结果头部 -->
+          <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p class="text-gray-600">
+                  共找到
+                  <span class="font-semibold text-indigo-600">{{ filteredUsers.length }}</span>
+                  位科研人员
+                  <span v-if="searchQuery.trim()" class="text-sm text-gray-500 ml-2">
+                    (搜索: "{{ searchQuery }}")
+                  </span>
+                </p>
+              </div>
+
+              <!-- 排序选项 -->
+              <div class="mt-4 sm:mt-0">
+                <el-select v-model="filters.sortBy" class="custom-select" placeholder="排序方式">
+                  <template #prefix>
+                    <svg
+                      class="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 4h13M3 8h9M3 12h9m-9 4h9m5-4v.01M14 7h6m-6 4h6m-6 4h6M3 16h.01M4 16h.01M5 16h.01"
+                      ></path>
+                    </svg>
+                  </template>
+                  <el-option value="relevance" label="按相关性排序"></el-option>
+                  <el-option value="followers" label="按粉丝数排序"></el-option>
+                  <el-option value="publications" label="按发表数量排序"></el-option>
+                  <el-option value="projects" label="按项目数排序"></el-option>
+                  <el-option value="name" label="按姓名排序"></el-option>
+                </el-select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 研究者卡片网格 -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+            v-if="paginatedUsers.length > 0"
+          >
+            <div
+              v-for="user in paginatedUsers"
+              :key="user.id"
+              class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group border border-gray-100 hover:border-indigo-200"
+              @click="goToUserDetail(user.id)"
+            >
+              <!-- 用户头部 -->
+              <div class="p-6 pb-4">
+                <div class="flex items-start space-x-4">
+                  <div class="relative flex-shrink-0">
+                    <img
+                      :src="user.avatar"
+                      :alt="user.name"
+                      class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 group-hover:border-indigo-200 transition-colors"
+                    />
+                  </div>
+
+                  <div class="flex-1 min-w-0">
+                    <div>
+                      <h3
+                        class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate"
+                        :title="user.name"
+                      >
+                        {{ user.name }}
+                      </h3>
+                      <p class="text-sm text-gray-600 truncate" :title="user.title">
+                        {{ user.title }}
+                      </p>
+                      <p
+                        class="text-sm text-gray-500 flex items-center mt-1 truncate"
+                        :title="user.institution"
+                      >
+                        <svg
+                          class="w-4 h-4 mr-1 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                          />
+                        </svg>
+                        <span class="truncate">{{ user.institution }}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 研究领域标签 -->
+              <div class="px-6 pb-4">
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    v-for="(field, index) in user.researchFields.slice(0, 2)"
+                    :key="index"
+                    class="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-full font-medium whitespace-nowrap"
+                  >
+                    {{ field }}
+                  </span>
+                  <el-tooltip
+                    v-if="user.researchFields.length > 2"
+                    :content="user.researchFields.slice(2).join(', ')"
+                    placement="top"
+                    effect="dark"
+                  >
+                    <span
+                      class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap cursor-pointer"
+                    >
+                      +{{ user.researchFields.length - 2 }}
+                    </span>
+                  </el-tooltip>
+                </div>
+              </div>
+
+              <!-- 学术指标 -->
+              <div
+                class="px-6 py-4 bg-gradient-to-r from-gray-50 to-indigo-50 border-t border-gray-100"
+              >
+                <div class="grid grid-cols-3 gap-4 text-center">
+                  <div class="group">
+                    <div
+                      class="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors"
+                    >
+                      {{ formatNumber(user.followers) }}
+                    </div>
+                    <div class="text-xs text-gray-500">粉丝数</div>
+                  </div>
+                  <div class="group border-l border-r border-gray-200">
+                    <div
+                      class="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors"
+                    >
+                      {{ user.publications }}
+                    </div>
+                    <div class="text-xs text-gray-500">发表数</div>
+                  </div>
+                  <div class="group">
+                    <div
+                      class="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors"
+                    >
+                      {{ user.projects }}
+                    </div>
+                    <div class="text-xs text-gray-500">项目数</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 空状态 -->
+          <div v-else class="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
+            <div
+              class="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center"
+            >
+              <svg
+                class="w-12 h-12 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">未找到匹配的研究者</h3>
+            <p class="text-gray-600 mb-6">请尝试调整筛选条件或搜索关键词</p>
+            <button
+              @click="clearFilters"
+              class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
+            >
+              清除筛选条件
+            </button>
+          </div>
+
+          <!-- 分页 -->
+          <div class="mt-8 flex justify-center">
+            <el-pagination
+              v-model:current-page="currentPage"
+              :page-size="pageSize"
+              :total="filteredUsers.length"
+              layout="total, prev, pager, next, jumper"
+              background
+              @current-change="handlePageChange"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, reactive, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import {
+  ElMessage,
+  ElCollapse,
+  ElCollapseItem,
+  ElTag,
+  ElButton,
+  ElPagination,
+  ElTooltip,
+  ElSelect,
+  ElOption,
+} from 'element-plus'
+
+const router = useRouter()
+const route = useRoute()
+
+const activeCollapse = ref('1')
+
+const searchSuggestions = ref([
+  '人工智能',
+  '机器学习',
+  '深度学习',
+  '计算机视觉',
+  '自然语言处理',
+  '清华大学',
+  '北京大学',
+  'MIT',
+])
+
+// 用户类型定义
+interface User {
+  id: number
+  name: string
+  title: string
+  institution: string
+  avatar: string
+  researchFields: string[]
+  followers: number
+  publications: number
+  projects: number
+}
+
+// 筛选选项数据
+const institutions = ref([
+  { value: '清华大学', label: '清华大学', count: 145 },
+  { value: '北京大学', label: '北京大学', count: 132 },
+  { value: 'MIT', label: 'MIT', count: 98 },
+  { value: '斯坦福大学', label: '斯坦福大学', count: 87 },
+  { value: '中科院', label: '中科院', count: 156 },
+  { value: '哈佛大学', label: '哈佛大学', count: 76 },
+  { value: '牛津大学', label: '牛津大学', count: 65 },
+])
+
+// 筛选条件
+const filters = reactive({
+  selectedFields: [] as string[],
+  selectedInstitutions: [] as string[],
+  followersRange: { min: null as number | null, max: null as number | null },
+  publicationsRange: { min: null as number | null, max: null as number | null },
+  sortBy: 'relevance',
+})
+
+// 搜索相关
+const searchQuery = ref('')
+const searchType = ref('all')
+
+// 分页
+const currentPage = ref(1)
+const pageSize = 12
+
+// 模拟用户数据（扩展数据）
+const users = ref<User[]>([
+  {
+    id: 1,
+    name: '李明',
+    title: '教授, 博导',
+    institution: '清华大学',
+    avatar: 'https://via.placeholder.com/100/4F46E5/FFFFFF?text=LM',
+    researchFields: ['人工智能', '机器学习', '深度学习'],
+    followers: 1250,
+    publications: 120,
+    projects: 15,
+  },
+  {
+    id: 2,
+    name: '王芳',
+    title: '副教授',
+    institution: '北京大学',
+    avatar: 'https://via.placeholder.com/100/10B981/FFFFFF?text=WF',
+    researchFields: ['生物信息学', '基因组学', '蛋白质结构'],
+    followers: 890,
+    publications: 85,
+    projects: 8,
+  },
+  {
+    id: 3,
+    name: '张伟',
+    title: '研究员',
+    institution: '中科院',
+    avatar: 'https://via.placeholder.com/100/8B5CF6/FFFFFF?text=ZW',
+    researchFields: ['量子计算', '量子算法', '理论物理'],
+    followers: 980,
+    publications: 95,
+    projects: 12,
+  },
+  {
+    id: 4,
+    name: 'Sarah Johnson',
+    title: 'Professor',
+    institution: 'MIT',
+    avatar: 'https://via.placeholder.com/100/F59E0B/FFFFFF?text=SJ',
+    researchFields: ['自然语言处理', '计算语言学', '深度学习'],
+    followers: 2100,
+    publications: 156,
+    projects: 25,
+  },
+  {
+    id: 5,
+    name: '陈明',
+    title: '助理教授',
+    institution: '斯坦福大学',
+    avatar: 'https://via.placeholder.com/100/EF4444/FFFFFF?text=CM',
+    researchFields: ['计算机视觉', '机器人学', '自主导航'],
+    followers: 750,
+    publications: 67,
+    projects: 9,
+  },
+  {
+    id: 6,
+    name: 'David Wilson',
+    title: 'Senior Researcher',
+    institution: '哈佛大学',
+    avatar: 'https://via.placeholder.com/100/06B6D4/FFFFFF?text=DW',
+    researchFields: ['生物医学', '精准医疗', '药物发现'],
+    followers: 1500,
+    publications: 103,
+    projects: 18,
+  },
+])
+
+// 计算过滤后的用户
+const filteredUsers = computed(() => {
+  let result = users.value.slice()
+
+  // 搜索筛选
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim()
+    result = result.filter((user: User) => {
+      switch (searchType.value) {
+        case 'name':
+          return user.name.toLowerCase().includes(query)
+        case 'field':
+          return user.researchFields.some((field: string) => field.toLowerCase().includes(query))
+        case 'institution':
+          return user.institution.toLowerCase().includes(query)
+        case 'title':
+          return user.title.toLowerCase().includes(query)
+        default:
+          // 全体搜索
+          return (
+            user.name.toLowerCase().includes(query) ||
+            user.title.toLowerCase().includes(query) ||
+            user.institution.toLowerCase().includes(query) ||
+            user.researchFields.some((field: string) => field.toLowerCase().includes(query))
+          )
+      }
+    })
+  }
+
+  // 研究领域筛选
+  if (filters.selectedFields.length > 0) {
+    result = result.filter((user: User) =>
+      user.researchFields.some((field: string) => filters.selectedFields.includes(field))
+    )
+  }
+
+  // 机构筛选
+  if (filters.selectedInstitutions.length > 0) {
+    result = result.filter((user: User) => filters.selectedInstitutions.includes(user.institution))
+  }
+
+  // 发表数量范围筛选
+  if (filters.publicationsRange.min !== null) {
+    result = result.filter((user: User) => user.publications >= filters.publicationsRange.min!)
+  }
+  if (filters.publicationsRange.max !== null) {
+    result = result.filter((user: User) => user.publications <= filters.publicationsRange.max!)
+  }
+
+  // 粉丝数范围筛选
+  if (filters.followersRange.min !== null) {
+    result = result.filter((user: User) => user.followers >= filters.followersRange.min!)
+  }
+  if (filters.followersRange.max !== null) {
+    result = result.filter((user: User) => user.followers <= filters.followersRange.max!)
+  }
+
+  // 排序
+  switch (filters.sortBy) {
+    case 'followers':
+      result.sort((a: User, b: User) => b.followers - a.followers)
+      break
+    case 'publications':
+      result.sort((a: User, b: User) => b.publications - a.publications)
+      break
+    case 'projects':
+      result.sort((a: User, b: User) => b.projects - a.projects)
+      break
+    case 'name':
+      result.sort((a: User, b: User) => a.name.localeCompare(b.name))
+      break
+    default:
+      // 保持默认顺序或按相关性
+      break
+  }
+
+  return result
+})
+
+// 分页相关计算
+const paginatedUsers = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredUsers.value.slice(start, start + pageSize)
+})
+
+// 辅助方法
+const formatNumber = (num: number) => {
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K'
+  }
+  return num.toString()
+}
+
+const performSearch = () => {
+  currentPage.value = 1
+  // 可以在这里添加搜索历史记录或其他功能
+}
+
+const selectSuggestion = (suggestion: string) => {
+  searchQuery.value = suggestion
+  // performSearch()
+}
+
+const handlePageChange = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const getSearchPlaceholder = () => {
+  switch (searchType.value) {
+    case 'name':
+      return '搜索研究者姓名...'
+    case 'field':
+      return '搜索研究领域...'
+    case 'institution':
+      return '搜索机构名称...'
+    case 'title':
+      return '搜索职称...'
+    default:
+      return '搜索研究者姓名、研究领域、机构...'
+  }
+}
+
+const clearFilters = () => {
+  filters.selectedFields = []
+  filters.selectedInstitutions = []
+  filters.followersRange = { min: null, max: null }
+  filters.publicationsRange = { min: null, max: null }
+  filters.sortBy = 'relevance'
+  searchQuery.value = ''
+  searchType.value = 'all'
+  currentPage.value = 1
+}
+
+const goToUserDetail = (id: number) => {
+  router.push(`/user/${id}`)
+}
+
+// 监听路由参数，支持从首页跳转过来的筛选
+onMounted(() => {
+  const field = route.query.field as string
+  if (field) {
+    filters.selectedFields = [field]
+  }
+})
+
+// 已应用筛选相关
+const hasActiveFilters = computed(() => {
+  return (
+    filters.selectedFields.length > 0 ||
+    filters.selectedInstitutions.length > 0 ||
+    publicationsFilterText.value !== '' ||
+    followersFilterText.value !== ''
+  )
+})
+
+const publicationsFilterText = computed(() => {
+  const { min, max } = filters.publicationsRange
+  const minIsEmpty = min === null || (min as any) === ''
+  const maxIsEmpty = max === null || (max as any) === ''
+
+  if (minIsEmpty && maxIsEmpty) return ''
+  if (!minIsEmpty && !maxIsEmpty) return `${min} - ${max}`
+  if (!minIsEmpty) return `≥ ${min}`
+  if (!maxIsEmpty) return `≤ ${max}`
+  return ''
+})
+
+const followersFilterText = computed(() => {
+  const { min, max } = filters.followersRange
+  const minIsEmpty = min === null || (min as any) === ''
+  const maxIsEmpty = max === null || (max as any) === ''
+
+  if (minIsEmpty && maxIsEmpty) return ''
+  if (!minIsEmpty && !maxIsEmpty) return `${min} - ${max}`
+  if (!minIsEmpty) return `≥ ${min}`
+  if (!maxIsEmpty) return `≤ ${max}`
+  return ''
+})
+
+const removeField = (field: string) => {
+  filters.selectedFields = filters.selectedFields.filter(f => f !== field)
+}
+
+const removeInstitution = (inst: string) => {
+  filters.selectedInstitutions = filters.selectedInstitutions.filter(i => i !== inst)
+}
+
+const removePublicationsRange = () => {
+  filters.publicationsRange.min = null
+  filters.publicationsRange.max = null
+}
+
+const removeFollowersRange = () => {
+  filters.followersRange.min = null
+  filters.followersRange.max = null
+}
+
+// 动态生成研究领域筛选选项
+const sidebarResearchFields = computed(() => {
+  const fieldCounts = new Map<string, number>()
+  users.value.forEach(user => {
+    user.researchFields.forEach(field => {
+      fieldCounts.set(field, (fieldCounts.get(field) || 0) + 1)
+    })
+  })
+
+  return Array.from(fieldCounts.entries())
+    .map(([field, count]) => ({
+      value: field,
+      label: field,
+      count: count,
+    }))
+    .sort((a, b) => b.count - a.count)
+})
+
+// 动态生成所属机构筛选选项
+const sidebarInstitutions = computed(() => {
+  const instCounts = new Map<string, number>()
+  users.value.forEach(user => {
+    instCounts.set(user.institution, (instCounts.get(user.institution) || 0) + 1)
+  })
+
+  return Array.from(instCounts.entries())
+    .map(([inst, count]) => ({
+      value: inst,
+      label: inst,
+      count: count,
+    }))
+    .sort((a, b) => b.count - a.count)
+})
+
+const validateFollowersRange = () => {
+  const { min, max } = filters.followersRange
+
+  // 如果两个输入框都为空，清除粉丝数筛选条件
+  if (min === null && max === null) {
+    return
+  }
+
+  // 如果只有一个输入框有值，保留该值
+  if (min !== null && max === null) {
+    return
+  }
+  if (min === null && max !== null) {
+    return
+  }
+
+  // 如果两个输入框都有值，检查范围有效性
+  if (min !== null && max !== null) {
+    if (min > max) {
+      // 如果下限大于上限，将上限调整为下限值
+      filters.followersRange.max = min
+    }
+  }
+}
+
+const applyFilters = () => {
+  // 实现排序逻辑
+}
+</script>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 自定义滚动条 */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 卡片动画效果 */
+@keyframes cardHover {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(-4px) scale(1.02);
+  }
+}
+
+.group:hover {
+  animation: cardHover 0.3s ease-out forwards;
+}
+
+/* 渐变边框效果 */
+.border-gradient {
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(45deg, #667eea, #764ba2) border-box;
+  border: 2px solid transparent;
+}
+
+.filter-collapse {
+  border: none;
+  background-color: transparent;
+}
+.filter-collapse :deep(.el-collapse-item__header) {
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #f3f4f6;
+  padding: 0 1.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+.filter-collapse :deep(.el-collapse-item__header:hover) {
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border-color: #e5e7eb;
+}
+.filter-collapse :deep(.el-collapse-item__header.is-active) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+  padding: 1.5rem 1.5rem 0 1.5rem;
+  border-bottom-color: transparent;
+}
+.filter-collapse :deep(.el-collapse-item__wrap) {
+  background-color: white;
+  border: 1px solid #f3f4f6;
+  border-top: none;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  margin-bottom: 1rem;
+}
+.filter-collapse :deep(.el-collapse-item__content) {
+  padding: 1.5rem;
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-down {
+  animation: fade-in-down 0.4s ease-out forwards;
+}
+
+.custom-filter-tag.el-tag {
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  transform: scale(1);
+}
+.custom-filter-tag.el-tag:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+.custom-filter-tag .el-tag__close {
+  color: inherit;
+  font-size: 14px;
+  background-color: transparent;
+  transition: all 0.2s ease;
+}
+.custom-filter-tag .el-tag__close:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: scale(1.1);
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+/* Pagination Customization */
+:deep(.el-pagination.is-background .el-pager li) {
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+:deep(.el-pagination.is-background .el-pager li:hover) {
+  color: #4f46e5;
+}
+:deep(.el-pagination.is-background .el-pager li.is-active) {
+  background: linear-gradient(to right, #4f46e5, #7c3aed);
+  color: white;
+}
+:deep(.el-pagination.is-background .btn-prev),
+:deep(.el-pagination.is-background .btn-next) {
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+:deep(.el-pagination.is-background .btn-prev:hover),
+:deep(.el-pagination.is-background .btn-next:hover) {
+  color: #4f46e5;
+}
+:deep(.el-pagination__total) {
+  font-weight: 600;
+  color: #4b5563;
+}
+:deep(.el-pagination__jump) {
+  font-weight: 600;
+  color: #4b5563;
+}
+:deep(.el-pagination__jump .el-input__inner) {
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* Custom Select */
+.custom-select .el-input__wrapper {
+  background: linear-gradient(to right, white, #f9fafb);
+  border-radius: 8px !important;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  transition: all 0.2s ease-in-out;
+  padding: 0.25rem 0.5rem;
+}
+.custom-select .el-input__wrapper:hover {
+  border-color: #a5b4fc;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+.custom-select .el-input__inner {
+  font-weight: 500;
+  color: #374151;
+}
+.custom-select .el-select__prefix {
+  color: #9ca3af;
+}
+</style>
+
+<style>
+.el-select-dropdown__item.selected {
+  color: #4f46e5;
+  font-weight: 600;
+}
+.el-select-dropdown__item:hover {
+  background-color: #f3f4f6;
+}
+</style>
