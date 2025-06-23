@@ -336,14 +336,14 @@
                   共找到
                   <span class="font-semibold text-indigo-600">{{ filteredUsers.length }}</span>
                   位科研人员
-                  <span v-if="searchQuery.trim()" class="text-sm text-gray-500 ml-2">
-                    (搜索: "{{ searchQuery }}")
+                  <span v-if="searchString.trim()" class="text-sm text-gray-500 ml-2">
+                    (搜索: "{{ searchString }}")
                   </span>
                 </p>
               </div>
 
               <!-- 排序选项 -->
-              <div class="mt-4 sm:mt-0">
+              <div class="mt-4 sm:mt-0 w-1/5">
                 <el-select v-model="filters.sortBy" class="custom-select" placeholder="排序方式">
                   <template #prefix>
                     <svg
@@ -386,10 +386,26 @@
                 <div class="flex items-start space-x-4">
                   <div class="relative flex-shrink-0">
                     <img
-                      :src="user.avatar"
+                      :src="user.imgUrl"
                       :alt="user.name"
                       class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 group-hover:border-indigo-200 transition-colors"
                     />
+                    <el-icon
+                      v-if="user.gender === '男'"
+                      class="absolute top-0 right-0 bg-white rounded-full p-1 text-blue-500 shadow"
+                      style="transform: translate(40%, -40%); font-size: 2em; font-weight: bold"
+                      title="男"
+                    >
+                      <Male />
+                    </el-icon>
+                    <el-icon
+                      v-else-if="user.gender === '女'"
+                      class="absolute top-0 right-0 bg-white rounded-full p-1 text-pink-500 shadow"
+                      style="transform: translate(40%, -40%); font-size: 2em; font-weight: bold"
+                      title="女"
+                    >
+                      <Female />
+                    </el-icon>
                   </div>
 
                   <div class="flex-1 min-w-0">
@@ -431,22 +447,22 @@
               <div class="px-6 pb-4">
                 <div class="flex flex-wrap gap-2">
                   <span
-                    v-for="(field, index) in user.researchFields.slice(0, 2)"
+                    v-for="(field, index) in user.researchArea.split(',').slice(0, 2)"
                     :key="index"
                     class="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-full font-medium whitespace-nowrap"
                   >
-                    {{ field }}
+                    {{ field.trim() }}
                   </span>
                   <el-tooltip
-                    v-if="user.researchFields.length > 2"
-                    :content="user.researchFields.slice(2).join(', ')"
+                    v-if="user.researchArea.split(',').length > 2"
+                    :content="user.researchArea.split(',').slice(2).join(', ')"
                     placement="top"
                     effect="dark"
                   >
                     <span
                       class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap cursor-pointer"
                     >
-                      +{{ user.researchFields.length - 2 }}
+                      +{{ user.researchArea.split(',').length - 2 }}
                     </span>
                   </el-tooltip>
                 </div>
@@ -461,7 +477,7 @@
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors"
                     >
-                      {{ formatNumber(user.followers) }}
+                      {{ formatNumber(user.followerNum) }}
                     </div>
                     <div class="text-xs text-gray-500">粉丝数</div>
                   </div>
@@ -469,7 +485,7 @@
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors"
                     >
-                      {{ user.publications }}
+                      {{ user.publishNum }}
                     </div>
                     <div class="text-xs text-gray-500">发表数</div>
                   </div>
@@ -477,7 +493,7 @@
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors"
                     >
-                      {{ user.projects }}
+                      {{ user.subjectNum }}
                     </div>
                     <div class="text-xs text-gray-500">项目数</div>
                   </div>
@@ -533,10 +549,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted, watch } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import request from '@/utils/request'
 import {
-  ElMessage,
   ElCollapse,
   ElCollapseItem,
   ElTag,
@@ -545,7 +561,9 @@ import {
   ElTooltip,
   ElSelect,
   ElOption,
+  ElIcon,
 } from 'element-plus'
+import { Male, Female } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -569,23 +587,13 @@ interface User {
   name: string
   title: string
   institution: string
-  avatar: string
-  researchFields: string[]
-  followers: number
-  publications: number
-  projects: number
+  imgUrl: string
+  researchArea: string
+  followerNum: number
+  publishNum: number
+  subjectNum: number
+  gender: string
 }
-
-// 筛选选项数据
-const institutions = ref([
-  { value: '清华大学', label: '清华大学', count: 145 },
-  { value: '北京大学', label: '北京大学', count: 132 },
-  { value: 'MIT', label: 'MIT', count: 98 },
-  { value: '斯坦福大学', label: '斯坦福大学', count: 87 },
-  { value: '中科院', label: '中科院', count: 156 },
-  { value: '哈佛大学', label: '哈佛大学', count: 76 },
-  { value: '牛津大学', label: '牛津大学', count: 65 },
-])
 
 // 筛选条件
 const filters = reactive({
@@ -593,12 +601,13 @@ const filters = reactive({
   selectedInstitutions: [] as string[],
   followersRange: { min: null as number | null, max: null as number | null },
   publicationsRange: { min: null as number | null, max: null as number | null },
-  sortBy: 'relevance',
+  sortBy: '',
 })
 
 // 搜索相关
 const searchQuery = ref('')
 const searchType = ref('all')
+const searchString = ref('')
 
 // 分页
 const currentPage = ref(1)
@@ -611,102 +620,84 @@ const users = ref<User[]>([
     name: '李明',
     title: '教授, 博导',
     institution: '清华大学',
-    avatar: 'https://via.placeholder.com/100/4F46E5/FFFFFF?text=LM',
-    researchFields: ['人工智能', '机器学习', '深度学习'],
-    followers: 1250,
-    publications: 120,
-    projects: 15,
+    imgUrl: 'https://via.placeholder.com/100/4F46E5/FFFFFF?text=LM',
+    researchArea: '人工智能, 机器学习, 深度学习',
+    followerNum: 1250,
+    publishNum: 120,
+    subjectNum: 15,
+    gender: '男',
   },
   {
     id: 2,
     name: '王芳',
     title: '副教授',
     institution: '北京大学',
-    avatar: 'https://via.placeholder.com/100/10B981/FFFFFF?text=WF',
-    researchFields: ['生物信息学', '基因组学', '蛋白质结构'],
-    followers: 890,
-    publications: 85,
-    projects: 8,
+    imgUrl: 'https://via.placeholder.com/100/10B981/FFFFFF?text=WF',
+    researchArea: '生物信息学, 基因组学, 蛋白质结构',
+    followerNum: 890,
+    publishNum: 85,
+    subjectNum: 8,
+    gender: '女',
   },
   {
     id: 3,
     name: '张伟',
     title: '研究员',
     institution: '中科院',
-    avatar: 'https://via.placeholder.com/100/8B5CF6/FFFFFF?text=ZW',
-    researchFields: ['量子计算', '量子算法', '理论物理'],
-    followers: 980,
-    publications: 95,
-    projects: 12,
+    imgUrl: 'https://via.placeholder.com/100/8B5CF6/FFFFFF?text=ZW',
+    researchArea: '量子计算, 量子算法, 理论物理',
+    followerNum: 980,
+    publishNum: 95,
+    subjectNum: 12,
+    gender: '男',
   },
   {
     id: 4,
     name: 'Sarah Johnson',
     title: 'Professor',
     institution: 'MIT',
-    avatar: 'https://via.placeholder.com/100/F59E0B/FFFFFF?text=SJ',
-    researchFields: ['自然语言处理', '计算语言学', '深度学习'],
-    followers: 2100,
-    publications: 156,
-    projects: 25,
+    imgUrl: 'https://via.placeholder.com/100/F59E0B/FFFFFF?text=SJ',
+    researchArea: '自然语言处理, 计算语言学, 深度学习',
+    followerNum: 2100,
+    publishNum: 156,
+    subjectNum: 25,
+    gender: '女',
   },
   {
     id: 5,
     name: '陈明',
     title: '助理教授',
     institution: '斯坦福大学',
-    avatar: 'https://via.placeholder.com/100/EF4444/FFFFFF?text=CM',
-    researchFields: ['计算机视觉', '机器人学', '自主导航'],
-    followers: 750,
-    publications: 67,
-    projects: 9,
+    imgUrl: 'https://via.placeholder.com/100/EF4444/FFFFFF?text=CM',
+    researchArea: '计算机视觉, 机器人学, 自主导航',
+    followerNum: 750,
+    publishNum: 67,
+    subjectNum: 9,
+    gender: '男',
   },
   {
     id: 6,
     name: 'David Wilson',
     title: 'Senior Researcher',
     institution: '哈佛大学',
-    avatar: 'https://via.placeholder.com/100/06B6D4/FFFFFF?text=DW',
-    researchFields: ['生物医学', '精准医疗', '药物发现'],
-    followers: 1500,
-    publications: 103,
-    projects: 18,
+    imgUrl: 'https://via.placeholder.com/100/06B6D4/FFFFFF?text=DW',
+    researchArea: '生物医学, 精准医疗, 药物发现',
+    followerNum: 1500,
+    publishNum: 103,
+    subjectNum: 18,
+    gender: '男',
   },
 ])
 
 // 计算过滤后的用户
 const filteredUsers = computed(() => {
   let result = users.value.slice()
-
-  // 搜索筛选
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase().trim()
-    result = result.filter((user: User) => {
-      switch (searchType.value) {
-        case 'name':
-          return user.name.toLowerCase().includes(query)
-        case 'field':
-          return user.researchFields.some((field: string) => field.toLowerCase().includes(query))
-        case 'institution':
-          return user.institution.toLowerCase().includes(query)
-        case 'title':
-          return user.title.toLowerCase().includes(query)
-        default:
-          // 全体搜索
-          return (
-            user.name.toLowerCase().includes(query) ||
-            user.title.toLowerCase().includes(query) ||
-            user.institution.toLowerCase().includes(query) ||
-            user.researchFields.some((field: string) => field.toLowerCase().includes(query))
-          )
-      }
-    })
-  }
-
   // 研究领域筛选
   if (filters.selectedFields.length > 0) {
     result = result.filter((user: User) =>
-      user.researchFields.some((field: string) => filters.selectedFields.includes(field))
+      user.researchArea
+        .split(',')
+        .some((field: string) => filters.selectedFields.includes(field.trim()))
     )
   }
 
@@ -717,30 +708,30 @@ const filteredUsers = computed(() => {
 
   // 发表数量范围筛选
   if (filters.publicationsRange.min !== null) {
-    result = result.filter((user: User) => user.publications >= filters.publicationsRange.min!)
+    result = result.filter((user: User) => user.publishNum >= filters.publicationsRange.min!)
   }
   if (filters.publicationsRange.max !== null) {
-    result = result.filter((user: User) => user.publications <= filters.publicationsRange.max!)
+    result = result.filter((user: User) => user.publishNum <= filters.publicationsRange.max!)
   }
 
   // 粉丝数范围筛选
   if (filters.followersRange.min !== null) {
-    result = result.filter((user: User) => user.followers >= filters.followersRange.min!)
+    result = result.filter((user: User) => user.followerNum >= filters.followersRange.min!)
   }
   if (filters.followersRange.max !== null) {
-    result = result.filter((user: User) => user.followers <= filters.followersRange.max!)
+    result = result.filter((user: User) => user.followerNum <= filters.followersRange.max!)
   }
 
   // 排序
   switch (filters.sortBy) {
     case 'followers':
-      result.sort((a: User, b: User) => b.followers - a.followers)
+      result.sort((a: User, b: User) => b.followerNum - a.followerNum)
       break
     case 'publications':
-      result.sort((a: User, b: User) => b.publications - a.publications)
+      result.sort((a: User, b: User) => b.publishNum - a.publishNum)
       break
     case 'projects':
-      result.sort((a: User, b: User) => b.projects - a.projects)
+      result.sort((a: User, b: User) => b.subjectNum - a.subjectNum)
       break
     case 'name':
       result.sort((a: User, b: User) => a.name.localeCompare(b.name))
@@ -767,9 +758,27 @@ const formatNumber = (num: number) => {
   return num.toString()
 }
 
-const performSearch = () => {
+const performSearch = async () => {
   currentPage.value = 1
   // 可以在这里添加搜索历史记录或其他功能
+  searchString.value = searchQuery.value
+
+  try {
+    const response = await request.get(
+      'http://127.0.0.1:4523/m2/6625065-6332383-default/312228231?apifoxApiId=312228231',
+      {
+        params: {
+          name: searchString.value,
+        },
+      }
+    )
+    if (response.data) {
+      users.value = response.data
+    }
+  } catch (error) {
+    console.error('搜索失败:', error)
+    users.value = []
+  }
 }
 
 const selectSuggestion = (suggestion: string) => {
@@ -875,8 +884,11 @@ const removeFollowersRange = () => {
 const sidebarResearchFields = computed(() => {
   const fieldCounts = new Map<string, number>()
   users.value.forEach(user => {
-    user.researchFields.forEach(field => {
-      fieldCounts.set(field, (fieldCounts.get(field) || 0) + 1)
+    user.researchArea.split(',').forEach((field: string) => {
+      const trimmedField = field.trim()
+      if (trimmedField) {
+        fieldCounts.set(trimmedField, (fieldCounts.get(trimmedField) || 0) + 1)
+      }
     })
   })
 
@@ -929,21 +941,9 @@ const validateFollowersRange = () => {
     }
   }
 }
-
-const applyFilters = () => {
-  // 实现排序逻辑
-}
 </script>
 
 <style scoped>
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 /* 自定义滚动条 */
 .overflow-y-auto::-webkit-scrollbar {
   width: 4px;
@@ -976,18 +976,11 @@ const applyFilters = () => {
   animation: cardHover 0.3s ease-out forwards;
 }
 
-/* 渐变边框效果 */
-.border-gradient {
-  background:
-    linear-gradient(white, white) padding-box,
-    linear-gradient(45deg, #667eea, #764ba2) border-box;
-  border: 2px solid transparent;
-}
-
 .filter-collapse {
   border: none;
   background-color: transparent;
 }
+
 .filter-collapse :deep(.el-collapse-item__header) {
   background-color: white;
   border-radius: 12px;
