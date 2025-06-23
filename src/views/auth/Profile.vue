@@ -159,7 +159,7 @@
 
                 <div class="flex justify-end space-x-4">
                   <el-button @click="resetForm">重置</el-button>
-                  <el-button type="primary" @click="saveProfile" :loading="saving">
+                  <el-button type="primary" :loading="saving" @click="saveProfile">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         stroke-linecap="round"
