@@ -4,19 +4,19 @@ import type {
   RegisterUserRequest,
   LoginUserRequest,
   UpdateUserProfileRequest,
-  RegisterResponse,
-  UserResponse,
+  LoginResponse,
 } from '../types/user'
 
 // 注册
-export function registerUser(data: RegisterUserRequest): Promise<RegisterResponse> {
+export function registerUser(data: RegisterUserRequest): Promise<LoginResponse> {
   //return request.post('/user/register', data)
   return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312041825', data)
 }
 
 // 登录
-export function loginUser(data: LoginUserRequest): Promise<UserResponse> {
-  return request.post('/user/login', data)
+export const loginUser = (data: LoginUserRequest): Promise<LoginResponse> => {
+  //return request.post('/user/login', data)
+  return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312055184', data)
 }
 
 // 完善用户信息

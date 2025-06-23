@@ -54,13 +54,8 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
-    const { code, status } = response.data || {}
-    if (code === 200 || status === 200 || status === '200') {
-      return response.data // 返回完整对象
-    } else {
-      ElMessage.error(response.data?.message || '请求失败')
-      return Promise.reject(new Error(response.data?.message || '请求失败'))
-    }
+    // 只要 HTTP 状态码是 2xx 就直接返回数据
+    return response.data
   },
   error => {
     // 网络错误处理

@@ -222,7 +222,7 @@ const handleRegister = async () => {
       id: user.id,
       name: user.name,
       email: user.email,
-      avatar: user.imageUrl,
+      avatar: user.imgUrl,
     })
 
     ElMessage.success('注册成功，即将自动登录')
@@ -232,7 +232,6 @@ const handleRegister = async () => {
       router.push('/')
     }, 1000)
   } catch (error) {
-    console.log(error)
     const errMsg =
       (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
       '注册失败，请重试'

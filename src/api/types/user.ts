@@ -21,9 +21,8 @@ export interface UpdateUserProfileRequest {
   imgUrl: string
 }
 
-// 注册响应体
-export interface RegisterResponse {
-  status: string
+// 登录/注册响应体
+export interface LoginResponse {
   data: UserResponse[]
 }
 
@@ -35,5 +34,5 @@ export interface UserResponse {
   gender: string
   name: string
   institution: string
-  imageUrl: string
+  imgUrl: string
 }

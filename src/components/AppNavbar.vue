@@ -167,11 +167,11 @@
               @click="showUserMenu = !showUserMenu"
             >
               <img
-                :src="currentUser.avatar"
-                :alt="currentUser.name"
+                :src="currentUser?.avatar"
+                :alt="currentUser?.name"
                 class="h-8 w-8 rounded-full object-cover"
               />
-              <span class="hidden md:block text-gray-700 font-medium">{{ currentUser.name }}</span>
+              <span class="hidden md:block text-gray-700 font-medium">{{ currentUser?.name }}</span>
               <svg
                 class="h-4 w-4 text-gray-400"
                 fill="none"
@@ -341,28 +341,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useNotificationStore } from '@/stores/notification'
 import type { Notification } from '@/api/types/notification'
 import { wsService } from '@/utils/websocket'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const notificationStore = useNotificationStore()
+const userStore = useUserStore()
+console.log('userStore.user:', userStore.user)
 
 // 响应式数据
 const showNotifications = ref(false)
 const showUserMenu = ref(false)
 const showMobileMenu = ref(false)
 
+// currentUser 响应式对象，自动同步 userStore.user
+const currentUser = computed(() => userStore.user)
+
 // 模拟用户状态
-const isAuthenticated = ref(true) // 实际项目中从store或composable获取
-const currentUser = reactive({
-  name: '李明',
-  avatar: 'https://via.placeholder.com/100',
-  email: 'liming@example.com',
-})
+const isAuthenticated = computed(() => userStore.isAuthenticated)
 
 const handleNotificationClick = async (notification: Notification) => {
   if (!notification.isRead) {
@@ -389,6 +390,7 @@ const handleNotificationClick = async (notification: Notification) => {
 
 const logout = () => {
   // 实际项目中应该调用登出API
+  userStore.clearUser()
   ElMessage.success('已退出登录')
   router.push('/login')
 }

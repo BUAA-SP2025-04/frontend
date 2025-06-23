@@ -74,8 +74,11 @@
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { loginUser } from '@/api/modules/user'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const form = reactive({
   email: '',
@@ -85,21 +88,18 @@ const form = reactive({
 
 const handleLogin = async () => {
   try {
-    // 模拟登录API调用
-    const mockResponse = {
-      token: 'mock-jwt-token-' + Date.now(),
-      user: {
-        id: 1,
-        name: '张三',
-        email: form.email,
-        avatar: 'https://via.placeholder.com/100',
-      },
-    }
-
-    // 保存token和用户信息
-    localStorage.setItem('token', mockResponse.token)
-    localStorage.setItem('user', JSON.stringify(mockResponse.user))
-
+    const res = await loginUser({
+      email: form.email,
+      password: form.password,
+    })
+    const user = res.data[0]
+    localStorage.setItem('token', user.token)
+    userStore.setUser({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatar: user.imgUrl,
+    })
     ElMessage.success('登录成功')
     router.push('/')
   } catch (error) {
