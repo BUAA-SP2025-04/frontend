@@ -22,7 +22,7 @@
           </h1>
           <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>
         </div>
-        <el-button type="primary" @click="showAddDialog = true" size="large">
+        <el-button type="primary" size="large" @click="showAddDialog = true">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -61,6 +61,7 @@
           </div>
         </div>
 
+        <!-- 总阅读量 -->
         <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition duration-200">
           <div class="flex items-center">
             <div class="p-3 rounded-full bg-green-100">
@@ -80,7 +81,7 @@
             </div>
             <div class="ml-4">
               <h3 class="text-2xl font-bold text-gray-900">{{ stats.totalCitations }}</h3>
-              <p class="text-gray-600">总引用数</p>
+              <p class="text-gray-600">总阅读量</p>
             </div>
           </div>
         </div>
@@ -128,7 +129,7 @@
             </div>
             <div class="ml-4">
               <h3 class="text-2xl font-bold text-gray-900">{{ stats.hIndex }}</h3>
-              <p class="text-gray-600">H指数</p>
+              <p class="text-gray-600">总点赞数</p>
             </div>
           </div>
         </div>
@@ -165,10 +166,10 @@
       <!-- 数据表格 -->
       <div class="bg-white rounded-lg shadow">
         <el-table
+          v-loading="loading"
           :data="filteredAchievements"
           style="width: 100%"
           :default-sort="{ prop: 'year', order: 'descending' }"
-          v-loading="loading"
         >
           <el-table-column type="selection" width="55" />
 
@@ -263,7 +264,6 @@
               <el-option label="期刊论文" value="journal" />
               <el-option label="会议论文" value="conference" />
               <el-option label="专利" value="patent" />
-              <el-option label="项目" value="project" />
             </el-select>
           </el-form-item>
 
@@ -272,7 +272,7 @@
           </el-form-item>
 
           <el-form-item label="作者">
-            <el-input v-model="authorsInput" placeholder="请输入作者，用逗号分隔" />
+            <el-input v-model="authorsInput" placeholder="请输入作者，用英文逗号分隔" />
           </el-form-item>
 
           <el-form-item label="发表于">
@@ -298,7 +298,7 @@
           </el-form-item>
 
           <el-form-item label="关键词">
-            <el-input v-model="keywordsInput" placeholder="请输入关键词，用逗号分隔" />
+            <el-input v-model="keywordsInput" placeholder="请输入关键词，用英文逗号分隔" />
           </el-form-item>
 
           <el-form-item label="DOI">
@@ -306,11 +306,7 @@
           </el-form-item>
 
           <el-form-item label="URL">
-            <el-input v-model="currentAchievement.url" placeholder="论文链接" />
-          </el-form-item>
-
-          <el-form-item label="影响因子">
-            <el-input-number v-model="currentAchievement.impact" :precision="2" :min="0" />
+            <el-input v-model="currentAchievement.pdfUrl" placeholder="论文链接" />
           </el-form-item>
 
           <el-form-item label="状态">
@@ -330,7 +326,7 @@
         <template #footer>
           <span class="dialog-footer">
             <el-button @click="showAddDialog = false">取消</el-button>
-            <el-button type="primary" @click="saveAchievement" :loading="saving">
+            <el-button type="primary" :loading="saving" @click="saveAchievement">
               {{ isEditing ? '更新' : '保存' }}
             </el-button>
           </span>
@@ -343,6 +339,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import axios from 'axios'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -359,7 +356,7 @@ const stats = reactive({
   hIndex: 18,
 })
 
-const achievements = ref([
+const achievements = reactive<Achievement[]>([
   {
     id: 1,
     type: 'journal',
@@ -367,13 +364,11 @@ const achievements = ref([
     authors: ['李明', '王芳', '张伟'],
     venue: 'Nature Machine Intelligence',
     year: 2024,
-    citations: 245,
-    impact: 8.5,
     status: 'published',
     abstract: '本文对深度学习在自然语言处理领域的应用进行了全面综述...',
     keywords: ['深度学习', '自然语言处理', '神经网络'],
     doi: '10.1038/s42256-024-00123-4',
-    url: 'https://example.com/paper1',
+    pdfUrl: 'https://example.com/paper1',
   },
   {
     id: 2,
@@ -382,13 +377,11 @@ const achievements = ref([
     authors: ['李明', '陈华'],
     venue: 'CVPR 2024',
     year: 2024,
-    citations: 89,
-    impact: null,
     status: 'published',
     abstract: '本文介绍了注意力机制在计算机视觉中的最新进展...',
     keywords: ['注意力机制', '计算机视觉', '深度学习'],
     doi: '10.1109/CVPR2024.00123',
-    url: 'https://example.com/paper2',
+    pdfUrl: 'https://example.com/paper2',
   },
 ])
 
@@ -398,52 +391,49 @@ interface Achievement {
   title: string
   authors: string[]
   venue: string
-  year: number
-  citations: number
-  impact: number | null
+  year?: number
   status: string
   abstract: string
   keywords: string[]
   doi: string
-  url: string
+  pdfUrl: string
 }
 
-const currentAchievement = reactive<Achievement>({
+const emptyAchievement: Achievement = {
   type: '',
   title: '',
   authors: [],
   venue: '',
-  year: new Date().getFullYear(),
-  citations: 0,
-  impact: null,
+  year: undefined,
   status: 'draft',
   abstract: '',
   keywords: [],
   doi: '',
-  url: '',
-})
+  pdfUrl: '',
+}
+const currentAchievement = reactive<Achievement>(JSON.parse(JSON.stringify(emptyAchievement)))
 
 const authorsInput = ref('')
 const keywordsInput = ref('')
 
 const filteredAchievements = computed(() => {
-  let result = achievements.value
+  let result = achievements as Achievement[]
 
   if (searchQuery.value) {
     result = result.filter(
-      item =>
+      (item: Achievement) =>
         item.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        item.authors.some(author => author.includes(searchQuery.value)) ||
-        item.keywords.some(keyword => keyword.includes(searchQuery.value))
+        item.authors.some((author: string) => author.includes(searchQuery.value)) ||
+        item.keywords.some((keyword: string) => keyword.includes(searchQuery.value))
     )
   }
 
   if (filterType.value) {
-    result = result.filter(item => item.type === filterType.value)
+    result = result.filter((item: Achievement) => item.type === filterType.value)
   }
 
   if (filterYear.value) {
-    result = result.filter(item => item.year.toString() === filterYear.value)
+    result = result.filter((item: Achievement) => item.year?.toString() === filterYear.value)
   }
 
   return result
@@ -464,7 +454,6 @@ const getTypeLabel = (type: string) => {
     journal: '期刊',
     conference: '会议',
     patent: '专利',
-    project: '项目',
   }
   return labels[type] || type
 }
@@ -489,7 +478,7 @@ const getStatusLabel = (status: 'published' | 'accepted' | 'under-review' | 'dra
   return labels[status]
 }
 
-const editAchievement = (achievement: any) => {
+const editAchievement = (achievement: Achievement) => {
   isEditing.value = true
   Object.assign(currentAchievement, achievement)
   authorsInput.value = achievement.authors.join(', ')
@@ -497,82 +486,93 @@ const editAchievement = (achievement: any) => {
   showAddDialog.value = true
 }
 
-const saveAchievement = async () => {
+const saveAchievement = () => {
   saving.value = true
-  try {
-    // 处理作者和关键词
-    currentAchievement.authors = authorsInput.value
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean)
-    currentAchievement.keywords = keywordsInput.value
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean)
 
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    if (isEditing.value) {
-      const index = achievements.value.findIndex(item => item.id === currentAchievement.id)
-      if (index !== -1) {
-        achievements.value[index] = { ...currentAchievement, id: currentAchievement.id as number }
-      }
-      ElMessage.success('成果更新成功')
-    } else {
-      achievements.value.unshift({
-        ...currentAchievement,
-        id: Date.now(),
-        citations: 0,
-      })
-      ElMessage.success('成果添加成功')
-    }
-
-    showAddDialog.value = false
-    resetForm()
-  } catch (error) {
-    ElMessage.error('保存失败，请重试')
-  } finally {
-    saving.value = false
+  // 需要默认值的字段
+  const defaultFields = {
+    authors: authorsInput.value,
+    keywords: keywordsInput.value,
   }
+
+  // 统一处理默认值
+  const payload = {
+    ...currentAchievement,
+    authors:
+      defaultFields.authors && defaultFields.authors.trim() ? defaultFields.authors : '暂无信息',
+    keywords:
+      defaultFields.keywords && defaultFields.keywords.trim() ? defaultFields.keywords : '暂无信息',
+    venue:
+      currentAchievement.venue && currentAchievement.venue.trim()
+        ? currentAchievement.venue
+        : '暂无信息',
+    abstract:
+      currentAchievement.abstract && currentAchievement.abstract.trim()
+        ? currentAchievement.abstract
+        : '暂无信息',
+    year: currentAchievement.year === undefined ? null : currentAchievement.year,
+    doi:
+      currentAchievement.doi && currentAchievement.doi.trim() ? currentAchievement.doi : '暂无信息',
+    pdfUrl:
+      currentAchievement.pdfUrl && currentAchievement.pdfUrl.trim()
+        ? currentAchievement.pdfUrl
+        : '暂无信息',
+  }
+
+  let url: string
+  if (isEditing.value) url = '/api/achievement/update'
+  else url = '/api/publication/add'
+
+  axios
+    .post(url, payload)
+    .then(res => {
+      const data = res.data
+      if (data.success === true) {
+        if (isEditing.value) ElMessage.success('成果更新成功')
+        else ElMessage.success('成果添加成功')
+
+        showAddDialog.value = false
+        resetForm()
+      } else {
+        ElMessage.error('保存失败:', data.message || '未知问题')
+      }
+    })
+    .catch(err => {
+      ElMessage.error(err)
+    })
+    .finally(() => {
+      saving.value = false
+    })
 }
 
-const deleteAchievement = async (id: number) => {
-  try {
-    await ElMessageBox.confirm('确定要删除这项成果吗？', '确认删除', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
+const deleteAchievement = (id: number) => {
+  ElMessageBox.confirm('确定要删除该成果吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => {
+      return axios.delete(`/api/achievement/delete`, { params: { id } })
     })
-
-    achievements.value = achievements.value.filter(item => item.id !== id)
-    ElMessage.success('删除成功')
-  } catch {
-    // 用户取消删除
-  }
+    .then(res => {
+      const data = res.data
+      if (data.success === true) {
+        ElMessage.success('删除成功')
+      } else {
+        ElMessage.error('删除失败:' + (data.message || '未知问题'))
+      }
+    })
+    .catch(err => {
+      ElMessage.error(err)
+    })
 }
 
 const resetForm = () => {
-  Object.assign(currentAchievement, {
-    type: '',
-    title: '',
-    authors: [],
-    venue: '',
-    year: new Date().getFullYear(),
-    citations: 0,
-    impact: null,
-    status: 'draft',
-    abstract: '',
-    keywords: [],
-    doi: '',
-    url: '',
-  })
+  Object.assign(currentAchievement, JSON.parse(JSON.stringify(emptyAchievement)))
   authorsInput.value = ''
   keywordsInput.value = ''
   isEditing.value = false
 }
 
-onMounted(() => {
-  // 初始化数据
-})
+onMounted(() => {})
 </script>
