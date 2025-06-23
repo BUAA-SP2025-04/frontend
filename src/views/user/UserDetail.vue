@@ -5,47 +5,58 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex flex-col md:flex-row items-start gap-8">
           <img
-            :src="user.avatar"
+            v-if="user.imgUrl && user.imgUrl !== ''"
+            :src="user.imgUrl"
             :alt="user.name"
-            class="w-32 h-32 rounded-full object-cover shadow-lg"
+            class="w-32 h-32 rounded-full object-cover shadow-lg relative"
           />
+          <div
+            v-else
+            class="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center shadow-lg relative"
+          >
+            <el-icon class="text-5xl text-gray-400"><UserFilled /></el-icon>
+          </div>
+          <div v-if="user.email" class="absolute top-2 right-2">
+            <el-icon class="text-green-500 bg-white rounded-full p-1 shadow"
+              ><CircleCheckFilled
+            /></el-icon>
+          </div>
           <div class="flex-1">
-            <h1 class="text-3xl font-bold text-gray-900">{{ user.name }}</h1>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+              {{ user.name }}
+              <el-icon
+                v-if="user.gender === '男'"
+                class="ml-2 text-blue-500"
+                style="font-size: 1.5em"
+                ><Male
+              /></el-icon>
+              <el-icon
+                v-else-if="user.gender === '女'"
+                class="ml-2 text-pink-500"
+                style="font-size: 1.5em"
+                ><Female
+              /></el-icon>
+            </h1>
             <p class="text-xl text-gray-600 mt-1">{{ user.title }}</p>
             <p class="text-lg text-gray-500 mt-1">{{ user.institution }}</p>
+            <p class="text-sm text-gray-400 mt-1">注册时间：{{ user.createdAt }}</p>
 
             <div class="mt-4">
-              <p class="text-gray-700">{{ user.bio }}</p>
+              <p class="text-gray-700">{{ user.description }}</p>
             </div>
 
-            <div class="mt-6 flex flex-wrap gap-2">
+            <div v-if="!user.email" class="mt-4 text-sm text-gray-400">
+              该用户暂未注册平台账户，无具体信息
+            </div>
+
+            <div class="mt-6 flex flex-wrap gap-2" v-if="user.researchArea">
               <span
-                v-for="field in user.researchFields"
+                v-for="field in user.researchArea.split(',')"
                 :key="field"
                 class="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm rounded-full"
               >
-                {{ field }}
+                {{ field.trim() }}
               </span>
-            </div>
-
-            <div class="mt-6 flex gap-6">
-              <button
-                class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-150"
-              >
-                关注
-              </button>
-              <button
-                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-150"
-              >
-                发消息
-              </button>
-            </div>
-          </div>
-
-          <div class="text-right">
-            <div class="bg-gray-50 rounded-lg p-4 space-y-2">
-              <div class="text-2xl font-bold text-indigo-600">{{ user.hIndex }}</div>
-              <div class="text-sm text-gray-600">H指数</div>
             </div>
           </div>
         </div>
@@ -56,124 +67,114 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow p-6 text-center">
-          <div class="text-3xl font-bold text-blue-600">{{ user.publications }}</div>
+          <div class="text-3xl font-bold text-blue-600">{{ user.publishNum }}</div>
           <div class="text-gray-600 mt-1">发表论文</div>
         </div>
         <div class="bg-white rounded-lg shadow p-6 text-center">
-          <div class="text-3xl font-bold text-green-600">{{ user.citations }}</div>
-          <div class="text-gray-600 mt-1">总引用数</div>
+          <div class="text-3xl font-bold text-green-600">{{ user.subjectNum }}</div>
+          <div class="text-gray-600 mt-1">进行项目数</div>
         </div>
         <div class="bg-white rounded-lg shadow p-6 text-center">
-          <div class="text-3xl font-bold text-purple-600">{{ user.followers }}</div>
+          <div class="text-3xl font-bold text-purple-600">{{ user.followerNum }}</div>
           <div class="text-gray-600 mt-1">关注者</div>
         </div>
       </div>
 
-      <!-- 标签页 -->
-      <div class="bg-white rounded-lg shadow">
-        <div class="border-b border-gray-200">
-          <nav class="flex space-x-8 px-6">
-            <button
-              v-for="tab in tabs"
-              :key="tab.id"
-              :class="[
-                'py-4 px-1 border-b-2 font-medium text-sm transition duration-150',
-                activeTab === tab.id
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-              ]"
-              @click="activeTab = tab.id"
-            >
-              {{ tab.name }}
-            </button>
-          </nav>
-        </div>
-
-        <div class="p-6">
-          <!-- 论文列表 -->
-          <div v-if="activeTab === 'publications'" class="space-y-4">
+      <!-- 论文列表 -->
+      <div class="bg-white rounded-xl shadow p-4 mt-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-4 tracking-wide">发表论文</h2>
+        <div v-if="papers.length > 0">
+          <div class="divide-y divide-gray-100">
             <div
-              v-for="paper in user.papers"
+              v-for="paper in papers"
               :key="paper.id"
-              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-150"
+              class="py-3 px-2 hover:bg-indigo-50/40 transition cursor-pointer group flex flex-col md:flex-row md:items-center"
             >
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ paper.title }}</h3>
-              <p class="text-sm text-gray-600 mb-2">{{ paper.authors.join(', ') }}</p>
-              <p class="text-sm text-gray-500 mb-3">{{ paper.journal }} • {{ paper.year }}</p>
-              <div class="flex items-center justify-between">
-                <div class="flex gap-4 text-sm text-gray-600">
-                  <span>引用: {{ paper.citations }}</span>
-                  <span>下载: {{ paper.downloads }}</span>
-                </div>
-                <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                  查看详情
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 合作者 -->
-          <div
-            v-if="activeTab === 'collaborators'"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
-            <div
-              v-for="collaborator in user.collaborators"
-              :key="collaborator.id"
-              class="flex items-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition duration-150 cursor-pointer"
-              @click="goToUserDetail(collaborator.id)"
-            >
-              <img
-                :src="collaborator.avatar"
-                :alt="collaborator.name"
-                class="w-12 h-12 rounded-full object-cover"
-              />
-              <div class="ml-3">
-                <h4 class="text-sm font-medium text-gray-900">{{ collaborator.name }}</h4>
-                <p class="text-sm text-gray-500">{{ collaborator.institution }}</p>
-                <p class="text-xs text-gray-400">合作论文: {{ collaborator.paperCount }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 研究兴趣 -->
-          <div v-if="activeTab === 'interests'">
-            <div class="space-y-6">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-3">主要研究方向</h3>
-                <div class="flex flex-wrap gap-3">
+              <div class="flex-1 min-w-0">
+                <!-- 标题行 -->
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                   <span
-                    v-for="interest in user.interests.primary"
-                    :key="interest"
-                    class="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg"
+                    class="font-semibold text-gray-900 group-hover:text-indigo-600 text-base truncate max-w-[320px]"
+                    :title="paper.title"
+                    >{{ paper.title }}</span
                   >
-                    {{ interest }}
+                  <span
+                    v-if="paper.status"
+                    class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium"
+                    >{{ paper.status }}</span
+                  >
+                  <span
+                    v-if="paper.year"
+                    class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium"
+                    >{{ paper.year }}</span
+                  >
+                </div>
+                <!-- 作者行 -->
+                <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2">
+                  <span>作者：</span>
+                  <span
+                    v-for="author in paper.authors"
+                    :key="author.id"
+                    class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium"
+                    >{{ author.name }}</span
+                  >
+                </div>
+                <!-- 关键词行 -->
+                <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2">
+                  <span v-if="paper.keywords && paper.keywords.length">关键词：</span>
+                  <span
+                    v-for="kw in paper.keywords && paper.keywords.length
+                      ? paper.keywords
+                          .split(',')
+                          .map(k => k.trim())
+                          .filter(Boolean)
+                      : []"
+                    :key="kw"
+                    class="inline-block px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-[11px] rounded-full font-medium"
+                    >{{ kw }}</span
+                  >
+                </div>
+                <!-- DOI行 -->
+                <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 w-full">
+                  <span v-if="paper.doi" class="text-blue-600 flex items-center gap-1">
+                    <i class="el-icon-link"></i>DOI:
+                    <span class="underline cursor-pointer" @click.stop="openDoi(paper.doi)">{{
+                      paper.doi
+                    }}</span>
                   </span>
-                </div>
-              </div>
-              <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-3">相关领域</h3>
-                <div class="flex flex-wrap gap-2">
                   <span
-                    v-for="interest in user.interests.secondary"
-                    :key="interest"
-                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                    class="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 rounded-full px-2 py-0.5 font-semibold ml-2"
                   >
-                    {{ interest }}
+                    <i class="el-icon-view"></i>阅读量:{{ paper.readerNum }}
+                  </span>
+                  <span
+                    class="flex items-center gap-1 text-xs bg-pink-50 text-pink-700 rounded-full px-2 py-0.5 font-semibold"
+                  >
+                    <i class="el-icon-star-on"></i>点赞数:{{ paper.likeNum }}
+                  </span>
+                  <span
+                    class="ml-auto text-indigo-600 hover:underline cursor-pointer font-medium"
+                    @click.stop="goToPdfReader(paper.pdfUrl)"
+                  >
+                    查看详情
                   </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <div v-else class="text-gray-400 text-center py-8 text-base">暂无论文数据</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import request from '@/utils/request'
+import { Male, Female, UserFilled, CircleCheckFilled } from '@element-plus/icons-vue'
+import { ElIcon } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -183,103 +184,133 @@ interface User {
   name: string
   title: string
   institution: string
-  avatar: string
-  bio: string
-  researchFields: string[]
-  hIndex: number
-  publications: number
-  citations: number
-  followers: number
-  papers: {
-    id: number
-    title: string
-    authors: string[]
-    journal: string
-    year: number
-    citations: number
-    downloads: number
-  }[]
-  collaborators: {
-    id: number
-    name: string
-    institution: string
-    avatar: string
-    paperCount: number
-  }[]
-  interests: {
-    primary: string[]
-    secondary: string[]
-  }
+  imgUrl: string
+  description: string
+  researchArea: string
+  publishNum: number
+  subjectNum: number
+  followerNum: number
+  gender: string
+  createdAt: string
+  email?: string
+}
+
+interface Paper {
+  id: number
+  title: string
+  authors: object[]
+  conference: string
+  venue: string
+  year: number
+  status: string
+  keywords: string
+  doi: string
+  pdfUrl: string
+  abstract: string
+  readerNum: number
+  likeNum: number
+  _showFullAbstract?: boolean
 }
 
 const user = ref<User | null>(null)
-const activeTab = ref('publications')
+const papers = ref<Paper[]>([])
 
-const tabs = [
-  { id: 'publications', name: '发表论文' },
-  { id: 'collaborators', name: '合作者' },
-  { id: 'interests', name: '研究兴趣' },
-]
-
-onMounted(() => {
-  // 模拟获取用户数据
+onMounted(async () => {
   const userId = route.params.id
-  user.value = {
-    id: userId,
-    name: '李明',
-    title: '教授',
-    institution: '清华大学计算机科学与技术系',
-    avatar: 'https://via.placeholder.com/200',
-    bio: '专注于机器学习和人工智能研究，在深度学习、自然语言处理和计算机视觉领域有重要贡献。致力于将理论研究与实际应用相结合，推动AI技术的产业化发展。',
-    researchFields: ['机器学习', '人工智能', '深度学习', '自然语言处理', '计算机视觉'],
-    hIndex: 45,
-    publications: 120,
-    citations: 3500,
-    followers: 1250,
-    papers: [
+  try {
+    const response = await request.get(
+      'http://127.0.0.1:4523/m2/6625065-6332383-default/312231924',
       {
-        id: 1,
-        title: 'Deep Learning for Natural Language Processing: A Comprehensive Survey',
-        authors: ['李明', '王芳', '张伟'],
-        journal: 'Nature Machine Intelligence',
-        year: 2024,
-        citations: 245,
-        downloads: 1200,
-      },
-      {
-        id: 2,
-        title: 'Attention Mechanisms in Computer Vision: Recent Advances and Applications',
-        authors: ['李明', '陈华'],
-        journal: 'IEEE Transactions on Pattern Analysis and Machine Intelligence',
-        year: 2023,
-        citations: 189,
-        downloads: 980,
-      },
-    ],
-    collaborators: [
-      {
-        id: 2,
-        name: '王芳',
-        institution: '北京大学',
-        avatar: 'https://via.placeholder.com/100',
-        paperCount: 15,
-      },
-      {
-        id: 3,
-        name: '张伟',
-        institution: '中科院',
-        avatar: 'https://via.placeholder.com/100',
-        paperCount: 8,
-      },
-    ],
-    interests: {
-      primary: ['深度学习理论', '自然语言处理', '计算机视觉', '强化学习'],
-      secondary: ['神经网络优化', '迁移学习', '多模态学习', '可解释AI', '联邦学习'],
-    },
+        params: { id: userId },
+      }
+    )
+    if (response.data) {
+      user.value = response.data
+      console.log(response.data)
+      // 获取论文ID列表
+      const paperRes = await request.get(
+        'http://127.0.0.1:4523/m2/6625065-6332383-default/312369194',
+        {
+          params: { id: response.data.id },
+        }
+      )
+      if (paperRes.data && paperRes.data.publicationIds) {
+        console.log(paperRes)
+        const ids = Array.isArray(paperRes.data.publicationIds) ? paperRes.data.publicationIds : []
+        // 并发获取所有成果详情
+        const detailPromises = ids.map((pubId: number) =>
+          request.get('http://127.0.0.1:4523/m2/6625065-6332383-default/312411438', {
+            params: { id: pubId },
+          })
+        )
+        const details = await Promise.all(detailPromises)
+        console.log(details)
+        papers.value = details.map(res => res.data)
+      } else {
+        papers.value = []
+      }
+    }
+  } catch (error) {
+    console.error('获取用户详情或论文失败:', error)
+    user.value = null
+    papers.value = []
   }
 })
 
 const goToUserDetail = (userId: number) => {
   router.push(`/user/${userId}`)
 }
+const openDoi = (doi: string) => {
+  window.open(`https://doi.org/${doi}`, '_blank')
+}
+const openPdf = (url: string) => {
+  window.open(url, '_blank')
+}
+const goToPdfReader = (pdfUrl: string) => {
+  router.push({ path: '/pdf-reader', query: { url: pdfUrl } })
+}
+
+// 摘要展开/收起辅助
+watch(
+  papers,
+  val => {
+    val.forEach((p: Paper) => {
+      if (typeof p._showFullAbstract === 'undefined') p._showFullAbstract = false
+    })
+  },
+  { immediate: true }
+)
 </script>
+
+<style scoped>
+.el-icon-document-copy::before {
+  content: '\e6e0';
+  font-family: 'element-icons' !important;
+}
+.el-icon-download::before {
+  content: '\e6e2';
+  font-family: 'element-icons' !important;
+}
+.el-icon-view::before {
+  content: '\e6ce';
+  font-family: 'element-icons' !important;
+}
+.el-icon-star-on::before {
+  content: '\e6a1';
+  font-family: 'element-icons' !important;
+}
+.el-icon-link::before {
+  content: '\e6e5';
+  font-family: 'element-icons' !important;
+}
+.el-icon-document::before {
+  content: '\e6e3';
+  font-family: 'element-icons' !important;
+}
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
