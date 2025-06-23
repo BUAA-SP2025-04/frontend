@@ -656,6 +656,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 
 const searchQuery = ref('')
 const selectedFolder = ref('all')
@@ -668,6 +669,9 @@ const pageSize = 20
 const showUploadDialog = ref(false)
 const showFolderDialog = ref(false)
 const showFolderRenameDialog = ref(false)
+
+const userStore = useUserStore()
+const userId = computed(() => userStore.user?.id)
 
 const folders = ref([
   { id: 'all', name: '全部文献', count: 156 },
@@ -1039,6 +1043,8 @@ const resetNewPaper = () => {
   currentFile.value = null;
   newPaper.url = '';
   newPaper.title = '';
+  authorInput.value = '';
+  tagInput.value = '';
 };
 
 const formatDate = (date: Date) => {
