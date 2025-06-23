@@ -1,4 +1,4 @@
-export interface Achievement {
+export interface AchievementProfile {
   id?: number
   type: string
   title: string
@@ -10,14 +10,10 @@ export interface Achievement {
   keywords: string[]
   doi: string
   pdfUrl: string
+  isPublic: boolean
 }
 
-export interface emptyResponse {
-  message: string
-  data: null
-}
-
-export interface saveAchievementRequest {
+export interface SaveAchievementRequest {
   type: string
   title: string
   authors: string

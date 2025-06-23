@@ -199,13 +199,13 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="citations" label="引用数" width="100" sortable align="center">
+          <el-table-column prop="readers" label="阅读数" width="100" sortable align="center">
             <template #default="{ row }">
               <div class="font-semibold text-green-600">{{ row.citations || 0 }}</div>
             </template>
           </el-table-column>
 
-          <el-table-column prop="impact" label="影响因子" width="120" align="center">
+          <el-table-column prop="impact" label="点赞数" width="120" align="center">
             <template #default="{ row }">
               <div v-if="row.impact" class="font-semibold text-blue-600">{{ row.impact }}</div>
               <div v-else class="text-gray-400">-</div>
@@ -254,7 +254,7 @@
         width="60%"
         destroy-on-close
       >
-        <el-form :model="currentAchievement" label-width="100px" class="space-y-4">
+        <el-form :model="currentAchievement" label-width="100px" class="space-y-4" :rules="rules">
           <el-form-item label="类型" required>
             <el-select
               v-model="currentAchievement.type"
@@ -301,12 +301,35 @@
             <el-input v-model="keywordsInput" placeholder="请输入关键词，用英文逗号分隔" />
           </el-form-item>
 
-          <el-form-item label="DOI">
+          <el-form-item label="doi" prop="doi">
             <el-input v-model="currentAchievement.doi" placeholder="数字对象标识符" />
           </el-form-item>
 
-          <el-form-item label="URL">
-            <el-input v-model="currentAchievement.pdfUrl" placeholder="论文链接" />
+          <el-form-item label="pdfUrl" prop="pdfUrl">
+            <el-radio-group v-model="pdfInputType" size="small" style="margin-bottom: 8px">
+              <el-radio-button label="url">链接</el-radio-button>
+              <el-radio-button label="upload">上传文件</el-radio-button>
+            </el-radio-group>
+            <div v-if="pdfInputType === 'url'">
+              <el-input v-model="currentAchievement.pdfUrl" placeholder="论文链接" />
+            </div>
+            <div v-else>
+              <el-upload
+                class="upload-demo"
+                action=""
+                :auto-upload="false"
+                :show-file-list="false"
+                :on-change="handlePdfFileChange"
+                :limit="1"
+                :on-exceed="handlePdfExceed"
+              >
+                <el-button type="primary">选择PDF文件</el-button>
+                <span v-if="pdfFile" class="ml-2 text-green-600">{{ pdfFile.name }}</span>
+                <span v-else-if="currentAchievement.pdfUrl" class="ml-2 text-green-600"
+                  >已上传</span
+                >
+              </el-upload>
+            </div>
           </el-form-item>
 
           <el-form-item label="状态">
@@ -338,9 +361,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import type { Achievement } from '@/api/types/achievement'
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import type { AchievementProfile } from '@/api/types/achievement'
 import { deleteAchievement, saveAchievement } from '@/api/modules/achievement'
+import type { UploadFile } from 'element-plus'
+import { upload } from '@/api/modules/upload'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -357,7 +382,7 @@ const stats = reactive({
   hIndex: 18,
 })
 
-const achievements = reactive<Achievement[]>([
+const achievements = reactive<AchievementProfile[]>([
   {
     id: 1,
     type: 'journal',
@@ -370,6 +395,7 @@ const achievements = reactive<Achievement[]>([
     keywords: ['深度学习', '自然语言处理', '神经网络'],
     doi: '10.1038/s42256-024-00123-4',
     pdfUrl: 'https://example.com/paper1',
+    isPublic: true,
   },
   {
     id: 2,
@@ -383,32 +409,61 @@ const achievements = reactive<Achievement[]>([
     keywords: ['注意力机制', '计算机视觉', '深度学习'],
     doi: '10.1109/CVPR2024.00123',
     pdfUrl: 'https://example.com/paper2',
+    isPublic: true,
   },
 ])
 
-const emptyAchievement: Achievement = {
-  type: '',
+const emptyAchievement: AchievementProfile = {
+  type: 'journal',
   title: '',
   authors: [],
   venue: '',
   year: undefined,
-  status: '',
+  status: 'published',
   abstract: '',
   keywords: [],
   doi: '',
   pdfUrl: '',
+  isPublic: true,
 }
-const currentAchievement = reactive<Achievement>(JSON.parse(JSON.stringify(emptyAchievement)))
+const currentAchievement = reactive<AchievementProfile>(
+  JSON.parse(JSON.stringify(emptyAchievement))
+)
 
 const authorsInput = ref('')
 const keywordsInput = ref('')
+const pdfInputType = ref<'url' | 'upload'>('url')
+const pdfFile = ref<File | null>(null)
+
+const formRef = ref<FormInstance>()
+
+const doiPattern = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i
+const urlPattern = /^(https?:\/\/)[^\s/$.?#].\S*$/i
+const rules: FormRules = {
+  doi: [
+    { required: true, message: '请输入 DOI', trigger: 'blur' },
+    { pattern: doiPattern, message: 'DOI 格式不正确', trigger: 'blur' },
+  ],
+  pdfUrl: [
+    {
+      validator: (rule, value, callback) => {
+        if (pdfInputType.value === 'url' && value && !urlPattern.test(value)) {
+          callback(new Error('URL 格式不正确'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur',
+    },
+  ],
+}
 
 const filteredAchievements = computed(() => {
-  let result = achievements as Achievement[]
+  let result = achievements as AchievementProfile[]
 
   if (searchQuery.value) {
     result = result.filter(
-      (item: Achievement) =>
+      (item: AchievementProfile) =>
         item.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         item.authors.some((author: string) => author.includes(searchQuery.value)) ||
         item.keywords.some((keyword: string) => keyword.includes(searchQuery.value))
@@ -416,11 +471,11 @@ const filteredAchievements = computed(() => {
   }
 
   if (filterType.value) {
-    result = result.filter((item: Achievement) => item.type === filterType.value)
+    result = result.filter((item: AchievementProfile) => item.type === filterType.value)
   }
 
   if (filterYear.value) {
-    result = result.filter((item: Achievement) => item.year?.toString() === filterYear.value)
+    result = result.filter((item: AchievementProfile) => item.year?.toString() === filterYear.value)
   }
 
   return result
@@ -465,7 +520,7 @@ const getStatusLabel = (status: 'published' | 'accepted' | 'under-review' | 'dra
   return labels[status]
 }
 
-const editAchievement = (achievement: Achievement) => {
+const editAchievement = (achievement: AchievementProfile) => {
   isEditing.value = true
   Object.assign(currentAchievement, achievement)
   authorsInput.value = achievement.authors.join(', ')
@@ -473,9 +528,37 @@ const editAchievement = (achievement: Achievement) => {
   showAddDialog.value = true
 }
 
-const handleSave = () => {
-  saving.value = true
+const handlePdfFileChange = (file: UploadFile) => {
+  pdfFile.value = file.raw ?? null
+}
+const handlePdfExceed = (files: File[]) => {
+  if (files.length > 0) {
+    pdfFile.value = files[files.length - 1]
+  }
+}
 
+//上传PDF
+const uploadPdfFile = async () => {
+  if (!pdfFile.value) return ''
+  const formData = new FormData()
+  formData.append('file', pdfFile.value)
+  upload('/api/upload/pdf', formData)
+    .then(response => {
+      if (response.data && response.data.url) {
+        return response.data.url
+      } else {
+        throw new Error('上传失败，请重试')
+      }
+    })
+    .catch(err => {
+      ElMessage.error(err)
+      return ''
+    })
+}
+
+const handleSave = async () => {
+  await formRef.value?.validate()
+  saving.value = true
   // 需要默认值的字段
   const defaultFields = {
     authors: authorsInput.value,
@@ -504,6 +587,18 @@ const handleSave = () => {
         ? currentAchievement.pdfUrl
         : '暂无信息',
   }
+
+  if (pdfInputType.value === 'upload') {
+    if (pdfFile.value) {
+      const url = await uploadPdfFile()
+      if (!url) {
+        saving.value = false
+        return
+      }
+      payload.pdfUrl = url
+    }
+  }
+
   let url: string
   if (isEditing.value) url = '/api/achievement/update'
   else url = '/api/achievement/add'
@@ -542,6 +637,8 @@ const resetForm = () => {
   Object.assign(currentAchievement, JSON.parse(JSON.stringify(emptyAchievement)))
   authorsInput.value = ''
   keywordsInput.value = ''
+  pdfInputType.value = 'url'
+  pdfFile.value = null
   isEditing.value = false
 }
 </script>
