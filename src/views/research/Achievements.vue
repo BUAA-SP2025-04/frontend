@@ -232,7 +232,7 @@
                   />
                 </svg>
               </el-button>
-              <el-button size="small" type="danger" @click="deleteAchievement(row.id)">
+              <el-button size="small" type="danger" @click="handleDelete(row.id)">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
@@ -326,7 +326,7 @@
         <template #footer>
           <span class="dialog-footer">
             <el-button @click="showAddDialog = false">取消</el-button>
-            <el-button type="primary" :loading="saving" @click="saveAchievement">
+            <el-button type="primary" :loading="saving" @click="handleSave">
               {{ isEditing ? '更新' : '保存' }}
             </el-button>
           </span>
@@ -337,9 +337,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import axios from 'axios'
+import type { Achievement } from '@/api/types/achievement'
+import { deleteAchievement, saveAchievement } from '@/api/modules/achievement'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -385,27 +386,13 @@ const achievements = reactive<Achievement[]>([
   },
 ])
 
-interface Achievement {
-  id?: number
-  type: string
-  title: string
-  authors: string[]
-  venue: string
-  year?: number
-  status: string
-  abstract: string
-  keywords: string[]
-  doi: string
-  pdfUrl: string
-}
-
 const emptyAchievement: Achievement = {
   type: '',
   title: '',
   authors: [],
   venue: '',
   year: undefined,
-  status: 'draft',
+  status: '',
   abstract: '',
   keywords: [],
   doi: '',
@@ -486,7 +473,7 @@ const editAchievement = (achievement: Achievement) => {
   showAddDialog.value = true
 }
 
-const saveAchievement = () => {
+const handleSave = () => {
   saving.value = true
 
   // 需要默认值的字段
@@ -510,7 +497,6 @@ const saveAchievement = () => {
       currentAchievement.abstract && currentAchievement.abstract.trim()
         ? currentAchievement.abstract
         : '暂无信息',
-    year: currentAchievement.year === undefined ? null : currentAchievement.year,
     doi:
       currentAchievement.doi && currentAchievement.doi.trim() ? currentAchievement.doi : '暂无信息',
     pdfUrl:
@@ -518,24 +504,14 @@ const saveAchievement = () => {
         ? currentAchievement.pdfUrl
         : '暂无信息',
   }
-
   let url: string
   if (isEditing.value) url = '/api/achievement/update'
-  else url = '/api/publication/add'
-
-  axios
-    .post(url, payload)
-    .then(res => {
-      const data = res.data
-      if (data.success === true) {
-        if (isEditing.value) ElMessage.success('成果更新成功')
-        else ElMessage.success('成果添加成功')
-
-        showAddDialog.value = false
-        resetForm()
-      } else {
-        ElMessage.error('保存失败:', data.message || '未知问题')
-      }
+  else url = '/api/achievement/add'
+  saveAchievement(url, payload)
+    .then(() => {
+      if (isEditing.value) ElMessage.success('更新成功')
+      else ElMessage.success('添加成功')
+      resetForm()
     })
     .catch(err => {
       ElMessage.error(err)
@@ -545,22 +521,17 @@ const saveAchievement = () => {
     })
 }
 
-const deleteAchievement = (id: number) => {
+const handleDelete = (id: number) => {
   ElMessageBox.confirm('确定要删除该成果吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   })
     .then(() => {
-      return axios.delete(`/api/achievement/delete`, { params: { id } })
+      deleteAchievement(id)
     })
-    .then(res => {
-      const data = res.data
-      if (data.success === true) {
-        ElMessage.success('删除成功')
-      } else {
-        ElMessage.error('删除失败:' + (data.message || '未知问题'))
-      }
+    .then(() => {
+      ElMessage.success('删除成功')
     })
     .catch(err => {
       ElMessage.error(err)
@@ -573,6 +544,4 @@ const resetForm = () => {
   keywordsInput.value = ''
   isEditing.value = false
 }
-
-onMounted(() => {})
 </script>
