@@ -93,43 +93,13 @@
           </div>
         </div>
 
-        <!-- 中间搜索框 -->
-        <div class="flex-1 flex items-center justify-center px-6 lg:px-8">
-          <div class="max-w-lg w-full">
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg
-                  class="h-5 w-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="搜索论文、学者、机构..."
-                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                @keydown.enter="handleSearch"
-              />
-            </div>
-          </div>
-        </div>
-
         <!-- 右侧用户菜单和通知 -->
         <div class="flex items-center space-x-4">
           <!-- 通知按钮 -->
           <div v-if="isAuthenticated" class="relative">
             <button
-              @click="showNotifications = !showNotifications"
               class="p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 transition-colors"
+              @click="showNotifications = !showNotifications"
             >
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -141,10 +111,10 @@
               </svg>
               <!-- 未读通知红点 -->
               <span
-                v-if="unreadNotifications > 0"
+                v-if="notificationStore.unreadCount > 0"
                 class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
               >
-                {{ unreadNotifications > 9 ? '9+' : unreadNotifications }}
+                {{ notificationStore.unreadCount > 9 ? '9+' : notificationStore.unreadCount }}
               </span>
             </button>
 
@@ -159,25 +129,26 @@
               </div>
               <div class="max-h-96 overflow-y-auto">
                 <div
-                  v-for="notification in notifications"
+                  v-for="notification in notificationStore.notifications"
                   :key="notification.id"
-                  class="p-4 border-b border-gray-200 hover:bg-gray-50 cursor-pointer"
+                  :class="['p-4 border-b hover:bg-gray-50', { 'bg-blue-50': !notification.isRead }]"
                   @click="handleNotificationClick(notification)"
                 >
                   <div class="flex items-start space-x-3">
                     <div class="flex-shrink-0">
                       <img
-                        :src="notification.avatar"
-                        :alt="notification.sender"
+                        :src="`https://api.dicebear.com/7.x/avatars/svg?seed=${notification.userId}`"
+                        :alt="notification.userId.toString()"
                         class="h-8 w-8 rounded-full"
                       />
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-gray-900">{{ notification.sender }}</p>
-                      <p class="text-sm text-gray-500">{{ notification.message }}</p>
+                      <p class="text-sm font-medium text-gray-900">
+                        用户 #{{ notification.userId }}
+                      </p>
+                      <p class="text-sm text-gray-500">{{ notification.content }}</p>
                       <p class="text-xs text-gray-400">{{ formatTime(notification.createdAt) }}</p>
                     </div>
-                    <div v-if="!notification.isRead" class="w-2 h-2 bg-blue-500 rounded-full"></div>
                   </div>
                 </div>
               </div>
@@ -189,27 +160,11 @@
             </div>
           </div>
 
-          <!-- 消息按钮 -->
-          <router-link
-            v-if="isAuthenticated"
-            to="/messages"
-            class="p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 transition-colors"
-          >
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
-          </router-link>
-
           <!-- 用户菜单 -->
           <div v-if="isAuthenticated" class="relative">
             <button
-              @click="showUserMenu = !showUserMenu"
               class="flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              @click="showUserMenu = !showUserMenu"
             >
               <img
                 :src="currentUser.avatar"
@@ -271,8 +226,8 @@
                 <div class="border-t border-gray-100"></div>
 
                 <button
-                  @click="logout"
                   class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  @click="logout"
                 >
                   <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -306,8 +261,8 @@
 
           <!-- 移动端菜单按钮 -->
           <button
-            @click="showMobileMenu = !showMobileMenu"
             class="md:hidden p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500"
+            @click="showMobileMenu = !showMobileMenu"
           >
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -389,11 +344,14 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useNotificationStore } from '@/stores/notification'
+import type { Notification } from '@/api/types/notification'
+import { wsService } from '@/utils/websocket'
 
 const router = useRouter()
+const notificationStore = useNotificationStore()
 
 // 响应式数据
-const searchQuery = ref('')
 const showNotifications = ref(false)
 const showUserMenu = ref(false)
 const showMobileMenu = ref(false)
@@ -406,51 +364,26 @@ const currentUser = reactive({
   email: 'liming@example.com',
 })
 
-// 通知数据
-const unreadNotifications = ref(3)
-const notifications = ref([
-  {
-    id: 1,
-    sender: '王芳',
-    avatar: 'https://via.placeholder.com/100',
-    message: '邀请您参与一个关于深度学习的合作项目',
-    createdAt: new Date(Date.now() - 1000 * 60 * 30),
-    isRead: false,
-  },
-  {
-    id: 2,
-    sender: '张伟',
-    avatar: 'https://via.placeholder.com/100',
-    message: '对您的论文发表了评论',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    isRead: false,
-  },
-  {
-    id: 3,
-    sender: '系统通知',
-    avatar: 'https://via.placeholder.com/100',
-    message: '您有新的文献推荐',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5),
-    isRead: true,
-  },
-])
-
-// 方法
-const handleSearch = () => {
-  if (searchQuery.value.trim()) {
-    // 实际项目中应该跳转到搜索页面或发送搜索请求
-    router.push(`/search?q=${encodeURIComponent(searchQuery.value)}`)
+const handleNotificationClick = async (notification: Notification) => {
+  if (!notification.isRead) {
+    await notificationStore.markAsRead(notification.id)
   }
-}
-
-const handleNotificationClick = (notification: any) => {
-  notification.isRead = true
-  unreadNotifications.value = Math.max(0, unreadNotifications.value - 1)
   showNotifications.value = false
 
-  // 根据通知类型跳转到相应页面
-  if (notification.sender !== '系统通知') {
-    router.push('/messages')
+  // 根据通知类型跳转
+  switch (notification.type) {
+    case 'message':
+      router.push(`/chat/${notification.userId}`)
+      break
+    case 'comment':
+      router.push('/timeline')
+      break
+    case 'collaboration':
+      router.push('/library')
+      break
+    case 'system':
+      // 系统通知不跳转
+      break
   }
 }
 
@@ -460,7 +393,8 @@ const logout = () => {
   router.push('/login')
 }
 
-const formatTime = (date: Date) => {
+const formatTime = (dateStr: string) => {
+  const date = new Date(dateStr)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const minutes = Math.floor(diff / (1000 * 60))
@@ -484,10 +418,16 @@ const handleClickOutside = (event: Event) => {
 }
 
 onMounted(() => {
+  // 初始化 WebSocket 连接
+  notificationStore.initializeWebSocket()
+  // 获取历史通知
+  notificationStore.fetchHistoryNotifications()
   document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
+  // 关闭 WebSocket 连接
+  wsService.disconnect()
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
