@@ -41,3 +41,36 @@ export const changeUserPassword = (data: UpdateUserPasswordRequest): Promise<unk
   //return request.post('/user/password', data)
   return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312647089', data)
 }
+
+// 获取用户详情
+export function getUserDetail(id: string | number) {
+  return request.get('/researcher/searchById', {
+    params: { id },
+  })
+}
+
+// 获取用户论文ID列表
+export function getUserPapers(id: string | number) {
+  return request.get('/publication/searchByUserId', {
+    params: { id },
+  })
+}
+
+// 关注
+export function follow(toBeFollowedId: string | number) {
+  return request.get('/researcher/follow', {
+    params: { toBeFollowedId },
+  })
+}
+
+// 取消关注
+export function unfollow(toBeCancelledId: string | number) {
+  return request.post('/researcher/cancelFollow', toBeCancelledId)
+}
+
+// 获取是否关注
+export function getIfFollow(id: string | number) {
+  return request.get('/researcher/ifFollow', {
+    params: { id },
+  })
+}

@@ -19,7 +19,7 @@ export interface User {
 
 export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null)
-  const isAuthenticated = ref(false)
+  const isAuthenticated = ref(true)
 
   const setUser = (userData: User) => {
     user.value = userData
