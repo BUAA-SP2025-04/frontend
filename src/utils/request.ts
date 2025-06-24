@@ -52,6 +52,7 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
+    console.log(response.data)
     const { code, status, success } = response.data || {}
     if (code === 200 || status === 200 || status === '200' || success) {
       return response.data

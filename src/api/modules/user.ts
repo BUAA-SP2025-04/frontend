@@ -40,14 +40,12 @@ export function getUserPapers(id: string | number) {
 
 // 关注
 export function follow(toBeFollowedId: string | number) {
-  return request.get('/researcher/follow', {
-    params: { toBeFollowedId },
-  })
+  return request.post('/researcher/follow', { params: { toBeFollowedId } })
 }
 
 // 取消关注
 export function unfollow(toBeCancelledId: string | number) {
-  return request.post('/researcher/cancelFollow', toBeCancelledId)
+  return request.post('/researcher/cancelFollow', { params: { toBeCancelledId } })
 }
 
 // 获取是否关注
