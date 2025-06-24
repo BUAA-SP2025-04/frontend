@@ -167,7 +167,7 @@
       <div class="bg-white rounded-lg shadow">
         <el-table
           v-loading="loading"
-          :data="filteredAchievements"
+          :data="filteredPublications"
           style="width: 100%"
           :default-sort="{ prop: 'year', order: 'descending' }"
         >
@@ -199,15 +199,15 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="readers" label="阅读数" width="100" sortable align="center">
+          <el-table-column prop="readerNum" label="阅读量" width="100" sortable align="center">
             <template #default="{ row }">
-              <div class="font-semibold text-green-600">{{ row.citations || 0 }}</div>
+              <div class="font-semibold text-green-600">{{ row.readNum || 0 }}</div>
             </template>
           </el-table-column>
 
-          <el-table-column prop="impact" label="点赞数" width="120" align="center">
+          <el-table-column prop="likeNum" label="点赞数" width="120" align="center">
             <template #default="{ row }">
-              <div v-if="row.impact" class="font-semibold text-blue-600">{{ row.impact }}</div>
+              <div v-if="row.impact" class="font-semibold text-blue-600">{{ row.likeNum }}</div>
               <div v-else class="text-gray-400">-</div>
             </template>
           </el-table-column>
@@ -222,7 +222,7 @@
 
           <el-table-column label="操作" width="150" align="center">
             <template #default="{ row }">
-              <el-button size="small" @click="editAchievement(row)">
+              <el-button size="small" @click="editPublication(row)">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
@@ -256,14 +256,14 @@
       >
         <el-form
           ref="formRef"
-          :model="currentAchievement"
+          :model="currentPublication"
           label-width="100px"
           class="space-y-4"
           :rules="rules"
         >
           <el-form-item label="类型" required>
             <el-select
-              v-model="currentAchievement.type"
+              v-model="currentPublication.type"
               placeholder="请选择类型"
               style="width: 100%"
             >
@@ -274,7 +274,7 @@
           </el-form-item>
 
           <el-form-item label="标题" prop="title" required>
-            <el-input v-model="currentAchievement.title" placeholder="请输入标题" />
+            <el-input v-model="currentPublication.title" placeholder="请输入标题" />
           </el-form-item>
 
           <el-form-item label="作者">
@@ -282,7 +282,7 @@
           </el-form-item>
 
           <el-form-item label="发表于">
-            <el-input v-model="currentAchievement.venue" placeholder="期刊/会议名称" />
+            <el-input v-model="currentPublication.venue" placeholder="期刊/会议名称" />
           </el-form-item>
 
           <el-form-item label="年份">
@@ -296,7 +296,7 @@
 
           <el-form-item label="摘要">
             <el-input
-              v-model="currentAchievement.abstract"
+              v-model="currentPublication.abstract"
               type="textarea"
               :rows="4"
               placeholder="请输入摘要"
@@ -304,17 +304,20 @@
           </el-form-item>
 
           <el-form-item label="关键词">
-            <el-input v-model="keywordsInput" placeholder="请输入关键词，用英文逗号分隔" />
+            <el-input
+              v-model="currentPublication.keywords"
+              placeholder="请输入关键词，用英文逗号分隔"
+            />
           </el-form-item>
 
           <el-form-item label="doi" prop="doi">
-            <el-input v-model="currentAchievement.doi" placeholder="数字对象标识符" />
+            <el-input v-model="currentPublication.doi" placeholder="数字对象标识符" />
           </el-form-item>
 
           <el-form-item label="pdfUrl" prop="pdfUrl">
             <div v-if="pdfInputType === 'url'" style="width: 100%">
               <el-input
-                v-model="currentAchievement.pdfUrl"
+                v-model="currentPublication.pdfUrl"
                 placeholder="论文链接"
                 style="width: 100%; height: 40px"
               />
@@ -333,7 +336,7 @@
               >
                 <el-button type="primary">选择PDF文件</el-button>
                 <span v-if="pdfFile" class="ml-4 text-green-600">{{ pdfFile.name }}</span>
-                <span v-else-if="currentAchievement.pdfUrl" class="ml-2 text-green-600"
+                <span v-else-if="currentPublication.pdfUrl" class="ml-2 text-green-600"
                   >已上传</span
                 >
               </el-upload>
@@ -348,7 +351,7 @@
 
           <el-form-item label="状态">
             <el-select
-              v-model="currentAchievement.status"
+              v-model="currentPublication.status"
               placeholder="请选择状态"
               style="width: 100%"
             >
@@ -374,12 +377,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import type { AchievementProfile } from '@/api/types/achievement'
-import { deleteAchievement, saveAchievement } from '@/api/modules/achievement'
+import type { Publication, PublicationProfile } from '@/api/types/publication'
+import { deletePublication, savePublication } from '@/api/modules/publication'
 import type { UploadFile } from 'element-plus'
 import { deleteFile, updateFile, uploadFile } from '@/api/modules/upload'
+import { useUserStore } from '@/stores/user'
+import { getPublicationsByUser } from '@/api/modules/publication'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -396,38 +401,9 @@ const stats = reactive({
   hIndex: 18,
 })
 
-const achievements = reactive<AchievementProfile[]>([
-  {
-    id: 1,
-    type: 'journal',
-    title: 'Deep Learning for Natural Language Processing: A Comprehensive Survey',
-    authors: ['李明', '王芳', '张伟'],
-    venue: 'Nature Machine Intelligence',
-    year: 2024,
-    status: 'published',
-    abstract: '本文对深度学习在自然语言处理领域的应用进行了全面综述...',
-    keywords: ['深度学习', '自然语言处理', '神经网络'],
-    doi: '10.1038/s42256-024-00123-4',
-    pdfUrl: 'https://example.com/paper1',
-    isPublic: true,
-  },
-  {
-    id: 2,
-    type: 'conference',
-    title: 'Attention Mechanisms in Computer Vision: Recent Advances',
-    authors: ['李明', '陈华'],
-    venue: 'CVPR 2023',
-    year: 2023,
-    status: 'published',
-    abstract: '本文介绍了注意力机制在计算机视觉中的最新进展...',
-    keywords: ['注意力机制', '计算机视觉', '深度学习'],
-    doi: '10.1109/CVPR2024.00123',
-    pdfUrl: 'https://example.com/paper2',
-    isPublic: true,
-  },
-])
+const publications = reactive<Publication[]>([])
 
-const emptyAchievement: AchievementProfile = {
+const emptyPublication: PublicationProfile = {
   type: 'journal',
   title: '',
   authors: [],
@@ -435,17 +411,16 @@ const emptyAchievement: AchievementProfile = {
   year: undefined,
   status: 'published',
   abstract: '',
-  keywords: [],
+  keywords: '',
   doi: '',
   pdfUrl: '',
   isPublic: true,
 }
-const currentAchievement = reactive<AchievementProfile>(
-  JSON.parse(JSON.stringify(emptyAchievement))
+const currentPublication = reactive<PublicationProfile>(
+  JSON.parse(JSON.stringify(emptyPublication))
 )
 
 const authorsInput = ref('')
-const keywordsInput = ref('')
 const yearInput = ref<Date | null>(null)
 const pdfInputType = ref<'url' | 'upload'>('url')
 const pdfFile = ref<File | null>(null)
@@ -461,10 +436,10 @@ const rules: FormRules = {
     {
       validator: (rule, value, callback) => {
         // 排除自身（编辑时）
-        const duplicate = achievements.some(
+        const duplicate = publications.some(
           item =>
             item.title.trim() === value.trim() &&
-            (!isEditing.value || item.id !== currentAchievement.id)
+            (!isEditing.value || item.id !== currentPublication.id)
         )
         if (duplicate) {
           callback(new Error('标题已存在，请勿重复'))
@@ -505,24 +480,24 @@ const rules: FormRules = {
   ],
 }
 
-const filteredAchievements = computed(() => {
-  let result = achievements as AchievementProfile[]
+const filteredPublications = computed(() => {
+  let result = publications as Publication[]
 
   if (searchQuery.value) {
     result = result.filter(
-      (item: AchievementProfile) =>
+      (item: Publication) =>
         item.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         item.authors.some((author: string) => author.includes(searchQuery.value)) ||
-        item.keywords.some((keyword: string) => keyword.includes(searchQuery.value))
+        item.keywords.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
 
   if (filterType.value) {
-    result = result.filter((item: AchievementProfile) => item.type === filterType.value)
+    result = result.filter((item: Publication) => item.type === filterType.value)
   }
 
   if (filterYear.value) {
-    result = result.filter((item: AchievementProfile) => item.year?.toString() === filterYear.value)
+    result = result.filter((item: Publication) => item.year?.toString() === filterYear.value)
   }
 
   return result
@@ -567,16 +542,15 @@ const getStatusLabel = (status: 'published' | 'accepted' | 'under-review' | 'dra
   return labels[status]
 }
 
-const editAchievement = (achievement: AchievementProfile) => {
+const editPublication = (publicationProfile: PublicationProfile) => {
   isEditing.value = true
-  Object.assign(currentAchievement, achievement)
-  authorsInput.value = achievement.authors.join(', ')
-  keywordsInput.value = achievement.keywords.join(', ')
-  yearInput.value = achievement.year ? new Date(achievement.year, 0) : null
+  Object.assign(currentPublication, publicationProfile)
+  authorsInput.value = publicationProfile.authors.join(', ')
+  yearInput.value = publicationProfile.year ? new Date(publicationProfile.year, 0) : null
 
   // 根据pdfUrl判断类型
-  if (achievement.pdfUrl && achievement.pdfUrl.trim()) {
-    if (/^https?:\/\//i.test(achievement.pdfUrl.trim())) {
+  if (publicationProfile.pdfUrl && publicationProfile.pdfUrl.trim()) {
+    if (/^https?:\/\//i.test(publicationProfile.pdfUrl.trim())) {
       pdfInputType.value = 'url'
     } else {
       pdfInputType.value = 'upload'
@@ -591,8 +565,8 @@ const editAchievement = (achievement: AchievementProfile) => {
 // 监听pdfInputType变化
 watch(pdfInputType, (newType, oldType) => {
   if (oldType === 'upload' && newType === 'url') {
-    oldFilePath.value = currentAchievement.pdfUrl
-    currentAchievement.pdfUrl = ''
+    oldFilePath.value = currentPublication.pdfUrl
+    currentPublication.pdfUrl = ''
   }
 })
 
@@ -616,13 +590,13 @@ const uploadPdfFile = async (): Promise<string> => {
 
   if (pdfInputType.value === 'upload' && !oldFilePath.value) {
     // upload类型且无旧文件，上传新文件
-    if (!pdfFile.value) return currentAchievement.pdfUrl
+    if (!pdfFile.value) return currentPublication.pdfUrl
     const formData = new FormData()
     formData.append('file', pdfFile.value)
     try {
-      const response = await uploadFile('/api/application/uploadFile', formData)
-      if (response.data?.url) {
-        return response.data.url
+      const res = await uploadFile('/api/application/uploadFile', formData)
+      if (res.data?.url) {
+        return res.data.url
       }
       return ''
     } catch (err) {
@@ -663,36 +637,35 @@ const handleSave = () => {
       // 需要默认值的字段
       const defaultFields = {
         authors: authorsInput.value,
-        keywords: keywordsInput.value,
         year: yearInput.value,
       }
       // 统一处理默认值
       const payload = {
-        ...currentAchievement,
+        ...currentPublication,
         authors:
           defaultFields.authors && defaultFields.authors.trim()
             ? defaultFields.authors
             : '暂无信息',
         keywords:
-          defaultFields.keywords && defaultFields.keywords.trim()
-            ? defaultFields.keywords
+          currentPublication.keywords && currentPublication.keywords.trim()
+            ? currentPublication.keywords
             : '暂无信息',
         venue:
-          currentAchievement.venue && currentAchievement.venue.trim()
-            ? currentAchievement.venue
+          currentPublication.venue && currentPublication.venue.trim()
+            ? currentPublication.venue
             : '暂无信息',
         year: defaultFields.year?.getFullYear(),
         abstract:
-          currentAchievement.abstract && currentAchievement.abstract.trim()
-            ? currentAchievement.abstract
+          currentPublication.abstract && currentPublication.abstract.trim()
+            ? currentPublication.abstract
             : '暂无信息',
         doi:
-          currentAchievement.doi && currentAchievement.doi.trim()
-            ? currentAchievement.doi
+          currentPublication.doi && currentPublication.doi.trim()
+            ? currentPublication.doi
             : '暂无信息',
         pdfUrl:
-          currentAchievement.pdfUrl && currentAchievement.pdfUrl.trim()
-            ? currentAchievement.pdfUrl
+          currentPublication.pdfUrl && currentPublication.pdfUrl.trim()
+            ? currentPublication.pdfUrl
             : '暂无信息',
       }
 
@@ -709,8 +682,8 @@ const handleSave = () => {
           payload.pdfUrl = url
           pdfFile.value = null // 上传后清空
         }
-        let urlApi = isEditing.value ? '/api/achievement/update' : '/api/achievement/add'
-        return saveAchievement(urlApi, payload)
+        let urlApi = isEditing.value ? '/api/publication/update' : '/api/publication/add'
+        return savePublication(urlApi, payload)
       })
     })
     .then(() => {
@@ -735,7 +708,7 @@ const handleDelete = (id: number) => {
     type: 'warning',
   })
     .then(() => {
-      deleteAchievement(id)
+      deletePublication(id)
     })
     .then(() => {
       ElMessage.success('删除成功')
@@ -746,9 +719,8 @@ const handleDelete = (id: number) => {
 }
 
 const resetForm = () => {
-  Object.assign(currentAchievement, JSON.parse(JSON.stringify(emptyAchievement)))
+  Object.assign(currentPublication, JSON.parse(JSON.stringify(emptyPublication)))
   authorsInput.value = ''
-  keywordsInput.value = ''
   yearInput.value = null
   pdfInputType.value = 'url'
   pdfFile.value = null
@@ -760,4 +732,22 @@ const closeDialog = () => {
   showAddDialog.value = false
   if (isEditing.value) resetForm()
 }
+
+const userStore = useUserStore()
+
+onMounted(async () => {
+  if (userStore.user?.id) {
+    loading.value = true
+    try {
+      const res = await getPublicationsByUser(userStore.user.id)
+      if (Array.isArray(res.data)) {
+        publications.splice(0, publications.length, ...res.data)
+      }
+    } catch (e) {
+      ElMessage.error('获取论文列表失败')
+    } finally {
+      loading.value = false
+    }
+  }
+})
 </script>

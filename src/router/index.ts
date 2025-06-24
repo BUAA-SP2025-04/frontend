@@ -77,7 +77,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/achievements',
     name: 'Achievements',
-    component: () => import('@/views/research/Achievements.vue'),
+    component: () => import('@/views/research/Publications.vue'),
     meta: {
       title: '科研成果',
       requiresAuth: true,
