@@ -254,7 +254,13 @@
         width="60%"
         destroy-on-close
       >
-        <el-form :model="currentAchievement" label-width="100px" class="space-y-4" :rules="rules">
+        <el-form
+          ref="formRef"
+          :model="currentAchievement"
+          label-width="100px"
+          class="space-y-4"
+          :rules="rules"
+        >
           <el-form-item label="类型" required>
             <el-select
               v-model="currentAchievement.type"
@@ -267,7 +273,7 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="标题" required>
+          <el-form-item label="标题" prop="title" required>
             <el-input v-model="currentAchievement.title" placeholder="请输入标题" />
           </el-form-item>
 
@@ -281,7 +287,7 @@
 
           <el-form-item label="年份">
             <el-date-picker
-              v-model="currentAchievement.year"
+              v-model="yearInput"
               type="year"
               placeholder="选择年份"
               style="width: 100%"
@@ -306,14 +312,14 @@
           </el-form-item>
 
           <el-form-item label="pdfUrl" prop="pdfUrl">
-            <el-radio-group v-model="pdfInputType" size="small" style="margin-bottom: 8px">
-              <el-radio-button label="url">链接</el-radio-button>
-              <el-radio-button label="upload">上传文件</el-radio-button>
-            </el-radio-group>
-            <div v-if="pdfInputType === 'url'">
-              <el-input v-model="currentAchievement.pdfUrl" placeholder="论文链接" />
+            <div v-if="pdfInputType === 'url'" style="width: 100%">
+              <el-input
+                v-model="currentAchievement.pdfUrl"
+                placeholder="论文链接"
+                style="width: 100%; height: 40px"
+              />
             </div>
-            <div v-else>
+            <div v-else style="width: 100%">
               <el-upload
                 class="upload-demo"
                 action=""
@@ -322,13 +328,21 @@
                 :on-change="handlePdfFileChange"
                 :limit="1"
                 :on-exceed="handlePdfExceed"
+                accept="application/pdf"
+                style="width: 100%; height: 40px; display: flex; align-items: center"
               >
                 <el-button type="primary">选择PDF文件</el-button>
-                <span v-if="pdfFile" class="ml-2 text-green-600">{{ pdfFile.name }}</span>
+                <span v-if="pdfFile" class="ml-4 text-green-600">{{ pdfFile.name }}</span>
                 <span v-else-if="currentAchievement.pdfUrl" class="ml-2 text-green-600"
                   >已上传</span
                 >
               </el-upload>
+            </div>
+            <div style="margin-top: 8px">
+              <el-radio-group v-model="pdfInputType" size="small">
+                <el-radio-button label="url">链接</el-radio-button>
+                <el-radio-button label="upload">上传文件</el-radio-button>
+              </el-radio-group>
             </div>
           </el-form-item>
 
@@ -348,7 +362,7 @@
 
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="showAddDialog = false">取消</el-button>
+            <el-button @click="closeDialog">取消</el-button>
             <el-button type="primary" :loading="saving" @click="handleSave">
               {{ isEditing ? '更新' : '保存' }}
             </el-button>
@@ -402,8 +416,8 @@ const achievements = reactive<AchievementProfile[]>([
     type: 'conference',
     title: 'Attention Mechanisms in Computer Vision: Recent Advances',
     authors: ['李明', '陈华'],
-    venue: 'CVPR 2024',
-    year: 2024,
+    venue: 'CVPR 2023',
+    year: 2023,
     status: 'published',
     abstract: '本文介绍了注意力机制在计算机视觉中的最新进展...',
     keywords: ['注意力机制', '计算机视觉', '深度学习'],
@@ -432,6 +446,7 @@ const currentAchievement = reactive<AchievementProfile>(
 
 const authorsInput = ref('')
 const keywordsInput = ref('')
+const yearInput = ref<Date | null>(null)
 const pdfInputType = ref<'url' | 'upload'>('url')
 const pdfFile = ref<File | null>(null)
 
@@ -440,15 +455,28 @@ const formRef = ref<FormInstance>()
 const doiPattern = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i
 const urlPattern = /^(https?:\/\/)[^\s/$.?#].\S*$/i
 const rules: FormRules = {
+  title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
   doi: [
-    { required: true, message: '请输入 DOI', trigger: 'blur' },
-    { pattern: doiPattern, message: 'DOI 格式不正确', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        if (value && !doiPattern.test(value)) {
+          callback(new Error('DOI 格式不正确'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur',
+    },
   ],
   pdfUrl: [
     {
-      validator: (rule, value, callback) => {
-        if (pdfInputType.value === 'url' && value && !urlPattern.test(value)) {
-          callback(new Error('URL 格式不正确'))
+      validator: function (rule, value, callback) {
+        if (pdfInputType.value === 'url') {
+          if (value && !urlPattern.test(value)) {
+            callback(new Error('URL 格式不正确'))
+          } else {
+            callback()
+          }
         } else {
           callback()
         }
@@ -525,10 +553,16 @@ const editAchievement = (achievement: AchievementProfile) => {
   Object.assign(currentAchievement, achievement)
   authorsInput.value = achievement.authors.join(', ')
   keywordsInput.value = achievement.keywords.join(', ')
+  yearInput.value = achievement.year ? new Date(achievement.year, 0) : null
   showAddDialog.value = true
 }
 
 const handlePdfFileChange = (file: UploadFile) => {
+  if (file.raw && file.raw.type !== 'application/pdf') {
+    ElMessage.error('只能上传 PDF 文件')
+    pdfFile.value = null
+    return
+  }
   pdfFile.value = file.raw ?? null
 }
 const handlePdfExceed = (files: File[]) => {
@@ -538,78 +572,89 @@ const handlePdfExceed = (files: File[]) => {
 }
 
 //上传PDF
-const uploadPdfFile = async () => {
+const uploadPdfFile = async (): Promise<string> => {
   if (!pdfFile.value) return ''
   const formData = new FormData()
   formData.append('file', pdfFile.value)
-  upload('/api/upload/pdf', formData)
-    .then(response => {
-      if (response.data && response.data.url) {
-        return response.data.url
-      } else {
-        throw new Error('上传失败，请重试')
-      }
-    })
-    .catch(err => {
-      ElMessage.error(err)
-      return ''
-    })
+  try {
+    const response = await upload('/api/upload/pdf', formData)
+    if (response.data && response.data.url) {
+      return response.data.url
+    }
+    return ''
+  } catch (err) {
+    return ''
+  }
 }
 
-const handleSave = async () => {
-  await formRef.value?.validate()
-  saving.value = true
-  // 需要默认值的字段
-  const defaultFields = {
-    authors: authorsInput.value,
-    keywords: keywordsInput.value,
-  }
-
-  // 统一处理默认值
-  const payload = {
-    ...currentAchievement,
-    authors:
-      defaultFields.authors && defaultFields.authors.trim() ? defaultFields.authors : '暂无信息',
-    keywords:
-      defaultFields.keywords && defaultFields.keywords.trim() ? defaultFields.keywords : '暂无信息',
-    venue:
-      currentAchievement.venue && currentAchievement.venue.trim()
-        ? currentAchievement.venue
-        : '暂无信息',
-    abstract:
-      currentAchievement.abstract && currentAchievement.abstract.trim()
-        ? currentAchievement.abstract
-        : '暂无信息',
-    doi:
-      currentAchievement.doi && currentAchievement.doi.trim() ? currentAchievement.doi : '暂无信息',
-    pdfUrl:
-      currentAchievement.pdfUrl && currentAchievement.pdfUrl.trim()
-        ? currentAchievement.pdfUrl
-        : '暂无信息',
-  }
-
-  if (pdfInputType.value === 'upload') {
-    if (pdfFile.value) {
-      const url = await uploadPdfFile()
-      if (!url) {
-        saving.value = false
-        return
+const handleSave = () => {
+  if (!formRef.value) return
+  formRef.value
+    .validate()
+    .then(() => {
+      saving.value = true
+      // 需要默认值的字段
+      const defaultFields = {
+        authors: authorsInput.value,
+        keywords: keywordsInput.value,
+        year: yearInput.value,
       }
-      payload.pdfUrl = url
-    }
-  }
+      // 统一处理默认值
+      const payload = {
+        ...currentAchievement,
+        authors:
+          defaultFields.authors && defaultFields.authors.trim()
+            ? defaultFields.authors
+            : '暂无信息',
+        keywords:
+          defaultFields.keywords && defaultFields.keywords.trim()
+            ? defaultFields.keywords
+            : '暂无信息',
+        venue:
+          currentAchievement.venue && currentAchievement.venue.trim()
+            ? currentAchievement.venue
+            : '暂无信息',
+        year: defaultFields.year?.getFullYear(),
+        abstract:
+          currentAchievement.abstract && currentAchievement.abstract.trim()
+            ? currentAchievement.abstract
+            : '暂无信息',
+        doi:
+          currentAchievement.doi && currentAchievement.doi.trim()
+            ? currentAchievement.doi
+            : '暂无信息',
+        pdfUrl:
+          currentAchievement.pdfUrl && currentAchievement.pdfUrl.trim()
+            ? currentAchievement.pdfUrl
+            : '暂无信息',
+      }
 
-  let url: string
-  if (isEditing.value) url = '/api/achievement/update'
-  else url = '/api/achievement/add'
-  saveAchievement(url, payload)
+      //PDF上传处理
+      let pdfPromise = Promise.resolve('')
+      if (pdfInputType.value === 'upload' && pdfFile.value) {
+        pdfPromise = uploadPdfFile()
+      }
+      return pdfPromise.then(url => {
+        if (pdfInputType.value === 'upload' && pdfFile.value) {
+          if (!url) {
+            throw new Error('PDF上传失败')
+          }
+          payload.pdfUrl = url
+          pdfFile.value = null // 上传后清空
+        }
+        let urlApi = isEditing.value ? '/api/achievement/update' : '/api/achievement/add'
+        return saveAchievement(urlApi, payload)
+      })
+    })
     .then(() => {
       if (isEditing.value) ElMessage.success('更新成功')
       else ElMessage.success('添加成功')
       resetForm()
     })
     .catch(err => {
-      ElMessage.error(err)
+      if (err && err.message) {
+        ElMessage.error(err.message)
+      }
     })
     .finally(() => {
       saving.value = false
@@ -637,8 +682,14 @@ const resetForm = () => {
   Object.assign(currentAchievement, JSON.parse(JSON.stringify(emptyAchievement)))
   authorsInput.value = ''
   keywordsInput.value = ''
+  yearInput.value = null
   pdfInputType.value = 'url'
   pdfFile.value = null
   isEditing.value = false
+}
+
+const closeDialog = () => {
+  showAddDialog.value = false
+  if (isEditing.value) resetForm()
 }
 </script>
