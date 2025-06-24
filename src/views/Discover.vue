@@ -501,8 +501,8 @@
               <div
                 class="px-6 py-4 bg-gradient-to-r from-gray-50 to-indigo-50 border-t border-gray-100"
               >
-                <div class="grid grid-cols-3 gap-4 text-center">
-                  <div class="group">
+                <div class="flex items-center justify-center">
+                  <div class="group metric-block">
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors"
                     >
@@ -510,7 +510,8 @@
                     </div>
                     <div class="text-xs text-gray-500">粉丝数</div>
                   </div>
-                  <div class="group border-l border-r border-gray-200">
+                  <div class="divider-vertical"></div>
+                  <div class="group metric-block">
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors"
                     >
@@ -518,7 +519,8 @@
                     </div>
                     <div class="text-xs text-gray-500">发表数</div>
                   </div>
-                  <div class="group">
+                  <div class="divider-vertical"></div>
+                  <div class="group metric-block">
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors"
                     >
@@ -1027,9 +1029,7 @@ const validateFollowersRange = () => {
   transition: all 0.2s ease-in-out;
 }
 .filter-collapse :deep(.el-collapse-item__header:hover) {
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.1),
-    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   border-color: #e5e7eb;
 }
 .filter-collapse :deep(.el-collapse-item__header.is-active) {
@@ -1149,9 +1149,7 @@ const validateFollowersRange = () => {
 }
 .custom-select .el-input__wrapper:hover {
   border-color: #a5b4fc;
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.1),
-    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 .custom-select .el-input__inner {
   font-weight: 500;
@@ -1159,6 +1157,26 @@ const validateFollowersRange = () => {
 }
 .custom-select .el-select__prefix {
   color: #9ca3af;
+}
+
+.divider-vertical {
+  width: 1px;
+  height: 32px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}
+.metric-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  padding: 0 12px;
+}
+@media (max-width: 768px) {
+  .divider-vertical {
+    display: none;
+  }
 }
 </style>
 
