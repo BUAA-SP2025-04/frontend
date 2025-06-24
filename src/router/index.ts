@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { useGlobalStore } from '@/stores/global'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -64,6 +66,15 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/follow',
+    name: 'Follow',
+    component: () => import('@/views/auth/Follow.vue'),
+    meta: {
+      title: '我的关注',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/achievements',
     name: 'Achievements',
     component: () => import('@/views/research/Achievements.vue'),
@@ -121,6 +132,26 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore()
+  const globalStore = useGlobalStore()
+  const token = localStorage.getItem('token')
+  const whiteList = ['/', '/discover', '/login', '/register']
+
+  if (whiteList.includes(to.path)) {
+    next()
+    return
+  }
+
+  if (token && userStore.user && userStore.user.id) {
+    next()
+  } else {
+    // 弹窗提示
+    globalStore.showAuthDialog = true
+    next(false) // 阻止导航
+  }
 })
 
 router.beforeEach((to, from, next) => {

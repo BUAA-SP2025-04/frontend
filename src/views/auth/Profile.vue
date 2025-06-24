@@ -29,12 +29,12 @@
             <div class="text-center">
               <div class="relative inline-block">
                 <img
-                  :src="userInfo.avatar"
+                  :src="userInfo.imgUrl || `http://api.btstu.cn/sjtx/api.php?lx=${'c1'}`"
                   alt="头像"
                   class="w-32 h-32 rounded-full object-cover mx-auto shadow-lg"
                 />
-                <button
-                  class="absolute bottom-0 right-0 bg-indigo-600 text-white rounded-full p-2 hover:bg-indigo-700 transition duration-150 shadow-lg"
+                <label
+                  class="absolute bottom-0 right-0 bg-indigo-600 text-white rounded-full p-2 hover:bg-indigo-700 transition duration-150 shadow-lg cursor-pointer"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -50,7 +50,14 @@
                       d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                     />
                   </svg>
-                </button>
+                  <input
+                    ref="avatarInput"
+                    type="file"
+                    accept="image/*"
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    @change="handleAvatarChange"
+                  />
+                </label>
               </div>
               <h2 class="text-xl font-bold text-gray-900 mt-4">{{ userInfo.name }}</h2>
               <p class="text-gray-600">{{ userInfo.title }}</p>
@@ -73,16 +80,16 @@
               <!-- 统计信息卡片 -->
               <div class="grid grid-cols-3 gap-4 mt-6">
                 <div class="text-center">
-                  <div class="text-2xl font-bold text-indigo-600">{{ userInfo.followers }}</div>
+                  <div class="text-2xl font-bold text-indigo-600">{{ userInfo.followerNum }}</div>
                   <div class="text-xs text-gray-500">关注者</div>
                 </div>
                 <div class="text-center">
-                  <div class="text-2xl font-bold text-green-600">{{ userInfo.following }}</div>
-                  <div class="text-xs text-gray-500">关注中</div>
+                  <div class="text-2xl font-bold text-green-600">{{ userInfo.publishNum }}</div>
+                  <div class="text-xs text-gray-500">发布文章</div>
                 </div>
                 <div class="text-center">
-                  <div class="text-2xl font-bold text-purple-600">{{ userInfo.hIndex }}</div>
-                  <div class="text-xs text-gray-500">H指数</div>
+                  <div class="text-2xl font-bold text-purple-600">{{ userInfo.subjectNum }}</div>
+                  <div class="text-xs text-gray-500">研究主题</div>
                 </div>
               </div>
             </div>
@@ -116,11 +123,20 @@
             <div v-if="activeTab === 'basic'" class="p-6">
               <el-form :model="userInfo" label-width="100px" class="space-y-6">
                 <el-form-item label="姓名">
-                  <el-input v-model="userInfo.name" placeholder="请输入姓名" />
+                  <el-input v-model="userInfo.name" placeholder="请输入姓名" disabled />
                 </el-form-item>
 
                 <el-form-item label="邮箱">
-                  <el-input v-model="userInfo.email" type="email" placeholder="请输入邮箱" />
+                  <el-input
+                    v-model="userInfo.email"
+                    type="email"
+                    placeholder="请输入邮箱"
+                    disabled
+                  />
+                </el-form-item>
+
+                <el-form-item label="性别">
+                  <el-input v-model="userInfo.gender" placeholder="请输入性别" disabled />
                 </el-form-item>
 
                 <el-form-item label="职位">
@@ -128,7 +144,7 @@
                 </el-form-item>
 
                 <el-form-item label="机构">
-                  <el-input v-model="userInfo.institution" placeholder="请输入所属机构" />
+                  <el-input v-model="userInfo.institution" placeholder="请输入所属机构" disabled />
                 </el-form-item>
 
                 <el-form-item label="个人简介">
@@ -142,18 +158,18 @@
 
                 <el-form-item label="研究领域">
                   <el-select
-                    v-model="userInfo.researchFields"
-                    multiple
+                    v-model="researchAreaArray"
                     placeholder="请选择研究领域"
                     class="w-full"
+                    multiple
                   >
-                    <el-option label="计算机科学" value="computer-science" />
-                    <el-option label="人工智能" value="ai" />
-                    <el-option label="机器学习" value="ml" />
-                    <el-option label="数据科学" value="data-science" />
-                    <el-option label="生物信息学" value="bioinformatics" />
-                    <el-option label="物理学" value="physics" />
-                    <el-option label="化学" value="chemistry" />
+                    <el-option label="计算机科学" value="计算机科学" />
+                    <el-option label="人工智能" value="人工智能" />
+                    <el-option label="机器学习" value="机器学习" />
+                    <el-option label="数据科学" value="数据科学" />
+                    <el-option label="生物信息学" value="生物信息学" />
+                    <el-option label="物理学" value="物理学" />
+                    <el-option label="化学" value="化学" />
                   </el-select>
                 </el-form-item>
 
@@ -206,7 +222,7 @@
                       <p>密码安全提示：</p>
                       <ul class="list-disc list-inside mt-1">
                         <li>密码长度至少8位</li>
-                        <li>包含字母、数字和特殊字符</li>
+                        <li>包含字母、数字</li>
                         <li>定期更换密码</li>
                       </ul>
                     </div>
@@ -281,8 +297,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, h } from 'vue'
+import { ref, reactive, h, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { updateUserProfile, uploadUserImg, changeUserPassword } from '@/api/modules/user'
+import { useUserStore } from '@/stores/user'
 
 // 图标组件
 const UserIcon = () =>
@@ -345,6 +363,8 @@ const PrivacyIcon = () =>
 const activeTab = ref('basic')
 const saving = ref(false)
 
+const userStore = useUserStore()
+
 const tabs = [
   { id: 'basic', name: '基本信息', icon: UserIcon },
   { id: 'security', name: '账户安全', icon: SecurityIcon },
@@ -352,16 +372,18 @@ const tabs = [
 ]
 
 const userInfo = reactive({
-  name: '李明',
-  email: 'liming@example.com',
-  title: '教授',
-  institution: '清华大学计算机科学与技术系',
-  bio: '专注于机器学习和人工智能研究，在深度学习领域有重要贡献。',
-  researchFields: ['computer-science', 'ai', 'ml'],
-  avatar: 'https://via.placeholder.com/200',
-  followers: 1250,
-  following: 487,
-  hIndex: 45,
+  id: '',
+  name: '',
+  email: '',
+  gender: '',
+  title: '',
+  institution: '',
+  bio: '',
+  researchArea: '',
+  imgUrl: '',
+  followerNum: '',
+  publishNum: '',
+  subjectNum: '',
 })
 
 const passwordForm = reactive({
@@ -377,11 +399,45 @@ const privacySettings = reactive({
   emailNotifications: false,
 })
 
+const avatarInput = ref<HTMLInputElement | null>(null)
+
+const researchAreaArray = computed({
+  get: () => (userInfo.researchArea ? userInfo.researchArea.split(',') : []),
+  set: (val: string[]) => {
+    userInfo.researchArea = val.join(',')
+  },
+})
+
+// 初始化用户信息
+const initUserInfo = () => {
+  if (userStore.user) {
+    userInfo.id = String(userStore.user.id)
+    userInfo.name = userStore.user.name || ''
+    userInfo.email = userStore.user.email || ''
+    userInfo.gender = userStore.user.gender || ''
+    userInfo.title = userStore.user.title || ''
+    userInfo.institution = userStore.user.institution || ''
+    userInfo.imgUrl = userStore.user.imgUrl || ''
+    userInfo.bio = userStore.user.bio || ''
+    userInfo.researchArea = userStore.user.researchArea || ''
+    userInfo.followerNum = userStore.user.followerNum || '0'
+    userInfo.publishNum = userStore.user.publishNum || '0'
+    userInfo.subjectNum = userStore.user.subjectNum || '0'
+  }
+}
+
+onMounted(() => {
+  initUserInfo() // 先初始化显示当前用户信息
+})
+
 const saveProfile = async () => {
   saving.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await updateUserProfile({
+      bio: userInfo.bio,
+      researchArea: userInfo.researchArea,
+      title: userInfo.title,
+    })
     ElMessage.success('个人资料保存成功')
   } catch (error) {
     ElMessage.error('保存失败，请重试')
@@ -396,14 +452,28 @@ const resetForm = () => {
 }
 
 const changePassword = async () => {
+  if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+    ElMessage.error('请填写所有密码字段')
+    return
+  }
+  if (passwordForm.newPassword.length < 8) {
+    ElMessage.error('新密码长度至少8位')
+    return
+  }
+  if (!/(?=.*[A-Za-z])(?=.*\d)/.test(passwordForm.newPassword)) {
+    ElMessage.error('新密码必须包含字母和数字')
+    return
+  }
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    ElMessage.error('两次输入的密码不一致')
+    ElMessage.error('两次输入的新密码不一致')
     return
   }
 
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await changeUserPassword({
+      originPassword: passwordForm.currentPassword,
+      newPassword: passwordForm.newPassword,
+    })
     ElMessage.success('密码修改成功')
     Object.assign(passwordForm, {
       currentPassword: '',
@@ -422,6 +492,21 @@ const savePrivacySettings = async () => {
     ElMessage.success('隐私设置保存成功')
   } catch (error) {
     ElMessage.error('保存失败，请重试')
+  }
+}
+
+const handleAvatarChange = async (e: Event) => {
+  const files = (e.target as HTMLInputElement).files
+  if (!files || files.length === 0) return
+  const file = files[0]
+  const formData = new FormData()
+  formData.append('file', file)
+  try {
+    const res = await uploadUserImg(formData)
+    userInfo.imgUrl = res.imgUrl
+    ElMessage.success('头像上传成功')
+  } catch (error) {
+    ElMessage.error('头像上传失败')
   }
 }
 </script>
