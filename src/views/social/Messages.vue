@@ -42,7 +42,11 @@
                   <component :is="category.icon" class="w-5 h-5 mr-3" />
                   <span class="font-medium">{{ category.name }}</span>
                 </div>
-                <span v-if="category.unreadCount > 0"
+                <span v-if="category.unreadCount > 0 && (
+    (category.id === 'chat' && messageSettings.newMessage) ||
+    (category.id === 'system' && messageSettings.systemNotice) ||
+    (category.id === 'activity' && messageSettings.followActivity)
+  )"
                   class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
                   {{ category.unreadCount > 99 ? '99+' : category.unreadCount }}
                 </span>
