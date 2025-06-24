@@ -46,10 +46,12 @@
                 placeholder="搜索动态内容..."
                 prefix-icon="Search"
                 clearable
+                @clear="handleSearch"
+                @keyup.enter="handleSearch"
               />
             </div>
 
-            <el-select v-model="selectedCategory" placeholder="动态类型" style="width: 150px">
+            <el-select v-model="selectedCategory" placeholder="动态类型" style="width: 150px" @change="handleFilterChange">
               <el-option label="全部" value="all" />
               <el-option label="论文发表" value="paper" />
               <el-option label="项目进展" value="project" />
@@ -58,7 +60,7 @@
               <el-option label="合作邀请" value="collaboration" />
             </el-select>
 
-            <el-select v-model="sortBy" style="width: 120px">
+            <el-select v-model="sortBy" style="width: 120px" @change="handleFilterChange">
               <el-option label="最新" value="latest" />
               <el-option label="最热" value="hot" />
               <el-option label="最多评论" value="comments" />
@@ -67,10 +69,15 @@
         </div>
       </div>
 
+      <!-- 加载状态 -->
+      <div v-if="initialLoading" class="text-center py-12">
+        <el-loading text="加载中..." />
+      </div>
+
       <!-- 动态列表 -->
-      <div class="space-y-6">
+      <div v-else class="space-y-6">
         <div
-          v-for="post in filteredPosts"
+          v-for="post in posts"
           :key="post.id"
           class="bg-white rounded-lg shadow hover:shadow-md transition-shadow"
         >
@@ -99,7 +106,7 @@
 
                   <div class="flex items-center space-x-2">
                     <span class="text-sm text-gray-500">{{ formatTime(post.createdAt) }}</span>
-                    <el-dropdown trigger="click" @command="handlePostAction">
+                    <el-dropdown trigger="click" @command="(command) => handlePostAction(command, post)">
                       <button class="p-1 hover:bg-gray-100 rounded-full transition-colors">
                         <svg
                           class="w-4 h-4 text-gray-400"
@@ -117,11 +124,9 @@
                       </button>
                       <template #dropdown>
                         <el-dropdown-menu>
-                          <el-dropdown-item :command="`save-${post.id}`">保存动态</el-dropdown-item>
-                          <el-dropdown-item :command="`share-${post.id}`">分享</el-dropdown-item>
-                          <el-dropdown-item :command="`report-${post.id}`" divided
-                            >举报</el-dropdown-item
-                          >
+                          <el-dropdown-item command="save">保存动态</el-dropdown-item>
+                          <el-dropdown-item command="share">分享</el-dropdown-item>
+                          <el-dropdown-item command="report" divided>举报</el-dropdown-item>
                         </el-dropdown-menu>
                       </template>
                     </el-dropdown>
@@ -171,19 +176,12 @@
             <div v-if="post.attachments && post.attachments.length > 0" class="mb-4">
               <!-- 论文附件 -->
               <div
-                v-if="
-                  post.type === 'paper' &&
-                  post.attachments &&
-                  post.attachments.length > 0 &&
-                  isPaperAttachment(post.attachments[0])
-                "
+                v-if="post.type === 'paper' && post.attachments && post.attachments.length > 0 && isPaperAttachment(post.attachments[0])"
                 class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                 @click="openPaper(post.attachments[0])"
               >
                 <div class="flex items-start space-x-4">
-                  <div
-                    class="w-16 h-20 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0"
-                  >
+                  <div class="w-16 h-20 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fill-rule="evenodd"
@@ -356,8 +354,8 @@
             <div class="p-6 border-b border-gray-100">
               <div class="flex space-x-3">
                 <img
-                  :src="currentUser.avatar"
-                  :alt="currentUser.name"
+                  :src="currentUser?.avatar"
+                  :alt="currentUser?.name"
                   class="w-8 h-8 rounded-full object-cover"
                 />
                 <div class="flex-1">
@@ -373,6 +371,7 @@
                       size="small"
                       type="primary"
                       :disabled="!post.newComment?.trim()"
+                      :loading="post.commenting"
                       @click="submitComment(post)"
                     >
                       发表评论
@@ -426,6 +425,17 @@
                 </div>
               </div>
             </div>
+
+            <!-- 加载更多评论 -->
+            <div v-if="post.hasMoreComments" class="p-4 text-center border-t border-gray-100">
+              <el-button
+                size="small"
+                :loading="post.loadingComments"
+                @click="loadMoreComments(post)"
+              >
+                加载更多评论
+              </el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -435,6 +445,12 @@
         <el-button @click="loadMore" :loading="loading">
           {{ loading ? '加载中...' : '加载更多' }}
         </el-button>
+      </div>
+
+      <!-- 空状态 -->
+      <div v-if="!initialLoading && posts.length === 0" class="text-center py-12">
+        <div class="text-gray-400 text-lg mb-4">暂无动态</div>
+        <el-button type="primary" @click="showPublishDialog = true">发布第一条动态</el-button>
       </div>
 
       <!-- 发布动态对话框 -->
@@ -451,75 +467,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import PublishPostForm from '@/components/PublishPostForm.vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { socialAPI } from '@/api/modules/social'
+import type {
+  Post,
+  Comment,
+  User,
+  PaperAttachment,
+  GetPostsParams,
+  CreateCommentParams
+} from '@/api/types/social'
+// import PublishPostForm from '@/components/PublishPostForm.vue'
 
 const router = useRouter()
-
-// 定义类型接口
-interface User {
-  id: number
-  name: string
-  avatar: string
-  institution?: string
-}
-
-interface PaperAttachment {
-  type: 'paper'
-  title: string
-  journal: string
-  year: number
-  abstract: string
-  citations: number
-  downloads: number
-  url: string
-}
-
-interface ImageAttachment {
-  type: 'image'
-  name: string
-  url: string
-}
-
-interface LinkAttachment {
-  type: 'link'
-  title: string
-  description: string
-  url: string
-}
-
-type Attachment = PaperAttachment | ImageAttachment | LinkAttachment
-
-interface Comment {
-  id: number
-  author: User
-  content: string
-  createdAt: Date
-  likesCount: number
-  isLiked: boolean
-}
-
-interface Post {
-  id: number
-  type: 'paper' | 'project' | 'conference' | 'opinion' | 'collaboration'
-  title?: string
-  content: string
-  author: User
-  attachments?: Attachment[]
-  tags?: string[]
-  createdAt: Date
-  likesCount: number
-  commentsCount: number
-  sharesCount: number
-  viewsCount: number
-  isLiked: boolean
-  showComments: boolean
-  showFullContent: boolean
-  newComment: string
-  comments: Comment[]
-}
 
 // 响应式数据
 const searchQuery = ref('')
@@ -529,191 +491,21 @@ const showPublishDialog = ref(false)
 const showImagePreview = ref(false)
 const previewImageUrl = ref('')
 const loading = ref(false)
+const initialLoading = ref(true)
 const hasMore = ref(true)
+const currentPage = ref(1)
+const pageSize = ref(10)
 
-// 当前用户
-const currentUser = reactive<User>({
-  id: 1,
-  name: '李明',
-  avatar: 'https://via.placeholder.com/100',
-})
-
-// 动态数据
-const posts = ref<Post[]>([
-  {
-    id: 1,
-    type: 'paper',
-    title: '深度学习在蛋白质结构预测中的突破性应用',
-    content:
-      '我们团队最新发表的论文在《Nature》上刊登，展示了深度学习技术在蛋白质结构预测领域的重大突破。这项研究将为药物设计和生物医学研究带来革命性的变化。\n\n主要贡献包括：\n1. 开发了新的深度学习架构\n2. 在CASP14竞赛中取得最佳成绩\n3. 预测精度提升了40%\n\n感谢所有合作者的努力！',
-    author: {
-      id: 2,
-      name: '王芳',
-      avatar: 'https://via.placeholder.com/100',
-      institution: '北京大学',
-    },
-    attachments: [
-      {
-        type: 'paper',
-        title: 'Improved protein structure prediction using deep learning',
-        journal: 'Nature',
-        year: 2024,
-        abstract: '本文提出了一种基于深度学习的蛋白质结构预测方法，显著提高了预测精度...',
-        citations: 156,
-        downloads: 2341,
-        url: 'https://example.com/paper1.pdf',
-      } as PaperAttachment,
-    ],
-    tags: ['深度学习', '蛋白质结构', '生物信息学', 'Nature'],
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    likesCount: 89,
-    commentsCount: 23,
-    sharesCount: 15,
-    viewsCount: 1234,
-    isLiked: false,
-    showComments: false,
-    showFullContent: false,
-    newComment: '',
-    comments: [
-      {
-        id: 1,
-        author: {
-          id: 3,
-          name: '张伟',
-          avatar: 'https://via.placeholder.com/100',
-        },
-        content: '恭喜！这是一项非常重要的研究成果，对整个领域都有重大意义。',
-        createdAt: new Date(Date.now() - 1000 * 60 * 30),
-        likesCount: 12,
-        isLiked: false,
-      },
-    ],
-  },
-  {
-    id: 2,
-    type: 'project',
-    title: '启动量子计算优化算法研究项目',
-    content:
-      '很高兴宣布我们实验室获得了国家自然科学基金的支持，将在未来三年内专注于量子计算在复杂优化问题中的应用研究。\n\n项目目标：\n• 开发新的量子优化算法\n• 解决经典计算机难以处理的大规模优化问题\n• 在物流、金融、生物信息学等领域进行应用验证\n\n期待与更多同行合作交流！',
-    author: {
-      id: 4,
-      name: '李华',
-      avatar: 'https://via.placeholder.com/100',
-      institution: '清华大学',
-    },
-    attachments: [
-      {
-        type: 'link',
-        title: '项目详情页面',
-        description: '查看项目的详细信息和进展',
-        url: 'https://example.com/project',
-      } as LinkAttachment,
-    ],
-    tags: ['量子计算', '优化算法', '国家自然科学基金'],
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5),
-    likesCount: 45,
-    commentsCount: 8,
-    sharesCount: 12,
-    viewsCount: 567,
-    isLiked: true,
-    showComments: false,
-    showFullContent: false,
-    newComment: '',
-    comments: [],
-  },
-  {
-    id: 3,
-    type: 'conference',
-    title: 'ICML 2024 演讲分享',
-    content:
-      '刚刚结束了在维也纳举办的ICML 2024大会的主题演讲，分享了我们在联邦学习隐私保护方面的最新研究成果。会议期间收到了很多宝贵的建议和合作意向。',
-    author: {
-      id: 5,
-      name: '陈明',
-      avatar: 'https://via.placeholder.com/100',
-      institution: '中科院',
-    },
-    attachments: [
-      {
-        type: 'image',
-        name: '演讲现场',
-        url: 'https://via.placeholder.com/400x300',
-      } as ImageAttachment,
-      {
-        type: 'image',
-        name: '会议合影',
-        url: 'https://via.placeholder.com/400x300',
-      } as ImageAttachment,
-    ],
-    tags: ['ICML2024', '联邦学习', '隐私保护'],
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12),
-    likesCount: 67,
-    commentsCount: 15,
-    sharesCount: 8,
-    viewsCount: 892,
-    isLiked: false,
-    showComments: false,
-    showFullContent: false,
-    newComment: '',
-    comments: [],
-  },
-])
-
-// 计算属性
-const filteredPosts = computed(() => {
-  let result = posts.value
-
-  // 按类型筛选
-  if (selectedCategory.value !== 'all') {
-    result = result.filter(post => post.type === selectedCategory.value)
-  }
-
-  // 搜索筛选
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase()
-    result = result.filter(
-      post =>
-        post.title?.toLowerCase().includes(query) ||
-        post.content.toLowerCase().includes(query) ||
-        post.author.name.toLowerCase().includes(query) ||
-        post.tags?.some(tag => tag.toLowerCase().includes(query))
-    )
-  }
-
-  // 排序
-  result.sort((a, b) => {
-    switch (sortBy.value) {
-      case 'hot':
-        return (
-          b.likesCount +
-          b.commentsCount +
-          b.sharesCount -
-          (a.likesCount + a.commentsCount + a.sharesCount)
-        )
-      case 'comments':
-        return b.commentsCount - a.commentsCount
-      default:
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    }
-  })
-
-  return result
-})
+// 数据
+const currentUser = ref<User | null>(null)
+const posts = ref<Post[]>([])
 
 // 类型守卫函数
-const isPaperAttachment = (attachment: Attachment): attachment is PaperAttachment => {
-  return attachment.type === 'paper'
+const isPaperAttachment = (attachment: any): attachment is PaperAttachment => {
+  return attachment?.type === 'paper'
 }
 
-const isImageAttachment = (attachment: Attachment): attachment is ImageAttachment => {
-  return attachment.type === 'image'
-}
-
-const isLinkAttachment = (attachment: Attachment): attachment is LinkAttachment => {
-  return attachment.type === 'link'
-}
-
-// 方法
+// 工具方法
 const getTypeLabel = (type: Post['type']) => {
   const labels = {
     paper: '论文发表',
@@ -736,7 +528,19 @@ const getTypeTagClass = (type: Post['type']) => {
   return classes[type] || 'bg-gray-100 text-gray-800'
 }
 
-const formatTime = (date: Date) => {
+const formatTime = (dateString: string) => {
+  if (!dateString) return '未知时间'
+  // 尝试修正不规范的 mock 日期格式
+  let date = new Date(dateString)
+  if (isNaN(date.getTime())) {
+    // 尝试只取前19位（yyyy-MM-ddTHH:mm:ss），去掉乱七八糟的后缀
+    const match = dateString.match(/^\d{4}-\d{2}-\d{2}T?\d{2}:\d{2}:\d{2}/)
+    if (match) {
+      date = new Date(match[0].replace('T', ' ') + 'Z')
+    }
+  }
+  if (isNaN(date.getTime())) return '未知时间'
+
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const minutes = Math.floor(diff / (1000 * 60))
@@ -756,57 +560,222 @@ const formatTime = (date: Date) => {
   }).format(date)
 }
 
-const toggleLike = (post: Post) => {
-  post.isLiked = !post.isLiked
-  post.likesCount += post.isLiked ? 1 : -1
-
-  ElMessage.success(post.isLiked ? '点赞成功' : '取消点赞')
+// API 调用方法
+const loadCurrentUser = async () => {
+  try {
+    const user = await socialAPI.getCurrentUser()
+    currentUser.value = user
+  } catch (error) {
+    console.error('加载用户信息失败:', error)
+  }
 }
 
-const toggleComments = (post: Post) => {
+const loadPosts = async (reset = false) => {
+  try {
+    if (reset) {
+      currentPage.value = 1
+      loading.value = false
+      initialLoading.value = true
+    } else {
+      loading.value = true
+    }
+
+    const params: GetPostsParams = {
+      page: currentPage.value,
+      size: pageSize.value,
+      category: selectedCategory.value === 'all' ? undefined : selectedCategory.value,
+      sortBy: sortBy.value,
+      search: searchQuery.value.trim() || undefined
+    }
+
+    const response = await socialAPI.getPosts(params)
+    
+    if (reset) {
+      posts.value = response.list.map(post => ({
+        ...post,
+        showComments: false,
+        showFullContent: false,
+        newComment: '',
+        comments: [],
+        commenting: false,
+        loadingComments: false,
+        hasMoreComments: post.commentsCount > 0
+      }))
+    } else {
+      posts.value.push(...response.list.map(post => ({
+        ...post,
+        showComments: false,
+        showFullContent: false,
+        newComment: '',
+        comments: [],
+        commenting: false,
+        loadingComments: false,
+        hasMoreComments: post.commentsCount > 0
+      })))
+    }
+
+    hasMore.value = response.hasMore
+    
+    if (!reset) {
+      currentPage.value++
+    }
+  } catch (error) {
+    console.error('加载动态失败:', error)
+    ElMessage.error('加载动态失败')
+  } finally {
+    loading.value = false
+    initialLoading.value = false
+  }
+}
+
+const loadComments = async (post: Post) => {
+  if (!post.showComments || post.comments!.length > 0) return
+
+  try {
+    const response = await socialAPI.getComments(post.id, { page: 1, size: 5 })
+    post.comments = response.list
+    post.hasMoreComments = response.hasMore
+  } catch (error) {
+    console.error('加载评论失败:', error)
+    ElMessage.error('加载评论失败')
+  }
+}
+
+const loadMoreComments = async (post: Post) => {
+  try {
+    post.loadingComments = true
+    const page = Math.floor(post.comments!.length / 5) + 1
+    const response = await socialAPI.getComments(post.id, { page, size: 5 })
+    
+    post.comments!.push(...response.list)
+    post.hasMoreComments = response.hasMore
+  } catch (error) {
+    console.error('加载更多评论失败:', error)
+    ElMessage.error('加载更多评论失败')
+  } finally {
+    post.loadingComments = false
+  }
+}
+
+// 交互方法
+const toggleLike = async (post: Post) => {
+  try {
+    const response = await socialAPI.toggleLike(post.id)
+    post.isLiked = response.isLiked
+    post.likesCount = response.likesCount
+    ElMessage.success(post.isLiked ? '点赞成功' : '取消点赞')
+  } catch (error) {
+    console.error('点赞失败:', error)
+    ElMessage.error('操作失败')
+  }
+}
+
+const toggleComments = async (post: Post) => {
   post.showComments = !post.showComments
+  if (post.showComments) {
+    await nextTick()
+    await loadComments(post)
+  }
 }
 
-const sharePost = (post: Post) => {
-  // 分享功能
-  navigator.clipboard.writeText(`${window.location.origin}/timeline#post-${post.id}`)
-  ElMessage.success('链接已复制到剪贴板')
+const sharePost = async (post: Post) => {
+  try {
+    const response = await socialAPI.sharePost(post.id)
+    post.sharesCount = response.sharesCount
+    
+    // 复制链接到剪贴板
+    const url = `${window.location.origin}/timeline#post-${post.id}`
+    await navigator.clipboard.writeText(url)
+    ElMessage.success('分享链接已复制到剪贴板')
+  } catch (error) {
+    console.error('分享失败:', error)
+    ElMessage.error('分享失败')
+  }
 }
 
-const submitComment = (post: Post) => {
+const submitComment = async (post: Post) => {
   if (!post.newComment?.trim()) return
 
-  const comment: Comment = {
-    id: Date.now(),
-    author: currentUser,
-    content: post.newComment.trim(),
-    createdAt: new Date(),
-    likesCount: 0,
-    isLiked: false,
+  try {
+    post.commenting = true
+    const data: CreateCommentParams = {
+      content: post.newComment.trim()
+    }
+    
+    await socialAPI.createComment(post.id, data)
+    
+    // 重新加载评论列表
+    await loadComments(post)
+    post.newComment = ''
+    post.commentsCount++
+    ElMessage.success('评论发表成功')
+  } catch (error) {
+    console.error('评论发表失败:', error)
+    ElMessage.error('评论发表失败')
+  } finally {
+    post.commenting = false
   }
-
-  if (!post.comments) {
-    post.comments = []
-  }
-
-  post.comments.unshift(comment)
-  post.commentsCount++
-  post.newComment = ''
-
-  ElMessage.success('评论发表成功')
 }
 
-const toggleCommentLike = (comment: Comment) => {
-  comment.isLiked = !comment.isLiked
-  comment.likesCount += comment.isLiked ? 1 : -1
+const toggleCommentLike = async (comment: Comment) => {
+  try {
+    const response = await socialAPI.toggleCommentLike(comment.id)
+    comment.isLiked = response.isLiked
+    comment.likesCount = response.likesCount
+  } catch (error) {
+    console.error('评论点赞失败:', error)
+    ElMessage.error('操作失败')
+  }
 }
 
-const replyToComment = (comment: Comment) => {
-  ElMessage.info('回复功能开发中...')
+const handlePostAction = async (command: string, post: Post) => {
+  switch (command) {
+    case 'save':
+      try {
+        await socialAPI.savePost(post.id)
+        ElMessage.success('动态已保存')
+      } catch (error) {
+        ElMessage.error('保存失败')
+      }
+      break
+    case 'share':
+      await sharePost(post)
+      break
+    case 'report':
+      try {
+        await ElMessageBox.prompt('请输入举报原因', '举报动态', {
+          confirmButtonText: '提交',
+          cancelButtonText: '取消',
+          inputType: 'textarea'
+        })
+        await socialAPI.reportPost(post.id, '用户举报')
+        ElMessage.success('举报已提交')
+      } catch (error) {
+        if (error !== 'cancel') {
+          ElMessage.error('举报失败')
+        }
+      }
+      break
+  }
+}
+
+// 搜索和筛选
+const handleSearch = () => {
+  loadPosts(true)
+}
+
+const handleFilterChange = () => {
+  loadPosts(true)
 }
 
 const searchByTag = (tag: string) => {
   searchQuery.value = tag
+  handleSearch()
+}
+
+// 其他方法
+const loadMore = () => {
+  loadPosts(false)
 }
 
 const previewImage = (url: string) => {
@@ -822,69 +791,22 @@ const openLink = (url: string) => {
   window.open(url, '_blank')
 }
 
-const handlePostAction = (command: string) => {
-  const [action, id] = command.split('-')
-
-  switch (action) {
-    case 'save':
-      ElMessage.success('动态已保存')
-      break
-    case 'share':
-      ElMessage.success('分享链接已复制')
-      break
-    case 'report':
-      ElMessage.info('举报功能开发中...')
-      break
-  }
+const replyToComment = (comment: Comment) => {
+  ElMessage.info('回复功能开发中...')
 }
 
-const loadMore = async () => {
-  loading.value = true
-
-  try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // 这里应该从API加载更多数据
-    ElMessage.success('加载完成')
-
-    // 模拟没有更多数据
-    hasMore.value = false
-  } catch (error) {
-    ElMessage.error('加载失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-const handlePostPublished = (newPost: Partial<Post>) => {
-  const post: Post = {
-    id: Date.now(),
-    type: newPost.type || 'opinion',
-    title: newPost.title,
-    content: newPost.content || '',
-    author: currentUser,
-    attachments: newPost.attachments,
-    tags: newPost.tags,
-    createdAt: new Date(),
-    likesCount: 0,
-    commentsCount: 0,
-    sharesCount: 0,
-    viewsCount: 0,
-    isLiked: false,
-    showComments: false,
-    showFullContent: false,
-    newComment: '',
-    comments: [],
-  }
-
-  posts.value.unshift(post)
+const handlePostPublished = (newPost: any) => {
+  loadPosts(true)
   showPublishDialog.value = false
   ElMessage.success('动态发布成功')
 }
 
-onMounted(() => {
-  // 初始化数据
+// 生命周期
+onMounted(async () => {
+  await Promise.all([
+    loadCurrentUser(),
+    loadPosts(true)
+  ])
 })
 </script>
 
