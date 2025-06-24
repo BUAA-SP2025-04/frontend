@@ -374,12 +374,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import type { AchievementProfile } from '@/api/types/achievement'
 import { deleteAchievement, saveAchievement } from '@/api/modules/achievement'
 import type { UploadFile } from 'element-plus'
-import { upload } from '@/api/modules/upload'
+import { deleteFile, updateFile, uploadFile } from '@/api/modules/upload'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -449,13 +449,32 @@ const keywordsInput = ref('')
 const yearInput = ref<Date | null>(null)
 const pdfInputType = ref<'url' | 'upload'>('url')
 const pdfFile = ref<File | null>(null)
+const oldFilePath = ref<string>('')
 
 const formRef = ref<FormInstance>()
 
 const doiPattern = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i
 const urlPattern = /^(https?:\/\/)[^\s/$.?#].\S*$/i
 const rules: FormRules = {
-  title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
+  title: [
+    { required: true, message: '请输入标题', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        // 排除自身（编辑时）
+        const duplicate = achievements.some(
+          item =>
+            item.title.trim() === value.trim() &&
+            (!isEditing.value || item.id !== currentAchievement.id)
+        )
+        if (duplicate) {
+          callback(new Error('标题已存在，请勿重复'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur',
+    },
+  ],
   doi: [
     {
       validator: (rule, value, callback) => {
@@ -554,8 +573,28 @@ const editAchievement = (achievement: AchievementProfile) => {
   authorsInput.value = achievement.authors.join(', ')
   keywordsInput.value = achievement.keywords.join(', ')
   yearInput.value = achievement.year ? new Date(achievement.year, 0) : null
+
+  // 根据pdfUrl判断类型
+  if (achievement.pdfUrl && achievement.pdfUrl.trim()) {
+    if (/^https?:\/\//i.test(achievement.pdfUrl.trim())) {
+      pdfInputType.value = 'url'
+    } else {
+      pdfInputType.value = 'upload'
+    }
+  } else {
+    pdfInputType.value = 'url'
+  }
+  oldFilePath.value = '' // 编辑时不保留旧路径
   showAddDialog.value = true
 }
+
+// 监听pdfInputType变化
+watch(pdfInputType, (newType, oldType) => {
+  if (oldType === 'upload' && newType === 'url') {
+    oldFilePath.value = currentAchievement.pdfUrl
+    currentAchievement.pdfUrl = ''
+  }
+})
 
 const handlePdfFileChange = (file: UploadFile) => {
   if (file.raw && file.raw.type !== 'application/pdf') {
@@ -573,18 +612,46 @@ const handlePdfExceed = (files: File[]) => {
 
 //上传PDF
 const uploadPdfFile = async (): Promise<string> => {
-  if (!pdfFile.value) return ''
-  const formData = new FormData()
-  formData.append('file', pdfFile.value)
-  try {
-    const response = await upload('/api/upload/pdf', formData)
-    if (response.data && response.data.url) {
-      return response.data.url
+  if (pdfInputType.value === 'url' && !oldFilePath.value) return '' // url类型且无旧文件，直接返回
+
+  if (pdfInputType.value === 'upload' && !oldFilePath.value) {
+    // upload类型且无旧文件，上传新文件
+    if (!pdfFile.value) return currentAchievement.pdfUrl
+    const formData = new FormData()
+    formData.append('file', pdfFile.value)
+    try {
+      const response = await uploadFile('/api/application/uploadFile', formData)
+      if (response.data?.url) {
+        return response.data.url
+      }
+      return ''
+    } catch (err) {
+      return ''
     }
-    return ''
-  } catch (err) {
-    return ''
   }
+  if (pdfInputType.value === 'upload' && oldFilePath.value) {
+    // upload类型且有旧文件，更新文件
+    if (!pdfFile.value) return ''
+    const formData = new FormData()
+    formData.append('oldFilePath', oldFilePath.value) // 添加旧文件路径
+    formData.append('file', pdfFile.value)
+    try {
+      await updateFile('/api/application/updateFile', formData)
+      return ''
+    } catch (err) {
+      return ''
+    }
+  }
+  if (pdfInputType.value === 'url' && oldFilePath.value) {
+    // url类型且有旧文件，删除旧文件
+    try {
+      await deleteFile('/api/application/deleteFile', oldFilePath.value)
+      return ''
+    } catch (err) {
+      return ''
+    }
+  }
+  return ''
 }
 
 const handleSave = () => {
@@ -686,6 +753,7 @@ const resetForm = () => {
   pdfInputType.value = 'url'
   pdfFile.value = null
   isEditing.value = false
+  oldFilePath.value = ''
 }
 
 const closeDialog = () => {
