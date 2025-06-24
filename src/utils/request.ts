@@ -9,7 +9,6 @@ interface ApiResponse<T = unknown> {
   message: string
 }
 
-// 获取baseURL
 const getBaseURL = (): string => {
   const useMock = import.meta.env.VITE_USE_MOCK === 'true'
   return useMock
@@ -17,7 +16,6 @@ const getBaseURL = (): string => {
     : import.meta.env.VITE_API_BASE_URL || '/api'
 }
 
-// 创建axios实例
 const request: AxiosInstance = axios.create({
   baseURL: getBaseURL(),
   timeout: 10000,
@@ -54,9 +52,9 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
-    const { code, status } = response.data || {}
-    if (code === 200 || status === 200 || status === '200') {
-      return response.data // 返回完整对象
+    const { code, status, success } = response.data || {}
+    if (code === 200 || status === 200 || status === '200' || success) {
+      return response.data
     } else {
       ElMessage.error(response.data?.message || '请求失败')
       return Promise.reject(new Error(response.data?.message || '请求失败'))

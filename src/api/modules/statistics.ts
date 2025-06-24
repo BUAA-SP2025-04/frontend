@@ -1,0 +1,33 @@
+import request from '@/utils/request'
+import type { publication } from '@/api/types/user'
+
+export interface CountResponse {
+  code: string
+  message: string
+  data: object
+}
+
+// 获取注册研究者数量
+export function getResearcherCount(): Promise<CountResponse> {
+  return request.get('http://127.0.0.1:4523/m2/6625065-6332383-default/312631040')
+}
+
+// 获取发表论文数量
+export function getPaperCount(): Promise<CountResponse> {
+  return request.get('http://127.0.0.1:4523/m2/6625065-6332383-default/312631025')
+}
+
+// 获取合作项目数量（消息数量）
+export function getMessageCount(): Promise<CountResponse> {
+  return request.get('http://127.0.0.1:4523/m2/6625065-6332383-default/312631946')
+} 
+
+// 获取更新成果
+export function getUpdatePublication(): Promise<publication> {
+  return request.get('/publication/getUpdatePublication')
+}
+
+// 获取点赞成果
+export function getLikePublication(): Promise<publication> {
+  return request.get('/publication/getLikePublication')
+}

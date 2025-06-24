@@ -37,3 +37,59 @@ export interface UserResponse {
   institution: string
   imageUrl: string
 }
+
+// 用户详情类型
+export interface UserDetail {
+  id: string | string[]
+  name: string
+  title: string
+  institution: string
+  imgUrl: string
+  description: string
+  researchArea: string
+  publishNum: number
+  subjectNum: number
+  followerNum: number
+  gender: string
+  createdAt: string
+  email?: string
+}
+
+// 论文类型
+export interface Paper {
+  id: number
+  title: string
+  authors: { id: number; name: string }[]
+  conference: string
+  venue: string
+  year: number
+  status: string
+  keywords: string
+  doi: string
+  pdfUrl: string
+  abstract: string
+  readerNum: number
+  likeNum: number
+  _showFullAbstract?: boolean
+}
+
+export interface publication {
+  abstract: string;
+  authors: { id: number; name: string }[];
+  conference: string;
+  createdAt: string;
+  doi: string;
+  id: number;
+  institutionId: number;
+  keywords: string;
+  likeNum: number;
+  pdfUrl: string;
+  readerNum: number;
+  status: string;
+  title: string;
+  type: string;
+  uploaderId: number;
+  venue: string;
+  year: number;
+  [property: string]: any;
+}
