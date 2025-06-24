@@ -10,20 +10,20 @@ import type {
 
 // 注册
 export function registerUser(data: RegisterUserRequest): Promise<LoginResponse> {
-  //return request.post('/user/register', data)
-  return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312041825', data)
+  return request.post('/user/register', data)
+  // return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312041825', data)
 }
 
 // 登录
 export const loginUser = (data: LoginUserRequest): Promise<LoginResponse> => {
-  //return request.post('/user/login', data)
-  return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312055184', data)
+  return request.post('/user/login', data)
+  // return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312055184', data)
 }
 
 // 完善用户信息
 export const updateUserProfile = (data: UpdateUserProfileRequest): Promise<unknown> => {
-  //return request.post('/user/profile', data)
-  return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312260332', data)
+  return request.post('/user/profile', data)
+  // return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312260332', data)
 }
 
 // 上传头像

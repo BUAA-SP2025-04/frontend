@@ -92,14 +92,15 @@ const handleLogin = async () => {
       email: form.email,
       password: form.password,
     })
-    console.log(res)
-    const { token, ...userInfo } = res.data[0]
+
+    const { token, ...userInfo } = res.data
     userStore.setUser(userInfo)
     localStorage.setItem('token', token)
     console.log(userInfo)
     ElMessage.success('登录成功')
     router.push('/')
   } catch (error) {
+    console.log(error)
     ElMessage.error('登录失败，请检查用户名和密码')
   }
 }

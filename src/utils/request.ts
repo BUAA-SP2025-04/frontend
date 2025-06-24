@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 
 // 响应数据接口
 interface ApiResponse<T = unknown> {
-  code: number
+  code: string
   data: T
   message: string
 }
@@ -69,8 +69,8 @@ request.interceptors.response.use(
       console.log('API响应:', { code, message, data }) // 调试日志
 
       // 根据业务状态码处理
-      if (code === 200) {
-        return data
+      if (code == "200") {
+        return response.data
       } else {
         const errorMsg = message || '请求失败'
         console.error('业务错误:', errorMsg)

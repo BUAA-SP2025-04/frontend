@@ -44,7 +44,7 @@ export interface LoginUserResponse {
 }
 
 export interface LoginResponse {
-  data: LoginUserResponse[]
+  data: LoginUserResponse
 }
 
 // 用户详情类型
