@@ -50,6 +50,10 @@
           <span class="pub-label">DOI：</span>
           <span class="pub-value pub-doi">{{ achievement.doi }}</span>
         </div>
+        <div class="pub-detail-section pub-abstract">
+          <span class="pub-label">摘要：</span>
+          <div class="pub-value pub-abstract-text">{{ achievement.abstract }}</div>
+        </div>
         <div class="pub-detail-section pub-metrics">
           <span class="pub-label pub-metric pub-reader-label">
             <el-icon class="pub-icon"><View /></el-icon>
@@ -61,10 +65,6 @@
             点赞数：
           </span>
           <span class="pub-value pub-likeNum">{{ achievement.likeNum }}</span>
-        </div>
-        <div class="pub-detail-section pub-abstract">
-          <span class="pub-label">摘要：</span>
-          <div class="pub-value pub-abstract-text">{{ achievement.abstract }}</div>
         </div>
         <div v-if="achievement.pdfUrl" class="pub-detail-section pub-pdf">
           <el-link :href="achievement.pdfUrl" target="_blank" type="primary">PDF下载/预览</el-link>
