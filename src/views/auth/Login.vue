@@ -93,7 +93,7 @@ const handleLogin = async () => {
       password: form.password,
     })
     console.log(res)
-    const { token, ...userInfo } = res.data[0]
+    const { token, ...userInfo } = res.data
     userStore.setUser(userInfo)
     localStorage.setItem('token', token)
     console.log(userInfo)

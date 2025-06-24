@@ -381,9 +381,9 @@ const userInfo = reactive({
   bio: '',
   researchArea: '',
   imgUrl: '',
-  followerNum: '',
-  publishNum: '',
-  subjectNum: '',
+  followerNum: 0,
+  publishNum: 0,
+  subjectNum: 0,
 })
 
 const passwordForm = reactive({
@@ -420,9 +420,9 @@ const initUserInfo = () => {
     userInfo.imgUrl = userStore.user.imgUrl || ''
     userInfo.bio = userStore.user.bio || ''
     userInfo.researchArea = userStore.user.researchArea || ''
-    userInfo.followerNum = userStore.user.followerNum || '0'
-    userInfo.publishNum = userStore.user.publishNum || '0'
-    userInfo.subjectNum = userStore.user.subjectNum || '0'
+    userInfo.followerNum = userStore.user.followerNum || 0
+    userInfo.publishNum = userStore.user.publishNum || 0
+    userInfo.subjectNum = userStore.user.subjectNum || 0
   }
 }
 

@@ -224,9 +224,10 @@ const handleRegister = async () => {
       gender: form.gender,
       institution: form.institution,
     })
-    const { token, ...userInfo } = res.data[0]
+    const { token, ...userInfo } = res.data
     userStore.setUser(userInfo)
     localStorage.setItem('token', token)
+    userStore.setToken(token)
 
     ElMessage.success('注册成功，即将自动登录')
     setTimeout(() => {
