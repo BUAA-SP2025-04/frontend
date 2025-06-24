@@ -33,9 +33,9 @@ export interface LoginUserResponse {
   email: string
   researchArea: string
   title: string
-  followerNum: string
-  publishNum: string
-  subjectNum: string
+  followerNum: number
+  publishNum: number
+  subjectNum: number
   gender: string
   imgUrl: string
   institution: string
