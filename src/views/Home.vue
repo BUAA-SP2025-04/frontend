@@ -640,11 +640,11 @@ onMounted(async () => {
       getPaperCount(),
       getMessageCount(),
     ])
-    if (res1 && typeof res1.data === 'object' && 'count' in res1.data) {
-      researcherCount.value = (res1.data as any).count || 0
+    if (res1 && typeof res1.data === 'number') {
+      researcherCount.value = (res1.data as any) || 0
     }
-    if (res2 && typeof res2.data === 'object' && 'count' in res2.data) {
-      paperCount.value = (res2.data as any).count || 0
+    if (res2 && typeof res2.data === 'number') {
+      paperCount.value = (res2.data as any) || 0
     }
     if (res3 && typeof res3.data === 'object' && 'count' in res3.data) {
       messageCount.value = (res3.data as any).count || 0
