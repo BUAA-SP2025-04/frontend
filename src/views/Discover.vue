@@ -12,7 +12,6 @@
                 v-model="searchType"
                 class="appearance-none bg-gradient-to-r from-white to-gray-50 border border-gray-300 hover:border-indigo-400 rounded-lg px-4 py-3 pr-10 text-sm font-medium text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[120px]"
               >
-                <option value="all" class="py-2">🔍 全体</option>
                 <option value="name" class="py-2">👤 作者名</option>
                 <option value="field" class="py-2">🔬 研究领域</option>
                 <option value="institution" class="py-2">🏢 机构</option>
@@ -145,7 +144,7 @@
             </el-tag>
             <!-- 粉丝数筛选标签 -->
             <el-tag
-              v-if="followersFilterText != '' && followersFilterText != null"
+              v-if="followersFilterText && followersFilterText.trim() !== ''"
               type="danger"
               size="large"
               effect="light"
@@ -336,7 +335,10 @@
                   共找到
                   <span class="font-semibold text-indigo-600">{{ filteredUsers.length }}</span>
                   位科研人员
-                  <span v-if="searchString.trim()" class="text-sm text-gray-500 ml-2">
+                  <span
+                    v-if="searchString && searchString.trim()"
+                    class="text-sm text-gray-500 ml-2"
+                  >
                     (搜索: "{{ searchString }}")
                   </span>
                 </p>
@@ -386,12 +388,13 @@
                 <div class="flex items-start space-x-4">
                   <div class="relative flex-shrink-0">
                     <img
-                      :src="user.imgUrl"
-                      :alt="user.name"
+                      :src="user.imgUrl || '/default-avatar.png'"
+                      :alt="user.name || '未知用户'"
                       class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 group-hover:border-indigo-200 transition-colors"
+                      @error="$event.target.src = '/default-avatar.png'"
                     />
                     <el-icon
-                      v-if="user.gender === '男'"
+                      v-if="user.gender === '男' || user.gender === 'male'"
                       class="absolute top-0 right-0 bg-white rounded-full p-1 text-blue-500 shadow"
                       style="transform: translate(40%, -40%); font-size: 2em; font-weight: bold"
                       title="男"
@@ -399,7 +402,7 @@
                       <Male />
                     </el-icon>
                     <el-icon
-                      v-else-if="user.gender === '女'"
+                      v-else-if="user.gender === '女' || user.gender === 'female'"
                       class="absolute top-0 right-0 bg-white rounded-full p-1 text-pink-500 shadow"
                       style="transform: translate(40%, -40%); font-size: 2em; font-weight: bold"
                       title="女"
@@ -412,16 +415,16 @@
                     <div>
                       <h3
                         class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate"
-                        :title="user.name"
+                        :title="user.name || '未知用户'"
                       >
-                        {{ user.name }}
+                        {{ user.name || '未知用户' }}
                       </h3>
-                      <p class="text-sm text-gray-600 truncate" :title="user.title">
-                        {{ user.title }}
+                      <p class="text-sm text-gray-600 truncate" :title="user.title || '暂无职称'">
+                        {{ user.title || '暂无职称' }}
                       </p>
                       <p
                         class="text-sm text-gray-500 flex items-center mt-1 truncate"
-                        :title="user.institution"
+                        :title="user.institution || '未知机构'"
                       >
                         <svg
                           class="w-4 h-4 mr-1 flex-shrink-0"
@@ -436,7 +439,7 @@
                             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                           />
                         </svg>
-                        <span class="truncate">{{ user.institution }}</span>
+                        <span class="truncate">{{ user.institution || '未知机构' }}</span>
                       </p>
                     </div>
                   </div>
@@ -447,24 +450,50 @@
               <div class="px-6 pb-4">
                 <div class="flex flex-wrap gap-2">
                   <span
-                    v-for="(field, index) in user.researchArea.split(',').slice(0, 2)"
+                    v-for="(field, index) in (user.researchArea || '')
+                      .split(',')
+                      .slice(0, 2)
+                      .filter(field => field.trim())"
                     :key="index"
                     class="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-full font-medium whitespace-nowrap"
                   >
                     {{ field.trim() }}
                   </span>
                   <el-tooltip
-                    v-if="user.researchArea.split(',').length > 2"
-                    :content="user.researchArea.split(',').slice(2).join(', ')"
+                    v-if="
+                      (user.researchArea || '').split(',').filter(field => field.trim()).length > 2
+                    "
+                    :content="
+                      (user.researchArea || '')
+                        .split(',')
+                        .slice(2)
+                        .filter(field => field.trim())
+                        .join(', ')
+                    "
                     placement="top"
                     effect="dark"
                   >
                     <span
                       class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap cursor-pointer"
                     >
-                      +{{ user.researchArea.split(',').length - 2 }}
+                      +{{
+                        (user.researchArea || '').split(',').filter(field => field.trim()).length -
+                        2
+                      }}
                     </span>
                   </el-tooltip>
+                  <!-- 如果没有研究领域，显示默认标签 -->
+                  <span
+                    v-if="
+                      !user.researchArea ||
+                      user.researchArea.trim() === '' ||
+                      (user.researchArea || '').split(',').filter(field => field.trim()).length ===
+                        0
+                    "
+                    class="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full font-medium"
+                  >
+                    暂无研究领域
+                  </span>
                 </div>
               </div>
 
@@ -485,7 +514,7 @@
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors"
                     >
-                      {{ user.publishNum }}
+                      {{ formatNumber(user.publishNum) }}
                     </div>
                     <div class="text-xs text-gray-500">发表数</div>
                   </div>
@@ -493,7 +522,7 @@
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors"
                     >
-                      {{ user.subjectNum }}
+                      {{ formatNumber(user.subjectNum) }}
                     </div>
                     <div class="text-xs text-gray-500">项目数</div>
                   </div>
@@ -553,6 +582,12 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import request from '@/utils/request'
 import {
+  searchResearchersByName,
+  searchResearchersByInstitution,
+  searchResearchersByArea,
+  searchResearchersByTitle,
+} from '@/api/modules/discover'
+import {
   ElCollapse,
   ElCollapseItem,
   ElTag,
@@ -568,7 +603,7 @@ import { Male, Female } from '@element-plus/icons-vue'
 const router = useRouter()
 const route = useRoute()
 
-const activeCollapse = ref('1')
+const activeCollapse = ref('')
 
 const searchSuggestions = ref([
   '人工智能',
@@ -606,7 +641,7 @@ const filters = reactive({
 
 // 搜索相关
 const searchQuery = ref('')
-const searchType = ref('all')
+const searchType = ref('name')
 const searchString = ref('')
 
 // 分页
@@ -614,127 +649,97 @@ const currentPage = ref(1)
 const pageSize = 12
 
 // 模拟用户数据（扩展数据）
-const users = ref<User[]>([
-  {
-    id: 1,
-    name: '李明',
-    title: '教授, 博导',
-    institution: '清华大学',
-    imgUrl: 'https://via.placeholder.com/100/4F46E5/FFFFFF?text=LM',
-    researchArea: '人工智能, 机器学习, 深度学习',
-    followerNum: 1250,
-    publishNum: 120,
-    subjectNum: 15,
-    gender: '男',
-  },
-  {
-    id: 2,
-    name: '王芳',
-    title: '副教授',
-    institution: '北京大学',
-    imgUrl: 'https://via.placeholder.com/100/10B981/FFFFFF?text=WF',
-    researchArea: '生物信息学, 基因组学, 蛋白质结构',
-    followerNum: 890,
-    publishNum: 85,
-    subjectNum: 8,
-    gender: '女',
-  },
-  {
-    id: 3,
-    name: '张伟',
-    title: '研究员',
-    institution: '中科院',
-    imgUrl: 'https://via.placeholder.com/100/8B5CF6/FFFFFF?text=ZW',
-    researchArea: '量子计算, 量子算法, 理论物理',
-    followerNum: 980,
-    publishNum: 95,
-    subjectNum: 12,
-    gender: '男',
-  },
-  {
-    id: 4,
-    name: 'Sarah Johnson',
-    title: 'Professor',
-    institution: 'MIT',
-    imgUrl: 'https://via.placeholder.com/100/F59E0B/FFFFFF?text=SJ',
-    researchArea: '自然语言处理, 计算语言学, 深度学习',
-    followerNum: 2100,
-    publishNum: 156,
-    subjectNum: 25,
-    gender: '女',
-  },
-  {
-    id: 5,
-    name: '陈明',
-    title: '助理教授',
-    institution: '斯坦福大学',
-    imgUrl: 'https://via.placeholder.com/100/EF4444/FFFFFF?text=CM',
-    researchArea: '计算机视觉, 机器人学, 自主导航',
-    followerNum: 750,
-    publishNum: 67,
-    subjectNum: 9,
-    gender: '男',
-  },
-  {
-    id: 6,
-    name: 'David Wilson',
-    title: 'Senior Researcher',
-    institution: '哈佛大学',
-    imgUrl: 'https://via.placeholder.com/100/06B6D4/FFFFFF?text=DW',
-    researchArea: '生物医学, 精准医疗, 药物发现',
-    followerNum: 1500,
-    publishNum: 103,
-    subjectNum: 18,
-    gender: '男',
-  },
-])
+const users = ref<User[]>([])
 
 // 计算过滤后的用户
 const filteredUsers = computed(() => {
   let result = users.value.slice()
+
   // 研究领域筛选
   if (filters.selectedFields.length > 0) {
-    result = result.filter((user: User) =>
-      user.researchArea
+    result = result.filter((user: User) => {
+      // 添加null检查
+      if (!user.researchArea) return false
+      return user.researchArea
         .split(',')
         .some((field: string) => filters.selectedFields.includes(field.trim()))
-    )
+    })
   }
 
   // 机构筛选
   if (filters.selectedInstitutions.length > 0) {
-    result = result.filter((user: User) => filters.selectedInstitutions.includes(user.institution))
+    result = result.filter((user: User) => {
+      // 添加null检查
+      if (!user.institution) return false
+      return filters.selectedInstitutions.includes(user.institution)
+    })
   }
 
   // 发表数量范围筛选
   if (filters.publicationsRange.min !== null) {
-    result = result.filter((user: User) => user.publishNum >= filters.publicationsRange.min!)
+    result = result.filter((user: User) => {
+      // 添加null检查
+      if (user.publishNum === null || user.publishNum === undefined) return false
+      return user.publishNum >= filters.publicationsRange.min!
+    })
   }
   if (filters.publicationsRange.max !== null) {
-    result = result.filter((user: User) => user.publishNum <= filters.publicationsRange.max!)
+    result = result.filter((user: User) => {
+      // 添加null检查
+      if (user.publishNum === null || user.publishNum === undefined) return false
+      return user.publishNum <= filters.publicationsRange.max!
+    })
   }
 
   // 粉丝数范围筛选
   if (filters.followersRange.min !== null) {
-    result = result.filter((user: User) => user.followerNum >= filters.followersRange.min!)
+    result = result.filter((user: User) => {
+      // 添加null检查
+      if (user.followerNum === null || user.followerNum === undefined) return false
+      return user.followerNum >= filters.followersRange.min!
+    })
   }
   if (filters.followersRange.max !== null) {
-    result = result.filter((user: User) => user.followerNum <= filters.followersRange.max!)
+    result = result.filter((user: User) => {
+      // 添加null检查
+      if (user.followerNum === null || user.followerNum === undefined) return false
+      return user.followerNum <= filters.followersRange.max!
+    })
   }
 
   // 排序
   switch (filters.sortBy) {
     case 'followers':
-      result.sort((a: User, b: User) => b.followerNum - a.followerNum)
+      result.sort((a: User, b: User) => {
+        // 添加null检查
+        const aFollowers = a.followerNum ?? 0
+        const bFollowers = b.followerNum ?? 0
+        return bFollowers - aFollowers
+      })
       break
     case 'publications':
-      result.sort((a: User, b: User) => b.publishNum - a.publishNum)
+      result.sort((a: User, b: User) => {
+        // 添加null检查
+        const aPublish = a.publishNum ?? 0
+        const bPublish = b.publishNum ?? 0
+        return bPublish - aPublish
+      })
       break
     case 'projects':
-      result.sort((a: User, b: User) => b.subjectNum - a.subjectNum)
+      result.sort((a: User, b: User) => {
+        // 添加null检查
+        const aSubject = a.subjectNum ?? 0
+        const bSubject = b.subjectNum ?? 0
+        return bSubject - aSubject
+      })
       break
     case 'name':
-      result.sort((a: User, b: User) => a.name.localeCompare(b.name))
+      result.sort((a: User, b: User) => {
+        // 添加null检查
+        const aName = a.name ?? ''
+        const bName = b.name ?? ''
+        return aName.localeCompare(bName)
+      })
       break
     default:
       // 保持默认顺序或按相关性
@@ -752,6 +757,10 @@ const paginatedUsers = computed(() => {
 
 // 辅助方法
 const formatNumber = (num: number) => {
+  // 添加null检查
+  if (num === null || num === undefined || isNaN(num)) {
+    return '0'
+  }
   if (num >= 1000) {
     return (num / 1000).toFixed(1) + 'K'
   }
@@ -760,20 +769,26 @@ const formatNumber = (num: number) => {
 
 const performSearch = async () => {
   currentPage.value = 1
-  // 可以在这里添加搜索历史记录或其他功能
-  searchString.value = searchQuery.value
+  searchString.value = searchQuery.value || ''
 
   try {
-    const response = await request.get(
-      'http://127.0.0.1:4523/m2/6625065-6332383-default/312228231?apifoxApiId=312228231',
-      {
-        params: {
-          name: searchString.value,
-        },
-      }
-    )
-    if (response.data) {
+    let response
+    if (searchType.value === 'name') {
+      response = await searchResearchersByName({ name: searchString.value })
+    } else if (searchType.value === 'institution') {
+      response = await searchResearchersByInstitution({ institution: searchString.value })
+    } else if (searchType.value === 'field') {
+      response = await searchResearchersByArea({ area: searchString.value })
+    } else if (searchType.value === 'title') {
+      response = await searchResearchersByTitle({ title: searchString.value })
+    } else {
+      // 默认用 name 搜索
+      response = await searchResearchersByName({ name: searchString.value })
+    }
+    if (response && response.data) {
       users.value = response.data
+    } else {
+      users.value = []
     }
   } catch (error) {
     console.error('搜索失败:', error)
@@ -782,8 +797,10 @@ const performSearch = async () => {
 }
 
 const selectSuggestion = (suggestion: string) => {
-  searchQuery.value = suggestion
-  // performSearch()
+  if (suggestion) {
+    searchQuery.value = suggestion
+    // performSearch()
+  }
 }
 
 const handlePageChange = () => {
@@ -810,21 +827,24 @@ const clearFilters = () => {
   filters.selectedInstitutions = []
   filters.followersRange = { min: null, max: null }
   filters.publicationsRange = { min: null, max: null }
-  filters.sortBy = 'relevance'
+  filters.sortBy = ''
   searchQuery.value = ''
-  searchType.value = 'all'
+  searchType.value = 'name'
   currentPage.value = 1
+  searchString.value = ''
 }
 
 const goToUserDetail = (id: number) => {
-  router.push(`/user/${id}`)
+  if (id && !isNaN(id)) {
+    router.push(`/user/${id}`)
+  }
 }
 
 // 监听路由参数，支持从首页跳转过来的筛选
 onMounted(() => {
   const field = route.query.field as string
-  if (field) {
-    filters.selectedFields = [field]
+  if (field && field.trim()) {
+    filters.selectedFields = [field.trim()]
   }
 })
 
@@ -834,14 +854,14 @@ const hasActiveFilters = computed(() => {
     filters.selectedFields.length > 0 ||
     filters.selectedInstitutions.length > 0 ||
     publicationsFilterText.value !== '' ||
-    followersFilterText.value !== ''
+    (followersFilterText.value !== '' && followersFilterText.value !== null)
   )
 })
 
 const publicationsFilterText = computed(() => {
   const { min, max } = filters.publicationsRange
-  const minIsEmpty = min === null || (min as any) === ''
-  const maxIsEmpty = max === null || (max as any) === ''
+  const minIsEmpty = min === null || (min as any) === '' || isNaN(min as any)
+  const maxIsEmpty = max === null || (max as any) === '' || isNaN(max as any)
 
   if (minIsEmpty && maxIsEmpty) return ''
   if (!minIsEmpty && !maxIsEmpty) return `${min} - ${max}`
@@ -852,8 +872,8 @@ const publicationsFilterText = computed(() => {
 
 const followersFilterText = computed(() => {
   const { min, max } = filters.followersRange
-  const minIsEmpty = min === null || (min as any) === ''
-  const maxIsEmpty = max === null || (max as any) === ''
+  const minIsEmpty = min === null || (min as any) === '' || isNaN(min as any)
+  const maxIsEmpty = max === null || (max as any) === '' || isNaN(max as any)
 
   if (minIsEmpty && maxIsEmpty) return ''
   if (!minIsEmpty && !maxIsEmpty) return `${min} - ${max}`
@@ -863,11 +883,15 @@ const followersFilterText = computed(() => {
 })
 
 const removeField = (field: string) => {
-  filters.selectedFields = filters.selectedFields.filter(f => f !== field)
+  if (field) {
+    filters.selectedFields = filters.selectedFields.filter(f => f !== field)
+  }
 }
 
 const removeInstitution = (inst: string) => {
-  filters.selectedInstitutions = filters.selectedInstitutions.filter(i => i !== inst)
+  if (inst) {
+    filters.selectedInstitutions = filters.selectedInstitutions.filter(i => i !== inst)
+  }
 }
 
 const removePublicationsRange = () => {
@@ -884,6 +908,9 @@ const removeFollowersRange = () => {
 const sidebarResearchFields = computed(() => {
   const fieldCounts = new Map<string, number>()
   users.value.forEach(user => {
+    // 添加null检查
+    if (!user.researchArea) return
+
     user.researchArea.split(',').forEach((field: string) => {
       const trimmedField = field.trim()
       if (trimmedField) {
@@ -905,6 +932,9 @@ const sidebarResearchFields = computed(() => {
 const sidebarInstitutions = computed(() => {
   const instCounts = new Map<string, number>()
   users.value.forEach(user => {
+    // 添加null检查
+    if (!user.institution) return
+
     instCounts.set(user.institution, (instCounts.get(user.institution) || 0) + 1)
   })
 
@@ -935,6 +965,13 @@ const validateFollowersRange = () => {
 
   // 如果两个输入框都有值，检查范围有效性
   if (min !== null && max !== null) {
+    // 确保输入的是有效数字
+    if (isNaN(min) || isNaN(max)) {
+      filters.followersRange.min = null
+      filters.followersRange.max = null
+      return
+    }
+
     if (min > max) {
       // 如果下限大于上限，将上限调整为下限值
       filters.followersRange.max = min

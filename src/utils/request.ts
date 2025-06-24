@@ -9,7 +9,6 @@ interface ApiResponse<T = unknown> {
   message: string
 }
 
-// 获取baseURL
 const getBaseURL = (): string => {
   const useMock = import.meta.env.VITE_USE_MOCK === 'true'
   return useMock
@@ -17,7 +16,6 @@ const getBaseURL = (): string => {
     : import.meta.env.VITE_API_BASE_URL || '/api'
 }
 
-// 创建axios实例
 const request: AxiosInstance = axios.create({
   baseURL: getBaseURL(),
   timeout: 10000,
