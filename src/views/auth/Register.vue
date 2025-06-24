@@ -203,6 +203,14 @@ const handleRegister = async () => {
     ElMessage.error('请输入有效的学术邮箱')
     return
   }
+  if (form.password.length < 8) {
+    ElMessage.error('密码长度至少8位')
+    return
+  }
+  if (!/(?=.*[A-Za-z])(?=.*\d)/.test(form.password)) {
+    ElMessage.error('密码必须包含字母和数字')
+    return
+  }
   if (form.password !== form.confirmPassword) {
     ElMessage.error('两次输入的密码不一致')
     return
@@ -216,23 +224,15 @@ const handleRegister = async () => {
       gender: form.gender,
       institution: form.institution,
     })
-    const user = res.data[0]
-    localStorage.setItem('token', user.token)
-    userStore.setUser({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      avatar: user.imageUrl,
-    })
+    const { token, ...userInfo } = res.data[0]
+    userStore.setUser(userInfo)
+    localStorage.setItem('token', token)
 
     ElMessage.success('注册成功，即将自动登录')
-    // 这里可以设置已认证状态
-    // userStore.isAuthenticated = true; // 如果需要
     setTimeout(() => {
       router.push('/')
     }, 1000)
   } catch (error) {
-    console.log(error)
     const errMsg =
       (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
       '注册失败，请重试'

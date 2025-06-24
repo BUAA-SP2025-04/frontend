@@ -4,11 +4,38 @@
     <main class="bg-gray-50 min-h-screen">
       <router-view />
     </main>
+    <el-dialog
+      v-model="globalStore.showAuthDialog"
+      title="请登录"
+      width="320px"
+      :close-on-click-modal="false"
+    >
+      <div class="text-center">
+        <p>您需要登录后才能访问该页面</p>
+        <el-button type="primary" class="mt-4" @click="goLogin">去登录</el-button>
+        <el-button class="mt-4 ml-2" @click="goRegister">去注册</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import AppNavbar from '@/components/AppNavbar.vue'
+import { useGlobalStore } from '@/stores/global'
+import { useRouter } from 'vue-router'
+
+const globalStore = useGlobalStore()
+const router = useRouter()
+
+const goLogin = () => {
+  globalStore.showAuthDialog = false
+  router.push('/login')
+}
+
+const goRegister = () => {
+  globalStore.showAuthDialog = false
+  router.push('/register')
+}
 </script>
 
 <style>
