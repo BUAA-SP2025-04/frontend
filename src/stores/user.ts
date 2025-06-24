@@ -14,6 +14,7 @@ export interface User {
   subjectNum: number
   createdAt: string
   bio: string
+  avatar?: string // 添加头像字段，用于聊天
 }
 
 export const useUserStore = defineStore('user', {
