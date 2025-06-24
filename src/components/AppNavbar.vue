@@ -167,7 +167,7 @@
               @click="showUserMenu = !showUserMenu"
             >
               <img
-                :src="currentUser?.avatar"
+                :src="currentUser?.imgUrl || `http://api.btstu.cn/sjtx/api.php?lx=${'b1'}`"
                 :alt="currentUser?.name"
                 class="h-8 w-8 rounded-full object-cover"
               />
@@ -221,6 +221,21 @@
                     />
                   </svg>
                   科研成果
+                </router-link>
+
+                <router-link
+                  to="/follow"
+                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                  我的关注
                 </router-link>
 
                 <div class="border-t border-gray-100"></div>
@@ -389,7 +404,7 @@ const handleNotificationClick = async (notification: Notification) => {
 }
 
 const logout = () => {
-  // 实际项目中应该调用登出API
+  localStorage.removeItem('token')
   userStore.clearUser()
   ElMessage.success('已退出登录')
   router.push('/login')

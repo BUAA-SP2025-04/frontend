@@ -92,14 +92,11 @@ const handleLogin = async () => {
       email: form.email,
       password: form.password,
     })
-    const user = res.data[0]
-    localStorage.setItem('token', user.token)
-    userStore.setUser({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      avatar: user.imgUrl,
-    })
+    console.log(res)
+    const { token, ...userInfo } = res.data[0]
+    userStore.setUser(userInfo)
+    localStorage.setItem('token', token)
+    console.log(userInfo)
     ElMessage.success('登录成功')
     router.push('/')
   } catch (error) {

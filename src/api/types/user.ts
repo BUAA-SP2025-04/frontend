@@ -18,21 +18,31 @@ export interface UpdateUserProfileRequest {
   bio: string
   researchArea: string
   title: string
-  imgUrl: string
 }
 
-// 登录/注册响应体
-export interface LoginResponse {
-  data: UserResponse[]
+export interface UpdateUserPasswordRequest {
+  originPassword: string
+  newPassword: string
 }
 
-// 用户信息响应体
-export interface UserResponse {
+// 登录/注册响应体 - 修改为返回 UserDetail 和 token
+export interface LoginUserResponse {
   token: string
-  id: string
-  email: string
-  gender: string
+  id: number
   name: string
-  institution: string
+  email: string
+  researchArea: string
+  title: string
+  followerNum: string
+  publishNum: string
+  subjectNum: string
+  gender: string
   imgUrl: string
+  institution: string
+  createdAt: string
+  bio: string
+}
+
+export interface LoginResponse {
+  data: LoginUserResponse[]
 }
