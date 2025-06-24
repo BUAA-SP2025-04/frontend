@@ -9,12 +9,12 @@ export interface CountResponse {
 
 // 获取注册研究者数量
 export function getResearcherCount(): Promise<CountResponse> {
-  return request.get('http://127.0.0.1:4523/m2/6625065-6332383-default/312631040')
+  return request.get('/researcher/getCount')
 }
 
 // 获取发表论文数量
 export function getPaperCount(): Promise<CountResponse> {
-  return request.get('http://127.0.0.1:4523/m2/6625065-6332383-default/312631025')
+  return request.get('/publication/getCount')
 }
 
 // 获取合作项目数量（消息数量）
