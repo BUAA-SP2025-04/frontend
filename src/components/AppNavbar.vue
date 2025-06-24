@@ -406,6 +406,7 @@ const handleNotificationClick = async (notification: Notification) => {
 const logout = () => {
   localStorage.removeItem('token')
   userStore.clearUser()
+  userStore.clearToken()
   ElMessage.success('已退出登录')
   router.push('/login')
 }
