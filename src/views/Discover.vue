@@ -1027,7 +1027,9 @@ const validateFollowersRange = () => {
   transition: all 0.2s ease-in-out;
 }
 .filter-collapse :deep(.el-collapse-item__header:hover) {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
   border-color: #e5e7eb;
 }
 .filter-collapse :deep(.el-collapse-item__header.is-active) {
@@ -1147,7 +1149,9 @@ const validateFollowersRange = () => {
 }
 .custom-select .el-input__wrapper:hover {
   border-color: #a5b4fc;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 .custom-select .el-input__inner {
   font-weight: 500;

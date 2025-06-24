@@ -443,7 +443,9 @@ const showPaperDetail = (paper: Paper) => {
   height: 34px;
   min-height: 34px;
   line-height: 34px;
-  transition: background 0.3s, transform 0.2s;
+  transition:
+    background 0.3s,
+    transform 0.2s;
 }
 .follow-btn:hover {
   background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);

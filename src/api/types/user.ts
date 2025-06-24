@@ -74,22 +74,22 @@ export interface Paper {
 }
 
 export interface publication {
-  abstract: string;
-  authors: { id: number; name: string }[];
-  conference: string;
-  createdAt: string;
-  doi: string;
-  id: number;
-  institutionId: number;
-  keywords: string;
-  likeNum: number;
-  pdfUrl: string;
-  readerNum: number;
-  status: string;
-  title: string;
-  type: string;
-  uploaderId: number;
-  venue: string;
-  year: number;
-  [property: string]: any;
+  abstract: string
+  authors: { id: number; name: string }[]
+  conference: string
+  createdAt: string
+  doi: string
+  id: number
+  institutionId: number
+  keywords: string
+  likeNum: number
+  pdfUrl: string
+  readerNum: number
+  status: string
+  title: string
+  type: string
+  uploaderId: number
+  venue: string
+  year: number
+  [property: string]: any
 }

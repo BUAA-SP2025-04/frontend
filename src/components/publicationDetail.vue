@@ -226,4 +226,4 @@ defineOptions({ name: 'publicationDetail' })
 .pub-pdf {
   margin-top: 6px;
 }
-</style> 
+</style>
