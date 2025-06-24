@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import type { AxiosInstance, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
 
 // 响应数据接口
@@ -9,7 +9,6 @@ interface ApiResponse<T = unknown> {
   message: string
 }
 
-// 获取baseURL
 const getBaseURL = (): string => {
   const useMock = import.meta.env.VITE_USE_MOCK === 'true'
   return useMock
@@ -17,7 +16,6 @@ const getBaseURL = (): string => {
     : import.meta.env.VITE_API_BASE_URL || '/api'
 }
 
-// 创建axios实例
 const request: AxiosInstance = axios.create({
   baseURL: getBaseURL(),
   timeout: 10000,
@@ -42,7 +40,7 @@ request.interceptors.request.use(
         _t: Date.now(),
       }
     }
-    
+
     console.log('请求配置:', config) // 调试日志
     return config
   },
@@ -56,7 +54,7 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (response: AxiosResponse) => {
     console.log('原始响应:', response) // 调试日志
-    
+
     // 检查响应数据是否存在
     if (!response.data) {
       console.error('响应数据为空')
@@ -67,9 +65,9 @@ request.interceptors.response.use(
     // 检查是否是标准的API响应格式
     if (typeof response.data === 'object' && 'code' in response.data) {
       const { code, data, message } = response.data as ApiResponse
-      
+
       console.log('API响应:', { code, message, data }) // 调试日志
-      
+
       // 根据业务状态码处理
       if (code === 200) {
         return data
@@ -85,14 +83,14 @@ request.interceptors.response.use(
       return response.data
     }
   },
-  (error) => {
+  error => {
     console.error('响应错误:', error) // 调试日志
-    
+
     // 网络错误处理
     if (error.response) {
       const { status, data } = error.response
       console.error('HTTP错误:', status, data)
-      
+
       switch (status) {
         case 401:
           ElMessage.error('登录已过期，请重新登录')

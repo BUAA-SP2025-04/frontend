@@ -18,22 +18,87 @@ export interface UpdateUserProfileRequest {
   bio: string
   researchArea: string
   title: string
-  imgUrl: string
 }
 
-// 注册响应体
-export interface RegisterResponse {
-  status: string
-  data: UserResponse[]
+export interface UpdateUserPasswordRequest {
+  originPassword: string
+  newPassword: string
 }
 
-// 用户信息响应体
-export interface UserResponse {
+// 登录/注册响应体 - 修改为返回 UserDetail 和 token
+export interface LoginUserResponse {
   token: string
-  id: string
-  email: string
-  gender: string
+  id: number
   name: string
+  email: string
+  researchArea: string
+  title: string
+  followerNum: string
+  publishNum: string
+  subjectNum: string
+  gender: string
+  imgUrl: string
   institution: string
-  imageUrl: string
+  createdAt: string
+  bio: string
+}
+
+export interface LoginResponse {
+  data: LoginUserResponse[]
+}
+
+// 用户详情类型
+export interface UserDetail {
+  id: string | string[]
+  name: string
+  title: string
+  institution: string
+  imgUrl: string
+  description: string
+  researchArea: string
+  publishNum: number
+  subjectNum: number
+  followerNum: number
+  gender: string
+  createdAt: string
+  email?: string
+}
+
+// 论文类型
+export interface Paper {
+  id: number
+  title: string
+  authors: { id: number; name: string }[]
+  conference: string
+  venue: string
+  year: number
+  status: string
+  keywords: string
+  doi: string
+  pdfUrl: string
+  abstract: string
+  readerNum: number
+  likeNum: number
+  _showFullAbstract?: boolean
+}
+
+export interface publication {
+  abstract: string
+  authors: { id: number; name: string }[]
+  conference: string
+  createdAt: string
+  doi: string
+  id: number
+  institutionId: number
+  keywords: string
+  likeNum: number
+  pdfUrl: string
+  readerNum: number
+  status: string
+  title: string
+  type: string
+  uploaderId: number
+  venue: string
+  year: number
+  [property: string]: any
 }

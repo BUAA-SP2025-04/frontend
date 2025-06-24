@@ -26,6 +26,7 @@
               开始探索
             </router-link>
             <router-link
+              v-if="!isLoggedIn"
               to="/register"
               class="bg-white text-indigo-900 hover:bg-gray-100 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 shadow-lg"
             >
@@ -52,15 +53,21 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           <div>
-            <div class="text-4xl font-bold text-indigo-600 mb-2">{{ formatNumber(128456) }}</div>
+            <div class="text-4xl font-bold text-indigo-600 mb-2">
+              {{ formatNumber(animatedResearcherCount) }}
+            </div>
             <div class="text-gray-600">注册研究者</div>
           </div>
           <div>
-            <div class="text-4xl font-bold text-green-600 mb-2">{{ formatNumber(89234) }}</div>
+            <div class="text-4xl font-bold text-green-600 mb-2">
+              {{ formatNumber(animatedPaperCount) }}
+            </div>
             <div class="text-gray-600">发表论文</div>
           </div>
           <div>
-            <div class="text-4xl font-bold text-purple-600 mb-2">{{ formatNumber(45621) }}</div>
+            <div class="text-4xl font-bold text-purple-600 mb-2">
+              {{ formatNumber(animatedMessageCount) }}
+            </div>
             <div class="text-gray-600">学术动态</div>
           </div>
           <div>
@@ -466,11 +473,11 @@
     <!-- CTA 区域 -->
     <section class="py-20 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
       <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-        <h2 class="text-4xl font-bold mb-6">准备好加入我们了吗？</h2>
+        <h2 class="text-4xl font-bold mb-6">欢迎加入我们</h2>
         <p class="text-xl mb-8 text-indigo-100">
           与全球数十万研究者建立联系，分享您的研究成果，推动科学进步
         </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <div v-if="!isLoggedIn" class="flex flex-col sm:flex-row gap-4 justify-center">
           <router-link
             to="/register"
             class="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 shadow-lg"
@@ -490,10 +497,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { getResearcherCount, getPaperCount, getMessageCount } from '@/api/modules/statistics'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 // 响应式数据
 const hotPapers = ref([
@@ -587,22 +597,61 @@ const searchField = (fieldName: string) => {
   router.push(`/discover?field=${encodeURIComponent(fieldName)}`)
 }
 
-// 动态数字动画
-const animateNumber = (element: HTMLElement, target: number) => {
-  let current = 0
-  const increment = target / 100
-  const timer = setInterval(() => {
-    current += increment
-    if (current >= target) {
-      current = target
-      clearInterval(timer)
+// 统计数据
+const researcherCount = ref(0)
+const paperCount = ref(0)
+const messageCount = ref(0)
+
+// 动画显示用的数字
+const animatedResearcherCount = ref(0)
+const animatedPaperCount = ref(0)
+const animatedMessageCount = ref(0)
+
+function animateNumber(target: number, animatedRef: any) {
+  const duration = 800 // ms
+  const frameRate = 30 // fps
+  const totalFrames = Math.round(duration / (1000 / frameRate))
+  const start = animatedRef.value
+  const increment = (target - start) / totalFrames
+  let frame = 0
+  function update() {
+    frame++
+    animatedRef.value = Math.round(start + increment * frame)
+    if (frame < totalFrames) {
+      requestAnimationFrame(update)
+    } else {
+      animatedRef.value = target
     }
-    element.textContent = formatNumber(Math.floor(current))
-  }, 20)
+  }
+  update()
 }
 
-onMounted(() => {
-  // 可以在这里添加数字动画效果
+watch(researcherCount, val => animateNumber(val, animatedResearcherCount))
+watch(paperCount, val => animateNumber(val, animatedPaperCount))
+watch(messageCount, val => animateNumber(val, animatedMessageCount))
+
+// 判断是否已登录
+const isLoggedIn = computed(() => userStore.isAuthenticated)
+
+onMounted(async () => {
+  try {
+    const [res1, res2, res3] = await Promise.all([
+      getResearcherCount(),
+      getPaperCount(),
+      getMessageCount(),
+    ])
+    if (res1 && typeof res1.data === 'object' && 'count' in res1.data) {
+      researcherCount.value = (res1.data as any).count || 0
+    }
+    if (res2 && typeof res2.data === 'object' && 'count' in res2.data) {
+      paperCount.value = (res2.data as any).count || 0
+    }
+    if (res3 && typeof res3.data === 'object' && 'count' in res3.data) {
+      messageCount.value = (res3.data as any).count || 0
+    }
+  } catch (e) {
+    // 可选：错误处理
+  }
 })
 </script>
 
