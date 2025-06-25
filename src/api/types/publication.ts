@@ -1,21 +1,21 @@
 export interface Publication {
-  abstracts: string
-  authors: string
+  abstracts: string | null
+  authors: string | null
   conference: string
   createdAt: string
-  doi: string
+  doi: string | null
   id: number
   institutionId: number
   isPublic: number
-  keywords: string
+  keywords: string | null
   likeNum: number
-  pdfUrl: string
+  pdfUrl: string | null
   readerNum: number
   status: string
   title: string
   type: string
   uploaderId: number
-  venue: string
+  venue: string | null
   year: number | null
 }
 
