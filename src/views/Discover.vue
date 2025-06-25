@@ -983,7 +983,7 @@ const validateFollowersRange = () => {
 
 const handleImageError = (event: Event) => {
   const target = event.target as HTMLImageElement
-  if (target) {
+  if (target && !target.src.includes('/default-avatar.png')) {
     target.src = '/default-avatar.png'
   }
 }
