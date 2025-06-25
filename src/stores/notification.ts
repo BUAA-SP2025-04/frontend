@@ -1,107 +1,111 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Notification, WebSocketMessage } from '@/api/types/notification'
+import type { Notification, WebSocketNotification } from '@/api/types/notification'
 import { wsService } from '@/utils/websocket'
-import request from '@/utils/request'
 import { useUserStore } from './user'
+import { messagesAPI } from '@/api/modules/messages'
 
-export const useNotificationStore = defineStore('notification', () => {
-  const notifications = ref<Notification[]>([])
-  const unreadCount = ref(0)
+export const useNotificationStore = defineStore(
+  'notification',
+  () => {
+    const notifications = ref<Notification[]>([])
+    const unreadCount = ref(0)
 
-  // 初始化 WebSocket 连接
-  function initializeWebSocket() {
-    const userStore = useUserStore()
-    console.log('初始化WebSocket', userStore.user)
-    if (userStore.user?.id) {
-      wsService.connect(String(userStore.user.id))
-      wsService.onMessage(handleWebSocketMessage)
+    // 初始化 WebSocket 连接
+    function initializeWebSocket() {
+      const userStore = useUserStore()
+      if (userStore.user?.id) {
+        wsService.connect(String(userStore.user.id))
+
+        wsService.on('notification', data => {
+          console.log('收到 notification 事件:', data)
+          handleWebSocketMessage(data as WebSocketNotification)
+        })
+
+        console.log('WebSocket 监听器已设置')
+      }
     }
-  }
 
-  // 处理 WebSocket 消息
-  function handleWebSocketMessage(message: WebSocketMessage) {
-    console.log('收到WebSocket消息:', message)
-    // 假设消息格式为 { type: string, data: any }
-    if (typeof message === 'string') {
-      try {
-        const notification: Notification = {
-          id: Date.now(), // 临时 ID
-          content: message,
-          createdAt: new Date().toISOString(),
-          isRead: false,
-          type: 'system',
-          userId: 0,
-          publicationId: 0,
-          avatarUrl: '',
+    // 处理 WebSocket 消息
+    function handleWebSocketMessage(message: WebSocketNotification) {
+      console.log('收到WebSocket消息:', message)
+
+      // 转换为内部通知格式
+      const notification: Notification = {
+        id: message.notification.id,
+        content: message.notification.content,
+        createdAt: message.notification.createdAt,
+        isRead: message.notification.isRead,
+        type: message.notification.type,
+        userId: message.notification.userId,
+        publicationId: message.publicationId,
+        avatarUrl: message.avatarUrl,
+        senderId: message.notification.senderId,
+      }
+
+      handleNewNotification(notification)
+    }
+
+    // 处理新通知
+    function handleNewNotification(notification: Notification) {
+      // 检查是否已存在相同ID的通知，避免重复
+      const existingIndex = notifications.value.findIndex(n => n.id === notification.id)
+      if (existingIndex === -1) {
+        notifications.value.unshift(notification)
+        if (!notification.isRead) {
+          unreadCount.value++
         }
-        console.log(message)
-        handleNewNotification(notification)
+        console.log('添加新通知:', notification)
+      } else {
+        console.log('通知已存在，跳过:', notification.id)
+      }
+    }
+
+    // 标记通知为已读
+    async function markNotificationAsRead(category: string, id: number) {
+      try {
+        await messagesAPI.markAsRead(category, id)
+        console.log(category, id)
+        // 如果后端没有接口，直接更新本地状态
+        const notification = notifications.value.find(n => n.id === id)
+        if (notification && !notification.isRead) {
+          notification.isRead = true
+          unreadCount.value = Math.max(0, unreadCount.value - 1)
+          console.log('标记通知已读:', id)
+        }
       } catch (error) {
-        console.error('解析消息失败:', error)
-      }
-    } else {
-      switch (message.type) {
-        case 'notification':
-          // 添加类型检查，确保 data 是 Notification 类型
-          if (message.data && typeof message.data === 'object' && 'id' in message.data) {
-            handleNewNotification(message.data as Notification)
-          } else {
-            console.warn('收到无效的通知数据:', message.data)
-          }
-          break
-        case 'error':
-          console.error('WebSocket 错误:', message.data)
-          break
+        console.error('标记通知已读失败:', error)
       }
     }
-  }
 
-  // 处理新通知
-  function handleNewNotification(notification: Notification) {
-    notifications.value.unshift(notification)
-    if (!notification.isRead) {
-      unreadCount.value++
+    // 获取历史通知 - 移除后端接口调用，只依赖 WebSocket
+    async function fetchHistoryNotifications() {
+      console.log('当前通知数量:', notifications.value.length)
+      console.log('当前未读数量:', unreadCount.value)
+      // 不再调用后端接口，通知完全依赖 WebSocket 接收
     }
-  }
 
-  // 标记通知为已读
-  async function markAsRead(notificationId: number) {
-    try {
-      await request.put(`/notifications/${notificationId}/read`)
-      const notification = notifications.value.find(n => n.id === notificationId)
-      if (notification && !notification.isRead) {
-        notification.isRead = true
-        unreadCount.value = Math.max(0, unreadCount.value - 1)
-      }
-    } catch (error) {
-      console.error('标记通知已读失败:', error)
+    // 清除所有通知
+    function clearNotifications() {
+      notifications.value = []
+      unreadCount.value = 0
+      console.log('清除所有通知')
     }
-  }
 
-  // 获取历史通知
-  async function fetchHistoryNotifications() {
-    try {
-      const response = await request.get('/notifications')
-      notifications.value = response.data.notifications
-      unreadCount.value = response.data.unreadCount
-    } catch (error) {
-      console.error('获取历史通知失败:', error)
+    return {
+      notifications,
+      unreadCount,
+      initializeWebSocket,
+      markNotificationAsRead,
+      fetchHistoryNotifications,
+      clearNotifications,
     }
+  },
+  {
+    persist: {
+      key: 'notification-store',
+      storage: localStorage,
+      paths: ['notifications', 'unreadCount'],
+    },
   }
-
-  // 清除所有通知
-  function clearNotifications() {
-    notifications.value = []
-    unreadCount.value = 0
-  }
-
-  return {
-    notifications,
-    unreadCount,
-    initializeWebSocket,
-    markAsRead,
-    fetchHistoryNotifications,
-    clearNotifications,
-  }
-})
+)
