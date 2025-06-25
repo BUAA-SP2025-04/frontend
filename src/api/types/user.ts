@@ -84,7 +84,7 @@ export interface Paper {
 
 export interface publication {
   abstract: string
-  authors: { id: number; name: string }[]
+  authors: string[]
   conference: string
   createdAt: string
   doi: string
