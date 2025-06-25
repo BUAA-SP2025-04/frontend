@@ -5,7 +5,5 @@ export interface EmptyResponse {
 
 export interface UploadResponse {
   message: string
-  data: {
-    url: string
-  }
+  data: string
 }

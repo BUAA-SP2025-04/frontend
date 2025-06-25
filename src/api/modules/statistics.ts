@@ -19,7 +19,7 @@ export function getPaperCount(): Promise<CountResponse> {
 
 // 获取合作项目数量（消息数量）
 export function getMessageCount(): Promise<CountResponse> {
-  return request.get('http://127.0.0.1:4523/m2/6625065-6332383-default/312631946')
+  return request.get('/messages/getAllCount')
 }
 
 // 获取更新成果

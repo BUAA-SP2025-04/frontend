@@ -1,37 +1,25 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="container mx-auto px-4 py-8">
-      <div class="mb-8">
+      <!-- <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-4">PDF阅读器</h1>
         <p class="text-gray-600">支持PDF文档阅读和文本层坐标提取</p>
-      </div>
+      </div> -->
 
-      <div class="card mb-6">
         <div class="flex items-center space-x-4 mb-4">
-          <el-upload
-            class="upload-demo"
-            action="#"
-            :auto-upload="false"
-            :on-change="handleFileChange"
-            accept=".pdf"
-            :show-file-list="false"
-          >
-            <el-button type="primary">选择PDF文件</el-button>
-          </el-upload>
-          <span v-if="selectedFile" class="text-sm text-gray-600">
-            已选择: {{ selectedFile.name }}
-          </span>
+          <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf">
+            下载当前PDF
+          </el-button>
         </div>
-      </div>
 
       <div v-if="pdfUrl" class="card">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">PDF预览</h3>
-          <div class="flex space-x-2">
-            <el-button size="small" @click="zoomIn">放大</el-button>
-            <el-button size="small" @click="zoomOut">缩小</el-button>
-            <el-button size="small" @click="resetZoom">重置</el-button>
-          </div>
+          <!--          <div class="flex space-x-2">-->
+          <!--            <el-button size="small" @click="zoomIn">放大</el-button>-->
+          <!--            <el-button size="small" @click="zoomOut">缩小</el-button>-->
+          <!--            <el-button size="small" @click="resetZoom">重置</el-button>-->
+          <!--          </div>-->
         </div>
 
         <div class="border rounded-lg overflow-hidden">
@@ -57,11 +45,11 @@
             </el-button>
           </div>
 
-          <div class="flex items-center space-x-2">
-            <span class="text-sm text-gray-600">缩放:</span>
-            <el-slider v-model="scale" :min="0.5" :max="2" :step="0.1" style="width: 100px" />
-            <span class="text-sm text-gray-600">{{ Math.round(scale * 100) }}%</span>
-          </div>
+          <!--          <div class="flex items-center space-x-2">-->
+          <!--            <span class="text-sm text-gray-600">缩放:</span>-->
+          <!--            <el-slider v-model="scale" :min="0.5" :max="2" :step="0.1" style="width: 100px" />-->
+          <!--            <span class="text-sm text-gray-600">{{ Math.round(scale * 100) }}%</span>-->
+          <!--          </div>-->
         </div>
       </div>
 
@@ -91,15 +79,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import VuePdfEmbed from 'vue-pdf-embed'
 import type { UploadFile } from 'element-plus'
+import { getPublicationFile } from '@/api/modules/publication'
 
 const selectedFile = ref<File | null>(null)
 const pdfUrl = ref<string>('')
 const currentPage = ref(1)
 const totalPages = ref(1)
 const scale = ref(1)
+const showDownload = ref(false)
+const pdfBlob = ref<Blob | null>(null)
+
+const route = useRoute()
 
 const handleFileChange = (file: UploadFile) => {
   if (file.raw) {
@@ -140,4 +134,53 @@ const zoomOut = () => {
 const resetZoom = () => {
   scale.value = 1
 }
+
+// 支持通过参数传递url并请求pdf
+onMounted(async () => {
+  const urlParam = route.query.url as string | undefined
+  if (urlParam) {
+    showDownload.value = true
+    try {
+      const blob: Blob = await getPublicationFile(urlParam)
+      pdfBlob.value = blob
+      pdfUrl.value = URL.createObjectURL(blob)
+      currentPage.value = 1
+      selectedFile.value = null
+    } catch (e) {
+      pdfUrl.value = ''
+      pdfBlob.value = null
+    }
+  }
+})
+
+const downloadPdf = () => {
+  if (pdfBlob.value) {
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(pdfBlob.value)
+    link.download = 'document.pdf'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    // 可选：释放URL对象
+    setTimeout(() => URL.revokeObjectURL(link.href), 100)
+  }
+}
 </script>
+
+<style>
+/* 添加一些基本样式 */
+.upload-demo {
+  cursor: pointer;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.text-center {
+  text-align: center;
+}
+</style>

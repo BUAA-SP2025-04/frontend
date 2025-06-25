@@ -60,6 +60,15 @@
               class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               placeholder="请输入邮箱地址"
             />
+            <el-tooltip
+              content="仅支持学术邮箱：xxx@buaa.edu.cn、xxx@tsinghua.edu.cn、xxx@pku.edu.cn、xxx@ustc.edu.cn、xxx@mit.edu"
+              placement="right"
+              effect="dark"
+            >
+              <el-icon style="margin-left: 8px; cursor: pointer">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
             <p v-if="emailError" class="text-red-500 text-xs mt-1">{{ emailError }}</p>
           </div>
           <div>
@@ -146,6 +155,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { registerUser } from '@/api/modules/user'
 import { useUserStore } from '@/stores/user'
+import { QuestionFilled } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -234,10 +244,10 @@ const handleRegister = async () => {
       router.push('/')
     }, 1000)
   } catch (error) {
-    const errMsg =
-      (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-      '注册失败，请重试'
-    ElMessage.error(errMsg)
+    // const errMsg =
+    //   (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+    //   '注册失败，请重试'
+    // ElMessage.error(errMsg)
   }
 }
 </script>

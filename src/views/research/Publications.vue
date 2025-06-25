@@ -20,7 +20,8 @@
             </svg>
             科研成果管理
           </h1>
-          <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>
+          <!--          <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>-->
+          <p class="text-gray-600 mt-2">管理您的研究成果</p>
         </div>
         <el-button type="primary" size="large" @click="showAddDialog = true">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,15 +55,14 @@
             <el-option label="期刊论文" value="journal" />
             <el-option label="会议论文" value="conference" />
             <el-option label="专利" value="patent" />
-            <el-option label="项目" value="project" />
           </el-select>
-          <el-select v-model="filterYear" placeholder="年份" size="large" style="width: 120px">
-            <el-option label="全部" value="" />
-            <el-option label="2024" value="2024" />
-            <el-option label="2023" value="2023" />
-            <el-option label="2022" value="2022" />
-            <el-option label="2021" value="2021" />
-          </el-select>
+          <el-input
+            v-model="filterYear"
+            placeholder="年份"
+            maxlength="4"
+            type="number"
+            style="width: 120px"
+          />
         </div>
       </div>
 
@@ -86,7 +86,10 @@
 
           <el-table-column prop="title" label="标题" min-width="300">
             <template #default="{ row }">
-              <div class="font-medium text-gray-900 hover:text-indigo-600 cursor-pointer">
+              <div
+                class="font-medium text-gray-900 hover:text-indigo-600 cursor-pointer"
+                @click="onShowInfo(row)"
+              >
                 {{ row.title }}
               </div>
               <div class="text-sm text-gray-500 mt-1">
@@ -108,13 +111,16 @@
 
           <el-table-column prop="readerNum" label="阅读量" width="100" sortable align="center">
             <template #default="{ row }">
-              <div class="font-semibold text-green-600">{{ row.readNum || 0 }}</div>
+              <div v-if="row.readerNum" class="font-semibold text-green-600">
+                {{ row.readerNum }}
+              </div>
+              <div v-else class="text-green-600">-</div>
             </template>
           </el-table-column>
 
           <el-table-column prop="likeNum" label="点赞数" width="120" align="center">
             <template #default="{ row }">
-              <div v-if="row.impact" class="font-semibold text-blue-600">{{ row.likeNum }}</div>
+              <div v-if="row.likeNum" class="font-semibold text-blue-600">{{ row.likeNum }}</div>
               <div v-else class="text-gray-400">-</div>
             </template>
           </el-table-column>
@@ -187,7 +193,14 @@
           <el-form-item label="作者">
             <el-input
               v-model="currentPublication.authors"
-              placeholder="请输入作者，用英文逗号分隔"
+              :placeholder="`请输入作者，用英文逗号分隔（当前用户：${userName}，不可删除）`"
+              :disabled="true"
+            />
+            <el-input
+              v-if="allowAddAuthors"
+              v-model="otherAuthors"
+              placeholder="可添加其他作者，用英文逗号分隔"
+              style="margin-top: 8px"
             />
           </el-form-item>
 
@@ -207,7 +220,7 @@
 
           <el-form-item label="摘要">
             <el-input
-              v-model="currentPublication.abstract"
+              v-model="currentPublication.abstracts"
               type="textarea"
               :rows="4"
               placeholder="请输入摘要"
@@ -247,9 +260,7 @@
               >
                 <el-button type="primary">选择PDF文件</el-button>
                 <span v-if="pdfFile" class="ml-4 text-green-600">{{ pdfFile.name }}</span>
-                <span v-else-if="currentPublication.pdfUrl" class="ml-2 text-green-600"
-                  >已上传</span
-                >
+                <span v-else-if="oldFilePath" class="ml-2 text-green-600">已上传</span>
               </el-upload>
             </div>
             <div style="margin-top: 8px">
@@ -283,12 +294,18 @@
           </span>
         </template>
       </el-dialog>
+      <PublicationInfo
+        v-if="shownPublication"
+        v-model:visible="showInfo"
+        :publication="shownPublication"
+      ></PublicationInfo>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import type { UploadFile } from 'element-plus'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import type {
   Publication,
@@ -296,26 +313,33 @@ import type {
   PublicationStats,
   SavePublicationRequest,
 } from '@/api/types/publication'
-import { deletePublication, savePublication } from '@/api/modules/publication'
-import type { UploadFile } from 'element-plus'
-import { deleteFile, updateFile, uploadFile } from '@/api/modules/upload'
+import {
+  deletePublication,
+  deletePublicationFile,
+  getPublicationsByUser,
+  getPublicationStatsByUser,
+  savePublication,
+  updatePublicationFile,
+  uploadPublicationFile,
+} from '@/api/modules/publication'
 import { useUserStore } from '@/stores/user'
-import { getPublicationsByUser } from '@/api/modules/publication'
 import PublicationStatsCardGroup from '@/components/publication/PublicationStatsCardGroup.vue'
+import PublicationInfo from '@/components/publication/PublicationInfo.vue'
 
 const loading = ref(false)
 const saving = ref(false)
 const showAddDialog = ref(false)
+const showInfo = ref(false)
 const isEditing = ref(false)
 const searchQuery = ref('')
 const filterType = ref('')
 const filterYear = ref('')
 
 const stats = reactive<PublicationStats>({
-  totalPublicationNum: 10,
-  totalReaderNum: 1000,
-  totalLikeNum: 50,
-  totalProjectNum: -1,
+  totalPublicationNum: 0,
+  totalReaderNum: 0,
+  totalLikeNum: 0,
+  totalProjectNum: 0,
 })
 
 const publications = reactive<Publication[]>([])
@@ -327,7 +351,7 @@ const emptyPublication: PublicationProfile = {
   venue: null,
   year: null,
   status: 'published',
-  abstract: null,
+  abstracts: null,
   keywords: null,
   doi: null,
   pdfUrl: null,
@@ -336,6 +360,7 @@ const emptyPublication: PublicationProfile = {
 const currentPublication = reactive<PublicationProfile>(
   JSON.parse(JSON.stringify(emptyPublication))
 )
+const shownPublication = ref<Publication | null>(null)
 
 const pdfInputType = ref<'url' | 'upload'>('url')
 const pdfFile = ref<File | null>(null)
@@ -386,6 +411,12 @@ const rules: FormRules = {
           } else {
             callback()
           }
+        } else if (pdfInputType.value === 'upload') {
+          if (!oldFilePath.value && !pdfFile.value) {
+            callback(new Error('请上传PDF文件'))
+          } else {
+            callback()
+          }
         } else {
           callback()
         }
@@ -402,8 +433,8 @@ const filteredPublications = computed(() => {
     result = result.filter(
       (item: Publication) =>
         item.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        item.authors.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        item.keywords.toLowerCase().includes(searchQuery.value.toLowerCase())
+        item.authors?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        item.keywords?.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
 
@@ -423,7 +454,6 @@ const getTypeColor = (type: string) => {
     journal: 'success',
     conference: 'primary',
     patent: 'warning',
-    project: 'info',
   }
   return colors[type] || 'default'
 }
@@ -459,6 +489,7 @@ const getStatusLabel = (status: 'published' | 'accepted' | 'under-review' | 'dra
 
 const editPublication = (publicationProfile: PublicationProfile) => {
   isEditing.value = true
+  oldFilePath.value = '' // 编辑时不保留旧路径
   Object.assign(currentPublication, publicationProfile)
 
   // 根据pdfUrl判断类型
@@ -467,21 +498,14 @@ const editPublication = (publicationProfile: PublicationProfile) => {
       pdfInputType.value = 'url'
     } else {
       pdfInputType.value = 'upload'
+      oldFilePath.value = currentPublication.pdfUrl || ''
+      currentPublication.pdfUrl = ''
     }
   } else {
     pdfInputType.value = 'url'
   }
-  oldFilePath.value = '' // 编辑时不保留旧路径
   showAddDialog.value = true
 }
-
-// 监听pdfInputType变化
-watch(pdfInputType, (newType, oldType) => {
-  if (oldType === 'upload' && newType === 'url' && currentPublication.pdfUrl) {
-    oldFilePath.value = currentPublication.pdfUrl
-    currentPublication.pdfUrl = ''
-  }
-})
 
 const handlePdfFileChange = (file: UploadFile) => {
   if (file.raw && file.raw.type !== 'application/pdf') {
@@ -497,98 +521,66 @@ const handlePdfExceed = (files: File[]) => {
   }
 }
 
-//上传PDF
-const uploadPdfFile = async (): Promise<string> => {
-  if (pdfInputType.value === 'url' && !oldFilePath.value) return '' // url类型且无旧文件，直接返回
-
-  if (pdfInputType.value === 'upload' && !oldFilePath.value) {
-    // upload类型且无旧文件，上传新文件
-    if (!pdfFile.value) return currentPublication.pdfUrl ? currentPublication.pdfUrl : ''
-    const formData = new FormData()
-    formData.append('file', pdfFile.value)
-    try {
-      const res = await uploadFile('/application/uploadFile', formData)
-      if (res.data?.url) {
-        return res.data.url
+//处理URL
+const handlePdfUrl = async (): Promise<string> => {
+  if (pdfInputType.value === 'url') {
+    if (oldFilePath.value) {
+      // url类型且有旧文件，删除旧文件
+      await deletePublicationFile(oldFilePath.value)
+    }
+    return ''
+  } else if (pdfInputType.value === 'upload') {
+    if (!pdfFile.value) {
+      if (oldFilePath.value) currentPublication.pdfUrl = oldFilePath.value // 如果没有新文件但有旧文件，返回旧文件路径
+      return ''
+    }
+    if (oldFilePath.value) {
+      // upload类型且有旧文件，更新文件
+      const formData = new FormData()
+      formData.append('oldFilePath', oldFilePath.value) // 添加旧文件路径
+      formData.append('file', pdfFile.value)
+      await updatePublicationFile(formData)
+      return oldFilePath.value
+    } else {
+      // upload类型且无旧文件，上传文件
+      const formData = new FormData()
+      formData.append('file', pdfFile.value)
+      const res = await uploadPublicationFile(formData)
+      if (res.data) {
+        return res.data
+      } else {
+        return ''
       }
-      return ''
-    } catch (err) {
-      return ''
-    }
-  }
-  if (pdfInputType.value === 'upload' && oldFilePath.value) {
-    // upload类型且有旧文件，更新文件
-    if (!pdfFile.value) return ''
-    const formData = new FormData()
-    formData.append('oldFilePath', oldFilePath.value) // 添加旧文件路径
-    formData.append('file', pdfFile.value)
-    try {
-      await updateFile('/application/updateFile', formData)
-      return ''
-    } catch (err) {
-      return ''
-    }
-  }
-  if (pdfInputType.value === 'url' && oldFilePath.value) {
-    // url类型且有旧文件，删除旧文件
-    try {
-      await deleteFile('/application/deleteFile', oldFilePath.value)
-      return ''
-    } catch (err) {
-      return ''
     }
   }
   return ''
 }
 
-const handleSave = () => {
-  if (!formRef.value) return
-  formRef.value
-    .validate()
-    .then(() => {
-      saving.value = true
-      // 统一处理默认值
-      const payload: SavePublicationRequest = {
-        ...currentPublication,
-        year: currentPublication.year ? String(currentPublication.year) : null,
-        isPublic: String(currentPublication.isPublic),
-      }
-
-      //PDF上传处理
-      let pdfPromise = Promise.resolve('')
-      if (pdfInputType.value === 'upload' && pdfFile.value) {
-        pdfPromise = uploadPdfFile()
-      }
-      return pdfPromise.then(url => {
-        if (pdfInputType.value === 'upload' && pdfFile.value) {
-          if (!url) {
-            throw new Error('PDF上传失败')
-          }
-          payload.pdfUrl = url
-          pdfFile.value = null // 上传后清空
+const submitSuccess = () => {
+  resetForm()
+  closeDialog()
+  if (!isEditing.value && userStore.user?.id) {
+    loading.value = true
+    getPublicationsByUser(userStore.user.id)
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          publications.splice(0, publications.length, ...res.data)
         }
-        console.log(payload)
-        let urlApi = isEditing.value ? '/publication/update' : '/publication/add'
-        return savePublication(urlApi, payload)
       })
-    })
-    .then(() => {
-      if (isEditing.value) ElMessage.success('更新成功')
-      else ElMessage.success('添加成功')
-      resetForm()
-    })
-    .catch(err => {
-      if (err && err.message) {
-        ElMessage.error(err.message)
-      }
-    })
-    .finally(() => {
-      saving.value = false
-    })
+      .finally(() => {
+        loading.value = false
+      })
+    stats.totalPublicationNum = (stats.totalPublicationNum || 0) + 1
+  } else if (isEditing.value) {
+    // 编辑成功后更新当前列表
+    const idx = publications.findIndex(item => item.id === currentPublication.id)
+    if (idx !== -1) {
+      Object.assign(publications[idx], currentPublication)
+    }
+  }
 }
 
 const handleDelete = (id: number) => {
-  console.log(id)
   ElMessageBox.confirm('确定要删除该成果吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -599,6 +591,15 @@ const handleDelete = (id: number) => {
     })
     .then(() => {
       ElMessage.success('删除成功')
+      // 删除后从publications中移除
+      const idx = publications.findIndex(item => item.id === id)
+      if (idx !== -1) publications.splice(idx, 1)
+      // 删除后刷新统计数据
+      if (userStore.user?.id) {
+        getPublicationStatsByUser(userStore.user.id).then(res => {
+          if (res.data) Object.assign(stats, res.data)
+        })
+      }
     })
     .catch(err => {
       ElMessage.error(err)
@@ -619,20 +620,102 @@ const closeDialog = () => {
 }
 
 const userStore = useUserStore()
+const userName = computed(() => userStore.user?.name || '')
+const otherAuthors = ref('')
+
+// 控制是否允许添加其他作者（可根据需求调整）
+const allowAddAuthors = true
+
+// 在打开添加对话框时，默认 authors 为当前用户 name，且不可删除
+watch(
+  () => showAddDialog.value,
+  val => {
+    if (val && !isEditing.value) {
+      currentPublication.authors = userName.value
+      otherAuthors.value = ''
+    }
+    if (val && isEditing.value) {
+      // 编辑时分离当前用户和其他作者
+      const authorsArr = (currentPublication.authors || '')
+        .split(',')
+        .map(a => a.trim())
+        .filter(Boolean)
+      if (authorsArr[0] === userName.value) {
+        otherAuthors.value = authorsArr.slice(1).join(', ')
+      } else {
+        otherAuthors.value = authorsArr.join(', ')
+      }
+      currentPublication.authors = userName.value
+    }
+  }
+)
+
+const handleSave = () => {
+  if (!formRef.value) return
+  currentPublication.authors =
+    userName.value + (otherAuthors.value ? `, ${otherAuthors.value}` : '')
+  formRef.value
+    .validate()
+    .then(() => {
+      saving.value = true
+      // 统一处理默认值
+      const payload: SavePublicationRequest = {
+        ...currentPublication,
+        year: currentPublication.year ? String(currentPublication.year) : null,
+        isPublic: String(currentPublication.isPublic),
+      }
+      // 先处理PDF相关操作
+      return handlePdfUrl().then(url => {
+        if (pdfInputType.value === 'upload' && pdfFile.value) {
+          if (!url) {
+            return Promise.reject(new Error('PDF上传失败'))
+          }
+          payload.pdfUrl = url
+          pdfFile.value = null // 上传后清空
+        }
+        // PDF无异常再保存
+        let urlApi = isEditing.value ? '/publication/update' : '/publication/add'
+        return savePublication(urlApi, payload)
+      })
+    })
+    .then(() => {
+      if (isEditing.value) ElMessage.success('更新成功')
+      else ElMessage.success('添加成功')
+      submitSuccess()
+    })
+    .catch(err => {
+      console.error('保存失败:', err)
+      ElMessage.error('失败: ' + (err?.message || err))
+    })
+    .finally(() => {
+      saving.value = false
+    })
+}
 
 onMounted(async () => {
   if (userStore.user?.id) {
     loading.value = true
     try {
-      const res = await getPublicationsByUser(userStore.user.id)
-      if (Array.isArray(res.data)) {
-        publications.splice(0, publications.length, ...res.data)
+      const [pubRes, statsRes] = await Promise.all([
+        getPublicationsByUser(userStore.user.id),
+        getPublicationStatsByUser(userStore.user.id),
+      ])
+      if (Array.isArray(pubRes.data)) {
+        publications.splice(0, publications.length, ...pubRes.data)
+      }
+      if (statsRes.data) {
+        Object.assign(stats, statsRes.data)
       }
     } catch (e) {
-      ElMessage.error('获取论文列表失败')
+      ElMessage.error('获取论文列表或统计数据失败')
     } finally {
       loading.value = false
     }
   }
 })
+
+function onShowInfo(row: Publication) {
+  shownPublication.value = row
+  showInfo.value = true
+}
 </script>

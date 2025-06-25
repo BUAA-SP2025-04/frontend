@@ -43,9 +43,9 @@
             />
             <label for="remember-me" class="ml-2 block text-sm text-gray-900"> 记住我 </label>
           </div>
-          <div class="text-sm">
+          <!-- <div class="text-sm">
             <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500"> 忘记密码？ </a>
-          </div>
+          </div> -->
         </div>
 
         <div>
@@ -100,8 +100,8 @@ const handleLogin = async () => {
     ElMessage.success('登录成功')
     router.push('/')
   } catch (error) {
-    console.log(error)
-    ElMessage.error('登录失败，请检查用户名和密码')
+    // console.log(error)
+    // ElMessage.error('登录失败，请检查用户名和密码')
   }
 }
 </script>

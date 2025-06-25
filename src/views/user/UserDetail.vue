@@ -6,7 +6,7 @@
         <div class="flex flex-col md:flex-row items-start gap-8">
           <img
             v-if="user.imgUrl && user.imgUrl !== ''"
-            :src="user.imgUrl"
+            :src="'/api' + user.imgUrl"
             :alt="user.name || '用户头像'"
             class="w-32 h-32 rounded-full object-cover shadow-lg relative"
             @error="handleImageError"
@@ -164,7 +164,7 @@
                   <span
                     v-if="paper.status && paper.status.trim() !== ''"
                     class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium"
-                    >{{ paper.status }}</span
+                    >{{ getStatusLabel(paper.status) }}</span
                   >
                   <span
                     v-if="paper.year && paper.year.toString().trim() !== ''"
@@ -239,11 +239,6 @@
           </div>
         </div>
         <div v-else class="text-gray-400 text-center py-8 text-base">暂无论文数据</div>
-        <publicationDetail
-          v-if="currentPaper"
-          :achievement="currentPaper"
-          v-model:visible="detailDialogVisible"
-        />
       </div>
     </div>
   </div>
@@ -257,7 +252,6 @@ import type { UserDetail, Paper } from '@/api/types/user'
 import { Male, Female, UserFilled, CircleCheckFilled, Plus, Close } from '@element-plus/icons-vue'
 import { ElIcon, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import publicationDetail from '@/components/publicationDetail.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -265,8 +259,6 @@ const userStore = useUserStore()
 
 const user = ref<UserDetail | null>(null)
 const papers = ref<Paper[]>([])
-const detailDialogVisible = ref(false)
-const currentPaper = ref<Paper | null>(null)
 const isFollowing = ref(false)
 const showFullBio = ref(false)
 
@@ -276,16 +268,17 @@ onMounted(async () => {
     const response = await getUserDetail(userId as string)
     if (response.data) {
       user.value = response.data
-      // // 检查是否已关注该用户
-      // try {
-      //   const followResponse = await getIfFollow(response.data.id)
-      //   if (followResponse.data) {
-      //     isFollowing.value = followResponse.data
-      //   }
-      // } catch (followError) {
-      //   console.error('检查关注状态失败:', followError)
-      //   isFollowing.value = false
-      // }
+      // 获取是否关注
+      try {
+        const followRes = await getIfFollow(response.data.id)
+        if (followRes && typeof followRes.data === 'boolean') {
+          isFollowing.value = followRes.data
+        } else {
+          isFollowing.value = false
+        }
+      } catch (e) {
+        isFollowing.value = false
+      }
       // 获取论文数据
       const paperRes = await getUserPapers(response.data.id)
       console.log(paperRes)
@@ -355,7 +348,8 @@ const handleFollowAction = async () => {
         user.value = userResponse.data
       }
     } catch (e) {
-      ElMessage.error('操作失败，请稍后重试')
+      // ElMessage.error('操作失败，请稍后重试')
+      console.log(e)
     }
   }
 }
@@ -376,14 +370,8 @@ function formatNumber(num: number | null | undefined): string {
 
 const showPaperDetail = (paper: Paper) => {
   if (paper && paper.id) {
-    // 为publicationDetail组件准备数据格式
-    const formattedPaper = {
-      ...paper,
-      // authors 保持为字符串类型
-      authors: paper.authors || '',
-    }
-    currentPaper.value = formattedPaper
-    detailDialogVisible.value = true
+    // 跳转到成果详情页面
+    router.push(`/publication/${paper.id}`)
   }
 }
 
@@ -397,9 +385,19 @@ function getAuthors(authors: string | undefined): string[] {
 
 function handleImageError(event: Event) {
   const target = event.target as HTMLImageElement
-  if (target) {
+  if (target && !target.src.endsWith('/default-avatar.png')) {
     target.src = '/default-avatar.png'
   }
+}
+
+function getStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    published: '已发表',
+    accepted: '待发表',
+    'under-review': '审核中',
+    draft: '草稿',
+  }
+  return labels[status] || status
 }
 </script>
 

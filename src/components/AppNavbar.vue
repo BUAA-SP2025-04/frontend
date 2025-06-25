@@ -46,18 +46,6 @@
             </router-link>
 
             <router-link
-              to="/timeline"
-              :class="[
-                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
-                $route.path === '/timeline'
-                  ? 'border-indigo-500 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-              ]"
-            >
-              朋友圈
-            </router-link>
-
-            <router-link
               to="/library"
               :class="[
                 'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
@@ -69,7 +57,7 @@
               文献库
             </router-link>
 
-            <router-link
+            <!-- <router-link
               to="/pdf-reader"
               :class="[
                 'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
@@ -79,9 +67,9 @@
               ]"
             >
               PDF阅读器
-            </router-link>
+            </router-link> -->
 
-            <router-link
+            <!-- <router-link
               to="/visualization"
               :class="[
                 'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
@@ -91,7 +79,7 @@
               ]"
             >
               数据可视化
-            </router-link>
+            </router-link> -->
           </div>
         </div>
 
@@ -139,14 +127,16 @@
                   <div class="flex items-start space-x-3">
                     <div class="flex-shrink-0">
                       <img
-                        :src="`https://api.dicebear.com/7.x/avatars/svg?seed=${notification.userId}`"
-                        :alt="notification.userId.toString()"
+                        :src="
+                          notification.avatarUrl || `http://api.btstu.cn/sjtx/api.php?lx=${'c2'}`
+                        "
+                        :alt="(notification.senderId || notification.userId).toString()"
                         class="h-8 w-8 rounded-full"
                       />
                     </div>
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-medium text-gray-900">
-                        用户 #{{ notification.userId }}
+                        用户 #{{ notification.senderId || notification.userId }}
                       </p>
                       <p class="text-sm text-gray-500">{{ notification.content }}</p>
                       <p class="text-xs text-gray-400">{{ formatTime(notification.createdAt) }}</p>
@@ -225,7 +215,7 @@
                   科研成果
                 </router-link>
 
-                <router-link
+                <!-- <router-link
                   to="/follow"
                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 >
@@ -238,7 +228,7 @@
                     />
                   </svg>
                   我的关注
-                </router-link>
+                </router-link> -->
 
                 <div class="border-t border-gray-100"></div>
 
@@ -322,14 +312,6 @@
         </router-link>
 
         <router-link
-          to="/timeline"
-          class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
-          @click="showMobileMenu = false"
-        >
-          动态时间线
-        </router-link>
-
-        <router-link
           to="/library"
           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
           @click="showMobileMenu = false"
@@ -358,18 +340,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useNotificationStore } from '@/stores/notification'
-import type { Notification } from '@/api/types/notification'
 import { wsService } from '@/utils/websocket'
 import { useUserStore } from '@/stores/user'
+import type { Notification } from '@/api/types/notification'
 
 const router = useRouter()
 const notificationStore = useNotificationStore()
 const userStore = useUserStore()
-console.log('userStore.user:', userStore.user)
 
 // 响应式数据
 const showNotifications = ref(false)
@@ -382,22 +363,32 @@ const currentUser = computed(() => userStore.user)
 // 模拟用户状态
 const isAuthenticated = computed(() => userStore.isAuthenticated)
 
+// 监听用户登录状态变化
+watch(isAuthenticated, (newValue, oldValue) => {
+  console.log('用户登录状态变化:', oldValue, '->', newValue)
+  if (newValue && userStore.user?.id) {
+    console.log('用户登录，初始化 WebSocket')
+    notificationStore.initializeWebSocket()
+  } else if (!newValue) {
+    console.log('用户退出，断开 WebSocket')
+    wsService.disconnect()
+    notificationStore.clearNotifications()
+  }
+})
+
 const handleNotificationClick = async (notification: Notification) => {
   if (!notification.isRead) {
-    await notificationStore.markAsRead(notification.id)
+    await notificationStore.markNotificationAsRead(notification.type, notification.id)
   }
   showNotifications.value = false
 
   // 根据通知类型跳转
   switch (notification.type) {
-    case 'message':
-      router.push(`/chat/${notification.userId}`)
-      break
     case 'comment':
       router.push('/timeline')
       break
-    case 'collaboration':
-      router.push('/library')
+    case 'activity':
+      router.push(`/user/${notification.senderId}`)
       break
     case 'system':
       // 系统通知不跳转
@@ -440,18 +431,15 @@ const handleClickOutside = (event: Event) => {
 }
 
 onMounted(() => {
-  // 如果已登录，初始化 WebSocket 连接
+  // 初始化时检查用户状态
   if (userStore.isAuthenticated && userStore.user?.id) {
+    console.log('组件挂载时用户已登录，初始化 WebSocket')
     notificationStore.initializeWebSocket()
-    // 获取历史通知
-    notificationStore.fetchHistoryNotifications()
   }
   document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
-  // 关闭 WebSocket 连接
-  wsService.disconnect()
   document.removeEventListener('click', handleClickOutside)
 })
 </script>

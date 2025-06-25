@@ -140,7 +140,14 @@
                 </el-form-item>
 
                 <el-form-item label="职位">
-                  <el-input v-model="userInfo.title" placeholder="请输入职位" />
+                  <el-select v-model="userInfo.title" placeholder="请选择职位" class="w-full">
+                    <el-option
+                      v-for="item in titleOptions"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    />
+                  </el-select>
                 </el-form-item>
 
                 <el-form-item label="机构">
@@ -299,12 +306,7 @@
 <script setup lang="ts">
 import { ref, reactive, h, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import {
-  updateUserProfile,
-  uploadUserImg,
-  changeUserPassword,
-  getUserInfo,
-} from '@/api/modules/user'
+import { updateUserProfile, uploadUserImg, changeUserPassword } from '@/api/modules/user'
 import { useUserStore } from '@/stores/user'
 
 // 图标组件
@@ -410,13 +412,23 @@ const privacySettings = reactive({
 })
 
 const avatarInput = ref<HTMLInputElement | null>(null)
-
 const researchAreaArray = computed({
   get: () => (userInfo.researchArea ? userInfo.researchArea.split(',') : []),
   set: (val: string[]) => {
     userInfo.researchArea = val.join(',')
   },
 })
+
+const titleOptions = [
+  { label: '教授', value: '教授' },
+  { label: '副教授', value: '副教授' },
+  { label: '讲师', value: '讲师' },
+  { label: '博士后', value: '博士后' },
+  { label: '博士生', value: '博士生' },
+  { label: '硕士生', value: '硕士生' },
+  { label: '本科生', value: '本科生' },
+  { label: '其他', value: '其他' },
+]
 
 // 初始化用户信息
 const initUserInfo = () => {
@@ -442,6 +454,19 @@ onMounted(() => {
 })
 
 const saveProfile = async () => {
+  // 1. 必填项校验
+  if (
+    !userInfo.name ||
+    !userInfo.email ||
+    !userInfo.gender ||
+    !userInfo.institution ||
+    !userInfo.title ||
+    !userInfo.researchArea
+  ) {
+    ElMessage.error('必要信息缺失，个人资料保存失败')
+    return
+  }
+
   saving.value = true
   try {
     await updateUserProfile({
@@ -450,16 +475,13 @@ const saveProfile = async () => {
       title: userInfo.title,
     })
 
-    // 直接合并新信息到 store
     userStore.setUser({
-      ...userStore.user!,
       bio: userInfo.bio,
       researchArea: userInfo.researchArea,
       title: userInfo.title,
     })
 
-    initUserInfo() // 重新初始化显示
-
+    initUserInfo()
     ElMessage.success('个人资料保存成功')
   } catch (error) {
     ElMessage.error('保存失败，请重试')
@@ -522,17 +544,15 @@ const handleAvatarChange = async (e: Event) => {
   if (!files || files.length === 0) return
   const file = files[0]
   const formData = new FormData()
-  formData.append('file', file)
+  formData.append('img', file)
   try {
     const res = await uploadUserImg(formData)
-    userInfo.imgUrl = res.imgUrl
-
-    // 头像上传成功后也重新获取用户信息
-    const updatedUser = await getUserInfo()
-    userStore.setUser(updatedUser)
-    initUserInfo()
-
+    const imgUrl = res.imgUrl
+    userInfo.imgUrl = imgUrl
+    userStore.setUser({ imgUrl })
     ElMessage.success('头像上传成功')
+    console.log(userStore.user)
+    initUserInfo()
   } catch (error) {
     ElMessage.error('头像上传失败')
   }
