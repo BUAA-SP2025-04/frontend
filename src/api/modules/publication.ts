@@ -36,7 +36,7 @@ export function uploadPublicationFile(formData: FormData): Promise<UploadRespons
   })
 }
 
-export function updatePublicationFile(formData: FormData): Promise<EmptyResponse> {
+export function updatePublicationFile(formData: FormData): Promise<UploadResponse> {
   return request.post('/publication/updateFile', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
