@@ -72,6 +72,12 @@ export const libraryAPI = {
       params: { userId }
     }),
 
+  // 获取所有历史记录
+  deleteRecord: (id: number): Promise<GetRecordListResponse>  =>
+    request.post('/readingRecord/list', null, {
+      params: { id }
+    }),
+
   // 通过 ID 获取文献
   getByID: (id: number): Promise<GetByIDResponse>  =>
     request.get('/publication/getById', {
@@ -85,8 +91,8 @@ export const libraryAPI = {
   }),
 
   // 删除URL对应文献
-  deleteUrlFile: (oldFilePath: string): Promise<GetFileUrlResponse>  =>
-    request.post('/application/deleteFile', null, {
+  deleteUrlFile: (oldFilePath: string)  =>
+    request.post('/publication/deleteFile', null, {
       params: { oldFilePath }
     }),
 
