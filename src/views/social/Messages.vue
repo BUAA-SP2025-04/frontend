@@ -156,7 +156,7 @@
             <div v-if="activeCategory === 'chat'" class="divide-y divide-gray-200">
               <div
                 v-for="conversation in filteredConversations"
-                :key="conversation.id"
+                :key="conversation.userId"
                 :class="[
                   'p-6 hover:bg-gray-50 cursor-pointer transition-colors relative',
                   !conversation.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : '',
@@ -165,8 +165,8 @@
               >
                 <!-- 未读标记小图标 -->
                 <button
-                  v-if="!conversation.isRead"
-                  @click.stop="markAsReadLocal('conversations', conversation.id)"
+                  v-if="!conversation.lastMessage.isRead"
+                  @click.stop="markAsReadLocal('conversations', conversation.userId)"
                   class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
                   title="标记为已读"
                 >
@@ -183,12 +183,12 @@
                 <div class="flex items-start space-x-4 pr-8">
                   <div class="relative flex-shrink-0">
                     <img
-                      :src="conversation.avatar"
+                      :src="conversation.avatar ? '/api' + conversation.avatar : '/default-avatar.png'"
                       :alt="conversation.name"
                       class="w-12 h-12 rounded-full object-cover"
                     />
                     <div
-                      v-if="conversation.isOnline"
+                      v-if="conversation.online"
                       class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"
                     ></div>
                   </div>
@@ -197,17 +197,17 @@
                       <h3 class="text-sm font-medium text-gray-900">{{ conversation.name }}</h3>
                       <div class="flex items-center space-x-2">
                         <span class="text-xs text-gray-500">{{
-                          formatTime(conversation.lastMessageTime)
+                          formatTime(conversation.lastMessage.createdAt)
                         }}</span>
                       </div>
                     </div>
                     <p class="text-sm text-gray-600 mt-1 line-clamp-2">
-                      <span v-if="conversation.lastMessage.isMe" class="text-gray-400">我：</span>
+                      <span v-if="conversation.lastMessage.senderId === userStore.user?.id" class="text-gray-400">我：</span>
                       {{ conversation.lastMessage.content }}
                     </p>
                     <div class="flex items-center mt-2 space-x-4 text-xs text-gray-500">
                       <span>{{ conversation.institution }}</span>
-                      <span
+                      <!-- <span
                         v-if="conversation.lastMessage.type === 'file'"
                         class="flex items-center"
                       >
@@ -220,7 +220,7 @@
                           />
                         </svg>
                         文件
-                      </span>
+                      </span> -->
                     </div>
                   </div>
                 </div>
@@ -292,66 +292,70 @@
             </div>
 
             <!-- 动态提醒列表 -->
-          <div v-else-if="activeCategory === 'activity'" class="divide-y divide-gray-200">
-            <div
-              v-for="activity in filteredActivityNotifications"
-              :key="activity.id"
-              :class="[
-                'p-6 hover:bg-gray-50 cursor-pointer transition-colors relative',
-                !activity.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : '',
-              ]"
-              @click="handleActivityClick(activity)"
-            >
-              <!-- 未读标记小图标 -->
-              <button
-                v-if="!activity.isRead"
-                @click.stop="markAsReadLocal('activity', activity.id)"
-                class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
-                title="标记为已读"
+            <div v-else-if="activeCategory === 'activity'" class="divide-y divide-gray-200">
+              <div
+                v-for="activity in filteredActivityNotifications"
+                :key="activity.id"
+                :class="[
+                  'p-6 hover:bg-gray-50 cursor-pointer transition-colors relative',
+                  !activity.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : '',
+                ]"
+                @click="handleActivityClick(activity)"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  ></path>
-                </svg>
-              </button>
+                <!-- 未读标记小图标 -->
+                <button
+                  v-if="!activity.isRead"
+                  @click.stop="markAsReadLocal('activity', activity.id)"
+                  class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+                  title="标记为已读"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 13l4 4L19 7"
+                    ></path>
+                  </svg>
+                </button>
 
-              <div class="flex items-start space-x-4 pr-8">
-                <img
-                  :src="activity.user.avatar"
-                  :alt="activity.user.name"
-                  class="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                />
-                <div class="flex-1 min-w-0">
-                  <!-- 🔥 优化后的标题区域 -->
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center space-x-2">
-                      <span class="font-medium text-gray-900">{{ activity.user.name }}</span>
-                      <span
-                        :class="[
-                          'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-                          getActivityTagColor(activity.type),
-                        ]"
-                      >
-                        {{ getActivityLabel(activity.type) }}
-                      </span>
+                <div class="flex items-start space-x-4 pr-8">
+                  <img
+                    :src="activity.user.avatar ? '/api' + activity.user.avatar : '/default-avatar.png'"
+                    :alt="activity.user.name"
+                    class="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <!-- 🔥 优化后的标题区域 -->
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="flex items-center space-x-2">
+                        <span class="font-medium text-gray-900">{{ activity.user.name }}</span>
+                        <span
+                          :class="[
+                            'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                            getActivityTagColor(activity.type),
+                          ]"
+                        >
+                          {{ getActivityLabel(activity.type) }}
+                        </span>
+                      </div>
+                      <span class="text-xs text-gray-500 whitespace-nowrap">{{
+                        formatTime(activity.createdAt)
+                      }}</span>
                     </div>
-                    <span class="text-xs text-gray-500 whitespace-nowrap">{{
-                      formatTime(activity.createdAt)
-                    }}</span>
+
+                    <!-- 🔥 简化后的内容区域 - 保持原有显示 -->
+                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">
+                      {{
+                        typeof activity.content === 'object' && activity.content !== null
+                          ? activity.content.description
+                          : activity.content
+                      }}
+                    </p>
                   </div>
-                  
-                  <!-- 🔥 简化后的内容区域 - 保持原有显示 -->
-                  <p class="text-sm text-gray-600 mt-1 line-clamp-2">
-                    {{ typeof activity.content === 'object' && activity.content !== null ? activity.content.description : activity.content }}
-                  </p>
                 </div>
               </div>
             </div>
-          </div>
 
             <!-- 空状态 -->
             <div v-if="filteredMessages.length === 0" class="p-12 text-center">
@@ -447,17 +451,17 @@ import { ref, reactive, computed, h, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { messagesAPI } from '@/api/modules/messages'
+import { useUserStore } from '@/stores/user'
 import type {
-
   Friend,
   Conversation,
   SystemNotification,
   ActivityNotification,
-  MessageSettings
+  MessageSettings,
 } from '@/api/types/messages'
 
 const router = useRouter()
-
+const userStore = useUserStore()
 // 图标组件
 const ChatIcon = () =>
   h('svg', { class: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
@@ -588,8 +592,12 @@ const filteredActivityNotifications = computed(() => {
     filtered = filtered.filter(
       activity =>
         activity.user.name.includes(searchQuery.value) ||
-        (typeof activity.content === 'object' && activity.content !== null && activity.content.title.includes(searchQuery.value)) ||
-        (typeof activity.content === 'object' && activity.content !== null && activity.content.description.includes(searchQuery.value))
+        (typeof activity.content === 'object' &&
+          activity.content !== null &&
+          activity.content.title.includes(searchQuery.value)) ||
+        (typeof activity.content === 'object' &&
+          activity.content !== null &&
+          activity.content.description.includes(searchQuery.value))
     )
   }
 
@@ -641,7 +649,7 @@ const markAllAsRead = async () => {
     // 统一传参格式
     let apiCategory = activeCategory.value
     if (activeCategory.value === 'chat') {
-      apiCategory = 'conversations'
+      apiCategory = 'conversation'
     }
 
     await messagesAPI.markAllAsRead(apiCategory)
@@ -742,12 +750,12 @@ const handleActivityClick = (activity: ActivityNotification) => {
 
 const getFullImageUrl = (imageUrl: string | null) => {
   if (!imageUrl) return '/default-avatar.png'
-  
+
   // 如果已经是完整URL，直接返回
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return imageUrl
   }
-  
+
   // 拼接基础URL
   const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
   return `${baseUrl}${imageUrl}`
@@ -760,7 +768,7 @@ const getActivityTagColor = (type: string) => {
     start_project: 'bg-purple-100 text-purple-700 border border-purple-200',
     join_conference: 'bg-orange-100 text-orange-700 border border-orange-200',
     like: 'bg-red-100 text-red-700 border border-red-200',
-    comment: 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+    comment: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
   }
   return colors[type] || 'bg-gray-100 text-gray-700 border border-gray-200'
 }
@@ -849,8 +857,8 @@ const openSettingsDialog = async () => {
     const response = await messagesAPI.getMessageSettings()
     console.log('设置数据:', response) // 调试日志
 
-    if (response && response.settings) {
-      Object.assign(messageSettings, response.settings)
+    if (response && response.data && response.data.settings) {
+      Object.assign(messageSettings, response.data.settings)
     }
     showSettingsDialog.value = true
   } catch (error) {
@@ -880,34 +888,49 @@ const loadCurrentCategory = async () => {
       const res = await messagesAPI.getConversations()
       console.log('会话数据:', res) // 调试日志
 
-      if (res && Array.isArray(res.list)) {
-        conversations.value = res.list
-        messageCategories.value[0].unreadCount = res.unreadCount || 0
-      } else {
-        conversations.value = []
-        messageCategories.value[0].unreadCount = 0
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          conversations.value = res.data
+          messageCategories.value[0].unreadCount = 0
+        } else if (Array.isArray(res.data.list)) {
+          conversations.value = res.data.list
+          messageCategories.value[0].unreadCount = res.data.unreadCount || 0
+        } else {
+          conversations.value = []
+          messageCategories.value[0].unreadCount = 0
+        }
       }
     } else if (activeCategory.value === 'system') {
       const res = await messagesAPI.getSystemNotifications()
       console.log('系统通知数据:', res) // 调试日志
 
-      if (res && Array.isArray(res.list)) {
-        systemNotifications.value = res.list
-        messageCategories.value[1].unreadCount = res.unreadCount || 0
-      } else {
-        systemNotifications.value = []
-        messageCategories.value[1].unreadCount = 0
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          systemNotifications.value = res.data
+          messageCategories.value[1].unreadCount = 0
+        } else if (Array.isArray(res.data.list)) {
+          systemNotifications.value = res.data.list
+          messageCategories.value[1].unreadCount = res.data.unreadCount || 0
+        } else {
+          systemNotifications.value = []
+          messageCategories.value[1].unreadCount = 0
+        }
       }
     } else if (activeCategory.value === 'activity') {
       const res = await messagesAPI.getActivityNotifications()
       console.log('动态通知数据:', res) // 调试日志
 
-      if (res && Array.isArray(res.list)) {
-        activityNotifications.value = res.list
-        messageCategories.value[2].unreadCount = res.unreadCount || 0
-      } else {
-        activityNotifications.value = []
-        messageCategories.value[2].unreadCount = 0
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          activityNotifications.value = res.data
+          messageCategories.value[2].unreadCount = 0
+        } else if (Array.isArray(res.data.list)) {
+          activityNotifications.value = res.data.list
+          messageCategories.value[2].unreadCount = res.data.unreadCount || 0
+        } else {
+          activityNotifications.value = []
+          messageCategories.value[2].unreadCount = 0
+        }
       }
     }
   } catch (error) {
@@ -931,15 +954,46 @@ const loadAllFriends = async () => {
     const res = await messagesAPI.getFriends()
     console.log('好友数据:', res) // 调试日志
 
-    if (res && Array.isArray(res.list)) {
-      allFriends.value = res.list.map(friend => ({
-        id: friend.id,
-        name: friend.name || '未知用户',
-        avatar: friend.avatar || '/default-avatar.png',
-        isOnline: friend.status === '在线',
-        status: friend.status,
-        institution: '未知机构',
-      }))
+    if (res && res.data) {
+      if (Array.isArray(res.data)) {
+        allFriends.value = res.data.map(friend => ({
+          id: friend.id,
+          name: friend.name || '未知用户',
+          avatar: friend.avatar ? '/api' + friend.avatar : '/default-avatar.png' || '/default-avatar.png',
+          isOnline: friend.status === '在线',
+          status: friend.status,
+          institution: '未知机构',
+        }))
+        console.log('好友数据111:', allFriends.value)
+      } else if (
+        typeof res.data === 'object' &&
+        res.data !== null &&
+        'list' in res.data &&
+        Array.isArray((res.data as any).list)
+      ) {
+        allFriends.value = (res.data as any).list.map((friend: any) => ({
+          id: friend.id,
+          name: friend.name || '未知用户',
+          avatar: friend.avatar || '/default-avatar.png',
+          isOnline: friend.status === '在线',
+          status: friend.status,
+          institution: '未知机构',
+        }))
+      } else if (typeof res.data === 'object' && res.data !== null && 'id' in res.data) {
+        // 单个好友对象
+        allFriends.value = [
+          {
+            id: res.data.id,
+            name: res.data.name || '未知用户',
+            avatar: res.data.avatar || '/default-avatar.png',
+            isOnline: res.data.status === '在线',
+            status: res.data.status,
+            institution: '未知机构',
+          },
+        ]
+      } else {
+        allFriends.value = []
+      }
     } else {
       allFriends.value = []
     }
@@ -985,8 +1039,8 @@ onMounted(async () => {
     const response = await messagesAPI.getMessageSettings()
     console.log('初始化设置数据:', response) // 调试日志
 
-    if (response && response.settings) {
-      Object.assign(messageSettings, response.settings)
+    if (response && response.data && response.data.settings) {
+      Object.assign(messageSettings, response.data.settings)
     }
   } catch (error) {
     console.warn('加载设置失败，使用默认设置:', error)

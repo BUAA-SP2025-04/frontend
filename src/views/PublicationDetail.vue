@@ -604,7 +604,7 @@ const openPdf = () => {
 const downloadPdf = () => {
   if (publication.value?.pdfUrl) {
     const link = document.createElement('a')
-    link.href = publication.value.pdfUrl
+    link.href = '/api' + publication.value.pdfUrl
     link.download = ''
     document.body.appendChild(link)
     link.click()
