@@ -29,7 +29,7 @@
             <div class="text-center">
               <div class="relative inline-block">
                 <img
-                  :src="userInfo.imgUrl || `http://api.btstu.cn/sjtx/api.php?lx=${'c1'}`"
+                  :src="userInfo.imgUrl || `/default-avatar.png`"
                   alt="头像"
                   class="w-32 h-32 rounded-full object-cover mx-auto shadow-lg"
                 />
