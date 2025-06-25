@@ -161,7 +161,7 @@
                   'p-6 hover:bg-gray-50 cursor-pointer transition-colors relative',
                   !conversation.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : '',
                 ]"
-                @click="openChat(conversation.userId)"
+                @click=""
               >
                 <!-- 未读标记小图标 -->
                 <button
@@ -891,7 +891,7 @@ const loadCurrentCategory = async () => {
             avatar: getFullImageUrl(conv.avatar), // 拼接头像URL
             institution: conv.institution || '',
             isOnline: conv.isOnline ?? conv.isOnline ?? false,
-            isRead: conv.lastMessage?.isRead ?? false,
+            isRead: (conv.unreadCount ?? 0) === 0,
             unreadCount: conv.unreadCount ?? 0,
             lastMessage: conv.lastMessage
               ? {
@@ -900,7 +900,7 @@ const loadCurrentCategory = async () => {
                   receiverId: conv.lastMessage.receiverId,
                   content: conv.lastMessage.content,
                   createdAt: conv.lastMessage.createdAt,
-                  isRead: conv.lastMessage.isRead
+                  isRead: conv.lastMessage.isRead,
                 }
               : {
                   id: -1,
@@ -916,39 +916,7 @@ const loadCurrentCategory = async () => {
             (sum, conv) => sum + (conv.unreadCount ?? 0),
             0
           )
-        } else if (res.data.list) {
-          conversations.value = Array.isArray(res.data.list)
-            ? res.data.list.map(conv => ({
-                id: conv.userId,
-                userId: conv.userId,
-                name: conv.name,
-                avatar: getFullImageUrl(conv.avatar),
-                institution: conv.institution || '',
-                isOnline: conv.isOnline ?? conv.isOnline ?? false,
-                isRead: conv.lastMessage?.isRead ?? false,
-                unreadCount: conv.unreadCount ?? 0,
-                lastMessage: conv.lastMessage
-                  ? {
-                      id: conv.lastMessage.id,
-                      senderId: conv.lastMessage.senderId,
-                      receiverId: conv.lastMessage.receiverId,
-                      content: conv.lastMessage.content,
-                      createdAt: conv.lastMessage.createdAt,
-                      isRead: conv.lastMessage.isRead
-                    }
-                  : {
-                      id: -1,
-                      senderId: conv.userId,
-                      receiverId: conv.userId,
-                      content: '',
-                      createdAt: '',
-                      isRead: true
-                    },
-                lastMessageTime: conv.lastMessage?.createdAt
-              }))
-            : []
-          messageCategories.value[0].unreadCount = res.data.unreadCount || 0
-        } else {
+        }  else {
           conversations.value = []
           messageCategories.value[0].unreadCount = 0
         }

@@ -540,23 +540,24 @@ const handlePdfUrl = async (): Promise<string> => {
       if (oldFilePath.value) currentPublication.pdfUrl = oldFilePath.value // 如果没有新文件但有旧文件，返回旧文件路径
       return ''
     }
+    let res: string
     if (oldFilePath.value) {
       // upload类型且有旧文件，更新文件
       const formData = new FormData()
       formData.append('oldFilePath', oldFilePath.value) // 添加旧文件路径
       formData.append('file', pdfFile.value)
-      await updatePublicationFile(formData)
-      return oldFilePath.value
+      res = await updatePublicationFile(formData)
     } else {
       // upload类型且无旧文件，上传文件
       const formData = new FormData()
       formData.append('file', pdfFile.value)
-      const res = await uploadPublicationFile(formData)
-      if (res.data) {
-        return res.data
-      } else {
-        return ''
-      }
+      res = await uploadPublicationFile(formData)
+    }
+    if (res.data) {
+      return res.data
+    } else {
+      ElMessage.error('更新文件失败')
+      return ''
     }
   }
   return ''
