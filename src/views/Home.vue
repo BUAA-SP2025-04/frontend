@@ -697,7 +697,7 @@ onMounted(async () => {
       messageCount.value = (res3.data as any) || 0
     }
   } catch (e) {
-    // 可选：错误处理
+    console.log(e)
   }
 })
 </script>

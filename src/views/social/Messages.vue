@@ -811,7 +811,6 @@ const getNotificationTypeLabel = (type: string) => {
   return labels[type] || '系统通知'
 }
 
-
 const getEmptyStateText = () => {
   const texts = {
     chat: '还没有私信对话，去发现页面找找感兴趣的研究者吧！',
@@ -849,9 +848,9 @@ const openSettingsDialog = async () => {
   try {
     const response = await messagesAPI.getMessageSettings()
     console.log('设置数据:', response) // 调试日志
-    
-    if (response && response.data && response.data.settings) {
-      Object.assign(messageSettings, response.data.settings)
+
+    if (response && response.settings) {
+      Object.assign(messageSettings, response.settings)
     }
     showSettingsDialog.value = true
   } catch (error) {
@@ -865,7 +864,7 @@ const saveSettings = async () => {
   try {
     const res = await messagesAPI.saveMessageSettings(messageSettings)
     console.log('保存设置响应:', res) // 调试日志
-    
+
     ElMessage.success('设置保存成功')
     showSettingsDialog.value = false
     loadCurrentCategory() // 重新加载消息，应用新的设置
@@ -880,137 +879,32 @@ const loadCurrentCategory = async () => {
     if (activeCategory.value === 'chat') {
       const res = await messagesAPI.getConversations()
       console.log('会话数据:', res) // 调试日志
-      
-      if (res && res.data) {
-        if (Array.isArray(res.data)) {
-          conversations.value = res.data
-          messageCategories.value[0].unreadCount = res.data.filter(conv => !conv.isRead).length
-        } else if (res.data.list) {
-          conversations.value = Array.isArray(res.data.list) ? res.data.list : []
-          messageCategories.value[0].unreadCount = res.data.unreadCount || 0
-        } else {
-          conversations.value = []
-          messageCategories.value[0].unreadCount = 0
-        }
+
+      if (res && Array.isArray(res.list)) {
+        conversations.value = res.list
+        messageCategories.value[0].unreadCount = res.unreadCount || 0
       } else {
         conversations.value = []
         messageCategories.value[0].unreadCount = 0
       }
-      
     } else if (activeCategory.value === 'system') {
       const res = await messagesAPI.getSystemNotifications()
       console.log('系统通知数据:', res) // 调试日志
-      
-      if (res && res.data) {
-        if (Array.isArray(res.data)) {
-          // 🔥 补充系统通知缺失的字段
-          systemNotifications.value = res.data.map(notif => ({
-            id: notif.id,
-            type: notif.type || 'system',
-            title: getNotificationTitle(notif.content, notif.type), // 🔥 根据内容生成标题
-            content: notif.content || '',
-            isRead: notif.isRead || false,
-            createdAt: notif.createdAt || new Date().toISOString(),
-            action: null // 🔥 后端没有action字段，设为null
-          }))
-          messageCategories.value[1].unreadCount = res.data.filter(notif => !notif.isRead).length
-        } else if (res.data.list) {
-          systemNotifications.value = Array.isArray(res.data.list)
-            ? res.data.list.map(notif => ({
-                id: notif.id,
-                type: notif.type || 'system',
-                title: getNotificationTitle(notif.content, notif.type),
-                content: notif.content || '',
-                isRead: notif.isRead || false,
-                createdAt: notif.createdAt || new Date().toISOString(),
-                action: null
-              }))
-            : []
-          messageCategories.value[1].unreadCount = res.data.unreadCount || 0
-        } else {
-          systemNotifications.value = []
-          messageCategories.value[1].unreadCount = 0
-        }
+
+      if (res && Array.isArray(res.list)) {
+        systemNotifications.value = res.list
+        messageCategories.value[1].unreadCount = res.unreadCount || 0
       } else {
         systemNotifications.value = []
         messageCategories.value[1].unreadCount = 0
       }
-      
     } else if (activeCategory.value === 'activity') {
       const res = await messagesAPI.getActivityNotifications()
       console.log('动态通知数据:', res) // 调试日志
-      
-      if (res && res.data) {
-        if (Array.isArray(res.data)) {
-          // 🔥 关键修复：适配后端实际返回的数据结构
-          activityNotifications.value = res.data.map(item => {
-            // 🔥 处理嵌套的notification结构
-            const notification = item.notification || item
-            const avatarUrl = item.avatarUrl || item.notification?.avatarUrl
-            // 保证 senderId 和 userId 至少有一个是 number，若都不存在则用 -1 占位
-            let userId: number = -1
-            if (typeof notification.senderId === 'number') {
-              userId = notification.senderId
-            } else if (typeof item.senderId === 'number') {
-              userId = item.senderId
-            } else if (typeof notification.userId === 'number') {
-              userId = notification.userId
-            }
-            const publicationId = item.publicationId
 
-            console.log('处理单个activity:', { item, notification, avatarUrl, userId, publicationId })
-
-            return {
-              id: notification.id,
-              type: parseActivityType(typeof notification.content === 'string' ? notification.content : (notification.content?.description ?? '')), // 🔥 从content解析活动类型
-              user: {
-                id: userId, // 保证为 number 类型
-                name: extractUserNameFromContent(typeof notification.content === 'string' ? notification.content : (notification.content?.description ?? '')),
-                avatar: getFullImageUrl(avatarUrl ?? null), // 🔥 使用完整头像URL
-                institution: '未知机构'
-              },
-              content: parseContentFromActivity(String(notification.content ?? '')), // 🔥 从content解析内容信息
-              isRead: notification.isRead || false,
-              createdAt: notification.createdAt || new Date().toISOString(),
-              // 🔥 保存额外信息供后续使用
-              publicationId: publicationId
-            }
-          })
-          messageCategories.value[2].unreadCount = res.data.filter(item => 
-            !(item.notification?.isRead || item.isRead)
-          ).length
-        } else if (
-          typeof res.data === 'object' &&
-          res.data !== null &&
-          !Array.isArray(res.data) &&
-          !('list' in res.data) &&
-          ('id' in res.data || 'notification' in res.data)
-        ) {
-          // 🔥 单个对象处理
-          const item = res.data
-          const notification = (item as any).notification || item
-          const avatarUrl = (item as any).avatarUrl || (item as any).notification?.avatarUrl
-          const senderId = notification.senderId || (item as any).senderId
-          
-          activityNotifications.value = [{
-            id: notification.id,
-            type: parseActivityType(notification.content),
-            user: {
-              id: senderId || notification.userId,
-              name: extractUserNameFromContent(notification.content),
-              avatar: getFullImageUrl(avatarUrl),
-              institution: '未知机构'
-            },
-            content: parseContentFromActivity(notification.content),
-            isRead: notification.isRead || false,
-            createdAt: notification.createdAt || new Date().toISOString(),
-            publicationId: (item as any).publicationId,
-          }]
-          messageCategories.value[2].unreadCount = notification.isRead ? 0 : 1
-        } else {
-          activityNotifications.value = []
-          messageCategories.value[2].unreadCount = 0
-        }
+      if (res && Array.isArray(res.list)) {
+        activityNotifications.value = res.list
+        messageCategories.value[2].unreadCount = res.unreadCount || 0
       } else {
         activityNotifications.value = []
         messageCategories.value[2].unreadCount = 0
@@ -1019,7 +913,7 @@ const loadCurrentCategory = async () => {
   } catch (error) {
     console.error('加载消息失败:', error)
     ElMessage.error('加载消息失败')
-    
+
     // 出错时设置空数组，避免undefined错误
     if (activeCategory.value === 'chat') {
       conversations.value = []
@@ -1031,139 +925,21 @@ const loadCurrentCategory = async () => {
   }
 }
 
-const extractUserNameFromContent = (content: string) => {
-  // 匹配 "您关注的用户 XXX" 模式
-  const followedUserMatch = content.match(/您关注的用户\s+(\w+)/)
-  if (followedUserMatch) {
-    return followedUserMatch[1]
-  }
-  
-  // 匹配 "用户 XXX" 模式
-  const userMatch = content.match(/用户\s+(\w+)/)
-  if (userMatch) {
-    return userMatch[1]
-  }
-  
-  // 匹配其他可能的用户名模式
-  const generalMatch = content.match(/(\w+)\s*(关注了你|点赞了|评论了|发表了)/)
-  if (generalMatch) {
-    return generalMatch[1]
-  }
-  
-  return '未知用户'
-}
-
-// 🔥 新增辅助函数：根据内容生成系统通知标题
-const getNotificationTitle = (content: string, type: string) => {
-  if (content.includes('欢迎')) return '欢迎使用'
-  if (content.includes('安全')) return '安全提醒'
-  if (content.includes('更新')) return '系统更新'
-  if (content.includes('维护')) return '系统维护'
-  
-  // 根据类型生成默认标题
-  const titleMap: Record<string, string> = {
-    'system': '系统通知',
-    'security': '安全提醒',
-    'update': '系统更新'
-  }
-  return titleMap[type] || '系统通知'
-}
-
-// 🔥 新增辅助函数：从content解析活动类型
-const parseActivityType = (content: string) => {
-  if (content.includes('上传') || content.includes('论文')) return 'publish_paper'
-  else if (content.includes('关注')) return 'follow'
-  
-  if (content.includes('项目')) return 'start_project'
-  if (content.includes('会议')) return 'join_conference'
-  if (content.includes('点赞')) return 'like'
-  if (content.includes('评论')) return 'comment'
-  return 'follow' // 默认类型
-}
-
-
-
-// 🔥 新增辅助函数：从content解析内容信息
-const parseContentFromActivity = (content: string) => {
-  // 根据活动类型生成对应的标题和描述
-  if (content.includes('成果')) {
-    return {
-      title: '项目动态',
-      description: content
-    }
-  } else if (content.includes('发表') || content.includes('论文')) {
-    return {
-      title: '发表论文',
-      description: content
-    }
-  } else if (content.includes('关注')) {
-    return {
-      title: '新增关注',
-      description: content
-    }
-  } else if (content.includes('会议')) {
-    return {
-      title: '会议活动',
-      description: content
-    }
-  } else if (content.includes('点赞')) {
-    return {
-      title: '获得点赞',
-      description: content
-    }
-  } else if (content.includes('评论')) {
-    return {
-      title: '新增评论',
-      description: content
-    }
-  }
-  
-  return {
-    title: '动态更新',
-    description: content
-  }
-}
-
 // 加载全部好友
 const loadAllFriends = async () => {
   try {
     const res = await messagesAPI.getFriends()
     console.log('好友数据:', res) // 调试日志
-    
-    if (res && res.data) {
-      if (Array.isArray(res.data)) {
-        // 🔥 补充好友列表缺失的字段
-        allFriends.value = res.data.map(friend => ({
-          id: friend.id,
-          name: friend.name || '未知用户',
-          avatar: getFullImageUrl(friend.avatar), // 🔥 处理null头像
-          isOnline: friend.isOnline || false,
-          status: friend.isOnline ? '在线' : '离线', // 🔥 根据isOnline生成status
-          institution: friend.institution || '未知机构' // 🔥 补充institution字段
-        }))
-      } else if (typeof res.data === 'object' && 'list' in res.data && Array.isArray((res.data as any).list)) {
-        // 处理 { list: Friend[] } 格式
-        allFriends.value = (res.data as any).list.map((friend: Friend) => ({
-          id: friend.id,
-          name: friend.name || '未知用户',
-          avatar: getFullImageUrl(friend.avatar),
-          isOnline: friend.isOnline || false,
-          status: friend.isOnline ? '在线' : '离线',
-          institution: friend.institution || '未知机构'
-        }))
-      } else if (typeof res.data === 'object' && 'id' in res.data) {
-        // 单个好友对象，补充字段后包装成数组
-        allFriends.value = [{
-          id: res.data.id,
-          name: res.data.name || '未知用户',
-          avatar: res.data.avatar || '/default-avatar.png',
-          isOnline: res.data.isOnline || false,
-          status: res.data.isOnline ? '在线' : '离线',
-          institution: res.data.institution || '未知机构'
-        }]
-      } else {
-        allFriends.value = []
-      }
+
+    if (res && Array.isArray(res.list)) {
+      allFriends.value = res.list.map(friend => ({
+        id: friend.id,
+        name: friend.name || '未知用户',
+        avatar: friend.avatar || '/default-avatar.png',
+        isOnline: friend.status === '在线',
+        status: friend.status,
+        institution: '未知机构',
+      }))
     } else {
       allFriends.value = []
     }
@@ -1182,7 +958,7 @@ const getActivityText = (type: string) => {
     start_project: '启动了新项目',
     join_conference: '参加了会议',
     like: '点赞了你的内容',
-    comment: '评论了你的内容'
+    comment: '评论了你的内容',
   }
   return texts[type] || '有新动态'
 }
@@ -1193,9 +969,9 @@ const getActivityLabel = (type: string) => {
     follow: '新增关注',
     publish_paper: '论文发表',
     start_project: '项目启动',
-    join_conference: '会议参与',
-    like: '点赞互动',
-    comment: '评论互动'
+    join_conference: '会议参加',
+    like: '点赞',
+    comment: '评论',
   }
   return labels[type] || '动态更新'
 }
@@ -1203,14 +979,14 @@ const getActivityLabel = (type: string) => {
 // 页面初始化
 onMounted(async () => {
   console.log('Messages组件挂载，开始初始化') // 调试日志
-  
+
   // 先加载设置，但不显示对话框
   try {
     const response = await messagesAPI.getMessageSettings()
     console.log('初始化设置数据:', response) // 调试日志
-    
-    if (response && response.data && response.data.settings) {
-      Object.assign(messageSettings, response.data.settings)
+
+    if (response && response.settings) {
+      Object.assign(messageSettings, response.settings)
     }
   } catch (error) {
     console.warn('加载设置失败，使用默认设置:', error)
