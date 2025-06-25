@@ -1,4 +1,4 @@
-mastimport request from '@/utils/request'
+import request from '@/utils/request'
 import type {
   PublicationListResponse,
   PublicationStatsResponse,
@@ -6,7 +6,7 @@ import type {
   PublicationInformResponse,
   PublicationCommentResponse,
   CreatePublicationCommentRequest,
-  CreatePublicationCommentResponse
+  CreatePublicationCommentResponse,
 } from '@/api/types/publication'
 import type { EmptyResponse, UploadResponse } from '@/api/types/utils'
 
@@ -69,6 +69,8 @@ export function createPublicationComment(
   return request.post(`/publication/${publicationId}/comments`, data)
 }
 
-export function togglePublicationCommentLike(commentId: number): Promise<{ isLiked: boolean; likesCount: number }> {
+export function togglePublicationCommentLike(
+  commentId: number
+): Promise<{ isLiked: boolean; likesCount: number }> {
   return request.post(`/publication/comments/${commentId}/like`)
 }
