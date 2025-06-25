@@ -43,9 +43,9 @@
             />
             <label for="remember-me" class="ml-2 block text-sm text-gray-900"> 记住我 </label>
           </div>
-          <div class="text-sm">
+          <!-- <div class="text-sm">
             <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500"> 忘记密码？ </a>
-          </div>
+          </div> -->
         </div>
 
         <div>

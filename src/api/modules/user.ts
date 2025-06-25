@@ -12,13 +12,11 @@ import type {
 // 注册
 export function registerUser(data: RegisterUserRequest): Promise<LoginResponse> {
   return request.post('/user/register', data)
-  // return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312041825', data)
 }
 
 // 登录
 export const loginUser = (data: LoginUserRequest): Promise<LoginResponse> => {
   return request.post('/user/login', data)
-  // return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312055184', data)
 }
 
 // 完善用户信息
@@ -27,10 +25,11 @@ export const updateUserProfile = (data: UpdateUserProfileRequest): Promise<unkno
 }
 
 // 上传头像
-export const uploadUserImg = (data: FormData): Promise<{ imgUrl: string }> => {
-  return request.post('/user/img', data, {
+export const uploadUserImg = async (data: FormData): Promise<{ imgUrl: string }> => {
+  const res = await request.post('/user/img', data, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
+  return { imgUrl: res.data }
 }
 
 // 修改密码
@@ -54,12 +53,12 @@ export function getUserPapers(id: string | number) {
 
 // 关注
 export function follow(toBeFollowedId: string | number) {
-  return request.post('/researcher/follow', {toBeFollowedId : toBeFollowedId})
+  return request.post('/researcher/follow', { toBeFollowedId: toBeFollowedId })
 }
 
 // 取消关注
 export function unfollow(toBeCancelledId: string | number) {
-  return request.post('/researcher/cancelFollow', {toBeCancelledId})
+  return request.post('/researcher/cancelFollow', { toBeCancelledId })
 }
 
 // 获取是否关注

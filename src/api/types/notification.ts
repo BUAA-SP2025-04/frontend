@@ -3,13 +3,23 @@ export interface Notification {
   content: string
   createdAt: string
   isRead: boolean
-  type: 'message' | 'comment' | 'collaboration' | 'system'
+  type: 'comment' | 'activity' | 'system'
   userId: number
   publicationId: number
   avatarUrl: string
+  senderId: number
 }
 
-export interface WebSocketMessage {
-  type: string
-  data: unknown
+export interface WebSocketNotification {
+  avatarUrl: string
+  notification: {
+    id: number
+    userId: number
+    content: string
+    type: 'comment' | 'activity' | 'system'
+    createdAt: string
+    isRead: boolean
+    senderId: number
+  }
+  publicationId: number
 }
