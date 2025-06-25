@@ -295,6 +295,22 @@
                 </svg>
                 查看PDF
               </el-button>
+              <el-button
+                v-if="publication.pdfUrl && publication.pdfUrl.trim()"
+                type="success"
+                @click="downloadPdf"
+                class="flex items-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
+                  />
+                </svg>
+                下载PDF
+              </el-button>
               <el-button v-else type="warning" @click="applyPdf" class="flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -581,6 +597,17 @@ const replyToComment = (comment: PublicationComment) => {
 const openPdf = () => {
   if (publication.value?.pdfUrl) {
     window.open(publication.value.pdfUrl, '_blank')
+  }
+}
+
+const downloadPdf = () => {
+  if (publication.value?.pdfUrl) {
+    const link = document.createElement('a')
+    link.href = publication.value.pdfUrl
+    link.download = ''
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 }
 
