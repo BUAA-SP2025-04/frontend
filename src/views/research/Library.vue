@@ -51,10 +51,44 @@
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- 左侧分类树 -->
         <div class="lg:w-1/4">
-          <div class="bg-white rounded-lg shadow p-6 sticky top-8">
+          <div class="bg-white rounded-lg shadow p-6 sticky top-8 ">
+          <div
+              :class="['text-lg font-medium mb-4 flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
+                  selectedFolder === 0 ? 'bg-indigo-100 text-indigo-700' : 'text-gray-900']"
+              @click="selectFolder(0)"
+            >
+              <div class="flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 ml-1 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0H8v0z"
+                  />
+                </svg>
+                全部文献
+              </div>
+              <div class="flex items-center space-x-1 end">
+                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 mr-8 rounded-full">
+                  {{ papers.length }}
+                </span>
+              </div>
+            </div>
+            
             <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
               <svg
-                class="w-5 h-5 mr-2 text-indigo-600"
+                class="w-5 h-5 mr-2 ml-1 text-indigo-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -158,7 +192,7 @@
                 />
               </div>
               <el-select v-model="sortBy" placeholder="排序方式" size="large" style="width: 150px">
-                <el-option label="添加时间" value="date" />
+                <el-option label="时间" value="date" />
                 <el-option label="标题" value="title" />
                 <el-option label="作者" value="author" />
                 <el-option label="引用数" value="citations" />
@@ -270,7 +304,7 @@
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      {{ formatDate(paper.publishDate) }}
+                      {{ paper.publishDate }}
                     </span>
                   </div>
                 </div>
@@ -326,7 +360,7 @@
                           </svg>
                           下载
                         </el-dropdown-item>
-                        <el-dropdown-item :command="`edit-${paper.id}`">
+                        <!-- <el-dropdown-item :command="`edit-${paper.id}`">
                           <svg
                             class="w-4 h-4 mr-2"
                             fill="none"
@@ -341,7 +375,7 @@
                             />
                           </svg>
                           编辑
-                        </el-dropdown-item>
+                        </el-dropdown-item> -->
                         <el-dropdown-item :command="`delete-${paper.id}`" divided>
                           <svg
                             class="w-4 h-4 mr-2"
@@ -418,7 +452,7 @@
 
                 <div class="flex items-center justify-between text-xs text-gray-500">
                   <span>引用 {{ paper.citations }}</span>
-                  <span>{{ formatDate(paper.publishDate) }}</span>
+                  <span>{{ paper.publishDate.slice(0, 10) }}</span>
                 </div>
               </div>
             </div>
@@ -657,9 +691,16 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import request from '@/utils/request'
+import { libraryAPI } from '@/api/modules/library'
+import type { 
+  FavoritePaper,
+  Folder
+} from '@/api/types/library'
+
 
 const searchQuery = ref('')
-const selectedFolder = ref('all')
+const selectedFolder = ref(0)
 const selectedTags = ref<string[]>([])
 const selectedPapers = ref<number[]>([])
 const sortBy = ref('date')
@@ -671,16 +712,22 @@ const showFolderDialog = ref(false)
 const showFolderRenameDialog = ref(false)
 
 const userStore = useUserStore()
-const userId = computed(() => userStore.user?.id)
+let userId = ''
+const initUserInfo = () => {
+  if (userStore.user) {
+    userId = String(userStore.user.id)
+  }
+}
 
-const folders = ref([
-  { id: 'all', name: '全部文献', count: 156 },
-  { id: 'ai', name: '人工智能', count: 45 },
-  { id: 'ml', name: '机器学习', count: 32 },
-  { id: 'cv', name: '计算机视觉', count: 28 },
-  { id: 'nlp', name: '自然语言处理', count: 21 },
-  { id: 'reading', name: '待阅读', count: 18 },
-  { id: 'favorites', name: '收藏夹', count: 12 },
+const folders = ref<Folder[]>([])
+const exampleFolders = ref([
+  { id: 1, name: '默认分类', count: 156 },
+  { id: 2, name: '人工智能', count: 45 },
+  { id: 3, name: '机器学习', count: 32 },
+  { id: 4, name: '计算机视觉', count: 28 },
+  { id: 5, name: '自然语言处理', count: 21 },
+  { id: 6, name: '待阅读', count: 18 },
+  { id: 7, name: '收藏夹', count: 12 },
 ])
 
 const popularTags = ref([
@@ -693,7 +740,8 @@ const popularTags = ref([
   { name: '强化学习', count: 16 },
 ])
 
-const papers = ref([
+const papers = ref<FavoritePaper[]>([])
+const examplPapers = ref<FavoritePaper[]>([
   {
     id: 1,
     title: 'Attention Is All You Need',
@@ -702,8 +750,8 @@ const papers = ref([
     citations: 50000,
     readCount: 1250,
     tags: ['Transformer', '注意力机制', '自然语言处理'],
-    folderId: 'nlp',
-    publishDate: new Date('2024-01-15'),
+    folderId: 1,
+    publishDate: '2024-01-15',
     url: 'https://example.com/paper1.pdf',
   },
   {
@@ -714,8 +762,8 @@ const papers = ref([
     citations: 35000,
     readCount: 980,
     tags: ['BERT', 'Transformer', '预训练'],
-    folderId: 'nlp',
-    publishDate: new Date('2024-01-20'),
+    folderId: 4,
+    publishDate: '2024-01-20',
     url: 'https://example.com/paper2.pdf',
   },
   // 更多模拟数据...
@@ -726,7 +774,7 @@ const newFolder = reactive({
   // description: '',
 })
 
-let renameFolderId = ''
+let renameFolderId = -1
 
 const currentFile = ref(null);
 const uploadRef = ref(null);
@@ -745,15 +793,47 @@ const newPaper = reactive({
 const authorInput = ref('');
 const tagInput = ref('');
 
-const filteredPapers = computed(() => {
-  let result = papers.value
+onMounted(async () => {
+  initUserInfo()
+  try {
+    const res = await libraryAPI.getList(userId)
+    papers.value = res
+  } catch (error) {
+    papers.value = examplPapers.value
+    ElMessage.error("读取文献列表失败，即将呈现默认页面")
+  }
+  try {
+    const res = await libraryAPI.getCategoryList(userId)
+    folders.value = res
+  } catch (error) {
+    folders.value = exampleFolders.value
+    ElMessage.error("读取收藏夹失败，即将呈现默认页面")
+  }
+  if (folders.value.length <= 0) {
+    try {
+      const res = await libraryAPI.createFolder(renameFolderId.toString(), renameFolder.name)
+      folders.value.push({
+        id: res,
+        name: '默认收藏夹',
+        count: 0,
+      })
+      showFolderDialog.value = false
+    } catch (error) {
+      ElMessage.error("创建默认收藏夹失败，请手动创建")
+    }
+  }
+})
 
-  if (selectedFolder.value !== 'all') {
-    result = result.filter(paper => paper.folderId === selectedFolder.value)
+const filteredPapers = computed( () => {
+
+  let fPapers = papers.value
+  console.log(fPapers)
+  if (selectedFolder.value !== 0) {
+    fPapers = fPapers.filter(paper => paper.folderId === selectedFolder.value)
   }
 
   if (searchQuery.value) {
-    result = result.filter(
+    fPapers = fPapers.filter(
       paper =>
         paper.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         paper.authors.some(author =>
@@ -764,11 +844,11 @@ const filteredPapers = computed(() => {
   }
 
   if (selectedTags.value.length > 0) {
-    result = result.filter(paper => selectedTags.value.some(tag => paper.tags.includes(tag)))
+    fPapers = fPapers.filter(paper => selectedTags.value.some(tag => paper.tags.includes(tag)))
   }
 
   // 排序
-  result.sort((a, b) => {
+  fPapers.sort((a, b) => {
     switch (sortBy.value) {
       case 'title':
         return a.title.localeCompare(b.title)
@@ -781,10 +861,10 @@ const filteredPapers = computed(() => {
     }
   })
 
-  return result
+  return fPapers
 })
 
-const selectFolder = (folderId: string) => {
+const selectFolder = (folderId: number) => {
   selectedFolder.value = folderId
   currentPage.value = 1
 }
@@ -811,7 +891,7 @@ const handleDragStart = (event: DragEvent, paper: any) => {
   event.dataTransfer?.setData('application/json', JSON.stringify(paper))
 }
 
-const handleDrop = (event: DragEvent, folderId: string) => {
+const handleDrop = (event: DragEvent, folderId: number) => {
   event.preventDefault()
   const paperData = event.dataTransfer?.getData('application/json')
   if (paperData) {
@@ -820,10 +900,15 @@ const handleDrop = (event: DragEvent, folderId: string) => {
   }
 }
 
-const movePaperToFolder = (paperId: number, folderId: string) => {
+const movePaperToFolder = async (paperId: number, folderId: number) => {
   const paper = papers.value.find(p => p.id === paperId)
   if (paper) {
-    paper.folderId = folderId
+    try {
+      await libraryAPI.changeCategory(userId, paper.id.toString(), folderId.toString())
+      paper.folderId = folderId
+    } catch (error) {
+      ElMessage.error("文献移动失败")
+    }
     ElMessage.success('文献已移动到新分类')
   }
 }
@@ -850,13 +935,13 @@ const handlePaperAction = (command: string) => {
 
 const handleFolderAction = (command: string) => {
   const [action, id] = command.split('-')
-
+  let fid = parseInt(id)
   switch (action) {
     case 'edit':
-      editFolder(id)
+      editFolder(fid)
       break
     case 'delete':
-      deleteFolder(id)
+      deleteFolder(fid)
       break
   }
 }
@@ -878,20 +963,21 @@ const deletePaper = async (paperId: number) => {
     await ElMessageBox.confirm('确定要删除这篇文献吗？', '确认删除', {
       type: 'warning',
     })
-    papers.value = papers.value.filter(p => p.id !== paperId)
-    ElMessage.success('删除成功')
+    try {
+      await libraryAPI.deletePaper(userId, paperId.toString())
+      papers.value = papers.value.filter(p => p.id !== paperId)
+      ElMessage.success('删除成功')
+    } catch (error) {
+      ElMessage.error("删除失败，请稍后重试")
+    }
   } catch {
     // 用户取消
   }
 }
 
-const editFolder = async (folderId: string) => {
-  if (folderId == 'all') {
-    ElMessage.error('"全部文献"分类无法重命名')
-  } else {
-    renameFolderId = folderId
-    showFolderRenameDialog.value = true
-  }
+const editFolder = async (folderId: number) => {
+  renameFolderId = folderId
+  showFolderRenameDialog.value = true
 }
 
 const renameFolder = async() => {
@@ -899,61 +985,63 @@ const renameFolder = async() => {
     ElMessage.error('请输入分类名称')
     return
   } else {
-    let containsName = false
-    folders.value.forEach(folder => {
-      if (folder.name == newFolder.name && folder.id != renameFolderId) {
-        containsName = true
-      }
-    })
-    if (containsName) {
+    if (folders.value.find(folder => (folder.name == newFolder.name && folder.id != renameFolderId))) {
       ElMessage.error('分类名称重复')
       return
     }
   }
-
-  folders.value.forEach(folder => {
-    if (folder.id == renameFolderId) {
-      folder.name = newFolder.name
-    }
-  })
-
-  newFolder.name = ''
-  showFolderRenameDialog.value = false
-  ElMessage.success('分类重命名成功')
-}
-
-const deleteFolder = async (folderId: string) => {
-  if (folderId == 'all') {
-    ElMessage.error('"全部文献"分类无法删除')
-  } else try {
-    await ElMessageBox.confirm('确定要删除这个分类吗？文献将移动到"全部文献"分类。', '确认删除', {
-      type: 'warning',
-    })
-    folders.value = folders.value.filter(f => f.id !== folderId)
-    // 将文献移动到"全部文献"
-    papers.value.forEach(paper => {
-      if (paper.folderId === folderId) {
-        paper.folderId = 'all'
+  try {
+    await libraryAPI.renameFolder(renameFolderId.toString(), renameFolder.name)
+    folders.value.forEach(folder => {
+      if (folder.id == renameFolderId) {
+        folder.name = newFolder.name
       }
     })
-    ElMessage.success('删除成功')
+    showFolderRenameDialog.value = false
+    ElMessage.success('分类重命名成功')
+  } catch (error) {
+    ElMessage.error("重命名失败")
+  }
+  newFolder.name = ''
+}
+
+const deleteFolder = async (folderId: number) => {
+  if (folders.value.length <= 1) {
+    ElMessage.error('删除后将没有收藏夹！')
+  } else try {
+    await ElMessageBox.confirm('确定要删除这个分类吗？收藏夹下所有文献也将被删除。', '确认删除', {
+      type: 'warning',
+    })
+    try{
+      await libraryAPI.deleteFolder(folderId)
+      folders.value = folders.value.filter(f => f.id !== folderId)
+      papers.value = papers.value.filter(p => p.folderId !== folderId)
+      ElMessage.success('删除成功')
+    } catch {
+      ElMessage.error("删除失败")
+    }
   } catch {
     // 用户取消
   }
 }
 
-const createFolder = () => {
+const createFolder = async () => {
   if (!newFolder.name.trim()) {
     ElMessage.error('请输入分类名称')
     return
   }
-
-  folders.value.push({
-    id: Date.now().toString(),
-    name: newFolder.name,
-    count: 0,
-  })
-
+  try {
+    const res = await libraryAPI.createFolder(renameFolderId.toString(), renameFolder.name)
+    folders.value.push({
+      id: res,
+      name: newFolder.name,
+      count: 0,
+    })
+    showFolderDialog.value = false
+    ElMessage.success('收藏夹创建成功')
+  } catch (error) {
+    ElMessage.error("创建收藏夹失败")
+  }
   newFolder.name = ''
   // newFolder.description = ''
   showFolderDialog.value = false
@@ -963,12 +1051,10 @@ const createFolder = () => {
 const handleFileChange = (file: any) => {
   if (file && file.raw) {
     currentFile.value = file.raw;
-    
     // 自动填充标题（去除扩展名）
     const fileName = file.name;
     const dotIndex = fileName.lastIndexOf('.');
     newPaper.title = dotIndex !== -1 ? fileName.substring(0, dotIndex) : fileName;
-    
     // 生成文件URL并填充
     const fileUrl = URL.createObjectURL(file.raw);
     newPaper.url = fileUrl;
@@ -982,14 +1068,28 @@ const handleUpload = async () => {
         await ElMessageBox.confirm('确定要上传这些信息？', '确认上传', {
           type: 'warning',
         })
-        let folderId = '';
+        let folderId = -1;
         folders.value.forEach(folder => {
           if (folder.name === newPaper.folderName) {
             folderId = folder.id
           }
         })
+        let paper = {
+            "type": newPaper.folderName,
+            "title": newPaper.title,
+            "authors": [...newPaper.authors],
+            "venue": newPaper.journal,
+            "year": formatDate(newPaper.publishDate).slice(0,4),
+            // "abstract": null,
+            "keywords": [...newPaper.tags],
+            // "doi": null,
+            "pdfUrl": newPaper.url,
+            // "status": null,
+            // "isPublic":0
+        }
+        const res = await libraryAPI.createPaper(userId, folderId, paper)
         papers.value.push({
-          id: Date.now(),
+          id: res,
           title: newPaper.title,
           authors: [...newPaper.authors],
           journal: newPaper.journal,
@@ -1016,7 +1116,7 @@ const handleExceed = () => {
 };
 const removeFile = () => {
   if (uploadRef.value) {
-    uploadRef.value.clearFiles();
+    uploadRef.value = null;
   }
   currentFile.value = null;
   newPaper.url = '';
@@ -1055,9 +1155,6 @@ const formatDate = (date: Date) => {
   }).format(date)
 }
 
-onMounted(() => {
-  // 初始化数据
-})
 </script>
 
 
