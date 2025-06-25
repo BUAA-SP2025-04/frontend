@@ -6,7 +6,7 @@ import type {
   CreateConversationResponse,
   UploadFileResponse,
   ChatUser,
-  Conversation
+  Conversation,
 } from '@/api/types/chat'
 
 export const chatAPI = {
@@ -19,13 +19,15 @@ export const chatAPI = {
     request.post('/chat/conversations', data),
 
   // 获取会话历史消息
-  getConversationHistory: (params: GetConversationHistoryRequest): Promise<GetConversationHistoryResponse> =>
-    request.get(`/chat/conversations/${params.conversationId}/messages`, { 
-      params: { 
-        page: params.page, 
-        size: params.size, 
-        before: params.before 
-      } 
+  getConversationHistory: (
+    params: GetConversationHistoryRequest
+  ): Promise<GetConversationHistoryResponse> =>
+    request.get(`/chat/conversations/${params.conversationId}/messages`, {
+      params: {
+        page: params.page,
+        size: params.size,
+        before: params.before,
+      },
     }),
 
   // 获取聊天用户信息
@@ -37,7 +39,7 @@ export const chatAPI = {
     const formData = new FormData()
     formData.append('file', file)
     return request.post('/chat/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
 
@@ -46,7 +48,7 @@ export const chatAPI = {
     const formData = new FormData()
     formData.append('image', file)
     return request.post('/chat/upload/image', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
 
@@ -60,5 +62,5 @@ export const chatAPI = {
 
   // 清空聊天记录
   clearConversation: (conversationId: string) =>
-    request.delete(`/chat/conversations/${conversationId}/messages`)
+    request.delete(`/chat/conversations/${conversationId}/messages`),
 }

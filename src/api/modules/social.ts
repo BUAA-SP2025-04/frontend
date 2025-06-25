@@ -7,7 +7,7 @@ import type {
   CreateCommentParams,
   Post,
   Comment,
-  User
+  User,
 } from '@/api/types/social'
 
 export const socialAPI = {
@@ -42,7 +42,10 @@ export const socialAPI = {
   },
 
   // 获取评论列表
-  getComments: (postId: number, params: { page: number; size: number }): Promise<GetCommentsResponse> => {
+  getComments: (
+    postId: number,
+    params: { page: number; size: number }
+  ): Promise<GetCommentsResponse> => {
     return request.get(`/posts/${postId}/comments`, { params })
   },
 
@@ -64,5 +67,5 @@ export const socialAPI = {
   // 举报动态
   reportPost: (id: number, reason: string): Promise<void> => {
     return request.post(`/posts/${id}/report`, { reason })
-  }
+  },
 }

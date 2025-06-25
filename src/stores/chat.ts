@@ -49,7 +49,7 @@ export interface TypingStatus {
 
 export const useChatStore = defineStore('chat', () => {
   const userStore = useUserStore()
-  
+
   // 状态
   const conversations = ref<Conversation[]>([])
   const currentConversation = ref<Conversation | null>(null)
@@ -58,7 +58,9 @@ export const useChatStore = defineStore('chat', () => {
   const onlineUsers = ref<Set<number>>(new Set())
   const typingStatus = ref<TypingStatus>({})
   const isConnected = ref(false)
-  const connectionStatus = ref<'connecting' | 'connected' | 'disconnected' | 'reconnecting'>('disconnected')
+  const connectionStatus = ref<'connecting' | 'connected' | 'disconnected' | 'reconnecting'>(
+    'disconnected'
+  )
 
   // 计算属性
   const totalUnreadCount = computed(() => {
@@ -66,14 +68,12 @@ export const useChatStore = defineStore('chat', () => {
   })
 
   const getCurrentMessages = computed(() => {
-    return currentConversation.value 
-      ? messages.value[currentConversation.value.id] || []
-      : []
+    return currentConversation.value ? messages.value[currentConversation.value.id] || [] : []
   })
 
   const getCurrentChatUser = computed(() => {
     if (!currentConversation.value || !userStore.user) return null
-    
+
     const otherParticipant = currentConversation.value.participants.find(
       p => p.id !== userStore.user?.id
     )
@@ -82,10 +82,10 @@ export const useChatStore = defineStore('chat', () => {
 
   const isCurrentUserTyping = computed(() => {
     if (!currentConversation.value) return false
-    
+
     const convTyping = typingStatus.value[currentConversation.value.id] || {}
-    return Object.entries(convTyping).some(([userId, isTyping]) => 
-      Number(userId) !== userStore.user?.id && isTyping
+    return Object.entries(convTyping).some(
+      ([userId, isTyping]) => Number(userId) !== userStore.user?.id && isTyping
     )
   })
 
@@ -97,15 +97,15 @@ export const useChatStore = defineStore('chat', () => {
     if (!token) return
 
     connectionStatus.value = 'connecting'
-    
+
     // 设置事件监听
     wsService.on('connected', handleConnected)
     wsService.on('disconnected', handleDisconnected)
     wsService.on('error', handleError)
-    wsService.on('message', handleNewMessage)
-    wsService.on('typing', handleTypingStatus)
-    wsService.on('read', handleReadStatus)
-    wsService.on('online_status', handleOnlineStatus)
+    wsService.on('message', (data: unknown) => handleNewMessage(data as { message: Message }))
+    wsService.on('typing', (data: unknown) => handleTypingStatus(data as { userId: number; conversationId: string; isTyping: boolean }))
+    wsService.on('read', (data: unknown) => handleReadStatus(data as { conversationId: string; messageIds: string[]; readBy: number }))
+    wsService.on('online_status', (data: unknown) => handleOnlineStatus(data as { userId: number; isOnline: boolean; lastSeen?: string }))
     wsService.on('reconnect_failed', handleReconnectFailed)
 
     // 连接
@@ -137,31 +137,35 @@ export const useChatStore = defineStore('chat', () => {
   // 消息处理
   const handleNewMessage = (data: { message: Message }) => {
     const { message } = data
-    
+
     // 添加到消息列表
     if (!messages.value[message.conversationId]) {
       messages.value[message.conversationId] = []
     }
     messages.value[message.conversationId].push(message)
-    
+
     // 更新会话信息
     updateConversationWithMessage(message)
-    
+
     // 如果不是当前用户发送的消息，增加未读数
     if (message.senderId !== userStore.user?.id) {
       incrementUnreadCount(message.conversationId)
     }
   }
 
-  const handleTypingStatus = (data: { userId: number, conversationId: string, isTyping: boolean }) => {
+  const handleTypingStatus = (data: {
+    userId: number
+    conversationId: string
+    isTyping: boolean
+  }) => {
     const { userId, conversationId, isTyping } = data
-    
+
     if (!typingStatus.value[conversationId]) {
       typingStatus.value[conversationId] = {}
     }
-    
+
     typingStatus.value[conversationId][userId] = isTyping
-    
+
     // 清除打字状态的定时器
     if (isTyping) {
       setTimeout(() => {
@@ -172,9 +176,13 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  const handleReadStatus = (data: { conversationId: string, messageIds: string[], readBy: number }) => {
+  const handleReadStatus = (data: {
+    conversationId: string
+    messageIds: string[]
+    readBy: number
+  }) => {
     const { conversationId, messageIds, readBy } = data
-    
+
     const convMessages = messages.value[conversationId] || []
     convMessages.forEach(msg => {
       if (messageIds.includes(msg.id) && msg.senderId === userStore.user?.id) {
@@ -183,15 +191,15 @@ export const useChatStore = defineStore('chat', () => {
     })
   }
 
-  const handleOnlineStatus = (data: { userId: number, isOnline: boolean, lastSeen?: string }) => {
+  const handleOnlineStatus = (data: { userId: number; isOnline: boolean; lastSeen?: string }) => {
     const { userId, isOnline, lastSeen } = data
-    
+
     if (isOnline) {
       onlineUsers.value.add(userId)
     } else {
       onlineUsers.value.delete(userId)
     }
-    
+
     // 更新聊天用户信息
     if (chatUsers.value[userId]) {
       chatUsers.value[userId].isOnline = isOnline
@@ -206,9 +214,9 @@ export const useChatStore = defineStore('chat', () => {
     if (!wsService.isConnected) {
       throw new Error('连接未建立')
     }
-    
+
     const tempId = `temp_${Date.now()}_${Math.random()}`
-    
+
     // 创建临时消息（乐观更新）
     const tempMessage: Message = {
       id: tempId,
@@ -219,15 +227,15 @@ export const useChatStore = defineStore('chat', () => {
       content: content.trim(),
       status: 'sending',
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     }
-    
+
     // 立即添加到消息列表
     if (!messages.value[conversationId]) {
       messages.value[conversationId] = []
     }
     messages.value[conversationId].push(tempMessage)
-    
+
     // 发送到服务器
     try {
       wsService.sendTextMessage(conversationId, content.trim(), tempId)
@@ -245,15 +253,15 @@ export const useChatStore = defineStore('chat', () => {
     if (!wsService.isConnected) {
       throw new Error('连接未建立')
     }
-    
+
     try {
       // 上传文件
-      const uploadResult = file.type.startsWith('image/') 
+      const uploadResult = file.type.startsWith('image/')
         ? await chatAPI.uploadImage(file)
         : await chatAPI.uploadFile(file)
-      
+
       const tempId = `temp_${Date.now()}_${Math.random()}`
-      
+
       // 创建临时消息
       const tempMessage: Message = {
         id: tempId,
@@ -266,22 +274,24 @@ export const useChatStore = defineStore('chat', () => {
           name: uploadResult.fileName,
           size: uploadResult.fileSize,
           url: uploadResult.fileUrl,
-          mimeType: uploadResult.mimeType
+          mimeType: uploadResult.mimeType,
         },
         status: 'sending',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       }
-      
+
       // 添加到消息列表
       if (!messages.value[conversationId]) {
         messages.value[conversationId] = []
       }
       messages.value[conversationId].push(tempMessage)
-      
+
       // 发送文件消息
-      wsService.sendFileMessage(conversationId, uploadResult, tempId)
-      
+      wsService.sendFileMessage(conversationId, {
+        ...uploadResult,
+        fileType: uploadResult.mimeType
+      }, tempId)
     } catch (error) {
       throw error
     }
@@ -296,12 +306,12 @@ export const useChatStore = defineStore('chat', () => {
   const markMessagesAsRead = async (conversationId: string, messageIds: string[]) => {
     try {
       await chatAPI.markMessagesAsRead(conversationId, messageIds)
-      
+
       // 发送已读状态
       if (wsService.isConnected) {
         wsService.sendReadStatus(conversationId, messageIds)
       }
-      
+
       // 减少未读计数
       const conversation = conversations.value.find(c => c.id === conversationId)
       if (conversation) {
@@ -328,19 +338,17 @@ export const useChatStore = defineStore('chat', () => {
       const params = {
         conversationId,
         size: 20,
-        before: loadMore && existingMessages.length > 0 
-          ? existingMessages[0].createdAt 
-          : undefined
+        before: loadMore && existingMessages.length > 0 ? existingMessages[0].createdAt : undefined,
       }
-      
+
       const response = await chatAPI.getConversationHistory(params)
-      
+
       if (loadMore) {
         messages.value[conversationId] = [...response.messages, ...existingMessages]
       } else {
         messages.value[conversationId] = response.messages
       }
-      
+
       return response.hasMore
     } catch (error) {
       console.error('加载消息失败:', error)
@@ -403,13 +411,13 @@ export const useChatStore = defineStore('chat', () => {
     typingStatus,
     isConnected,
     connectionStatus,
-    
+
     // 计算属性
     totalUnreadCount,
     getCurrentMessages,
     getCurrentChatUser,
     isCurrentUserTyping,
-    
+
     // 方法
     initializeWebSocket,
     sendTextMessage,
@@ -420,6 +428,6 @@ export const useChatStore = defineStore('chat', () => {
     loadMessages,
     loadChatUser,
     setCurrentConversation,
-    cleanup
+    cleanup,
   }
 })

@@ -74,6 +74,10 @@ export interface Post {
   showFullContent?: boolean
   newComment?: string
   comments?: Comment[]
+  // 评论相关状态
+  commenting?: boolean
+  loadingComments?: boolean
+  hasMoreComments?: boolean
 }
 
 // API 参数类型
