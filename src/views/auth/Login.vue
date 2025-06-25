@@ -100,8 +100,8 @@ const handleLogin = async () => {
     ElMessage.success('登录成功')
     router.push('/')
   } catch (error) {
-    console.log(error)
-    ElMessage.error('登录失败，请检查用户名和密码')
+    // console.log(error)
+    // ElMessage.error('登录失败，请检查用户名和密码')
   }
 }
 </script>
