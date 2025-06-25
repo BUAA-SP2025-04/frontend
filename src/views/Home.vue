@@ -84,11 +84,11 @@
         <div class="text-center mb-16">
           <h2 class="text-4xl font-bold text-gray-900 mb-4">强大的科研工具集</h2>
           <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-            从文献管理到学术社交，从数据分析到成果展示，全方位支持您的科研之路
+            从文献管理到学术发现，从成果展示到知识分享，全方位支持您的科研之路
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <!-- 科研发现 -->
           <div
             class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
@@ -132,47 +132,6 @@
             </div>
           </div>
 
-          <!-- 学术社交 -->
-          <div
-            class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
-          >
-            <div class="p-8">
-              <div
-                class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
-              >
-                <svg
-                  class="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-              <h3 class="text-2xl font-bold text-gray-900 mb-3">学术社交</h3>
-              <p class="text-gray-600 mb-6">连接志同道合的研究者，分享学术动态，建立合作关系</p>
-              <router-link
-                to="/timeline"
-                class="text-green-600 hover:text-green-700 font-semibold flex items-center"
-              >
-                查看动态
-                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-              </router-link>
-            </div>
-          </div>
-
           <!-- 文献管理 -->
           <div
             class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
@@ -202,82 +161,6 @@
                 class="text-purple-600 hover:text-purple-700 font-semibold flex items-center"
               >
                 管理文献
-                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-              </router-link>
-            </div>
-          </div>
-
-          <!-- 数据可视化 -->
-          <div
-            class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
-          >
-            <div class="p-8">
-              <div
-                class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
-              >
-                <svg
-                  class="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <h3 class="text-2xl font-bold text-gray-900 mb-3">数据可视化</h3>
-              <p class="text-gray-600 mb-6">知识图谱、研究趋势、学术网络等多维度数据可视化</p>
-              <router-link
-                to="/visualization"
-                class="text-orange-600 hover:text-orange-700 font-semibold flex items-center"
-              >
-                查看图表
-                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-              </router-link>
-            </div>
-          </div>
-
-          <!-- PDF阅读器 -->
-          <div
-            class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
-          >
-            <div class="p-8">
-              <div
-                class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
-              >
-                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fill-rule="evenodd"
-                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </div>
-              <h3 class="text-2xl font-bold text-gray-900 mb-3">PDF阅读器</h3>
-              <p class="text-gray-600 mb-6">智能PDF阅读工具，支持文本提取、标注和坐标定位</p>
-              <router-link
-                to="/pdf-reader"
-                class="text-teal-600 hover:text-teal-700 font-semibold flex items-center"
-              >
-                开始阅读
                 <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
@@ -330,6 +213,170 @@
               </router-link>
             </div>
           </div>
+
+          <!-- 学术交流 -->
+          <div
+            class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
+          >
+            <div class="p-8">
+              <div
+                class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+              >
+                <svg
+                  class="w-8 h-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-2xl font-bold text-gray-900 mb-3">学术交流</h3>
+              <p class="text-gray-600 mb-6">与同行学者交流讨论，分享研究心得，促进学术合作</p>
+              <router-link
+                to="/messages"
+                class="text-green-600 hover:text-green-700 font-semibold flex items-center"
+              >
+                开始交流
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </router-link>
+            </div>
+          </div>
+
+          <!-- 暂时隐藏的模块 - 学术社交 -->
+          <!--
+          <div
+            class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
+          >
+            <div class="p-8">
+              <div
+                class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+              >
+                <svg
+                  class="w-8 h-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-2xl font-bold text-gray-900 mb-3">学术社交</h3>
+              <p class="text-gray-600 mb-6">连接志同道合的研究者，分享学术动态，建立合作关系</p>
+              <router-link
+                to="/timeline"
+                class="text-green-600 hover:text-green-700 font-semibold flex items-center"
+              >
+                查看动态
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </router-link>
+            </div>
+          </div>
+          -->
+
+          <!-- 暂时隐藏的模块 - 数据可视化 -->
+          <!--
+          <div
+            class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
+          >
+            <div class="p-8">
+              <div
+                class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+              >
+                <svg
+                  class="w-8 h-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-2xl font-bold text-gray-900 mb-3">数据可视化</h3>
+              <p class="text-gray-600 mb-6">知识图谱、研究趋势、学术网络等多维度数据可视化</p>
+              <router-link
+                to="/visualization"
+                class="text-orange-600 hover:text-orange-700 font-semibold flex items-center"
+              >
+                查看图表
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </router-link>
+            </div>
+          </div>
+          -->
+
+          <!-- 暂时隐藏的模块 - PDF阅读器 -->
+          <!--
+          <div
+            class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
+          >
+            <div class="p-8">
+              <div
+                class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+              >
+                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fill-rule="evenodd"
+                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-2xl font-bold text-gray-900 mb-3">PDF阅读器</h3>
+              <p class="text-gray-600 mb-6">智能PDF阅读工具，支持文本提取、标注和坐标定位</p>
+              <router-link
+                to="/pdf-reader"
+                class="text-teal-600 hover:text-teal-700 font-semibold flex items-center"
+              >
+                开始阅读
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </router-link>
+            </div>
+          </div>
+          -->
         </div>
       </div>
     </section>
@@ -646,8 +693,8 @@ onMounted(async () => {
     if (res2 && typeof res2.data === 'number') {
       paperCount.value = (res2.data as any) || 0
     }
-    if (res3 && typeof res3.data === 'object' && 'count' in res3.data) {
-      messageCount.value = (res3.data as any).count || 0
+    if (res3 && typeof res3.data === 'number') {
+      messageCount.value = (res3.data as any) || 0
     }
   } catch (e) {
     // 可选：错误处理
