@@ -68,7 +68,7 @@ export interface UserDetail {
 export interface Paper {
   id: number
   title: string
-  authors: { id: number; name: string }[]
+  authors: string
   conference: string
   venue: string
   year: number

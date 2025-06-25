@@ -391,7 +391,7 @@
                       :src="user.imgUrl || '/default-avatar.png'"
                       :alt="user.name || '未知用户'"
                       class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 group-hover:border-indigo-200 transition-colors"
-                      @error="$event.target.src = '/default-avatar.png'"
+                      @error="handleImageError"
                     />
                     <el-icon
                       v-if="user.gender === '男' || user.gender === 'male'"
@@ -978,6 +978,13 @@ const validateFollowersRange = () => {
       // 如果下限大于上限，将上限调整为下限值
       filters.followersRange.max = min
     }
+  }
+}
+
+const handleImageError = (event: Event) => {
+  const target = event.target as HTMLImageElement
+  if (target) {
+    target.src = '/default-avatar.png'
   }
 }
 </script>

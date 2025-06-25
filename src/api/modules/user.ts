@@ -54,12 +54,12 @@ export function getUserPapers(id: string | number) {
 
 // 关注
 export function follow(toBeFollowedId: string | number) {
-  return request.post('/researcher/follow', {toBeFollowedId : toBeFollowedId})
+  return request.post('/researcher/follow', { toBeFollowedId: toBeFollowedId })
 }
 
 // 取消关注
 export function unfollow(toBeCancelledId: string | number) {
-  return request.post('/researcher/cancelFollow', {toBeCancelledId})
+  return request.post('/researcher/cancelFollow', { toBeCancelledId })
 }
 
 // 获取是否关注
