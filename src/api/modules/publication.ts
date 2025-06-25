@@ -58,7 +58,7 @@ export function getPublicationInformById(id: number | string): Promise<Publicati
   })
 }
 
-export function readPublication(id: number | string): Promise<any> {
+export function readPublication(id: number | string): Promise<EmptyResponse> {
   return request.post('/publication/read', { id })
 }
 
