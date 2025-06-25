@@ -66,3 +66,49 @@ export interface PublicationListResponse {
     publications: Publication[]
   }
 }
+
+export interface PublicationInformResponse {
+  message: string
+  data: Publication
+  code: string
+}
+
+// 成果评论相关类型
+export interface PublicationComment {
+  id: number
+  content: string
+  author: {
+    id: number
+    name: string
+    avatar?: string
+    institution?: string
+  }
+  createdAt: string
+  likesCount: number
+  isLiked: boolean
+  parentId?: number
+  replies?: PublicationComment[]
+}
+
+export interface CreatePublicationCommentRequest {
+  content: string
+  parentId?: number
+}
+
+export interface PublicationCommentResponse {
+  message: string
+  data: {
+    comments: PublicationComment[]
+    total: number
+    hasMore: boolean
+  }
+  code: string
+}
+
+export interface CreatePublicationCommentResponse {
+  message: string
+  data: {
+    id: number
+  }
+  code: string
+}

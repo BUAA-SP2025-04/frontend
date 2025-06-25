@@ -239,11 +239,6 @@
           </div>
         </div>
         <div v-else class="text-gray-400 text-center py-8 text-base">暂无论文数据</div>
-        <publicationDetail
-          v-if="currentPaper"
-          :achievement="currentPaper"
-          v-model:visible="detailDialogVisible"
-        />
       </div>
     </div>
   </div>
@@ -257,7 +252,6 @@ import type { UserDetail, Paper } from '@/api/types/user'
 import { Male, Female, UserFilled, CircleCheckFilled, Plus, Close } from '@element-plus/icons-vue'
 import { ElIcon, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import publicationDetail from '@/components/publicationDetail.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -265,8 +259,6 @@ const userStore = useUserStore()
 
 const user = ref<UserDetail | null>(null)
 const papers = ref<Paper[]>([])
-const detailDialogVisible = ref(false)
-const currentPaper = ref<Paper | null>(null)
 const isFollowing = ref(false)
 const showFullBio = ref(false)
 
@@ -276,16 +268,6 @@ onMounted(async () => {
     const response = await getUserDetail(userId as string)
     if (response.data) {
       user.value = response.data
-      // // 检查是否已关注该用户
-      // try {
-      //   const followResponse = await getIfFollow(response.data.id)
-      //   if (followResponse.data) {
-      //     isFollowing.value = followResponse.data
-      //   }
-      // } catch (followError) {
-      //   console.error('检查关注状态失败:', followError)
-      //   isFollowing.value = false
-      // }
       // 获取论文数据
       const paperRes = await getUserPapers(response.data.id)
       console.log(paperRes)
@@ -376,14 +358,8 @@ function formatNumber(num: number | null | undefined): string {
 
 const showPaperDetail = (paper: Paper) => {
   if (paper && paper.id) {
-    // 为publicationDetail组件准备数据格式
-    const formattedPaper = {
-      ...paper,
-      // authors 保持为字符串类型
-      authors: paper.authors || '',
-    }
-    currentPaper.value = formattedPaper
-    detailDialogVisible.value = true
+    // 跳转到成果详情页面
+    router.push(`/publication/${paper.id}`)
   }
 }
 
