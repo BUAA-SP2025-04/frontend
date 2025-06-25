@@ -159,7 +159,7 @@
               @click="showUserMenu = !showUserMenu"
             >
               <img
-                :src="currentUser?.imgUrl || `http://api.btstu.cn/sjtx/api.php?lx=${'b1'}`"
+                :src="currentUser?.imgUrl || `/default-avatar.png`"
                 :alt="currentUser?.name"
                 class="h-8 w-8 rounded-full object-cover"
               />
