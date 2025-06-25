@@ -65,15 +65,6 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/follow',
-    name: 'Follow',
-    component: () => import('@/views/auth/Follow.vue'),
-    meta: {
-      title: '我的关注',
-      requiresAuth: true,
-    },
-  },
-  {
     path: '/achievements',
     name: 'Achievements',
     component: () => import('@/views/research/Publications.vue'),

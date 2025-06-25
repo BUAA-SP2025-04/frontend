@@ -12,7 +12,7 @@ export function useChat(conversationId?: string) {
   })
 
   const currentConversation = computed(() => {
-    return conversationId 
+    return conversationId
       ? chatStore.conversations.find(c => c.id === conversationId) || null
       : null
   })
@@ -40,11 +40,11 @@ export function useChat(conversationId?: string) {
 
   const markAsRead = (messageIds?: string[]) => {
     if (!conversationId) return
-    
+
     const unreadMessages = messages.value
       .filter(m => m.senderId !== userStore.user?.id && m.status !== 'read')
       .map(m => m.id)
-    
+
     if (messageIds) {
       chatStore.markMessagesAsRead(conversationId, messageIds)
     } else if (unreadMessages.length > 0) {
@@ -62,7 +62,7 @@ export function useChat(conversationId?: string) {
     isTyping: chatStore.isCurrentUserTyping,
     onlineUsers: chatStore.onlineUsers,
     isConnected: chatStore.isConnected,
-    
+
     // 方法
     sendTextMessage,
     sendFileMessage,
@@ -70,6 +70,6 @@ export function useChat(conversationId?: string) {
     loadMessages,
     loadChatUser: chatStore.loadChatUser,
     markAsRead,
-    cleanup: chatStore.cleanup
+    cleanup: chatStore.cleanup,
   }
 }

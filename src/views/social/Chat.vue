@@ -8,8 +8,18 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
             <button @click="goBack" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              <svg
+                class="w-5 h-5 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
 
@@ -20,7 +30,7 @@
                   :alt="chatUser?.name || '用户'"
                   class="w-10 h-10 rounded-full object-cover"
                   @error="handleAvatarError"
-                />    
+                />
                 <div
                   v-if="chatUser?.isOnline"
                   class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"
@@ -28,15 +38,11 @@
               </div>
 
               <div>
-                <h2 class="text-lg font-semibold text-gray-900">{{ chatUser?.name || '加载中...' }}</h2>
+                <h2 class="text-lg font-semibold text-gray-900">
+                  {{ chatUser?.name || '加载中...' }}
+                </h2>
                 <p class="text-sm text-gray-500">
-                  {{
-                    chatUser?.isOnline
-                      ? isTyping
-                        ? '正在输入...'
-                        : '在线'
-                      : getLastSeenText()
-                  }}
+                  {{ chatUser?.isOnline ? (isTyping ? '正在输入...' : '在线') : getLastSeenText() }}
                 </p>
               </div>
             </div>
@@ -45,11 +51,8 @@
           <div class="flex items-center space-x-2">
             <!-- 连接状态指示器 -->
             <div class="flex items-center space-x-2">
-              <div 
-                :class="[
-                  'w-2 h-2 rounded-full',
-                  isConnected ? 'bg-green-500' : 'bg-red-500'
-                ]"
+              <div
+                :class="['w-2 h-2 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500']"
                 :title="isConnected ? '已连接' : '连接断开'"
               ></div>
             </div>
@@ -60,9 +63,18 @@
               class="p-2 hover:bg-gray-100 rounded-full transition-colors"
               title="语音通话"
             >
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              <svg
+                class="w-5 h-5 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                />
               </svg>
             </button>
 
@@ -72,18 +84,36 @@
               class="p-2 hover:bg-gray-100 rounded-full transition-colors"
               title="视频通话"
             >
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              <svg
+                class="w-5 h-5 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
               </svg>
             </button>
 
             <!-- 更多选项 -->
             <el-dropdown trigger="click" @command="handleMoreAction">
               <button class="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                <svg
+                  class="w-5 h-5 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                  />
                 </svg>
               </button>
               <template #dropdown>
@@ -100,11 +130,23 @@
       </div>
 
       <!-- 连接状态提示 -->
-      <div v-if="!isConnected && !isInitializing" class="bg-yellow-50 border-b border-yellow-200 px-6 py-2">
+      <div
+        v-if="!isConnected && !isInitializing"
+        class="bg-yellow-50 border-b border-yellow-200 px-6 py-2"
+      >
         <div class="flex items-center space-x-2">
-          <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.768 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          <svg
+            class="w-4 h-4 text-yellow-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.768 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
           </svg>
           <span class="text-sm text-yellow-700">连接异常，部分功能可能不可用。正在尝试重连...</span>
         </div>
@@ -206,11 +248,19 @@
                         @click="downloadFile(message.fileInfo)"
                       >
                         <div class="flex items-center space-x-3">
-                          <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                              <path fill-rule="evenodd"
+                          <div
+                            class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"
+                          >
+                            <svg
+                              class="w-5 h-5 text-gray-600"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fill-rule="evenodd"
                                 d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-                                clip-rule="evenodd" />
+                                clip-rule="evenodd"
+                              />
                             </svg>
                           </div>
                           <div class="flex-1 min-w-0">
@@ -221,9 +271,18 @@
                               {{ formatFileSize(message.fileInfo?.size || 0) }}
                             </p>
                           </div>
-                          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          <svg
+                            class="w-4 h-4 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
                           </svg>
                         </div>
                       </div>
@@ -255,10 +314,19 @@
                             fill="none"
                             viewBox="0 0 24 24"
                           >
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
+                            <circle
+                              class="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              stroke-width="4"
+                            ></circle>
+                            <path
+                              class="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
 
                           <!-- 已发送 -->
@@ -268,22 +336,36 @@
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
-                            <path fill-rule="evenodd"
+                            <path
+                              fill-rule="evenodd"
                               d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clip-rule="evenodd" />
+                              clip-rule="evenodd"
+                            />
                           </svg>
 
                           <!-- 已读 -->
                           <div v-else-if="message.status === 'read'" class="flex ml-1">
-                            <svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                              <path fill-rule="evenodd"
+                            <svg
+                              class="w-3 h-3 text-blue-500"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fill-rule="evenodd"
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clip-rule="evenodd" />
+                                clip-rule="evenodd"
+                              />
                             </svg>
-                            <svg class="w-3 h-3 text-blue-500 -ml-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fill-rule="evenodd"
+                            <svg
+                              class="w-3 h-3 text-blue-500 -ml-1"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fill-rule="evenodd"
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clip-rule="evenodd" />
+                                clip-rule="evenodd"
+                              />
                             </svg>
                           </div>
                         </div>
@@ -296,9 +378,18 @@
 
             <!-- 空状态 -->
             <div v-else class="text-center py-12">
-              <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <svg
+                class="w-16 h-16 mx-auto text-gray-400 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
               </svg>
               <h3 class="text-lg font-medium text-gray-900 mb-2">开始对话</h3>
               <p class="text-gray-500">发送消息开始您的第一次对话</p>
@@ -316,9 +407,18 @@
               @dragleave="isDragging = false"
             >
               <div class="text-center">
-                <svg class="w-16 h-16 mx-auto text-indigo-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                <svg
+                  class="w-16 h-16 mx-auto text-indigo-400 mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
                 </svg>
                 <p class="text-lg font-medium text-indigo-600">拖拽文件到这里发送</p>
                 <p class="text-sm text-gray-500">支持图片、文档等文件类型</p>
@@ -333,9 +433,18 @@
                 <el-popover placement="top-start" :width="320" trigger="click">
                   <template #reference>
                     <button class="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                      <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        class="w-5 h-5 text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                     </button>
                   </template>
@@ -365,9 +474,18 @@
                   @click="fileInput?.click()"
                   class="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  <svg
+                    class="w-5 h-5 text-gray-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                    />
                   </svg>
                 </button>
 
@@ -384,9 +502,18 @@
                   @click="imageInput?.click()"
                   class="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <svg
+                    class="w-5 h-5 text-gray-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
                   </svg>
                 </button>
 
@@ -394,9 +521,18 @@
                 <el-popover placement="top-start" :width="200" trigger="click">
                   <template #reference>
                     <button class="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                      <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      <svg
+                        class="w-5 h-5 text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                        />
                       </svg>
                     </button>
                   </template>
@@ -437,8 +573,19 @@
                   :loading="isSending"
                   @click="sendMessage"
                 >
-                  <svg v-if="!isSending" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  <svg
+                    v-if="!isSending"
+                    class="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                    />
                   </svg>
                   发送
                 </el-button>
@@ -454,9 +601,11 @@
                   <div class="flex items-center space-x-2">
                     <div class="w-8 h-8 bg-gray-200 rounded flex items-center justify-center">
                       <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
+                        <path
+                          fill-rule="evenodd"
                           d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-                          clip-rule="evenodd" />
+                          clip-rule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div>
@@ -469,8 +618,18 @@
                     @click="removeFile(index)"
                     class="p-1 hover:bg-gray-200 rounded-full transition-colors"
                   >
-                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      class="w-4 h-4 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -487,8 +646,6 @@
     </el-dialog>
   </div>
 </template>
-
-// 在 Chat.vue 的 script setup 部分，替换现有的代码：
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
@@ -559,9 +716,9 @@ class MockWebSocketService {
           fileInfo: data.fileInfo,
           status: 'sent',
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         },
-        tempId: data.tempId
+        tempId: data.tempId,
       })
     }, 300)
 
@@ -582,12 +739,12 @@ class MockWebSocketService {
       '😊',
       '有时间详细讨论一下',
       '我也是这么想的',
-      '确实如此'
+      '确实如此',
     ]
 
     // 智能回复逻辑
     let reply = replies[Math.floor(Math.random() * replies.length)]
-    
+
     if (originalContent.includes('你好') || originalContent.includes('hi')) {
       reply = '你好！很高兴认识你'
     } else if (originalContent.includes('谢谢') || originalContent.includes('感谢')) {
@@ -602,7 +759,7 @@ class MockWebSocketService {
       this.emit('typing_status', {
         userId: this.mockUserId,
         conversationId,
-        isTyping: true
+        isTyping: true,
       })
 
       // 再发送消息
@@ -610,7 +767,7 @@ class MockWebSocketService {
         this.emit('typing_status', {
           userId: this.mockUserId,
           conversationId,
-          isTyping: false
+          isTyping: false,
         })
 
         this.emit('new_message', {
@@ -623,8 +780,8 @@ class MockWebSocketService {
             content: reply,
             status: 'sent',
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
+            updatedAt: new Date().toISOString(),
+          },
         })
       }, 1000 + Math.random() * 2000) // 1-3秒打字时间
     }, 500 + Math.random() * 1500) // 0.5-2秒反应时间
@@ -637,14 +794,14 @@ class MockWebSocketService {
         this.emit('typing_status', {
           userId: this.mockUserId,
           conversationId: message.data.conversationId,
-          isTyping: true
+          isTyping: true,
         })
 
         setTimeout(() => {
           this.emit('typing_status', {
             userId: this.mockUserId,
             conversationId: message.data.conversationId,
-            isTyping: false
+            isTyping: false,
           })
         }, 2000)
       }, 1000)
@@ -657,7 +814,7 @@ class MockWebSocketService {
       this.emit('read_status', {
         conversationId: message.data.conversationId,
         messageIds: message.data.messageIds,
-        readBy: this.mockUserId
+        readBy: this.mockUserId,
       })
     }, 500)
   }
@@ -740,18 +897,55 @@ const isTyping = ref(false)
 const isConnected = ref(false)
 
 // 获取当前用户ID
-const currentUserId = computed(() => userStore.userInfo?.id || 1)
-const currentUser = computed(() => userStore.userInfo)
+const currentUserId = computed(() => userStore.user?.id || 1)
+const currentUser = computed(() => userStore.user)
 const chatUserId = computed(() => parseInt(route.params.userId as string) || 999)
-const conversationId = computed(() => route.params.conversationId as string || `conv_${currentUserId.value}_${chatUserId.value}`)
+const conversationId = computed(
+  () => (route.params.conversationId as string) || `conv_${currentUserId.value}_${chatUserId.value}`
+)
 
 // 常用表情
 const commonEmojis = [
-  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
-  '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
-  '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
-  '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '👍',
-  '👎', '👌', '✌️', '🤞', '🤝', '👏', '🙌', '💪'
+  '😀',
+  '😃',
+  '😄',
+  '😁',
+  '😆',
+  '😅',
+  '😂',
+  '🤣',
+  '😊',
+  '😇',
+  '🙂',
+  '🙃',
+  '😉',
+  '😌',
+  '😍',
+  '🥰',
+  '😘',
+  '😗',
+  '😙',
+  '😚',
+  '😋',
+  '😛',
+  '😝',
+  '😜',
+  '🤪',
+  '🤨',
+  '🧐',
+  '🤓',
+  '😎',
+  '🤩',
+  '🥳',
+  '👍',
+  '👎',
+  '👌',
+  '✌️',
+  '🤞',
+  '🤝',
+  '👏',
+  '🙌',
+  '💪',
 ]
 
 // 快捷短语
@@ -763,7 +957,7 @@ const quickPhrases = [
   '期待进一步交流',
   '有时间详细讨论一下',
   '我会尽快回复您',
-  '非常感谢！'
+  '非常感谢！',
 ]
 
 // 计算属性 - 按日期分组消息
@@ -773,7 +967,7 @@ const groupedMessages = computed(() => {
   }
 
   const groups: { [key: string]: any[] } = {}
-  
+
   messages.value.forEach(message => {
     if (message && message.createdAt) {
       const dateKey = new Date(message.createdAt).toDateString()
@@ -800,7 +994,7 @@ const initializeChat = async () => {
         avatar: '/default-avatar.png',
         institution: '测试机构',
         isOnline: true,
-        lastSeen: new Date().toISOString()
+        lastSeen: new Date().toISOString(),
       }
     }, 500)
 
@@ -816,7 +1010,7 @@ const initializeChat = async () => {
           content: '你好！很高兴认识你 😊',
           status: 'read',
           createdAt: new Date(Date.now() - 300000).toISOString(), // 5分钟前
-          updatedAt: new Date(Date.now() - 300000).toISOString()
+          updatedAt: new Date(Date.now() - 300000).toISOString(),
         },
         {
           id: '2',
@@ -827,15 +1021,14 @@ const initializeChat = async () => {
           content: '有什么想聊的吗？',
           status: 'read',
           createdAt: new Date(Date.now() - 240000).toISOString(), // 4分钟前
-          updatedAt: new Date(Date.now() - 240000).toISOString()
-        }
+          updatedAt: new Date(Date.now() - 240000).toISOString(),
+        },
       ]
       isInitializing.value = false
     }, 1000)
 
     // 初始化 WebSocket 连接
     initializeWebSocket()
-
   } catch (error) {
     console.error('初始化聊天失败:', error)
     ElMessage.error('初始化失败，请刷新页面重试')
@@ -868,7 +1061,7 @@ const initializeWebSocket = () => {
     if (data.message) {
       messages.value.push(data.message)
       scrollToBottom()
-      
+
       // 播放消息提示音（可选）
       // playNotificationSound()
     }
@@ -922,10 +1115,9 @@ const initializeWebSocket = () => {
 
 // 安全的方法实现
 
-
 const getMessageSenderName = (message: any) => {
   if (!message) return '未知用户'
-  
+
   if (message.senderId === currentUserId.value) {
     return currentUser.value?.name || '我'
   } else {
@@ -937,7 +1129,7 @@ const getLastSeenText = () => {
   if (!chatUser.value || !chatUser.value.lastSeen) {
     return '未知'
   }
-  
+
   try {
     const lastSeen = new Date(chatUser.value.lastSeen)
     const diff = Date.now() - lastSeen.getTime()
@@ -967,7 +1159,7 @@ const sendMessage = async () => {
     if (messageInput.value.trim()) {
       const tempId = `temp_${Date.now()}`
       const content = messageInput.value.trim()
-      
+
       // 立即添加到本地消息列表（乐观更新）
       const tempMessage = {
         id: tempId,
@@ -978,7 +1170,7 @@ const sendMessage = async () => {
         content,
         status: 'sending',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       }
 
       messages.value.push(tempMessage)
@@ -993,9 +1185,9 @@ const sendMessage = async () => {
           content,
           receiverId: chatUserId.value,
           senderId: currentUserId.value,
-          tempId
+          tempId,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
     }
 
@@ -1003,7 +1195,7 @@ const sendMessage = async () => {
     if (selectedFiles.value.length > 0) {
       for (const file of selectedFiles.value) {
         const tempId = `temp_file_${Date.now()}_${Math.random()}`
-        
+
         const tempMessage = {
           id: tempId,
           conversationId: conversationId.value,
@@ -1015,11 +1207,11 @@ const sendMessage = async () => {
             name: file.name,
             size: file.size,
             url: URL.createObjectURL(file),
-            mimeType: file.type
+            mimeType: file.type,
           },
           status: 'sending',
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         }
 
         messages.value.push(tempMessage)
@@ -1034,9 +1226,9 @@ const sendMessage = async () => {
             fileInfo: tempMessage.fileInfo,
             receiverId: chatUserId.value,
             senderId: currentUserId.value,
-            tempId
+            tempId,
           },
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
       }
       selectedFiles.value = []
@@ -1059,23 +1251,23 @@ const handleInputChange = () => {
       type: 'typing_status',
       data: {
         conversationId: conversationId.value,
-        isTyping: true
+        isTyping: true,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
 
     // 清除之前的定时器
     clearTimeout(typingTimer.value)
-    
+
     // 1秒后停止输入状态
     typingTimer.value = setTimeout(() => {
       mockWS.send({
         type: 'typing_status',
         data: {
           conversationId: conversationId.value,
-          isTyping: false
+          isTyping: false,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
     }, 1000) as unknown as number
   }
@@ -1087,15 +1279,15 @@ const markAsRead = () => {
     const unreadMessages = messages.value
       .filter(m => m.senderId !== currentUserId.value && m.status !== 'read')
       .map(m => m.id)
-    
+
     if (unreadMessages.length > 0) {
       mockWS.send({
         type: 'read_status',
         data: {
           conversationId: conversationId.value,
-          messageIds: unreadMessages
+          messageIds: unreadMessages,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
     }
   }
@@ -1171,16 +1363,17 @@ const avatarError = ref(new Set<string>())
 const handleAvatarError = (event: Event) => {
   const img = event.target as HTMLImageElement
   const originalSrc = img.src
-  
+
   // 避免无限循环
   if (avatarError.value.has(originalSrc)) {
     return
   }
-  
+
   avatarError.value.add(originalSrc)
-  
+
   // 设置默认头像，使用base64编码的默认图片或者确保存在的图片
-  img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNFNUU3RUIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNiIgcj0iNiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMzIgMzJDMzIgMjYuNDc3MiAyNy41MjI4IDIyIDIyIDIySDE4QzEyLjQ3NzIgMjIgOCAyNi40NzcyIDggMzJWMzJIMzJWMzJaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo='
+  img.src =
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNFNUU3RUIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNiIgcj0iNiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMzIgMzJDMzIgMjYuNDc3MiAyNy41MjI4IDIyIDIyIDIySDE4QzEyLjQ3NzIgMjIgOCAyNi40NzcyIDggMzJWMzJIMzJWMzJaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo='
 }
 
 const handleImageError = (event: Event) => {
@@ -1192,7 +1385,7 @@ const handleImageError = (event: Event) => {
 // 获取消息头像的安全方法
 const getMessageAvatar = (message: any) => {
   if (!message) return getDefaultAvatar()
-  
+
   if (message.senderId === currentUserId.value) {
     return currentUser.value?.avatar || currentUser.value?.imgUrl || getDefaultAvatar()
   } else {
@@ -1202,7 +1395,7 @@ const getMessageAvatar = (message: any) => {
 
 // 获取默认头像
 const getDefaultAvatar = () => {
-  return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNFNUU3RUIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNiIgcj0iNiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMzIgMzJDMzIgMjYuNDc3MiAyNy41MjI4IDIyIDIyIDIySDE4QzEyLjQ3NzIgMjIgOCAyNi40NzcyIDggMzJWMzJIMzJWMzJaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo='
+  return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNFNUU3RUIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNiIgcj0iNiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMzIgMzJDMzIgMjYuNDc3MiAyNy41MjI4IDIyIDIySDE4QzEyLjQ3NzIgMjIgOCAyNi40NzcyIDggMzJWMzJIMzJWMzJaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo='
 }
 
 // 导航方法
@@ -1233,7 +1426,7 @@ const loadMessages = async (loadMore = false) => {
   isLoading.value = true
   try {
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     if (loadMore) {
       const moreMessages = [
         {
@@ -1245,8 +1438,8 @@ const loadMessages = async (loadMore = false) => {
           content: '这是一条更早的历史消息',
           status: 'read',
           createdAt: new Date(Date.now() - 86400000).toISOString(),
-          updatedAt: new Date(Date.now() - 86400000).toISOString()
-        }
+          updatedAt: new Date(Date.now() - 86400000).toISOString(),
+        },
       ]
       messages.value = [...moreMessages, ...messages.value]
       hasMore.value = Math.random() > 0.7
@@ -1261,7 +1454,7 @@ const loadMessages = async (loadMore = false) => {
 // 格式化方法
 const formatMessageTime = (date: Date | string) => {
   if (!date) return ''
-  
+
   try {
     const messageDate = new Date(date)
     const now = new Date()
@@ -1284,7 +1477,7 @@ const formatMessageTime = (date: Date | string) => {
 
 const formatDateDivider = (dateString: string) => {
   if (!dateString) return ''
-  
+
   try {
     const date = new Date(dateString)
     const today = new Date()
@@ -1359,7 +1552,7 @@ const handleDragLeave = (event: DragEvent) => {
 onMounted(async () => {
   await initializeChat()
   scrollToBottom()
-  
+
   // 添加拖拽事件监听
   window.addEventListener('dragover', handleDragOver)
   window.addEventListener('dragleave', handleDragLeave)
@@ -1423,12 +1616,12 @@ watch(
   .max-w-4xl {
     max-width: 100%;
   }
-  
+
   .px-6 {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .max-w-xs {
     max-width: 16rem;
   }

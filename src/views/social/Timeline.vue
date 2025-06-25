@@ -51,7 +51,12 @@
               />
             </div>
 
-            <el-select v-model="selectedCategory" placeholder="动态类型" style="width: 150px" @change="handleFilterChange">
+            <el-select
+              v-model="selectedCategory"
+              placeholder="动态类型"
+              style="width: 150px"
+              @change="handleFilterChange"
+            >
               <el-option label="全部" value="all" />
               <el-option label="论文发表" value="paper" />
               <el-option label="项目进展" value="project" />
@@ -106,7 +111,7 @@
 
                   <div class="flex items-center space-x-2">
                     <span class="text-sm text-gray-500">{{ formatTime(post.createdAt) }}</span>
-                    <el-dropdown trigger="click" @command="(command) => handlePostAction(command, post)">
+                    <el-dropdown trigger="click" @command="handlePostAction">
                       <button class="p-1 hover:bg-gray-100 rounded-full transition-colors">
                         <svg
                           class="w-4 h-4 text-gray-400"
@@ -176,12 +181,19 @@
             <div v-if="post.attachments && post.attachments.length > 0" class="mb-4">
               <!-- 论文附件 -->
               <div
-                v-if="post.type === 'paper' && post.attachments && post.attachments.length > 0 && isPaperAttachment(post.attachments[0])"
+                v-if="
+                  post.type === 'paper' &&
+                  post.attachments &&
+                  post.attachments.length > 0 &&
+                  isPaperAttachment(post.attachments[0])
+                "
                 class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                 @click="openPaper(post.attachments[0])"
               >
                 <div class="flex items-start space-x-4">
-                  <div class="w-16 h-20 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div
+                    class="w-16 h-20 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0"
+                  >
                     <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fill-rule="evenodd"
@@ -214,7 +226,7 @@
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
                 <img
-                  v-for="(image, index) in post.attachments.filter(att => att.type === 'image')"
+                  v-for="(image, index) in getImageAttachments(post.attachments)"
                   :key="index"
                   :src="image.url"
                   :alt="image.name"
@@ -476,8 +488,10 @@ import type {
   Comment,
   User,
   PaperAttachment,
+  ImageAttachment,
+  Attachment,
   GetPostsParams,
-  CreateCommentParams
+  CreateCommentParams,
 } from '@/api/types/social'
 // import PublishPostForm from '@/components/PublishPostForm.vue'
 
@@ -503,6 +517,11 @@ const posts = ref<Post[]>([])
 // 类型守卫函数
 const isPaperAttachment = (attachment: any): attachment is PaperAttachment => {
   return attachment?.type === 'paper'
+}
+
+const getImageAttachments = (attachments: Attachment[] | undefined): ImageAttachment[] => {
+  if (!attachments) return []
+  return attachments.filter(att => att.type === 'image') as ImageAttachment[]
 }
 
 // 工具方法
@@ -584,12 +603,12 @@ const loadPosts = async (reset = false) => {
       page: currentPage.value,
       size: pageSize.value,
       category: selectedCategory.value === 'all' ? undefined : selectedCategory.value,
-      sortBy: sortBy.value,
-      search: searchQuery.value.trim() || undefined
+      sortBy: sortBy.value as 'latest' | 'hot' | 'comments',
+      search: searchQuery.value.trim() || undefined,
     }
 
     const response = await socialAPI.getPosts(params)
-    
+
     if (reset) {
       posts.value = response.list.map(post => ({
         ...post,
@@ -599,23 +618,25 @@ const loadPosts = async (reset = false) => {
         comments: [],
         commenting: false,
         loadingComments: false,
-        hasMoreComments: post.commentsCount > 0
+        hasMoreComments: post.commentsCount > 0,
       }))
     } else {
-      posts.value.push(...response.list.map(post => ({
-        ...post,
-        showComments: false,
-        showFullContent: false,
-        newComment: '',
-        comments: [],
-        commenting: false,
-        loadingComments: false,
-        hasMoreComments: post.commentsCount > 0
-      })))
+      posts.value.push(
+        ...response.list.map(post => ({
+          ...post,
+          showComments: false,
+          showFullContent: false,
+          newComment: '',
+          comments: [],
+          commenting: false,
+          loadingComments: false,
+          hasMoreComments: post.commentsCount > 0,
+        }))
+      )
     }
 
     hasMore.value = response.hasMore
-    
+
     if (!reset) {
       currentPage.value++
     }
@@ -646,7 +667,7 @@ const loadMoreComments = async (post: Post) => {
     post.loadingComments = true
     const page = Math.floor(post.comments!.length / 5) + 1
     const response = await socialAPI.getComments(post.id, { page, size: 5 })
-    
+
     post.comments!.push(...response.list)
     post.hasMoreComments = response.hasMore
   } catch (error) {
@@ -682,7 +703,7 @@ const sharePost = async (post: Post) => {
   try {
     const response = await socialAPI.sharePost(post.id)
     post.sharesCount = response.sharesCount
-    
+
     // 复制链接到剪贴板
     const url = `${window.location.origin}/timeline#post-${post.id}`
     await navigator.clipboard.writeText(url)
@@ -699,11 +720,11 @@ const submitComment = async (post: Post) => {
   try {
     post.commenting = true
     const data: CreateCommentParams = {
-      content: post.newComment.trim()
+      content: post.newComment.trim(),
     }
-    
+
     await socialAPI.createComment(post.id, data)
-    
+
     // 重新加载评论列表
     await loadComments(post)
     post.newComment = ''
@@ -746,7 +767,7 @@ const handlePostAction = async (command: string, post: Post) => {
         await ElMessageBox.prompt('请输入举报原因', '举报动态', {
           confirmButtonText: '提交',
           cancelButtonText: '取消',
-          inputType: 'textarea'
+          inputType: 'textarea',
         })
         await socialAPI.reportPost(post.id, '用户举报')
         ElMessage.success('举报已提交')
@@ -803,10 +824,7 @@ const handlePostPublished = (newPost: any) => {
 
 // 生命周期
 onMounted(async () => {
-  await Promise.all([
-    loadCurrentUser(),
-    loadPosts(true)
-  ])
+  await Promise.all([loadCurrentUser(), loadPosts(true)])
 })
 </script>
 

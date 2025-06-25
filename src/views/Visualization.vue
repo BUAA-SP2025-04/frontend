@@ -102,7 +102,7 @@ const initKnowledgeGraph = () => {
     ],
   }
 
-  chart.setOption(option)
+  chart.setOption(option as echarts.EChartsOption)
 }
 
 const initWordCloud = () => {
@@ -168,7 +168,7 @@ const initWordCloud = () => {
     ],
   }
 
-  chart.setOption(option)
+  chart.setOption(option as echarts.EChartsOption)
 }
 
 const initTrendChart = () => {
@@ -250,6 +250,6 @@ const initDistributionChart = () => {
     ],
   }
 
-  chart.setOption(option)
+  chart.setOption(option as echarts.EChartsOption)
 }
 </script>

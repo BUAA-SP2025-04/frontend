@@ -10,21 +10,21 @@ import type {
 
 export const libraryAPI = {
   // 获取所有文献
-  getList: (userId: string): Promise<GetListResponse>  =>
+  getList: (userId: string): Promise<GetListResponse> =>
     request.get('/favorites/list', {
-      params: { userId }
+      params: { userId },
     }),
 
   // 获取所有文献
-  getCategoryList: (userId: string): Promise<GetCategoryListResponse>  =>
+  getCategoryList: (userId: string): Promise<GetCategoryListResponse> =>
     request.get('/favorite-categories/list', {
-      params: { userId }
+      params: { userId },
     }),
-  
+
   // 更新文献收藏夹
-  changeCategory: (userId: string, paperId: string, categoryId: string)  =>
+  changeCategory: (userId: string, paperId: string, categoryId: string) =>
     request.post('/favorite-categories/list', {
-      params: { userId, paperId, categoryId }
+      params: { userId, paperId, categoryId },
     }),
 
   // 删除文献
@@ -34,15 +34,15 @@ export const libraryAPI = {
     }),
 
   // 重命名收藏夹
-  renameFolder: (categoryId: string, name: string)  =>
+  renameFolder: (categoryId: string, name: string) =>
     request.post('/favorite-categories/rename', {
-      params: { categoryId, name }
+      params: { categoryId, name },
     }),
 
   // 创建收藏夹
-  createFolder: (userId: string, name: string): Promise<CreateCategoryResponse>  =>
+  createFolder: (userId: string, name: string): Promise<CreateCategoryResponse> =>
     request.post('/favorite-categories/create', {
-      params: { userId, name }
+      params: { userId, name },
     }),
 
   // 删除收藏夹

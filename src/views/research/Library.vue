@@ -85,7 +85,7 @@
                 </span>
               </div>
             </div>
-            
+
             <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
               <svg
                 class="w-5 h-5 mr-2 ml-1 text-indigo-600"
@@ -135,7 +135,9 @@
                     {{ folder.count }}
                   </span>
                   <el-dropdown trigger="click" @command="handleFolderAction">
-                    <button class="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded transition-opacity">
+                    <button
+                      class="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded transition-opacity"
+                    >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           stroke-linecap="round"
@@ -148,7 +150,9 @@
                     <template #dropdown>
                       <el-dropdown-menu>
                         <el-dropdown-item :command="`edit-${folder.id}`">重命名</el-dropdown-item>
-                        <el-dropdown-item :command="`delete-${folder.id}`" divided>删除</el-dropdown-item>
+                        <el-dropdown-item :command="`delete-${folder.id}`" divided
+                          >删除</el-dropdown-item
+                        >
                       </el-dropdown-menu>
                     </template>
                   </el-dropdown>
@@ -552,7 +556,9 @@
             <div class="upload-area">
               <div class="upload-icon">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="#4299e1">
-                  <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                  <path
+                    d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+                  />
                 </svg>
               </div>
               <div class="upload-text">将文件拖到此处，或<span>点击上传</span></div>
@@ -568,16 +574,15 @@
             <span class="file-delete-btn" @click="removeFile">
               <i class="el-icon-delete"></i>
             </span>
-            
+
             <div class="file-actions" v-if="currentFile">
               <button class="action-btn delete" @click="removeFile">
                 <i class="el-icon-delete"></i> 删除文件
               </button>
             </div>
           </div>
-          
         </div>
-        
+
         <div class="form-section">
           <el-form ref="paperForm" :model="newPaper" label-width="120px">
             <el-form-item label="文献标题" required>
@@ -588,10 +593,10 @@
             </el-form-item>
 
             <el-form-item label="作者" required>
-              <el-input 
-                v-model="authorInput" 
+              <el-input
+                v-model="authorInput"
                 placeholder="输入作者姓名后按回车添加"
-                @keyup.enter="newPaper.authors.push(authorInput); authorInput=''"
+                @keyup.enter="addAuthor"
                 clearable
               ></el-input>
               <div class="tag-container">
@@ -614,10 +619,10 @@
             </el-form-item>
 
             <el-form-item label="引用次数" required>
-              <el-input-number 
-                v-model="newPaper.citations" 
-                :min="0" 
-                :precision="0" 
+              <el-input-number
+                v-model="newPaper.citations"
+                :min="0"
+                :precision="0"
                 controls-position="right"
                 style="width: 100%"
               ></el-input-number>
@@ -634,10 +639,10 @@
             </el-form-item> -->
 
             <el-form-item label="标签">
-              <el-input 
-                v-model="tagInput" 
+              <el-input
+                v-model="tagInput"
                 placeholder="输入标签后按回车添加"
-                @keyup.enter="newPaper.tags.push(tagInput); tagInput=''"
+                @keyup.enter="addTag"
                 clearable
               ></el-input>
               <div class="tag-container">
@@ -649,31 +654,31 @@
             </el-form-item>
 
             <el-form-item label="所属分类" required>
-            <el-select v-model="newPaper.folderName" placeholder="请选择分类" style="width:100%">
-              <el-option 
-                v-for="folder in folders" 
-                :key="folder.id" 
-                :label="folder.name" 
-                :value="folder.name"
-              >
-                <div style="display: flex; justify-content: space-between;">
-                  <span>{{ folder.name }}</span>
-                  <span style="color: #718096; font-size: 13px;">{{ folder.count }} 篇</span>
-                </div>
-              </el-option>
-            </el-select>
+              <el-select v-model="newPaper.folderName" placeholder="请选择分类" style="width: 100%">
+                <el-option
+                  v-for="folder in folders"
+                  :key="folder.id"
+                  :label="folder.name"
+                  :value="folder.name"
+                >
+                  <div style="display: flex; justify-content: space-between">
+                    <span>{{ folder.name }}</span>
+                    <span style="color: #718096; font-size: 13px">{{ folder.count }} 篇</span>
+                  </div>
+                </el-option>
+              </el-select>
             </el-form-item>
 
             <label class="required">文献链接</label>
-              <div class="url-container">
-                <div class="url-display">{{ newPaper.url || '文件上传后自动生成URL' }}</div>
-              </div>
+            <div class="url-container">
+              <div class="url-display">{{ newPaper.url || '文件上传后自动生成URL' }}</div>
+            </div>
           </el-form>
         </div>
 
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="showUploadDialog = false; resetNewPaper()">取消</el-button>
+            <el-button @click="cancelUpload">取消</el-button>
             <el-button type="primary" @click="handleUpload">上传</el-button>
           </span>
         </template>
@@ -696,7 +701,7 @@
 
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="showFolderDialog = false; newFolder.name = ''">取消</el-button>
+            <el-button @click="cancelCreateFolder">取消</el-button>
             <el-button type="primary" @click="createFolder">创建</el-button>
           </span>
         </template>
@@ -711,12 +716,11 @@
         </el-form>
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="showFolderRenameDialog = false; newFolder.name = ''">取消</el-button>
+            <el-button @click="cancelRenameFolder">取消</el-button>
             <el-button type="primary" @click="renameFolder">重命名</el-button>
           </span>
         </template>
       </el-dialog>
-
     </div>
   </div>
 </template>
@@ -748,10 +752,11 @@ const showFolderDialog = ref(false)
 const showFolderRenameDialog = ref(false)
 
 const userStore = useUserStore()
+const currentUser = computed(() => userStore.user)
 let userId = ''
 const initUserInfo = () => {
-  if (userStore.user) {
-    userId = String(userStore.user.id)
+  if (currentUser.value) {
+    userId = String(currentUser.value.id)
   }
 }
 
@@ -814,12 +819,12 @@ const newFolder = reactive({
 
 let renameFolderId = -1
 
-const currentFile = ref(null);
-const uploadRef = ref(null);
+const currentFile = ref<File | null>(null)
+const uploadRef = ref(null)
 
 const newPaper = reactive({
   title: '',
-  authors: [] as string[], 
+  authors: [] as string[],
   journal: '',
   citations: 0,
   tags: [] as string[], 
@@ -827,8 +832,8 @@ const newPaper = reactive({
   publishDate: new Date(),
   url: '',
 })
-const authorInput = ref('');
-const tagInput = ref('');
+const authorInput = ref('')
+const tagInput = ref('')
 
 onMounted(async () => {
   initUserInfo()
@@ -837,14 +842,14 @@ onMounted(async () => {
     papers.value = res
   } catch (error) {
     papers.value = examplPapers.value
-    ElMessage.error("读取文献列表失败，即将呈现默认页面")
+    ElMessage.error('读取文献列表失败，即将呈现默认页面')
   }
   try {
     const res = await libraryAPI.getCategoryList(userId)
     folders.value = res
   } catch (error) {
     folders.value = exampleFolders.value
-    ElMessage.error("读取收藏夹失败，即将呈现默认页面")
+    ElMessage.error('读取收藏夹失败，即将呈现默认页面')
   }
   if (folders.value.length <= 0) {
     try {
@@ -856,7 +861,7 @@ onMounted(async () => {
       })
       showFolderDialog.value = false
     } catch (error) {
-      ElMessage.error("创建默认收藏夹失败，请手动创建")
+      ElMessage.error('创建默认收藏夹失败，请手动创建')
     }
   }
   folders.value.forEach(folder => {
@@ -1059,7 +1064,7 @@ const editFolder = async (folderId: number) => {
   showFolderRenameDialog.value = true
 }
 
-const renameFolder = async() => {
+const renameFolder = async () => {
   if (!newFolder.name.trim()) {
     ElMessage.error('请输入分类名称')
     return
@@ -1079,7 +1084,7 @@ const renameFolder = async() => {
     showFolderRenameDialog.value = false
     ElMessage.success('分类重命名成功')
   } catch (error) {
-    ElMessage.error("重命名失败")
+    ElMessage.error('重命名失败')
   }
   newFolder.name = ''
 }
@@ -1087,21 +1092,22 @@ const renameFolder = async() => {
 const deleteFolder = async (folderId: number) => {
   if (folders.value.length <= 1) {
     ElMessage.error('删除后将没有收藏夹！')
-  } else try {
-    await ElMessageBox.confirm('确定要删除这个分类吗？收藏夹下所有文献也将被删除。', '确认删除', {
-      type: 'warning',
-    })
-    try{
-      await libraryAPI.deleteFolder(folderId)
-      folders.value = folders.value.filter(f => f.id !== folderId)
-      papers.value = papers.value.filter(p => p.folderId !== folderId)
-      ElMessage.success('删除成功')
+  } else
+    try {
+      await ElMessageBox.confirm('确定要删除这个分类吗？收藏夹下所有文献也将被删除。', '确认删除', {
+        type: 'warning',
+      })
+      try {
+        await libraryAPI.deleteFolder(folderId)
+        folders.value = folders.value.filter(f => f.id !== folderId)
+        papers.value = papers.value.filter(p => p.folderId !== folderId)
+        ElMessage.success('删除成功')
+      } catch {
+        ElMessage.error('删除失败')
+      }
     } catch {
-      ElMessage.error("删除失败")
+      // 用户取消
     }
-  } catch {
-    // 用户取消
-  }
 }
 
 const createFolder = async () => {
@@ -1119,7 +1125,7 @@ const createFolder = async () => {
     showFolderDialog.value = false
     ElMessage.success('收藏夹创建成功')
   } catch (error) {
-    ElMessage.error("创建收藏夹失败")
+    ElMessage.error('创建收藏夹失败')
   }
   newFolder.name = ''
   // newFolder.description = ''
@@ -1129,14 +1135,14 @@ const createFolder = async () => {
 
 const handleFileChange = (file: any) => {
   if (file && file.raw) {
-    currentFile.value = file.raw;
+    currentFile.value = file.raw
     // 自动填充标题（去除扩展名）
-    const fileName = file.name;
-    const dotIndex = fileName.lastIndexOf('.');
-    newPaper.title = dotIndex !== -1 ? fileName.substring(0, dotIndex) : fileName;
+    const fileName = file.name
+    const dotIndex = fileName.lastIndexOf('.')
+    newPaper.title = dotIndex !== -1 ? fileName.substring(0, dotIndex) : fileName
     // 生成文件URL并填充
-    const fileUrl = URL.createObjectURL(file.raw);
-    newPaper.url = fileUrl;
+    const fileUrl = URL.createObjectURL(file.raw)
+    newPaper.url = fileUrl
   }
 }
 
@@ -1195,24 +1201,39 @@ const handleUpload = async () => {
 }
 
 const handleExceed = () => {
-  ElMessage.warning('一次只能上传一个文件');
-};
+  ElMessage.warning('一次只能上传一个文件')
+}
 const removeFile = () => {
   if (uploadRef.value) {
-    uploadRef.value = null;
+    uploadRef.value = null
   }
-  currentFile.value = null;
-  newPaper.url = '';
-  newPaper.title = '';
-  ElMessage.info('已移除上传的文件');
-};
+  currentFile.value = null
+  newPaper.url = ''
+  newPaper.title = ''
+  ElMessage.info('已移除上传的文件')
+}
 
 const removeAuthor = (index: number) => {
-  newPaper.authors.splice(index, 1);
-};
+  newPaper.authors.splice(index, 1)
+}
+
+const addAuthor = () => {
+  if (authorInput.value.trim()) {
+    newPaper.authors.push(authorInput.value.trim())
+    authorInput.value = ''
+  }
+}
+
 const removeTag = (index: number) => {
-  newPaper.tags.splice(index, 1);
-};
+  newPaper.tags.splice(index, 1)
+}
+
+const addTag = () => {
+  if (tagInput.value.trim()) {
+    newPaper.tags.push(tagInput.value.trim())
+    tagInput.value = ''
+  }
+}
 
 const resetNewPaper = () => {
   newPaper.title = ''
@@ -1222,12 +1243,12 @@ const resetNewPaper = () => {
   newPaper.tags = []
   newPaper.folderName = ''
   newPaper.publishDate = new Date()
-  currentFile.value = null;
-  newPaper.url = '';
-  newPaper.title = '';
-  authorInput.value = '';
-  tagInput.value = '';
-};
+  currentFile.value = null
+  newPaper.url = ''
+  newPaper.title = ''
+  authorInput.value = ''
+  tagInput.value = ''
+}
 
 const formatDate = (date: Date) => {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -1237,8 +1258,21 @@ const formatDate = (date: Date) => {
   }).format(date)
 }
 
-</script>
+const cancelUpload = () => {
+  showUploadDialog.value = false
+  resetNewPaper()
+}
 
+const cancelCreateFolder = () => {
+  showFolderDialog.value = false
+  newFolder.name = ''
+}
+
+const cancelRenameFolder = () => {
+  showFolderRenameDialog.value = false
+  newFolder.name = ''
+}
+</script>
 
 <style scoped>
 .line-clamp-2 {
@@ -1341,5 +1375,4 @@ const formatDate = (date: Date) => {
   font-size: 14px;
   margin-top: 8px;
 }
-
 </style>
