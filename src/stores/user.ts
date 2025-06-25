@@ -14,7 +14,7 @@ export interface User {
   subjectNum: number
   createdAt: string
   bio: string
-  avatar?: string // 添加头像字段，用于聊天
+  avatar: string // 添加头像字段，用于聊天
 }
 
 export const useUserStore = defineStore('user', {
@@ -24,38 +24,29 @@ export const useUserStore = defineStore('user', {
     isAuthenticated: false,
   }),
   actions: {
-    init() {
-      const token = localStorage.getItem('token')
-      const userStr = localStorage.getItem('user')
-      if (token && userStr) {
-        this.token = token
-        this.user = JSON.parse(userStr)
-        this.isAuthenticated = true
-      } else {
-        this.token = ''
-        this.user = null
-        this.isAuthenticated = false
+    setUser(userData: Partial<User>) {
+      if (userData.imgUrl && !userData.imgUrl.startsWith('http')) {
+        userData.imgUrl = import.meta.env.VITE_API_BASE_URL + userData.imgUrl
       }
-    },
-    setUser(userData: User) {
-      this.user = userData
+      this.user = { ...this.user, ...userData } as User
       this.isAuthenticated = true
-      localStorage.setItem('user', JSON.stringify(userData))
     },
     clearUser() {
       this.user = null
       this.isAuthenticated = false
-      localStorage.removeItem('user')
     },
     setToken(token: string) {
       this.token = token
       this.isAuthenticated = true
-      localStorage.setItem('token', token)
     },
     clearToken() {
       this.token = ''
       this.isAuthenticated = false
-      localStorage.removeItem('token')
     },
+  },
+  persist: {
+    key: 'user-store',
+    storage: localStorage,
+    paths: ['token', 'user', 'isAuthenticated'],
   },
 })

@@ -16,6 +16,7 @@
     "element-plus": "^2.4.4",
     "pdfjs-dist": "^4.0.379",
     "pinia": "^2.1.7",
+    "pinia-plugin-persistedstate": "^3.2.1",
     "vue": "^3.4.0",
     "vue-echarts": "^6.6.1",
     "vue-pdf-embed": "^1.1.6",

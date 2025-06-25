@@ -1,5 +1,3 @@
-import type { WebSocketMessage } from '@/api/types/notification'
-
 export interface ChatMessage {
   type: 'message' | 'typing' | 'read' | 'online_status' | 'error' | 'ping' | 'pong'
   data: Record<string, unknown>
@@ -42,6 +40,7 @@ export class WebSocketService {
       this.ws.onmessage = event => {
         try {
           const message = JSON.parse(event.data)
+          console.log('WebSocket 收到原始消息:', message)
 
           // 处理心跳响应
           if (message.type === 'pong') {
@@ -49,12 +48,8 @@ export class WebSocketService {
           }
 
           // 触发对应的监听器
-          this.emit(message.type, message.data)
-
-          // 兼容旧的通知系统
-          if (message.type === 'notification') {
-            this.emit('message', message as WebSocketMessage)
-          }
+          console.log('触发事件:', message.notification.type, message.senderId)
+          this.emit('notification', message)
         } catch (error) {
           console.error('解析消息失败:', error)
         }
@@ -193,15 +188,6 @@ export class WebSocketService {
     if (this.listeners[event]) {
       this.listeners[event].forEach(callback => callback(data))
     }
-  }
-
-  // 兼容旧版本的消息监听器
-  onMessage(callback: (message: WebSocketMessage) => void) {
-    this.on('message', data => {
-      if (data && typeof data === 'object' && 'type' in data) {
-        callback(data as WebSocketMessage)
-      }
-    })
   }
 
   // 获取连接状态
