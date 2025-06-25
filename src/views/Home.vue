@@ -51,29 +51,29 @@
     <!-- 平台统计 -->
     <section class="py-16 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-8 text-center">
           <div>
-            <div class="text-4xl font-bold text-indigo-600 mb-2">
+            <div class="text-4xl md:text-5xl font-extrabold text-indigo-600 mb-2">
               {{ formatNumber(animatedResearcherCount) }}
             </div>
-            <div class="text-gray-600">注册研究者</div>
+            <div class="text-base md:text-xl font-semibold text-gray-700">注册研究者</div>
           </div>
           <div>
-            <div class="text-4xl font-bold text-green-600 mb-2">
+            <div class="text-4xl md:text-5xl font-extrabold text-green-600 mb-2">
               {{ formatNumber(animatedPaperCount) }}
             </div>
-            <div class="text-gray-600">发表论文</div>
+            <div class="text-base md:text-xl font-semibold text-gray-700">发表论文</div>
           </div>
           <div>
-            <div class="text-4xl font-bold text-purple-600 mb-2">
+            <div class="text-4xl md:text-5xl font-extrabold text-purple-600 mb-2">
               {{ formatNumber(animatedMessageCount) }}
             </div>
-            <div class="text-gray-600">学术动态</div>
+            <div class="text-base md:text-xl font-semibold text-gray-700">学术动态</div>
           </div>
-          <div>
+          <!-- <div>
             <div class="text-4xl font-bold text-orange-600 mb-2">{{ formatNumber(12834) }}</div>
             <div class="text-gray-600">合作项目</div>
-          </div>
+          </div> -->
         </div>
       </div>
     </section>
@@ -382,7 +382,7 @@
     </section>
 
     <!-- 热门动态 -->
-    <section class="py-20 bg-white">
+    <!-- <section class="py-20 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
           <h2 class="text-4xl font-bold text-gray-900 mb-4">学术动态</h2>
@@ -390,7 +390,6 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- 热门论文 -->
           <div>
             <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
               <svg
@@ -425,7 +424,6 @@
             </div>
           </div>
 
-          <!-- 最新动态 -->
           <div>
             <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
               <svg
@@ -480,7 +478,7 @@
           </router-link>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <!-- 研究领域 -->
     <section class="py-20 bg-gray-50">

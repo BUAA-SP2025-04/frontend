@@ -1,18 +1,16 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="container mx-auto px-4 py-8">
-      <div class="mb-8">
+      <!-- <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-4">PDF阅读器</h1>
         <p class="text-gray-600">支持PDF文档阅读和文本层坐标提取</p>
-      </div>
+      </div> -->
 
-      <div class="card mb-6">
         <div class="flex items-center space-x-4 mb-4">
-          <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf"
-            >下载当前PDF
+          <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf">
+            下载当前PDF
           </el-button>
         </div>
-      </div>
 
       <div v-if="pdfUrl" class="card">
         <div class="flex justify-between items-center mb-4">
