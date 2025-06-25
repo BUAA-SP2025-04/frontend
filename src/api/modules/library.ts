@@ -5,6 +5,7 @@ import type {
   CreateCategoryResponse,
   CreatePaperResponse,
   CreatePaperRequest,
+  GetRecordListResponse,
 } from '@/api/types/library'
 
 export const libraryAPI = {
@@ -28,7 +29,7 @@ export const libraryAPI = {
 
   // 删除文献
   deletePaper: (userId: string, paperId: string)  =>
-    request.delete('/favorites/delete', {
+    request.post('/favorites/delete', {
       params: { userId, paperId }
     }),
 
@@ -46,14 +47,26 @@ export const libraryAPI = {
 
   // 删除收藏夹
   deleteFolder: (categoryId: number)  =>
-    request.delete('/favorite-categories/delete', {
+    request.post('/favorite-categories/delete', {
       params: { categoryId }
     }),
 
   // 上传文献
   createPaper: (userId: string, categoryId: number, createPaperRequest: CreatePaperRequest): Promise<CreatePaperResponse>  =>
-    request.post('/favorites/upload', {
+    request.post('/favorites/upload', createPaperRequest, {
       params: { userId, categoryId }
-    }, createPaperRequest),
+    }),
+
+  // 创建历史记录
+  createRecord: (userId: string, paperId: string)  =>
+    request.post('/readingRecord/add', {
+      params: { userId, paperId }
+    }),
+    
+  // 获取所有历史记录
+  getRecordList: (userId: string): Promise<GetRecordListResponse>  =>
+    request.post('/readingRecord/list', {
+      params: { userId }
+    }),
 
 }

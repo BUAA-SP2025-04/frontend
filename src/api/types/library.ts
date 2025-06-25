@@ -16,7 +16,13 @@ export interface FavoritePaper {
 export interface Folder {
   id: number
   name: string
-  count: number
+  count?: number
+}
+
+// 历史记录类型
+export interface Record {
+  userId: string
+  paperId: string
 }
 
 export interface CreatePaperRequest {
@@ -29,8 +35,8 @@ export interface CreatePaperRequest {
     "keywords"?: string[],
     "doi"?: string,
     "pdfUrl"?: string,
-    "status"?: string,
-    "isPublic"?:0
+    "status": string,
+    "isPublic": string
 }
 
 // 响应类型
@@ -38,3 +44,4 @@ export type GetListResponse = FavoritePaper[];
 export type GetCategoryListResponse = Folder[];
 export type CreateCategoryResponse = number;
 export type CreatePaperResponse = number;
+export type GetRecordListResponse = Record[];

@@ -52,7 +52,7 @@
         <!-- 左侧分类树 -->
         <div class="lg:w-1/4">
           <div class="bg-white rounded-lg shadow p-6 sticky top-8 ">
-          <div
+            <div
               :class="['text-lg font-medium mb-4 flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
                   selectedFolder === 0 ? 'bg-indigo-100 text-indigo-700' : 'text-gray-900']"
               @click="selectFolder(0)"
@@ -154,6 +154,40 @@
                   </el-dropdown>
                 </div>
               </div>
+            </div>
+
+            <div
+              :class="['text-lg font-medium mb-4 flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
+                  selectedFolder === -5 ? 'bg-indigo-100 text-indigo-700' : 'text-gray-900']"
+              @click="selectFolder(-5)"
+            >
+              <div class="flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 ml-1 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0H8v0z"
+                  />
+                </svg>
+                历史记录
+              </div>
+              <!-- <div class="flex items-center space-x-1 end">
+                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 mr-8 rounded-full">
+                  {{ papers.length }}
+                </span>
+              </div> -->
             </div>
 
             <!-- 标签云 -->
@@ -589,7 +623,7 @@
               ></el-input-number>
             </el-form-item>
 
-            <el-form-item label="阅读次数" required>
+            <!-- <el-form-item label="阅读次数" required>
               <el-input-number 
                 v-model="newPaper.readCount" 
                 :min="0" 
@@ -597,7 +631,7 @@
                 controls-position="right"
                 style="width: 100%"
               ></el-input-number>
-            </el-form-item>
+            </el-form-item> -->
 
             <el-form-item label="标签">
               <el-input 
@@ -695,7 +729,9 @@ import request from '@/utils/request'
 import { libraryAPI } from '@/api/modules/library'
 import type { 
   FavoritePaper,
-  Folder
+  Folder,
+  Record,
+  CreatePaperRequest,
 } from '@/api/types/library'
 
 
@@ -769,6 +805,8 @@ const examplPapers = ref<FavoritePaper[]>([
   // 更多模拟数据...
 ])
 
+const records = ref<Record[]>([])
+
 const newFolder = reactive({
   name: '',
   // description: '',
@@ -784,7 +822,6 @@ const newPaper = reactive({
   authors: [] as string[], 
   journal: '',
   citations: 0,
-  readCount: 0,
   tags: [] as string[], 
   folderName: '',
   publishDate: new Date(),
@@ -822,14 +859,36 @@ onMounted(async () => {
       ElMessage.error("创建默认收藏夹失败，请手动创建")
     }
   }
+  folders.value.forEach(folder => {
+    folder.count = papers.value.reduce((count, p) => 
+      p.folderId === folder.id ? count + 1 : count, 0
+    );
+  })
+  try {
+    const res = await libraryAPI.getRecordList(userId)
+    records.value = res
+  } catch (error) {
+    ElMessage.error("读取历史记录失败")
+  }
+  papers.value.forEach(paper => {
+    paper.readCount = records.value.reduce((count, r) => 
+      r.paperId === paper.id.toString() ? count + 1 : count, 0
+    );
+  })
 })
 
 const filteredPapers = computed( () => {
 
   let fPapers = papers.value
   console.log(fPapers)
-  if (selectedFolder.value !== 0) {
+  if (selectedFolder.value !== 0 && selectedFolder.value !== -5) {
     fPapers = fPapers.filter(paper => paper.folderId === selectedFolder.value)
+  } else if (selectedFolder.value == -5) {
+    fPapers = []
+    records.value.forEach(record => {
+      let paper = papers.value.find(p => p.id === parseInt(record.paperId))
+      if(paper) fPapers.push()
+    });
   }
 
   if (searchQuery.value) {
@@ -848,18 +907,20 @@ const filteredPapers = computed( () => {
   }
 
   // 排序
-  fPapers.sort((a, b) => {
-    switch (sortBy.value) {
-      case 'title':
-        return a.title.localeCompare(b.title)
-      case 'author':
-        return a.authors[0].localeCompare(b.authors[0])
-      case 'citations':
-        return b.citations - a.citations
-      default:
-        return new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
-    }
-  })
+  if (selectedFolder.value != -5){
+    fPapers.sort((a, b) => {
+      switch (sortBy.value) {
+        case 'title':
+          return a.title.localeCompare(b.title)
+        case 'author':
+          return a.authors[0].localeCompare(b.authors[0])
+        case 'citations':
+          return b.citations - a.citations
+        default:
+          return new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
+      }
+    })
+  }
 
   return fPapers
 })
@@ -904,21 +965,35 @@ const movePaperToFolder = async (paperId: number, folderId: number) => {
   const paper = papers.value.find(p => p.id === paperId)
   if (paper) {
     try {
+      const folder1 = folders.value.find(f => f.id === paper.folderId)
+      if(folder1?.count!=undefined) folder1.count-=1
       await libraryAPI.changeCategory(userId, paper.id.toString(), folderId.toString())
       paper.folderId = folderId
+      const folder2 = folders.value.find(f => f.id === folderId)
+      if(folder2?.count!=undefined) folder2.count+=1
+      ElMessage.success('文献已移动到新分类')
     } catch (error) {
+      const folder1 = folders.value.find(f => f.id === paper.folderId)
+      if(folder1?.count!=undefined) folder1.count+=1
       ElMessage.error("文献移动失败")
     }
-    ElMessage.success('文献已移动到新分类')
   }
 }
 
-const handlePaperAction = (command: string) => {
+const handlePaperAction = async (command: string) => {
   const [action, id] = command.split('-')
   const paperId = parseInt(id)
 
   switch (action) {
     case 'read':
+      try {
+        await libraryAPI.createRecord(userId, paperId.toString())
+        records.value.push({userId: userId, paperId: paperId.toString()})
+        let paper = papers.value.find(p => p.id === paperId)
+        if(paper) paper.readCount += 1
+      } catch (error) {
+        // ElMessage.error("创建历史记录失败")
+      }
       window.open(`/pdf-reader?id=${paperId}`, '_blank')
       break
     case 'download':
@@ -964,10 +1039,14 @@ const deletePaper = async (paperId: number) => {
       type: 'warning',
     })
     try {
+      const folder = folders.value.find(f => f.id === papers.value.find(p => p.id === paperId)?.folderId)
+      if(folder?.count!=undefined) folder.count-=1
       await libraryAPI.deletePaper(userId, paperId.toString())
       papers.value = papers.value.filter(p => p.id !== paperId)
       ElMessage.success('删除成功')
     } catch (error) {
+      const folder = folders.value.find(f => f.id === papers.value.find(p => p.id === paperId)?.folderId)
+      if(folder?.count!=undefined) folder.count+=1
       ElMessage.error("删除失败，请稍后重试")
     }
   } catch {
@@ -985,7 +1064,7 @@ const renameFolder = async() => {
     ElMessage.error('请输入分类名称')
     return
   } else {
-    if (folders.value.find(folder => (folder.name == newFolder.name && folder.id != renameFolderId))) {
+    if (folders.value.some(folder => (folder.name === newFolder.name && folder.id !== renameFolderId))) {
       ElMessage.error('分类名称重复')
       return
     }
@@ -1063,7 +1142,7 @@ const handleFileChange = (file: any) => {
 
 const handleUpload = async () => {
   if(!newPaper.title.trim() && newPaper.authors.length>0 && !newPaper.journal.trim() && !newPaper.url.trim() 
-        && !newPaper.folderName.trim() && !newPaper.publishDate && !newPaper.citations && !newPaper.readCount) {
+        && !newPaper.folderName.trim() && !newPaper.publishDate && !newPaper.citations) {
       try {
         await ElMessageBox.confirm('确定要上传这些信息？', '确认上传', {
           type: 'warning',
@@ -1074,6 +1153,8 @@ const handleUpload = async () => {
             folderId = folder.id
           }
         })
+        let isPublic = ''
+        if(newPaper.citations>0) isPublic = '' // 还需要修改具体值
         let paper = {
             "type": newPaper.folderName,
             "title": newPaper.title,
@@ -1084,8 +1165,8 @@ const handleUpload = async () => {
             "keywords": [...newPaper.tags],
             // "doi": null,
             "pdfUrl": newPaper.url,
-            // "status": null,
-            // "isPublic":0
+            "status": '',
+            "isPublic": isPublic
         }
         const res = await libraryAPI.createPaper(userId, folderId, paper)
         papers.value.push({
@@ -1094,12 +1175,14 @@ const handleUpload = async () => {
           authors: [...newPaper.authors],
           journal: newPaper.journal,
           citations: newPaper.citations,
-          readCount: newPaper.readCount,
+          readCount: 0,
           tags: [...newPaper.tags],
           folderId: folderId,
           publishDate: newPaper.publishDate,
           url: newPaper.url,
         })
+        const folder = folders.value.find(f => f.id === folderId)
+        if(folder?.count!=undefined) folder.count+=1
         ElMessage.success('文献上传成功')
         showUploadDialog.value = false
         resetNewPaper()
@@ -1136,7 +1219,6 @@ const resetNewPaper = () => {
   newPaper.authors = []
   newPaper.journal = ''
   newPaper.citations = 0
-  newPaper.readCount = 0
   newPaper.tags = []
   newPaper.folderName = ''
   newPaper.publishDate = new Date()
