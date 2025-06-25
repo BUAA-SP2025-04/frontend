@@ -292,66 +292,66 @@
             </div>
 
             <!-- 动态提醒列表 -->
-            <div v-else-if="activeCategory === 'activity'" class="divide-y divide-gray-200">
-              <div
-                v-for="activity in filteredActivityNotifications"
-                :key="activity.id"
-                :class="[
-                  'p-6 hover:bg-gray-50 cursor-pointer transition-colors relative',
-                  !activity.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : '',
-                ]"
-                @click="handleActivityClick(activity)"
+          <div v-else-if="activeCategory === 'activity'" class="divide-y divide-gray-200">
+            <div
+              v-for="activity in filteredActivityNotifications"
+              :key="activity.id"
+              :class="[
+                'p-6 hover:bg-gray-50 cursor-pointer transition-colors relative',
+                !activity.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : '',
+              ]"
+              @click="handleActivityClick(activity)"
+            >
+              <!-- 未读标记小图标 -->
+              <button
+                v-if="!activity.isRead"
+                @click.stop="markAsReadLocal('activity', activity.id)"
+                class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+                title="标记为已读"
               >
-                <!-- 未读标记小图标 -->
-                <button
-                  v-if="!activity.isRead"
-                  @click.stop="markAsReadLocal('activity', activity.id)"
-                  class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
-                  title="标记为已读"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                </button>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
+                </svg>
+              </button>
 
-                <div class="flex items-start space-x-4 pr-8">
-                  <img
-                    :src="activity.user.avatar"
-                    :alt="activity.user.name"
-                    class="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                  />
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-2">
-                      <p class="text-sm text-gray-900">
-                        <span class="font-medium">{{ activity.user.name }}</span>
-                        {{ getActivityText(activity.type) }}
-                        <span class="font-medium">{{ activity.content.title }}</span>
-                      </p>
-                      <span class="text-xs text-gray-500 whitespace-nowrap">{{
-                        formatTime(activity.createdAt)
-                      }}</span>
-                    </div>
-                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {{ activity.content.description }}
-                    </p>
-                    <div class="flex items-center mt-2 space-x-4 text-xs text-gray-500">
-                      <span class="flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+              <div class="flex items-start space-x-4 pr-8">
+                <img
+                  :src="activity.user.avatar"
+                  :alt="activity.user.name"
+                  class="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                />
+                <div class="flex-1 min-w-0">
+                  <!-- 🔥 优化后的标题区域 -->
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                      <span class="font-medium text-gray-900">{{ activity.user.name }}</span>
+                      <span
+                        :class="[
+                          'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                          getActivityTagColor(activity.type),
+                        ]"
+                      >
                         {{ getActivityLabel(activity.type) }}
                       </span>
-                      <span>{{ activity.user.institution }}</span>
                     </div>
+                    <span class="text-xs text-gray-500 whitespace-nowrap">{{
+                      formatTime(activity.createdAt)
+                    }}</span>
                   </div>
+                  
+                  <!-- 🔥 简化后的内容区域 - 保持原有显示 -->
+                  <p class="text-sm text-gray-600 mt-1 line-clamp-2">
+                    {{ typeof activity.content === 'object' && activity.content !== null ? activity.content.description : activity.content }}
+                  </p>
                 </div>
               </div>
             </div>
+          </div>
 
             <!-- 空状态 -->
             <div v-if="filteredMessages.length === 0" class="p-12 text-center">
@@ -448,11 +448,12 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { messagesAPI } from '@/api/modules/messages'
 import type {
+
+  Friend,
   Conversation,
   SystemNotification,
   ActivityNotification,
-  Friend,
-  MessageSettings,
+  MessageSettings
 } from '@/api/types/messages'
 
 const router = useRouter()
@@ -587,8 +588,8 @@ const filteredActivityNotifications = computed(() => {
     filtered = filtered.filter(
       activity =>
         activity.user.name.includes(searchQuery.value) ||
-        activity.content.title.includes(searchQuery.value) ||
-        activity.content.description.includes(searchQuery.value)
+        (typeof activity.content === 'object' && activity.content !== null && activity.content.title.includes(searchQuery.value)) ||
+        (typeof activity.content === 'object' && activity.content !== null && activity.content.description.includes(searchQuery.value))
     )
   }
 
@@ -737,6 +738,31 @@ const handleActivityClick = (activity: ActivityNotification) => {
     markAsReadLocal('activity', activity.id)
   }
   router.push(`/user/${activity.user.id}`)
+}
+
+const getFullImageUrl = (imageUrl: string | null) => {
+  if (!imageUrl) return '/default-avatar.png'
+  
+  // 如果已经是完整URL，直接返回
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl
+  }
+  
+  // 拼接基础URL
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+  return `${baseUrl}${imageUrl}`
+}
+
+const getActivityTagColor = (type: string) => {
+  const colors: Record<string, string> = {
+    follow: 'bg-blue-100 text-blue-700 border border-blue-200',
+    publish_paper: 'bg-green-100 text-green-700 border border-green-200',
+    start_project: 'bg-purple-100 text-purple-700 border border-purple-200',
+    join_conference: 'bg-orange-100 text-orange-700 border border-orange-200',
+    like: 'bg-red-100 text-red-700 border border-red-200',
+    comment: 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+  }
+  return colors[type] || 'bg-gray-100 text-gray-700 border border-gray-200'
 }
 
 const getNotificationIcon = (type: string) => {
@@ -940,14 +966,14 @@ const getActivityText = (type: string) => {
 // 🔥 更新getActivityLabel函数，兼容新的活动类型
 const getActivityLabel = (type: string) => {
   const labels: Record<string, string> = {
-    follow: '关注',
+    follow: '新增关注',
     publish_paper: '论文发表',
     start_project: '项目启动',
     join_conference: '会议参加',
     like: '点赞',
     comment: '评论',
   }
-  return labels[type] || '动态'
+  return labels[type] || '动态更新'
 }
 
 // 页面初始化
