@@ -113,11 +113,23 @@
           </span>
         </div>
         <div v-if="publication.pdfUrl" class="pub-detail-section pub-pdf">
-          <el-link :href="publication.pdfUrl" target="_blank" type="primary">PDF下载/预览</el-link>
+          <template v-if="isExternalPdf(publication.pdfUrl)">
+            <span class="pub-label">原文链接：</span>
+            <el-link :href="publication.pdfUrl" target="_blank" type="primary"
+              >{{ publication.pdfUrl }}
+            </el-link>
+          </template>
+          <template v-else>
+            <el-link
+              type="primary"
+              style="cursor: pointer"
+              @click="goToPdfReader(publication.pdfUrl)"
+              >PDF已上传，点击阅读
+            </el-link>
+          </template>
         </div>
         <div v-else class="pub-detail-section pub-pdf">
-          <span class="pub-label">PDF：</span>
-          <span class="pub-value">暂无数据</span>
+          <span class="pub-value">暂无原文数据</span>
         </div>
       </div>
       <template #footer>
@@ -132,6 +144,7 @@ import { defineProps, ref, watch } from 'vue'
 import { ElButton, ElDialog, ElIcon, ElLink, ElTag } from 'element-plus'
 import { Star, View } from '@element-plus/icons-vue'
 import type { Publication } from '@/api/types/publication'
+import { useRouter } from 'vue-router'
 
 const props = defineProps<{
   visible: boolean
@@ -141,6 +154,7 @@ const props = defineProps<{
 const emit = defineEmits(['update:visible'])
 
 const dialogVisible = ref(props.visible)
+const router = useRouter()
 
 watch(
   () => props.visible,
@@ -192,7 +206,14 @@ const getStatusLabel = (status: string) => {
   return labels[status] || status
 }
 
-defineOptions({ name: 'PublicationDetail' })
+const isExternalPdf = (url: string) => /^https?:\/\//i.test(url)
+
+const goToPdfReader = (url: string) => {
+  router.push({
+    path: '/pdf-reader',
+    query: { url },
+  })
+}
 </script>
 
 <style scoped>
