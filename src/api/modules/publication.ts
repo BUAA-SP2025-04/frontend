@@ -1,5 +1,9 @@
 import request from '@/utils/request'
-import type { PublicationListResponse, SavePublicationRequest } from '@/api/types/publication'
+import type {
+  PublicationListResponse,
+  PublicationStatsResponse,
+  SavePublicationRequest,
+} from '@/api/types/publication'
 import type { EmptyResponse } from '@/api/types/utils'
 
 export function savePublication(url: string, data: SavePublicationRequest): Promise<EmptyResponse> {
@@ -7,13 +11,17 @@ export function savePublication(url: string, data: SavePublicationRequest): Prom
 }
 
 export function deletePublication(id: number): Promise<EmptyResponse> {
-  return request.delete('/publication/delete/', {
+  return request.post('/publication/delete', { id })
+}
+
+export function getPublicationsByUser(id: number | string): Promise<PublicationListResponse> {
+  return request.get('/publication/searchByUserId', {
     params: { id },
   })
 }
 
-export function getPublicationsByUser(userId: number | string): Promise<PublicationListResponse> {
-  return request.get('/publication/searchByUserId/', {
-    params: { userId },
+export function getPublicationStatsByUser(id: number | string): Promise<PublicationStatsResponse> {
+  return request.get('/publication/getStatsByUserId', {
+    params: { id },
   })
 }

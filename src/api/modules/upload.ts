@@ -6,11 +6,11 @@ export function uploadFile(url: string, formData: FormData): Promise<UploadRespo
 }
 
 export function updateFile(url: string, formData: FormData): Promise<EmptyResponse> {
-  return request.put(url, formData)
+  return request.post(url, formData)
 }
 
 export function deleteFile(url: string, oldFilePath: string): Promise<EmptyResponse> {
-  return request.delete(url, {
+  return request.post(url, {
     params: { oldFilePath },
   })
 }
