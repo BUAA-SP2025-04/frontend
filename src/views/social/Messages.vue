@@ -202,25 +202,10 @@
                       </div>
                     </div>
                     <p class="text-sm text-gray-600 mt-1 line-clamp-2">
-                      <span v-if="conversation.lastMessage.isMe" class="text-gray-400">我：</span>
                       {{ conversation.lastMessage.content }}
                     </p>
                     <div class="flex items-center mt-2 space-x-4 text-xs text-gray-500">
                       <span>{{ conversation.institution }}</span>
-                      <span
-                        v-if="conversation.lastMessage.type === 'file'"
-                        class="flex items-center"
-                      >
-                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
-                          <path
-                            fill-rule="evenodd"
-                            d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
-                        文件
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -821,14 +806,31 @@ const getEmptyStateText = () => {
   return texts[activeCategory.value as 'chat' | 'system' | 'activity'] || '暂无消息'
 }
 
-const formatTime = (dateString: string | Date) => {
+const formatTime = (dateString: string | Date | undefined | null) => {
+  if (!dateString) return '未知时间'
+
   let date: Date
+
   if (typeof dateString === 'string') {
-    date = new Date(dateString)
+    // 兼容无T的日期字符串
+    let normalized = dateString.replace(' ', 'T')
+    // 如果只有日期没有时间，补全为 00:00:00
+    if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+      normalized += 'T00:00:00'
+    }
+    date = new Date(normalized)
+    if (isNaN(date.getTime())) {
+      // 尝试直接用原始字符串
+      date = new Date(dateString)
+      if (isNaN(date.getTime())) return '未知时间'
+    }
+  } else if (dateString instanceof Date) {
+    date = dateString
     if (isNaN(date.getTime())) return '未知时间'
   } else {
-    date = dateString
+    return '未知时间'
   }
+
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const minutes = Math.floor(diff / (1000 * 60))
@@ -843,7 +845,6 @@ const formatTime = (dateString: string | Date) => {
     day: 'numeric',
   }).format(date)
 }
-
 // 打开设置对话框
 const openSettingsDialog = async () => {
   try {
@@ -879,14 +880,73 @@ const loadCurrentCategory = async () => {
   try {
     if (activeCategory.value === 'chat') {
       const res = await messagesAPI.getConversations()
-      console.log('会话数据:', res) // 调试日志
-      
+      console.log('会话数据:', res)
+
       if (res && res.data) {
         if (Array.isArray(res.data)) {
-          conversations.value = res.data
-          messageCategories.value[0].unreadCount = res.data.filter(conv => !conv.isRead).length
+          conversations.value = res.data.map(conv => ({
+            id: conv.userId,
+            userId: conv.userId,
+            name: conv.name,
+            avatar: getFullImageUrl(conv.avatar), // 拼接头像URL
+            institution: conv.institution || '',
+            isOnline: conv.isOnline ?? conv.isOnline ?? false,
+            isRead: conv.lastMessage?.isRead ?? false,
+            unreadCount: conv.unreadCount ?? 0,
+            lastMessage: conv.lastMessage
+              ? {
+                  id: conv.lastMessage.id,
+                  senderId: conv.lastMessage.senderId,
+                  receiverId: conv.lastMessage.receiverId,
+                  content: conv.lastMessage.content,
+                  createdAt: conv.lastMessage.createdAt,
+                  isRead: conv.lastMessage.isRead
+                }
+              : {
+                  id: -1,
+                  senderId: conv.userId,
+                  receiverId: conv.userId,
+                  content: '',
+                  createdAt: '',
+                  isRead: true
+                },
+            lastMessageTime: conv.lastMessage?.createdAt // 取消息时间
+          }))
+          messageCategories.value[0].unreadCount = res.data.reduce(
+            (sum, conv) => sum + (conv.unreadCount ?? 0),
+            0
+          )
         } else if (res.data.list) {
-          conversations.value = Array.isArray(res.data.list) ? res.data.list : []
+          conversations.value = Array.isArray(res.data.list)
+            ? res.data.list.map(conv => ({
+                id: conv.userId,
+                userId: conv.userId,
+                name: conv.name,
+                avatar: getFullImageUrl(conv.avatar),
+                institution: conv.institution || '',
+                isOnline: conv.isOnline ?? conv.isOnline ?? false,
+                isRead: conv.lastMessage?.isRead ?? false,
+                unreadCount: conv.unreadCount ?? 0,
+                lastMessage: conv.lastMessage
+                  ? {
+                      id: conv.lastMessage.id,
+                      senderId: conv.lastMessage.senderId,
+                      receiverId: conv.lastMessage.receiverId,
+                      content: conv.lastMessage.content,
+                      createdAt: conv.lastMessage.createdAt,
+                      isRead: conv.lastMessage.isRead
+                    }
+                  : {
+                      id: -1,
+                      senderId: conv.userId,
+                      receiverId: conv.userId,
+                      content: '',
+                      createdAt: '',
+                      isRead: true
+                    },
+                lastMessageTime: conv.lastMessage?.createdAt
+              }))
+            : []
           messageCategories.value[0].unreadCount = res.data.unreadCount || 0
         } else {
           conversations.value = []
@@ -896,7 +956,6 @@ const loadCurrentCategory = async () => {
         conversations.value = []
         messageCategories.value[0].unreadCount = 0
       }
-      
     } else if (activeCategory.value === 'system') {
       const res = await messagesAPI.getSystemNotifications()
       console.log('系统通知数据:', res) // 调试日志
@@ -936,86 +995,46 @@ const loadCurrentCategory = async () => {
         messageCategories.value[1].unreadCount = 0
       }
       
-    } else if (activeCategory.value === 'activity') {
-      const res = await messagesAPI.getActivityNotifications()
-      console.log('动态通知数据:', res) // 调试日志
-      
-      if (res && res.data) {
-        if (Array.isArray(res.data)) {
-          // 🔥 关键修复：适配后端实际返回的数据结构
-          activityNotifications.value = res.data.map(item => {
-            // 🔥 处理嵌套的notification结构
-            const notification = item.notification || item
-            const avatarUrl = item.avatarUrl || item.notification?.avatarUrl
-            // 保证 senderId 和 userId 至少有一个是 number，若都不存在则用 -1 占位
-            let userId: number = -1
-            if (typeof notification.senderId === 'number') {
-              userId = notification.senderId
-            } else if (typeof item.senderId === 'number') {
-              userId = item.senderId
-            } else if (typeof notification.userId === 'number') {
-              userId = notification.userId
-            }
-            const publicationId = item.publicationId
+    } 
+    else if (activeCategory.value === 'activity') {
+  const res = await messagesAPI.getActivityNotifications()
+  console.log('动态通知数据:', res)
 
-            console.log('处理单个activity:', { item, notification, avatarUrl, userId, publicationId })
-
-            return {
-              id: notification.id,
-              type: parseActivityType(typeof notification.content === 'string' ? notification.content : (notification.content?.description ?? '')), // 🔥 从content解析活动类型
-              user: {
-                id: userId, // 保证为 number 类型
-                name: extractUserNameFromContent(typeof notification.content === 'string' ? notification.content : (notification.content?.description ?? '')),
-                avatar: getFullImageUrl(avatarUrl ?? null), // 🔥 使用完整头像URL
-                institution: '未知机构'
-              },
-              content: parseContentFromActivity(String(notification.content ?? '')), // 🔥 从content解析内容信息
-              isRead: notification.isRead || false,
-              createdAt: notification.createdAt || new Date().toISOString(),
-              // 🔥 保存额外信息供后续使用
-              publicationId: publicationId
-            }
-          })
-          messageCategories.value[2].unreadCount = res.data.filter(item => 
-            !(item.notification?.isRead || item.isRead)
-          ).length
-        } else if (
-          typeof res.data === 'object' &&
-          res.data !== null &&
-          !Array.isArray(res.data) &&
-          !('list' in res.data) &&
-          ('id' in res.data || 'notification' in res.data)
-        ) {
-          // 🔥 单个对象处理
-          const item = res.data
-          const notification = (item as any).notification || item
-          const avatarUrl = (item as any).avatarUrl || (item as any).notification?.avatarUrl
-          const senderId = notification.senderId || (item as any).senderId
-          
-          activityNotifications.value = [{
-            id: notification.id,
-            type: parseActivityType(notification.content),
-            user: {
-              id: senderId || notification.userId,
-              name: extractUserNameFromContent(notification.content),
-              avatar: getFullImageUrl(avatarUrl),
-              institution: '未知机构'
-            },
-            content: parseContentFromActivity(notification.content),
-            isRead: notification.isRead || false,
-            createdAt: notification.createdAt || new Date().toISOString(),
-            publicationId: (item as any).publicationId,
-          }]
-          messageCategories.value[2].unreadCount = notification.isRead ? 0 : 1
-        } else {
-          activityNotifications.value = []
-          messageCategories.value[2].unreadCount = 0
+  if (res && res.data) {
+    if (Array.isArray(res.data)) {
+      activityNotifications.value = res.data.map(item => {
+        const notification = item.notification || item
+        return {
+          id: notification.id,
+          type: parseActivityType(typeof notification.content === 'string' ? notification.content : (notification.content?.description ?? '')),
+          user: {
+            id: notification.senderId ?? notification.userId ?? -1,
+            name: item.name || '未知用户', // 直接用后端返回的name
+            avatar: getFullImageUrl(item.avatarUrl ?? null), // 直接用后端返回的avatarUrl
+            institution: '未知机构'
+          },
+          content: parseContentFromActivity(
+            typeof notification.content === 'string'
+              ? notification.content
+              : (notification.content?.description ?? '')
+          ),
+          isRead: notification.isRead || false,
+          createdAt: notification.createdAt || new Date().toISOString(),
+          publicationId: item.publicationId
         }
-      } else {
-        activityNotifications.value = []
-        messageCategories.value[2].unreadCount = 0
-      }
+      })
+      messageCategories.value[2].unreadCount = res.data.filter(item =>
+        !(item.notification?.isRead || item.isRead)
+      ).length
+    } else {
+      activityNotifications.value = []
+      messageCategories.value[2].unreadCount = 0
     }
+  } else {
+    activityNotifications.value = []
+    messageCategories.value[2].unreadCount = 0
+  }
+}
   } catch (error) {
     console.error('加载消息失败:', error)
     ElMessage.error('加载消息失败')
@@ -1031,27 +1050,6 @@ const loadCurrentCategory = async () => {
   }
 }
 
-const extractUserNameFromContent = (content: string) => {
-  // 匹配 "您关注的用户 XXX" 模式
-  const followedUserMatch = content.match(/您关注的用户\s+(\w+)/)
-  if (followedUserMatch) {
-    return followedUserMatch[1]
-  }
-  
-  // 匹配 "用户 XXX" 模式
-  const userMatch = content.match(/用户\s+(\w+)/)
-  if (userMatch) {
-    return userMatch[1]
-  }
-  
-  // 匹配其他可能的用户名模式
-  const generalMatch = content.match(/(\w+)\s*(关注了你|点赞了|评论了|发表了)/)
-  if (generalMatch) {
-    return generalMatch[1]
-  }
-  
-  return '未知用户'
-}
 
 // 🔥 新增辅助函数：根据内容生成系统通知标题
 const getNotificationTitle = (content: string, type: string) => {
