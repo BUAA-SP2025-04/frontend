@@ -70,7 +70,7 @@ request.interceptors.response.use(
       //console.log('API响应:', { code, message, data }) // 调试日志
 
       // 根据业务状态码处理
-      if (code == '200') {
+      if (code == '200' || code == 'true') {
         return response.data
       } else {
         const errorMsg = message || '请求失败'

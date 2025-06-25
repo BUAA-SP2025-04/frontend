@@ -712,7 +712,7 @@ const searchString = ref('')
 
 // 分页
 const currentPage = ref(1)
-const pageSize = 12
+const pageSize = 9
 
 // 模拟用户数据（扩展数据）
 const users = ref<User[]>([])
@@ -919,7 +919,9 @@ const goToUserDetail = (id: number) => {
 onMounted(() => {
   const field = route.query.field as string
   if (field && field.trim()) {
-    filters.selectedFields = [field.trim()]
+    searchType.value = 'field'
+    searchQuery.value = field.trim()
+    performSearch()
   }
 })
 

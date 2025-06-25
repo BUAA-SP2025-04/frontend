@@ -182,7 +182,7 @@
                       formatNumber(publication.readerNum || 0)
                     }}</span>
                   </div>
-                  <div class="flex items-center gap-2">
+                  <!-- <div class="flex items-center gap-2">
                     <svg
                       class="w-5 h-5 text-red-500"
                       fill="none"
@@ -200,7 +200,7 @@
                     <span class="text-red-600 font-semibold">{{
                       formatNumber(publication.likeNum || 0)
                     }}</span>
-                  </div>
+                  </div> -->
                 </div>
               </div>
 
@@ -505,6 +505,7 @@ import {
   getPublicationComments,
   createPublicationComment,
   togglePublicationCommentLike,
+  readPublication,
 } from '@/api/modules/publication'
 import type { Publication, PublicationComment } from '@/api/types/publication'
 
@@ -594,9 +595,10 @@ const replyToComment = (comment: PublicationComment) => {
   ElMessage.info('回复功能开发中...')
 }
 
-const openPdf = () => {
+const openPdf = async () => {
   if (publication.value?.pdfUrl) {
-    console.log(publication.value.pdfUrl)
+    await readPublication(publication.value.id);
+    // ElMessage.success("111")
     router.push({ path: '/pdf-reader', query: { url: publication.value.pdfUrl } })
   }
 }
@@ -604,7 +606,7 @@ const openPdf = () => {
 const downloadPdf = () => {
   if (publication.value?.pdfUrl) {
     const link = document.createElement('a')
-    link.href = publication.value.pdfUrl
+    link.href = '/api' + publication.value.pdfUrl
     link.download = ''
     document.body.appendChild(link)
     link.click()

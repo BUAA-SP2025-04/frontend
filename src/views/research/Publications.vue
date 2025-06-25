@@ -256,6 +256,7 @@
                 :limit="1"
                 :on-exceed="handlePdfExceed"
                 accept="application/pdf"
+                :before-upload="beforePdfUpload"
                 style="width: 100%; height: 40px; display: flex; align-items: center"
               >
                 <el-button type="primary">选择PDF文件</el-button>
@@ -513,6 +514,11 @@ const handlePdfFileChange = (file: UploadFile) => {
     pdfFile.value = null
     return
   }
+  // 手动调用大小校验
+  if (file.raw && !beforePdfUpload(file.raw)) {
+    pdfFile.value = null
+    return
+  }
   pdfFile.value = file.raw ?? null
 }
 const handlePdfExceed = (files: File[]) => {
@@ -717,5 +723,15 @@ onMounted(async () => {
 function onShowInfo(row: Publication) {
   shownPublication.value = row
   showInfo.value = true
+}
+
+// PDF大小限制：80MB
+const beforePdfUpload = (file: File) => {
+  const maxSize = 80 * 1024 * 1024
+  if (file.size > maxSize) {
+    ElMessage.error('PDF文件大小不能超过80MB')
+    return false
+  }
+  return true
 }
 </script>

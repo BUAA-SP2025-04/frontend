@@ -195,7 +195,7 @@
                 </div>
                 <!-- 关键词行 -->
                 <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2">
-                  <span v-if="paper.keywords && paper.keywords.trim() !== ''">关键词：</span>
+                  <span>关键词：</span>
                   <span
                     v-for="kw in (paper.keywords || '')
                       .split(',')
@@ -204,6 +204,11 @@
                     :key="kw"
                     class="inline-block px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-[11px] rounded-full font-medium"
                     >{{ kw }}</span
+                  >
+                  <span
+                    v-if="!paper.keywords || paper.keywords.trim() === ''"
+                    class="text-gray-400 italic"
+                    >暂无关键词</span
                   >
                 </div>
                 <!-- DOI行 -->
@@ -218,15 +223,21 @@
                     }}</span>
                   </span>
                   <span
-                    class="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 rounded-full px-2 py-0.5 font-semibold ml-2"
+                    class="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 rounded-full px-2 py-0.5 font-semibold"
                   >
-                    <i class="el-icon-view"></i>阅读量:{{ formatNumber(paper.readerNum) }}
+                    <i class="el-icon-view" style="display: flex; align-items: center"></i
+                    ><span style="display: flex; align-items: center"
+                      >阅读量:{{ formatNumber(paper.readerNum) }}</span
+                    >
                   </span>
-                  <span
+                  <!-- <span
                     class="flex items-center gap-1 text-xs bg-pink-50 text-pink-700 rounded-full px-2 py-0.5 font-semibold"
                   >
-                    <i class="el-icon-star-on"></i>点赞数:{{ formatNumber(paper.likeNum) }}
-                  </span>
+                    <i class="el-icon-star-on" style="display: flex; align-items: center"></i
+                    ><span style="display: flex; align-items: center"
+                      >点赞数:{{ formatNumber(paper.likeNum) }}</span
+                    >
+                  </span> -->
                   <span
                     class="ml-auto text-indigo-600 hover:underline cursor-pointer font-medium"
                     @click="showPaperDetail(paper)"
