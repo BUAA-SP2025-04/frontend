@@ -137,7 +137,7 @@
                       />
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-gray-900">动态</p>
+                      <p class="text-sm font-medium text-gray-900">{{ notification.name }}</p>
                       <p class="text-sm text-gray-500">{{ notification.content }}</p>
                       <p class="text-xs text-gray-400">{{ formatTime(notification.createdAt) }}</p>
                     </div>

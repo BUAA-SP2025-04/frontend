@@ -18,7 +18,6 @@ export const useNotificationStore = defineStore(
         wsService.connect(String(userStore.user.id))
 
         wsService.on('notification', data => {
-          console.log('收到 notification 事件:', data)
           handleWebSocketMessage(data as WebSocketNotification)
         })
 
@@ -31,6 +30,7 @@ export const useNotificationStore = defineStore(
       // 转换为内部通知格式
       const notification: Notification = {
         id: message.notification.id,
+        name: message.name,
         content: message.notification.content,
         createdAt: message.notification.createdAt,
         isRead: message.notification.isRead,
@@ -80,13 +80,6 @@ export const useNotificationStore = defineStore(
       }
     }
 
-    // 获取历史通知 - 移除后端接口调用，只依赖 WebSocket
-    async function fetchHistoryNotifications() {
-      console.log('当前通知数量:', notifications.value.length)
-      console.log('当前未读数量:', unreadCount.value)
-      // 不再调用后端接口，通知完全依赖 WebSocket 接收
-    }
-
     // 清除所有通知
     function clearNotifications() {
       notifications.value = []
@@ -99,7 +92,6 @@ export const useNotificationStore = defineStore(
       unreadCount,
       initializeWebSocket,
       markNotificationAsRead,
-      fetchHistoryNotifications,
       clearNotifications,
     }
   },
