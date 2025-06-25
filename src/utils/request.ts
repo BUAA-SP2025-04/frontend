@@ -28,10 +28,11 @@ const request: AxiosInstance = axios.create({
 request.interceptors.request.use(
   config => {
     // 添加token认证
-    const token = localStorage.getItem('token') || 'mock-token-123456' // 开发时使用固定token
+    const token = localStorage.getItem('token')?.trim().replace(/\s/g, '') || 'mock-token-123456' // 开发时使用固定token
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    //console.log(token)
 
     // 添加时间戳防止缓存
     if (config.method === 'get') {
@@ -41,7 +42,7 @@ request.interceptors.request.use(
       }
     }
 
-    console.log('请求配置:', config) // 调试日志
+    //console.log('请求配置:', config) // 调试日志
     return config
   },
   error => {
@@ -53,7 +54,7 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log('原始响应:', response) // 调试日志
+    //console.log('原始响应:', response) // 调试日志
 
     // 检查响应数据是否存在
     if (!response.data) {
@@ -64,12 +65,12 @@ request.interceptors.response.use(
 
     // 检查是否是标准的API响应格式
     if (typeof response.data === 'object' && 'code' in response.data) {
-      const { code, data, message } = response.data as ApiResponse
+      const { code, message } = response.data as ApiResponse
 
-      console.log('API响应:', { code, message, data }) // 调试日志
+      //console.log('API响应:', { code, message, data }) // 调试日志
 
       // 根据业务状态码处理
-      if (code == "200") {
+      if (code == '200') {
         return response.data
       } else {
         const errorMsg = message || '请求失败'
@@ -84,7 +85,7 @@ request.interceptors.response.use(
     }
   },
   error => {
-    console.error('响应错误:', error) // 调试日志
+    //console.error('响应错误:', error) // 调试日志
 
     // 网络错误处理
     if (error.response) {

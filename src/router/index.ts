@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import { useUserStore } from '@/stores/user'
 import { useGlobalStore } from '@/stores/global'
 
 const routes: RouteRecordRaw[] = [
@@ -135,7 +134,6 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const userStore = useUserStore()
   const globalStore = useGlobalStore()
   const token = localStorage.getItem('token')
   const whiteList = ['/', '/discover', '/login', '/register']
@@ -145,7 +143,7 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  if (token && userStore.user && userStore.user.id) {
+  if (token) {
     next()
   } else {
     // 弹窗提示

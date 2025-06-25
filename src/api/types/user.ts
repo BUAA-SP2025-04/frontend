@@ -33,9 +33,9 @@ export interface LoginUserResponse {
   email: string
   researchArea: string
   title: string
-  followerNum: string
-  publishNum: string
-  subjectNum: string
+  followerNum: number
+  publishNum: number
+  subjectNum: number
   gender: string
   imgUrl: string
   institution: string
@@ -49,19 +49,19 @@ export interface LoginResponse {
 
 // 用户详情类型
 export interface UserDetail {
-  id: string | string[]
+  id: string | number
   name: string
   title: string
   institution: string
   imgUrl: string
-  description: string
+  bio: string
   researchArea: string
   publishNum: number
   subjectNum: number
   followerNum: number
   gender: string
   createdAt: string
-  email?: string
+  email: string
 }
 
 // 论文类型

@@ -6,6 +6,7 @@ import type {
   UpdateUserProfileRequest,
   LoginResponse,
   UpdateUserPasswordRequest,
+  UserDetail,
 } from '../types/user'
 
 // 注册
@@ -23,23 +24,18 @@ export const loginUser = (data: LoginUserRequest): Promise<LoginResponse> => {
 // 完善用户信息
 export const updateUserProfile = (data: UpdateUserProfileRequest): Promise<unknown> => {
   return request.post('/user/profile', data)
-  // return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312260332', data)
 }
 
 // 上传头像
 export const uploadUserImg = (data: FormData): Promise<{ imgUrl: string }> => {
-  //return request.post('/user/img', data, {
-  //headers: { 'Content-Type': 'multipart/form-data' },
-  //})
-  return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312651823', data, {
-    //headers: { 'Content-Type': 'multipart/form-data' },
+  return request.post('/user/img', data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
   })
 }
 
 // 修改密码
 export const changeUserPassword = (data: UpdateUserPasswordRequest): Promise<unknown> => {
-  //return request.post('/user/password', data)
-  return request.post('http://127.0.0.1:4523/m2/6625065-6332383-default/312647089', data)
+  return request.post('/user/password', data)
 }
 
 // 获取用户详情
@@ -58,12 +54,12 @@ export function getUserPapers(id: string | number) {
 
 // 关注
 export function follow(toBeFollowedId: string | number) {
-  return request.post('/researcher/follow', { params: { toBeFollowedId } })
+  return request.post('/researcher/follow', {toBeFollowedId : toBeFollowedId})
 }
 
 // 取消关注
 export function unfollow(toBeCancelledId: string | number) {
-  return request.post('/researcher/cancelFollow', { params: { toBeCancelledId } })
+  return request.post('/researcher/cancelFollow', {toBeCancelledId})
 }
 
 // 获取是否关注
@@ -71,4 +67,9 @@ export function getIfFollow(id: string | number) {
   return request.get('/researcher/ifFollow', {
     params: { id },
   })
+}
+
+// 获取当前用户信息
+export function getUserInfo(): Promise<UserDetail> {
+  return request.get('/user/get')
 }

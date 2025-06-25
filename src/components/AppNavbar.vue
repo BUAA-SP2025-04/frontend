@@ -9,10 +9,12 @@
             to="/"
             class="flex items-center px-4 text-xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
           >
-            <svg class="w-8 h-8 mr-2" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 2L2 7v10c0 5.55 3.84 10 9 11 1.09-.21 2.09-.64 3-1.22.91.58 1.91 1.01 3 1.22 5.16-1 9-5.45 9-11V7l-10-5z"
-              />
+            <svg class="w-8 h-8 mr-2" viewBox="0 0 32 32" fill="none">
+              <circle cx="8" cy="16" r="4" fill="#6366F1"/>
+              <circle cx="24" cy="8" r="3" fill="#6366F1"/>
+              <circle cx="24" cy="24" r="3" fill="#6366F1"/>
+              <line x1="11.2" y1="14.8" x2="21" y2="9.5" stroke="#6366F1" stroke-width="2"/>
+              <line x1="11.2" y1="17.2" x2="21" y2="22.5" stroke="#6366F1" stroke-width="2"/>
             </svg>
             KnoWeb
           </router-link>
@@ -406,6 +408,9 @@ const handleNotificationClick = async (notification: Notification) => {
 const logout = () => {
   localStorage.removeItem('token')
   userStore.clearUser()
+  userStore.clearToken()
+  notificationStore.clearNotifications() // 清除通知
+  wsService.disconnect() // 断开 WebSocket 连接
   ElMessage.success('已退出登录')
   router.push('/login')
 }
@@ -435,10 +440,12 @@ const handleClickOutside = (event: Event) => {
 }
 
 onMounted(() => {
-  // 初始化 WebSocket 连接
-  notificationStore.initializeWebSocket()
-  // 获取历史通知
-  notificationStore.fetchHistoryNotifications()
+  // 如果已登录，初始化 WebSocket 连接
+  if (userStore.isAuthenticated && userStore.user?.id) {
+    notificationStore.initializeWebSocket()
+    // 获取历史通知
+    notificationStore.fetchHistoryNotifications()
+  }
   document.addEventListener('click', handleClickOutside)
 })
 
