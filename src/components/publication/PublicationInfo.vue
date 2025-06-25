@@ -9,21 +9,27 @@
       class="pub-detail-dialog"
     >
       <div v-if="achievement" class="pub-detail-content">
-        <!-- <div class="pub-detail-section pub-title">
+        <div class="pub-detail-section pub-title">
           <span class="pub-label">标题：</span>
           <span class="pub-value pub-title-text">{{ achievement.title }}</span>
-        </div> -->
+        </div>
         <div class="pub-detail-section">
           <span class="pub-label">作者：</span>
-          <span class="pub-value">{{ achievement.authors }}</span>
+          <span class="pub-value">
+            {{ achievement.authors ? achievement.authors : '暂无数据' }}
+          </span>
         </div>
         <div class="pub-detail-section">
           <span class="pub-label">单位/会议：</span>
-          <span class="pub-value">{{ achievement.venue }}</span>
+          <span class="pub-value">
+            {{ achievement.venue ? achievement.venue : '暂无数据' }}
+          </span>
         </div>
         <div class="pub-detail-section">
           <span class="pub-label">年份：</span>
-          <span class="pub-value">{{ achievement.year }}</span>
+          <span class="pub-value">
+            {{ achievement.year ? achievement.year : '暂无数据' }}
+          </span>
         </div>
         <div class="pub-detail-section">
           <span class="pub-label">状态：</span>
@@ -31,41 +37,73 @@
         </div>
         <div class="pub-detail-section">
           <span class="pub-label">关键词：</span>
-          <el-tag
-            v-for="kw in achievement.keywords
-              ? Array.isArray(achievement.keywords)
-                ? achievement.keywords
-                : achievement.keywords.split(',')
-              : []"
-            :key="kw"
-            class="pub-keyword"
-            effect="dark"
-            type="info"
-            >{{ kw }}
-          </el-tag>
+          <template
+            v-if="
+              achievement.keywords &&
+              (Array.isArray(achievement.keywords)
+                ? achievement.keywords.length
+                : achievement.keywords.split(',').filter(k => k.trim()).length)
+            "
+          >
+            <el-tag
+              v-for="kw in achievement.keywords
+                ? Array.isArray(achievement.keywords)
+                  ? achievement.keywords
+                  : achievement.keywords.split(',').filter(k => k.trim())
+                : []"
+              :key="kw"
+              class="pub-keyword"
+              effect="dark"
+              type="info"
+              >{{ kw }}
+            </el-tag>
+          </template>
+          <template v-else>
+            <span class="pub-value">暂无数据</span>
+          </template>
         </div>
         <div class="pub-detail-section pub-doi">
           <span class="pub-label">DOI：</span>
-          <span class="pub-value pub-doi">{{ achievement.doi }}</span>
+          <span class="pub-value pub-doi">
+            {{ achievement.doi ? achievement.doi : '暂无数据' }}
+          </span>
         </div>
         <div class="pub-detail-section pub-abstract">
           <span class="pub-label">摘要：</span>
-          <div class="pub-value pub-abstract-text">{{ achievement.abstracts }}</div>
+          <div class="pub-value pub-abstract-text">
+            {{ achievement.abstracts ? achievement.abstracts : '暂无数据' }}
+          </div>
         </div>
         <div class="pub-detail-section pub-metrics">
           <span class="pub-label pub-metric pub-reader-label">
             <el-icon class="pub-icon"><View /></el-icon>
             阅读量：
           </span>
-          <span class="pub-value pub-readerNum">{{ achievement.readerNum }}</span>
+          <span class="pub-value pub-readerNum">
+            {{
+              achievement.readerNum !== undefined && achievement.readerNum !== null
+                ? achievement.readerNum
+                : '-'
+            }}
+          </span>
           <span class="pub-label pub-metric pub-like-label">
             <el-icon class="pub-icon"><Star /></el-icon>
             点赞数：
           </span>
-          <span class="pub-value pub-likeNum">{{ achievement.likeNum }}</span>
+          <span class="pub-value pub-likeNum">
+            {{
+              achievement.likeNum !== undefined && achievement.likeNum !== null
+                ? achievement.likeNum
+                : '-'
+            }}
+          </span>
         </div>
         <div v-if="achievement.pdfUrl" class="pub-detail-section pub-pdf">
           <el-link :href="achievement.pdfUrl" target="_blank" type="primary">PDF下载/预览</el-link>
+        </div>
+        <div v-else class="pub-detail-section pub-pdf">
+          <span class="pub-label">PDF：</span>
+          <span class="pub-value">暂无数据</span>
         </div>
       </div>
       <template #footer>

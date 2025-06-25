@@ -39,7 +39,7 @@ export function updatePublicationFile(formData: FormData): Promise<EmptyResponse
 }
 
 export function deletePublicationFile(oldFilePath: string): Promise<EmptyResponse> {
-  return request.post('/application/deleteFile', {
+  return request.post('/publication/deleteFile', null, {
     params: { oldFilePath },
   })
 }

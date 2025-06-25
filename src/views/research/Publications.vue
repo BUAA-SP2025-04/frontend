@@ -193,7 +193,14 @@
           <el-form-item label="作者">
             <el-input
               v-model="currentPublication.authors"
-              placeholder="请输入作者，用英文逗号分隔"
+              :placeholder="`请输入作者，用英文逗号分隔（当前用户：${userName}，不可删除）`"
+              :disabled="true"
+            />
+            <el-input
+              v-if="allowAddAuthors"
+              v-model="otherAuthors"
+              placeholder="可添加其他作者，用英文逗号分隔"
+              style="margin-top: 8px"
             />
           </el-form-item>
 
@@ -297,7 +304,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import type { UploadFile } from 'element-plus'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import type {
@@ -533,7 +540,7 @@ const handlePdfUrl = async (): Promise<string> => {
       formData.append('oldFilePath', oldFilePath.value) // 添加旧文件路径
       formData.append('file', pdfFile.value)
       await updatePublicationFile(formData)
-      return ''
+      return oldFilePath.value
     } else {
       // upload类型且无旧文件，上传文件
       const formData = new FormData()
@@ -547,47 +554,6 @@ const handlePdfUrl = async (): Promise<string> => {
     }
   }
   return ''
-}
-
-const handleSave = () => {
-  if (!formRef.value) return
-  formRef.value
-    .validate()
-    .then(() => {
-      saving.value = true
-      // 统一处理默认值
-      const payload: SavePublicationRequest = {
-        ...currentPublication,
-        abstract: currentPublication.abstracts || null,
-        year: currentPublication.year ? String(currentPublication.year) : null,
-        isPublic: String(currentPublication.isPublic),
-      }
-      // 先处理PDF相关操作
-      return handlePdfUrl().then(url => {
-        if (pdfInputType.value === 'upload' && pdfFile.value) {
-          if (!url) {
-            return Promise.reject(new Error('PDF上传失败'))
-          }
-          payload.pdfUrl = url
-          pdfFile.value = null // 上传后清空
-        }
-        // PDF无异常再保存
-        let urlApi = isEditing.value ? '/publication/update' : '/publication/add'
-        console.log('payload', payload)
-        return savePublication(urlApi, payload)
-      })
-    })
-    .then(() => {
-      if (isEditing.value) ElMessage.success('更新成功')
-      else ElMessage.success('添加成功')
-      submitSuccess()
-    })
-    .catch(err => {
-      ElMessage.error(err)
-    })
-    .finally(() => {
-      saving.value = false
-    })
 }
 
 const submitSuccess = () => {
@@ -647,6 +613,77 @@ const closeDialog = () => {
 }
 
 const userStore = useUserStore()
+const userName = computed(() => userStore.user?.name || '')
+const otherAuthors = ref('')
+
+// 控制是否允许添加其他作者（可根据需求调整）
+const allowAddAuthors = true
+
+// 在打开添加对话框时，默认 authors 为当前用户 name，且不可删除
+watch(
+  () => showAddDialog.value,
+  val => {
+    if (val && !isEditing.value) {
+      currentPublication.authors = userName.value
+      otherAuthors.value = ''
+    }
+    if (val && isEditing.value) {
+      // 编辑时分离当前用户和其他作者
+      const authorsArr = (currentPublication.authors || '')
+        .split(',')
+        .map(a => a.trim())
+        .filter(Boolean)
+      if (authorsArr[0] === userName.value) {
+        otherAuthors.value = authorsArr.slice(1).join(', ')
+      } else {
+        otherAuthors.value = authorsArr.join(', ')
+      }
+      currentPublication.authors = userName.value
+    }
+  }
+)
+
+const handleSave = () => {
+  if (!formRef.value) return
+  currentPublication.authors =
+    userName.value + (otherAuthors.value ? `, ${otherAuthors.value}` : '')
+  formRef.value
+    .validate()
+    .then(() => {
+      saving.value = true
+      // 统一处理默认值
+      const payload: SavePublicationRequest = {
+        ...currentPublication,
+        year: currentPublication.year ? String(currentPublication.year) : null,
+        isPublic: String(currentPublication.isPublic),
+      }
+      // 先处理PDF相关操作
+      return handlePdfUrl().then(url => {
+        if (pdfInputType.value === 'upload' && pdfFile.value) {
+          if (!url) {
+            return Promise.reject(new Error('PDF上传失败'))
+          }
+          payload.pdfUrl = url
+          pdfFile.value = null // 上传后清空
+        }
+        // PDF无异常再保存
+        let urlApi = isEditing.value ? '/publication/update' : '/publication/add'
+        return savePublication(urlApi, payload)
+      })
+    })
+    .then(() => {
+      if (isEditing.value) ElMessage.success('更新成功')
+      else ElMessage.success('添加成功')
+      submitSuccess()
+    })
+    .catch(err => {
+      console.error('保存失败:', err)
+      ElMessage.error('失败: ' + (err?.message || err))
+    })
+    .finally(() => {
+      saving.value = false
+    })
+}
 
 onMounted(async () => {
   if (userStore.user?.id) {
