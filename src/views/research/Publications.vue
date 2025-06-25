@@ -35,105 +35,8 @@
         </el-button>
       </div>
 
-      <!-- 统计卡片 -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition duration-200">
-          <div class="flex items-center">
-            <div class="p-3 rounded-full bg-blue-100">
-              <svg
-                class="w-6 h-6 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <h3 class="text-2xl font-bold text-gray-900">{{ stats.totalPapers }}</h3>
-              <p class="text-gray-600">发表论文</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- 总阅读量 -->
-        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition duration-200">
-          <div class="flex items-center">
-            <div class="p-3 rounded-full bg-green-100">
-              <svg
-                class="w-6 h-6 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <h3 class="text-2xl font-bold text-gray-900">{{ stats.totalCitations }}</h3>
-              <p class="text-gray-600">总阅读量</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition duration-200">
-          <div class="flex items-center">
-            <div class="p-3 rounded-full bg-purple-100">
-              <svg
-                class="w-6 h-6 text-purple-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <h3 class="text-2xl font-bold text-gray-900">{{ stats.ongoingProjects }}</h3>
-              <p class="text-gray-600">进行中项目</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition duration-200">
-          <div class="flex items-center">
-            <div class="p-3 rounded-full bg-yellow-100">
-              <svg
-                class="w-6 h-6 text-yellow-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <h3 class="text-2xl font-bold text-gray-900">{{ stats.hIndex }}</h3>
-              <p class="text-gray-600">总点赞数</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- 统计数据卡片组 -->
+      <PublicationStatsCardGroup :stats="stats" />
 
       <!-- 筛选和搜索 -->
       <div class="bg-white rounded-lg shadow mb-6 p-6">
@@ -187,15 +90,19 @@
                 {{ row.title }}
               </div>
               <div class="text-sm text-gray-500 mt-1">
-                {{ row.authors.join(', ') }}
+                {{ row.authors ? row.authors : '暂无数据' }}
               </div>
             </template>
           </el-table-column>
 
           <el-table-column prop="venue" label="发表于" width="200">
             <template #default="{ row }">
-              <div class="text-gray-900">{{ row.venue }}</div>
-              <div class="text-sm text-gray-500">{{ row.year }}</div>
+              <div class="text-gray-900">
+                {{ row.venue ? row.venue : '暂无数据' }}
+              </div>
+              <div class="text-sm text-gray-500">
+                {{ row.year ? row.year : '暂无数据' }}
+              </div>
             </template>
           </el-table-column>
 
@@ -278,7 +185,10 @@
           </el-form-item>
 
           <el-form-item label="作者">
-            <el-input v-model="authorsInput" placeholder="请输入作者，用英文逗号分隔" />
+            <el-input
+              v-model="currentPublication.authors"
+              placeholder="请输入作者，用英文逗号分隔"
+            />
           </el-form-item>
 
           <el-form-item label="发表于">
@@ -286,11 +196,12 @@
           </el-form-item>
 
           <el-form-item label="年份">
-            <el-date-picker
-              v-model="yearInput"
-              type="year"
-              placeholder="选择年份"
-              style="width: 100%"
+            <el-input
+              v-model="currentPublication.year"
+              placeholder="请输入年份"
+              maxlength="4"
+              type="number"
+              class="w-full"
             />
           </el-form-item>
 
@@ -379,12 +290,18 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import type { Publication, PublicationProfile } from '@/api/types/publication'
+import type {
+  Publication,
+  PublicationProfile,
+  PublicationStats,
+  SavePublicationRequest,
+} from '@/api/types/publication'
 import { deletePublication, savePublication } from '@/api/modules/publication'
 import type { UploadFile } from 'element-plus'
 import { deleteFile, updateFile, uploadFile } from '@/api/modules/upload'
 import { useUserStore } from '@/stores/user'
 import { getPublicationsByUser } from '@/api/modules/publication'
+import PublicationStatsCardGroup from '@/components/publication/PublicationStatsCardGroup.vue'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -394,11 +311,11 @@ const searchQuery = ref('')
 const filterType = ref('')
 const filterYear = ref('')
 
-const stats = reactive({
-  totalPapers: 28,
-  totalCitations: 1245,
-  ongoingProjects: 5,
-  hIndex: 18,
+const stats = reactive<PublicationStats>({
+  totalPublicationNum: 10,
+  totalReaderNum: 1000,
+  totalLikeNum: 50,
+  totalProjectNum: -1,
 })
 
 const publications = reactive<Publication[]>([])
@@ -406,22 +323,20 @@ const publications = reactive<Publication[]>([])
 const emptyPublication: PublicationProfile = {
   type: 'journal',
   title: '',
-  authors: [],
-  venue: '',
-  year: undefined,
+  authors: null,
+  venue: null,
+  year: null,
   status: 'published',
-  abstract: '',
-  keywords: '',
-  doi: '',
-  pdfUrl: '',
-  isPublic: true,
+  abstract: null,
+  keywords: null,
+  doi: null,
+  pdfUrl: null,
+  isPublic: 1,
 }
 const currentPublication = reactive<PublicationProfile>(
   JSON.parse(JSON.stringify(emptyPublication))
 )
 
-const authorsInput = ref('')
-const yearInput = ref<Date | null>(null)
 const pdfInputType = ref<'url' | 'upload'>('url')
 const pdfFile = ref<File | null>(null)
 const oldFilePath = ref<string>('')
@@ -487,7 +402,7 @@ const filteredPublications = computed(() => {
     result = result.filter(
       (item: Publication) =>
         item.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        item.authors.some((author: string) => author.includes(searchQuery.value)) ||
+        item.authors.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         item.keywords.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
@@ -545,8 +460,6 @@ const getStatusLabel = (status: 'published' | 'accepted' | 'under-review' | 'dra
 const editPublication = (publicationProfile: PublicationProfile) => {
   isEditing.value = true
   Object.assign(currentPublication, publicationProfile)
-  authorsInput.value = publicationProfile.authors.join(', ')
-  yearInput.value = publicationProfile.year ? new Date(publicationProfile.year, 0) : null
 
   // 根据pdfUrl判断类型
   if (publicationProfile.pdfUrl && publicationProfile.pdfUrl.trim()) {
@@ -564,7 +477,7 @@ const editPublication = (publicationProfile: PublicationProfile) => {
 
 // 监听pdfInputType变化
 watch(pdfInputType, (newType, oldType) => {
-  if (oldType === 'upload' && newType === 'url') {
+  if (oldType === 'upload' && newType === 'url' && currentPublication.pdfUrl) {
     oldFilePath.value = currentPublication.pdfUrl
     currentPublication.pdfUrl = ''
   }
@@ -590,11 +503,11 @@ const uploadPdfFile = async (): Promise<string> => {
 
   if (pdfInputType.value === 'upload' && !oldFilePath.value) {
     // upload类型且无旧文件，上传新文件
-    if (!pdfFile.value) return currentPublication.pdfUrl
+    if (!pdfFile.value) return currentPublication.pdfUrl ? currentPublication.pdfUrl : ''
     const formData = new FormData()
     formData.append('file', pdfFile.value)
     try {
-      const res = await uploadFile('/api/application/uploadFile', formData)
+      const res = await uploadFile('/application/uploadFile', formData)
       if (res.data?.url) {
         return res.data.url
       }
@@ -610,7 +523,7 @@ const uploadPdfFile = async (): Promise<string> => {
     formData.append('oldFilePath', oldFilePath.value) // 添加旧文件路径
     formData.append('file', pdfFile.value)
     try {
-      await updateFile('/api/application/updateFile', formData)
+      await updateFile('/application/updateFile', formData)
       return ''
     } catch (err) {
       return ''
@@ -619,7 +532,7 @@ const uploadPdfFile = async (): Promise<string> => {
   if (pdfInputType.value === 'url' && oldFilePath.value) {
     // url类型且有旧文件，删除旧文件
     try {
-      await deleteFile('/api/application/deleteFile', oldFilePath.value)
+      await deleteFile('/application/deleteFile', oldFilePath.value)
       return ''
     } catch (err) {
       return ''
@@ -634,39 +547,11 @@ const handleSave = () => {
     .validate()
     .then(() => {
       saving.value = true
-      // 需要默认值的字段
-      const defaultFields = {
-        authors: authorsInput.value,
-        year: yearInput.value,
-      }
       // 统一处理默认值
-      const payload = {
+      const payload: SavePublicationRequest = {
         ...currentPublication,
-        authors:
-          defaultFields.authors && defaultFields.authors.trim()
-            ? defaultFields.authors
-            : '暂无信息',
-        keywords:
-          currentPublication.keywords && currentPublication.keywords.trim()
-            ? currentPublication.keywords
-            : '暂无信息',
-        venue:
-          currentPublication.venue && currentPublication.venue.trim()
-            ? currentPublication.venue
-            : '暂无信息',
-        year: defaultFields.year?.getFullYear(),
-        abstract:
-          currentPublication.abstract && currentPublication.abstract.trim()
-            ? currentPublication.abstract
-            : '暂无信息',
-        doi:
-          currentPublication.doi && currentPublication.doi.trim()
-            ? currentPublication.doi
-            : '暂无信息',
-        pdfUrl:
-          currentPublication.pdfUrl && currentPublication.pdfUrl.trim()
-            ? currentPublication.pdfUrl
-            : '暂无信息',
+        year: currentPublication.year ? String(currentPublication.year) : null,
+        isPublic: String(currentPublication.isPublic),
       }
 
       //PDF上传处理
@@ -682,7 +567,8 @@ const handleSave = () => {
           payload.pdfUrl = url
           pdfFile.value = null // 上传后清空
         }
-        let urlApi = isEditing.value ? '/api/publication/update' : '/api/publication/add'
+        console.log(payload)
+        let urlApi = isEditing.value ? '/publication/update' : '/publication/add'
         return savePublication(urlApi, payload)
       })
     })
@@ -702,6 +588,7 @@ const handleSave = () => {
 }
 
 const handleDelete = (id: number) => {
+  console.log(id)
   ElMessageBox.confirm('确定要删除该成果吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -720,8 +607,6 @@ const handleDelete = (id: number) => {
 
 const resetForm = () => {
   Object.assign(currentPublication, JSON.parse(JSON.stringify(emptyPublication)))
-  authorsInput.value = ''
-  yearInput.value = null
   pdfInputType.value = 'url'
   pdfFile.value = null
   isEditing.value = false
