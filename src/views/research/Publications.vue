@@ -207,7 +207,7 @@
 
           <el-form-item label="摘要">
             <el-input
-              v-model="currentPublication.abstract"
+              v-model="currentPublication.abstracts"
               type="textarea"
               :rows="4"
               placeholder="请输入摘要"
@@ -327,7 +327,7 @@ const emptyPublication: PublicationProfile = {
   venue: null,
   year: null,
   status: 'published',
-  abstract: null,
+  abstracts: null,
   keywords: null,
   doi: null,
   pdfUrl: null,

@@ -27,7 +27,7 @@ export interface PublicationProfile {
   venue: string | null
   year: number | null
   status: string | null
-  abstract: string | null
+  abstracts: string | null
   keywords: string | null
   doi: string | null
   pdfUrl: string | null
@@ -48,7 +48,7 @@ export interface SavePublicationRequest {
   venue: string | null
   year: string | null
   status: string | null
-  abstract: string | null
+  abstracts: string | null
   keywords: string | null
   doi: string | null
   pdfUrl: string | null
