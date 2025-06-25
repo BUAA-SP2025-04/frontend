@@ -51,29 +51,29 @@
     <!-- 平台统计 -->
     <section class="py-16 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-8 text-center">
           <div>
-            <div class="text-4xl font-bold text-indigo-600 mb-2">
+            <div class="text-4xl md:text-5xl font-extrabold text-indigo-600 mb-2">
               {{ formatNumber(animatedResearcherCount) }}
             </div>
-            <div class="text-gray-600">注册研究者</div>
+            <div class="text-base md:text-xl font-semibold text-gray-700">注册研究者</div>
           </div>
           <div>
-            <div class="text-4xl font-bold text-green-600 mb-2">
+            <div class="text-4xl md:text-5xl font-extrabold text-green-600 mb-2">
               {{ formatNumber(animatedPaperCount) }}
             </div>
-            <div class="text-gray-600">发表论文</div>
+            <div class="text-base md:text-xl font-semibold text-gray-700">发表论文</div>
           </div>
           <div>
-            <div class="text-4xl font-bold text-purple-600 mb-2">
+            <div class="text-4xl md:text-5xl font-extrabold text-purple-600 mb-2">
               {{ formatNumber(animatedMessageCount) }}
             </div>
-            <div class="text-gray-600">学术动态</div>
+            <div class="text-base md:text-xl font-semibold text-gray-700">学术动态</div>
           </div>
-          <div>
+          <!-- <div>
             <div class="text-4xl font-bold text-orange-600 mb-2">{{ formatNumber(12834) }}</div>
             <div class="text-gray-600">合作项目</div>
-          </div>
+          </div> -->
         </div>
       </div>
     </section>
@@ -382,7 +382,7 @@
     </section>
 
     <!-- 热门动态 -->
-    <section class="py-20 bg-white">
+    <!-- <section class="py-20 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
           <h2 class="text-4xl font-bold text-gray-900 mb-4">学术动态</h2>
@@ -390,7 +390,6 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- 热门论文 -->
           <div>
             <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
               <svg
@@ -425,7 +424,6 @@
             </div>
           </div>
 
-          <!-- 最新动态 -->
           <div>
             <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
               <svg
@@ -480,7 +478,7 @@
           </router-link>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <!-- 研究领域 -->
     <section class="py-20 bg-gray-50">
@@ -511,7 +509,7 @@
               </svg>
             </div>
             <h3 class="font-semibold text-gray-900 mb-2">{{ field.name }}</h3>
-            <p class="text-sm text-gray-600">{{ field.count }} 论文</p>
+            <p class="text-sm text-gray-600">{{ field.count }} 相关用户</p>
           </div>
         </div>
       </div>
@@ -547,7 +545,12 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { getResearcherCount, getPaperCount, getMessageCount } from '@/api/modules/statistics'
+import {
+  getResearcherCount,
+  getPaperCount,
+  getMessageCount,
+  getHotFields,
+} from '@/api/modules/statistics'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -610,14 +613,17 @@ const recentActivities = ref([
   },
 ])
 
-const researchFields = ref([
-  { name: '人工智能', count: 12456, color: 'bg-blue-500' },
-  { name: '生物医学', count: 8934, color: 'bg-green-500' },
-  { name: '量子计算', count: 3456, color: 'bg-purple-500' },
-  { name: '材料科学', count: 6789, color: 'bg-orange-500' },
-  { name: '环境科学', count: 5432, color: 'bg-teal-500' },
-  { name: '数据科学', count: 9876, color: 'bg-pink-500' },
-])
+// 颜色列表，前六个依次使用
+const top6Colors = [
+  'bg-blue-500',
+  'bg-green-500',
+  'bg-purple-500',
+  'bg-orange-500',
+  'bg-teal-500',
+  'bg-pink-500',
+]
+
+const researchFields = ref<any[]>([])
 
 // 方法
 const formatNumber = (num: number) => {
@@ -682,10 +688,11 @@ const isLoggedIn = computed(() => userStore.isAuthenticated)
 
 onMounted(async () => {
   try {
-    const [res1, res2, res3] = await Promise.all([
+    const [res1, res2, res3, res4] = await Promise.all([
       getResearcherCount(),
       getPaperCount(),
       getMessageCount(),
+      getHotFields(),
     ])
     if (res1 && typeof res1.data === 'number') {
       researcherCount.value = (res1.data as any) || 0
@@ -696,8 +703,16 @@ onMounted(async () => {
     if (res3 && typeof res3.data === 'number') {
       messageCount.value = (res3.data as any) || 0
     }
+    if (res4 && typeof res4.data === 'object') {
+      // 转为数组，按count降序取前六，手动分配颜色
+      researchFields.value = Object.entries(res4.data)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => Number(b.count) - Number(a.count))
+        .slice(0, 6)
+        .map((item, idx) => ({ ...item, color: top6Colors[idx] || 'bg-gray-400' }))
+    }
   } catch (e) {
-    // 可选：错误处理
+    console.log(e)
   }
 })
 </script>

@@ -20,7 +20,8 @@
             </svg>
             科研成果管理
           </h1>
-          <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>
+          <!--          <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>-->
+          <p class="text-gray-600 mt-2">管理您的研究成果</p>
         </div>
         <el-button type="primary" size="large" @click="showAddDialog = true">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,15 +55,14 @@
             <el-option label="期刊论文" value="journal" />
             <el-option label="会议论文" value="conference" />
             <el-option label="专利" value="patent" />
-            <el-option label="项目" value="project" />
           </el-select>
-          <el-select v-model="filterYear" placeholder="年份" size="large" style="width: 120px">
-            <el-option label="全部" value="" />
-            <el-option label="2024" value="2024" />
-            <el-option label="2023" value="2023" />
-            <el-option label="2022" value="2022" />
-            <el-option label="2021" value="2021" />
-          </el-select>
+          <el-input
+            v-model="filterYear"
+            placeholder="年份"
+            maxlength="4"
+            type="number"
+            style="width: 120px"
+          />
         </div>
       </div>
 
@@ -256,6 +256,7 @@
                 :limit="1"
                 :on-exceed="handlePdfExceed"
                 accept="application/pdf"
+                :before-upload="beforePdfUpload"
                 style="width: 100%; height: 40px; display: flex; align-items: center"
               >
                 <el-button type="primary">选择PDF文件</el-button>
@@ -297,7 +298,7 @@
       <PublicationInfo
         v-if="shownPublication"
         v-model:visible="showInfo"
-        :achievement="shownPublication"
+        :publication="shownPublication"
       ></PublicationInfo>
     </div>
   </div>
@@ -317,6 +318,7 @@ import {
   deletePublication,
   deletePublicationFile,
   getPublicationsByUser,
+  getPublicationStatsByUser,
   savePublication,
   updatePublicationFile,
   uploadPublicationFile,
@@ -335,10 +337,10 @@ const filterType = ref('')
 const filterYear = ref('')
 
 const stats = reactive<PublicationStats>({
-  totalPublicationNum: 10,
-  totalReaderNum: 1000,
-  totalLikeNum: 50,
-  totalProjectNum: -1,
+  totalPublicationNum: 0,
+  totalReaderNum: 0,
+  totalLikeNum: 0,
+  totalProjectNum: 0,
 })
 
 const publications = reactive<Publication[]>([])
@@ -453,7 +455,6 @@ const getTypeColor = (type: string) => {
     journal: 'success',
     conference: 'primary',
     patent: 'warning',
-    project: 'info',
   }
   return colors[type] || 'default'
 }
@@ -510,6 +511,11 @@ const editPublication = (publicationProfile: PublicationProfile) => {
 const handlePdfFileChange = (file: UploadFile) => {
   if (file.raw && file.raw.type !== 'application/pdf') {
     ElMessage.error('只能上传 PDF 文件')
+    pdfFile.value = null
+    return
+  }
+  // 手动调用大小校验
+  if (file.raw && !beforePdfUpload(file.raw)) {
     pdfFile.value = null
     return
   }
@@ -570,6 +576,7 @@ const submitSuccess = () => {
       .finally(() => {
         loading.value = false
       })
+    stats.totalPublicationNum = (stats.totalPublicationNum || 0) + 1
   } else if (isEditing.value) {
     // 编辑成功后更新当前列表
     const idx = publications.findIndex(item => item.id === currentPublication.id)
@@ -593,6 +600,12 @@ const handleDelete = (id: number) => {
       // 删除后从publications中移除
       const idx = publications.findIndex(item => item.id === id)
       if (idx !== -1) publications.splice(idx, 1)
+      // 删除后刷新统计数据
+      if (userStore.user?.id) {
+        getPublicationStatsByUser(userStore.user.id).then(res => {
+          if (res.data) Object.assign(stats, res.data)
+        })
+      }
     })
     .catch(err => {
       ElMessage.error(err)
@@ -689,12 +702,18 @@ onMounted(async () => {
   if (userStore.user?.id) {
     loading.value = true
     try {
-      const res = await getPublicationsByUser(userStore.user.id)
-      if (Array.isArray(res.data)) {
-        publications.splice(0, publications.length, ...res.data)
+      const [pubRes, statsRes] = await Promise.all([
+        getPublicationsByUser(userStore.user.id),
+        getPublicationStatsByUser(userStore.user.id),
+      ])
+      if (Array.isArray(pubRes.data)) {
+        publications.splice(0, publications.length, ...pubRes.data)
+      }
+      if (statsRes.data) {
+        Object.assign(stats, statsRes.data)
       }
     } catch (e) {
-      ElMessage.error('获取论文列表失败')
+      ElMessage.error('获取论文列表或统计数据失败')
     } finally {
       loading.value = false
     }
@@ -704,5 +723,15 @@ onMounted(async () => {
 function onShowInfo(row: Publication) {
   shownPublication.value = row
   showInfo.value = true
+}
+
+// PDF大小限制：80MB
+const beforePdfUpload = (file: File) => {
+  const maxSize = 80 * 1024 * 1024
+  if (file.size > maxSize) {
+    ElMessage.error('PDF文件大小不能超过80MB')
+    return false
+  }
+  return true
 }
 </script>

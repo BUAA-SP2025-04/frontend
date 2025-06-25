@@ -19,7 +19,7 @@ export function getPaperCount(): Promise<CountResponse> {
 
 // 获取合作项目数量（消息数量）
 export function getMessageCount(): Promise<CountResponse> {
-  return request.get('/messages/getCount')
+  return request.get('/messages/getAllCount')
 }
 
 // 获取更新成果
@@ -30,4 +30,8 @@ export function getUpdatePublication(): Promise<publication> {
 // 获取点赞成果
 export function getLikePublication(): Promise<publication> {
   return request.get('/publication/getLikePublication')
+}
+
+export function getHotFields(): Promise<any> {
+  return request.get('/researcher/getHotFields')
 }

@@ -451,7 +451,7 @@
                 <div class="flex items-start space-x-4">
                   <div class="relative flex-shrink-0">
                     <img
-                      :src="user.imgUrl || '/default-avatar.png'"
+                      :src="user.imgUrl ? '/api' + user.imgUrl : '/default-avatar.png'"
                       :alt="user.name || '未知用户'"
                       class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 group-hover:border-indigo-200 transition-colors"
                       @error="handleImageError"
@@ -712,7 +712,7 @@ const searchString = ref('')
 
 // 分页
 const currentPage = ref(1)
-const pageSize = 12
+const pageSize = 9
 
 // 模拟用户数据（扩展数据）
 const users = ref<User[]>([])
@@ -860,6 +860,7 @@ const performSearch = async () => {
       response = await searchResearchersByName({ name: searchString.value })
     }
     if (response && response.data) {
+      console.log(response.data)
       users.value = response.data
     } else {
       users.value = []
@@ -918,7 +919,9 @@ const goToUserDetail = (id: number) => {
 onMounted(() => {
   const field = route.query.field as string
   if (field && field.trim()) {
-    filters.selectedFields = [field.trim()]
+    searchType.value = 'field'
+    searchQuery.value = field.trim()
+    performSearch()
   }
 })
 
@@ -1055,7 +1058,7 @@ const validateFollowersRange = () => {
 
 const handleImageError = (event: Event) => {
   const target = event.target as HTMLImageElement
-  if (target && !target.src.includes('/default-avatar.png')) {
+  if (target && !target.src.endsWith('/default-avatar.png')) {
     target.src = '/default-avatar.png'
   }
 }
@@ -1064,12 +1067,17 @@ const performAdvancedSearch = async () => {
   currentPage.value = 1
   // 组装参数，字段名需与searchCasually接口一致
   const data = {
-    name: advancedSearch.name.trim() || '',
-    area: advancedSearch.field.trim() || '',
-    institution: advancedSearch.institution.trim() || '',
-    title: advancedSearch.title.trim() || '',
+    queries: {
+      name: advancedSearch.name.trim() || '',
+      area: advancedSearch.field.trim() || '',
+      institution: advancedSearch.institution.trim() || '',
+      title: advancedSearch.title.trim() || '',
+    },
+    filters: {},
+    page: 0,
+    size: 10000,
   }
-  searchString.value = Object.values(data).filter(Boolean).join(' / ')
+  searchString.value = Object.values(data.queries).filter(Boolean).join(' / ')
   try {
     const response = await searchCasually(data)
     if (response && response.data) {

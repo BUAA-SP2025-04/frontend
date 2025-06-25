@@ -295,6 +295,22 @@
                 </svg>
                 查看PDF
               </el-button>
+              <el-button
+                v-if="publication.pdfUrl && publication.pdfUrl.trim()"
+                type="success"
+                @click="downloadPdf"
+                class="flex items-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
+                  />
+                </svg>
+                下载PDF
+              </el-button>
               <el-button v-else type="warning" @click="applyPdf" class="flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -311,9 +327,8 @@
         </div>
 
         <!-- 评论区 -->
-        <div id="comments" class="bg-white rounded-xl shadow-lg overflow-hidden mt-8">
+        <!-- <div id="comments" class="bg-white rounded-xl shadow-lg overflow-hidden mt-8">
           <div class="p-8">
-            <!-- 顶部标题和排序 -->
             <div class="flex items-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900 mr-4">
                 评论 <span class="text-blue-600 text-lg">{{ comments.length }}</span>
@@ -333,7 +348,6 @@
               </div>
             </div>
 
-            <!-- 评论输入区 -->
             <div
               class="flex items-start gap-4 bg-white rounded-lg p-5 mb-8 shadow-sm border border-gray-100"
             >
@@ -379,14 +393,12 @@
               </div>
             </div>
 
-            <!-- 评论列表 -->
             <div v-if="sortedComments.length > 0" class="space-y-8">
               <div
                 v-for="comment in sortedComments"
                 :key="comment.id"
                 class="flex items-start gap-4"
               >
-                <!-- 头像 -->
                 <div
                   class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center"
                 >
@@ -410,7 +422,6 @@
                     />
                   </svg>
                 </div>
-                <!-- 内容 -->
                 <div class="flex-1 border-b border-gray-100 pb-6">
                   <div class="flex items-center gap-2 mb-1">
                     <span class="font-bold text-gray-900">{{ comment.author.name }}</span>
@@ -456,12 +467,11 @@
                 </div>
               </div>
             </div>
-            <!-- 空状态 -->
             <div v-else class="text-center py-12 text-gray-400">
               暂无评论，快来发表第一条评论吧！
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
 
       <!-- 错误状态 -->
@@ -586,7 +596,19 @@ const replyToComment = (comment: PublicationComment) => {
 
 const openPdf = () => {
   if (publication.value?.pdfUrl) {
-    window.open(publication.value.pdfUrl, '_blank')
+    console.log(publication.value.pdfUrl)
+    router.push({ path: '/pdf-reader', query: { url: publication.value.pdfUrl } })
+  }
+}
+
+const downloadPdf = () => {
+  if (publication.value?.pdfUrl) {
+    const link = document.createElement('a')
+    link.href = '/api' + publication.value.pdfUrl
+    link.download = ''
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 }
 
@@ -642,7 +664,7 @@ const formatTime = (timeStr: string) => {
   }
 }
 
-const getAuthorsList = (authors: string) => {
+const getAuthorsList = (authors: string | null) => {
   if (!authors) return []
   return authors
     .split(',')
