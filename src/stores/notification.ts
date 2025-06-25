@@ -28,8 +28,6 @@ export const useNotificationStore = defineStore(
 
     // 处理 WebSocket 消息
     function handleWebSocketMessage(message: WebSocketNotification) {
-      console.log('收到WebSocket消息:', message)
-
       // 转换为内部通知格式
       const notification: Notification = {
         id: message.notification.id,
@@ -49,6 +47,7 @@ export const useNotificationStore = defineStore(
     // 处理新通知
     function handleNewNotification(notification: Notification) {
       // 检查是否已存在相同ID的通知，避免重复
+      console.log(notification)
       const existingIndex = notifications.value.findIndex(n => n.id === notification.id)
       if (existingIndex === -1) {
         notifications.value.unshift(notification)

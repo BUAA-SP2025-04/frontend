@@ -128,16 +128,16 @@
                     <div class="flex-shrink-0">
                       <img
                         :src="
-                          notification.avatarUrl || `http://api.btstu.cn/sjtx/api.php?lx=${'c2'}`
+                          notification.avatarUrl
+                            ? `${API_BASE_URL}${notification.avatarUrl}`
+                            : `http://api.btstu.cn/sjtx/api.php?lx=${'c2'}`
                         "
                         :alt="(notification.senderId || notification.userId).toString()"
                         class="h-8 w-8 rounded-full"
                       />
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-gray-900">
-                        用户 #{{ notification.senderId || notification.userId }}
-                      </p>
+                      <p class="text-sm font-medium text-gray-900">动态</p>
                       <p class="text-sm text-gray-500">{{ notification.content }}</p>
                       <p class="text-xs text-gray-400">{{ formatTime(notification.createdAt) }}</p>
                     </div>
@@ -429,6 +429,8 @@ const handleClickOutside = (event: Event) => {
     showUserMenu.value = false
   }
 }
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 onMounted(() => {
   // 初始化时检查用户状态
