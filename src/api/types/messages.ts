@@ -10,20 +10,23 @@ export interface Friend {
 
 // 私信会话
 export interface Conversation {
-  id: number
+  id: number                // 可以用 userId 赋值
   userId: number
   name: string
   avatar: string
   institution: string
-  isOnline: boolean
-  isRead: boolean
+  isOnline: boolean        
   unreadCount: number
   lastMessage: {
+    id: number
+    senderId: number
+    receiverId: number
     content: string
-    isMe: boolean
-    type: 'text' | 'file'
+    createdAt: string
+    isRead: boolean
   }
-  lastMessageTime: string
+  lastMessageTime?: string  
+  isRead?: boolean          
 }
 
 // 系统通知
@@ -51,6 +54,7 @@ export interface ActivityNotification {
   senderId?: number
   publicationId?: number
   avatarUrl?: string
+  name?: string
   // 兼容后端返回的 notification 嵌套结构
   notification?: {
     id: number
