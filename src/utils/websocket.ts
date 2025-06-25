@@ -12,9 +12,9 @@ export class WebSocketService {
   }
 
   // 连接方法
-  connect(token: string) {
+  connect(userId: string) {
     try {
-      this.ws = new WebSocket(`${this.url}?token=${token}`)
+      this.ws = new WebSocket(`${this.url}?userId=${userId}`)
 
       this.ws.onopen = () => {
         console.log('WebSocket 连接成功')
@@ -23,7 +23,7 @@ export class WebSocketService {
 
       this.ws.onclose = () => {
         console.log('WebSocket 连接关闭')
-        this.reconnect()
+        this.reconnect(userId)
       }
 
       this.ws.onerror = error => {
@@ -31,17 +31,17 @@ export class WebSocketService {
       }
     } catch (error) {
       console.error('WebSocket 连接失败:', error)
-      this.reconnect()
+      this.reconnect(userId)
     }
   }
 
   // 重连方法
-  private reconnect() {
+  private reconnect(userId: string) {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++
       console.log(`尝试重连... 第 ${this.reconnectAttempts} 次`)
       setTimeout(() => {
-        this.connect(localStorage.getItem('token') || '')
+        this.connect(userId)
       }, this.reconnectTimeout * this.reconnectAttempts)
     }
   }
@@ -70,4 +70,4 @@ export class WebSocketService {
 }
 
 // 创建单例
-export const wsService = new WebSocketService('ws://your-backend-websocket-url')
+export const wsService = new WebSocketService('ws://10.251.254.129:8081/ws')

@@ -1,13 +1,15 @@
 export interface Notification {
   id: number
-  userId: number
-  type: 'system' | 'message' | 'comment' | 'collaboration'
   content: string
-  isRead: boolean
   createdAt: string
+  isRead: boolean
+  type: 'message' | 'comment' | 'collaboration' | 'system'
+  userId: number
+  publicationId: number
+  avatarUrl: string
 }
 
 export interface WebSocketMessage {
-  type: 'notification' | 'connection' | 'error'
+  type: string
   data: unknown
 }

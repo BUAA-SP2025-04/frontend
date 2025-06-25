@@ -407,6 +407,8 @@ const logout = () => {
   localStorage.removeItem('token')
   userStore.clearUser()
   userStore.clearToken()
+  notificationStore.clearNotifications() // 清除通知
+  wsService.disconnect() // 断开 WebSocket 连接
   ElMessage.success('已退出登录')
   router.push('/login')
 }
@@ -436,10 +438,12 @@ const handleClickOutside = (event: Event) => {
 }
 
 onMounted(() => {
-  // 初始化 WebSocket 连接
-  notificationStore.initializeWebSocket()
-  // 获取历史通知
-  notificationStore.fetchHistoryNotifications()
+  // 如果已登录，初始化 WebSocket 连接
+  if (userStore.isAuthenticated && userStore.user?.id) {
+    notificationStore.initializeWebSocket()
+    // 获取历史通知
+    notificationStore.fetchHistoryNotifications()
+  }
   document.addEventListener('click', handleClickOutside)
 })
 
