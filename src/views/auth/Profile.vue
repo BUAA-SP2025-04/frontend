@@ -81,15 +81,15 @@
               <div class="grid grid-cols-3 gap-4 mt-6">
                 <div class="text-center">
                   <div class="text-2xl font-bold text-indigo-600">{{ userInfo.followerNum }}</div>
-                  <div class="text-xs text-gray-500">关注者</div>
+                  <div class="text-xs text-gray-500">关注数</div>
                 </div>
                 <div class="text-center">
                   <div class="text-2xl font-bold text-green-600">{{ userInfo.publishNum }}</div>
-                  <div class="text-xs text-gray-500">发布文章</div>
+                  <div class="text-xs text-gray-500">论文数</div>
                 </div>
                 <div class="text-center">
                   <div class="text-2xl font-bold text-purple-600">{{ userInfo.subjectNum }}</div>
-                  <div class="text-xs text-gray-500">研究主题</div>
+                  <div class="text-xs text-gray-500">项目数</div>
                 </div>
               </div>
             </div>
@@ -299,7 +299,12 @@
 <script setup lang="ts">
 import { ref, reactive, h, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { updateUserProfile, uploadUserImg, changeUserPassword } from '@/api/modules/user'
+import {
+  updateUserProfile,
+  uploadUserImg,
+  changeUserPassword,
+  getUserInfo,
+} from '@/api/modules/user'
 import { useUserStore } from '@/stores/user'
 
 // 图标组件
@@ -371,6 +376,11 @@ const tabs = [
   { id: 'privacy', name: '隐私设置', icon: PrivacyIcon },
 ]
 
+const genderMap = {
+  male: '男',
+  female: '女',
+}
+
 const userInfo = reactive({
   id: '',
   name: '',
@@ -414,7 +424,8 @@ const initUserInfo = () => {
     userInfo.id = String(userStore.user.id)
     userInfo.name = userStore.user.name || ''
     userInfo.email = userStore.user.email || ''
-    userInfo.gender = userStore.user.gender || ''
+    userInfo.gender =
+      genderMap[userStore.user.gender as keyof typeof genderMap] || userStore.user.gender || ''
     userInfo.title = userStore.user.title || ''
     userInfo.institution = userStore.user.institution || ''
     userInfo.imgUrl = userStore.user.imgUrl || ''
@@ -438,6 +449,17 @@ const saveProfile = async () => {
       researchArea: userInfo.researchArea,
       title: userInfo.title,
     })
+
+    // 直接合并新信息到 store
+    userStore.setUser({
+      ...userStore.user!,
+      bio: userInfo.bio,
+      researchArea: userInfo.researchArea,
+      title: userInfo.title,
+    })
+
+    initUserInfo() // 重新初始化显示
+
     ElMessage.success('个人资料保存成功')
   } catch (error) {
     ElMessage.error('保存失败，请重试')
@@ -504,6 +526,12 @@ const handleAvatarChange = async (e: Event) => {
   try {
     const res = await uploadUserImg(formData)
     userInfo.imgUrl = res.imgUrl
+
+    // 头像上传成功后也重新获取用户信息
+    const updatedUser = await getUserInfo()
+    userStore.setUser(updatedUser)
+    initUserInfo()
+
     ElMessage.success('头像上传成功')
   } catch (error) {
     ElMessage.error('头像上传失败')
