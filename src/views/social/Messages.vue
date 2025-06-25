@@ -785,23 +785,6 @@ const getNotificationTypeLabel = (type: string) => {
   return labels[type] || '系统通知'
 }
 
-const getActivityText = (type: string) => {
-  const texts = {
-    publish_paper: '发表了新论文',
-    start_project: '启动了新项目',
-    join_conference: '参加了会议',
-  }
-  return texts[type as keyof typeof texts] || '有新动态'
-}
-
-const getActivityLabel = (type: string) => {
-  const labels: Record<string, string> = {
-    publish_paper: '论文发表',
-    start_project: '项目启动',
-    join_conference: '会议参加',
-  }
-  return labels[type] || '动态'
-}
 
 const getEmptyStateText = () => {
   const texts = {
@@ -839,9 +822,14 @@ const formatTime = (dateString: string | Date) => {
 const openSettingsDialog = async () => {
   try {
     const response = await messagesAPI.getMessageSettings()
-    Object.assign(messageSettings, response.settings)
+    console.log('设置数据:', response) // 调试日志
+    
+    if (response && response.data && response.data.settings) {
+      Object.assign(messageSettings, response.data.settings)
+    }
     showSettingsDialog.value = true
   } catch (error) {
+    console.error('加载设置失败:', error)
     ElMessage.error('加载设置失败')
   }
 }
@@ -849,33 +837,201 @@ const openSettingsDialog = async () => {
 // 保存设置
 const saveSettings = async () => {
   try {
-    await messagesAPI.saveMessageSettings(messageSettings)
+    const res = await messagesAPI.saveMessageSettings(messageSettings)
+    console.log('保存设置响应:', res) // 调试日志
+    
     ElMessage.success('设置保存成功')
     showSettingsDialog.value = false
     loadCurrentCategory() // 重新加载消息，应用新的设置
   } catch (error) {
+    console.error('保存设置失败:', error)
     ElMessage.error('保存设置失败')
   }
 }
 
-// 加载当前分类数据
 const loadCurrentCategory = async () => {
   try {
     if (activeCategory.value === 'chat') {
       const res = await messagesAPI.getConversations()
-      conversations.value = res.list
-      messageCategories.value[0].unreadCount = res.unreadCount || 0
+      console.log('会话数据:', res) // 调试日志
+      
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          conversations.value = res.data
+          messageCategories.value[0].unreadCount = res.data.filter(conv => !conv.isRead).length
+        } else if (res.data.list) {
+          conversations.value = Array.isArray(res.data.list) ? res.data.list : []
+          messageCategories.value[0].unreadCount = res.data.unreadCount || 0
+        } else if (res.data.id) {
+          conversations.value = [res.data]
+          messageCategories.value[0].unreadCount = res.data.isRead ? 0 : 1
+        } else {
+          conversations.value = []
+          messageCategories.value[0].unreadCount = 0
+        }
+      } else {
+        conversations.value = []
+        messageCategories.value[0].unreadCount = 0
+      }
+      
     } else if (activeCategory.value === 'system') {
       const res = await messagesAPI.getSystemNotifications()
-      systemNotifications.value = res.list
-      messageCategories.value[1].unreadCount = res.unreadCount || 0
+      console.log('系统通知数据:', res) // 调试日志
+      
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          // 🔥 补充系统通知缺失的字段
+          systemNotifications.value = res.data.map(notif => ({
+            id: notif.id,
+            type: notif.type || 'system',
+            title: getNotificationTitle(notif.content, notif.type), // 🔥 根据内容生成标题
+            content: notif.content || '',
+            isRead: notif.isRead || false,
+            createdAt: notif.createdAt || new Date().toISOString(),
+            action: null // 🔥 后端没有action字段，设为null
+          }))
+          messageCategories.value[1].unreadCount = res.data.filter(notif => !notif.isRead).length
+        } else if (res.data.list) {
+          systemNotifications.value = Array.isArray(res.data.list) ? res.data.list : []
+          messageCategories.value[1].unreadCount = res.data.unreadCount || 0
+        } else if (res.data.id) {
+          systemNotifications.value = [res.data]
+          messageCategories.value[1].unreadCount = res.data.isRead ? 0 : 1
+        } else {
+          systemNotifications.value = []
+          messageCategories.value[1].unreadCount = 0
+        }
+      } else {
+        systemNotifications.value = []
+        messageCategories.value[1].unreadCount = 0
+      }
+      
     } else if (activeCategory.value === 'activity') {
       const res = await messagesAPI.getActivityNotifications()
-      activityNotifications.value = res.list
-      messageCategories.value[2].unreadCount = res.unreadCount || 0
+      console.log('动态通知数据:', res) // 调试日志
+      
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          // 🔥 关键修复：转换后端简化格式到前端期望格式
+          activityNotifications.value = res.data.map(activity => ({
+            id: activity.id,
+            type: parseActivityType(activity.content), // 🔥 从content解析活动类型
+            user: parseUserFromContent(activity.content,activity.userId), // 🔥 从content解析用户信息
+            content: parseContentFromActivity(activity.content), // 🔥 从content解析内容信息
+            isRead: activity.isRead || false,
+            createdAt: activity.createdAt || new Date().toISOString()
+          }))
+          messageCategories.value[2].unreadCount = res.data.filter(activity => !activity.isRead).length
+        } else if (res.data.list) {
+          activityNotifications.value = Array.isArray(res.data.list) ? res.data.list : []
+          messageCategories.value[2].unreadCount = res.data.unreadCount || 0
+        } else if (res.data.id) {
+          activityNotifications.value = [res.data]
+          messageCategories.value[2].unreadCount = res.data.isRead ? 0 : 1
+        } else {
+          activityNotifications.value = []
+          messageCategories.value[2].unreadCount = 0
+        }
+      } else {
+        activityNotifications.value = []
+        messageCategories.value[2].unreadCount = 0
+      }
     }
   } catch (error) {
+    console.error('加载消息失败:', error)
     ElMessage.error('加载消息失败')
+    
+    // 出错时设置空数组，避免undefined错误
+    if (activeCategory.value === 'chat') {
+      conversations.value = []
+    } else if (activeCategory.value === 'system') {
+      systemNotifications.value = []
+    } else if (activeCategory.value === 'activity') {
+      activityNotifications.value = []
+    }
+  }
+}
+
+// 🔥 新增辅助函数：根据内容生成系统通知标题
+const getNotificationTitle = (content: string, type: string) => {
+  if (content.includes('欢迎')) return '欢迎使用'
+  if (content.includes('安全')) return '安全提醒'
+  if (content.includes('更新')) return '系统更新'
+  if (content.includes('维护')) return '系统维护'
+  
+  // 根据类型生成默认标题
+  const titleMap: Record<string, string> = {
+    'system': '系统通知',
+    'security': '安全提醒',
+    'update': '系统更新'
+  }
+  return titleMap[type] || '系统通知'
+}
+
+// 🔥 新增辅助函数：从content解析活动类型
+const parseActivityType = (content: string) => {
+  if (content.includes('关注')) return 'follow'
+  if (content.includes('发表') || content.includes('论文')) return 'publish_paper'
+  if (content.includes('项目')) return 'start_project'
+  if (content.includes('会议')) return 'join_conference'
+  if (content.includes('点赞')) return 'like'
+  if (content.includes('评论')) return 'comment'
+  return 'follow' // 默认类型
+}
+
+// 🔥 新增辅助函数：从content解析用户信息
+const parseUserFromContent = (content: string,userId:number) => {
+  // 提取用户名，匹配 "用户XXX" 或 "XXX用户" 模式
+  const userMatch = content.match(/(用户\d+|用户[^关注点赞评论发表]+|[^关注点赞评论发表]+用户)/)
+  const userName = userMatch ? userMatch[0] : '未知用户'
+
+  
+  return {
+    id: userId, // 生成随机ID
+    name: userName,
+    avatar: '/default-avatar.png', // 默认头像
+    institution: '未知机构' // 默认机构
+  }
+}
+
+// 🔥 新增辅助函数：从content解析内容信息
+const parseContentFromActivity = (content: string) => {
+  // 根据活动类型生成对应的标题和描述
+  if (content.includes('关注')) {
+    return {
+      title: '新增关注',
+      description: content
+    }
+  } else if (content.includes('发表') || content.includes('论文')) {
+    return {
+      title: '发表论文',
+      description: content
+    }
+  } else if (content.includes('项目')) {
+    return {
+      title: '项目动态',
+      description: content
+    }
+  } else if (content.includes('会议')) {
+    return {
+      title: '会议活动',
+      description: content
+    }
+  } else if (content.includes('点赞')) {
+    return {
+      title: '获得点赞',
+      description: content
+    }
+  } else if (content.includes('评论')) {
+    return {
+      title: '新增评论',
+      description: content
+    }
+  }
+  
+  return {
+    title: '动态更新',
+    description: content
   }
 }
 
@@ -883,24 +1039,89 @@ const loadCurrentCategory = async () => {
 const loadAllFriends = async () => {
   try {
     const res = await messagesAPI.getFriends()
-    allFriends.value = res.list
+    console.log('好友数据:', res) // 调试日志
+    
+    if (res && res.data) {
+      if (Array.isArray(res.data)) {
+        // 🔥 补充好友列表缺失的字段
+        allFriends.value = res.data.map(friend => ({
+          id: friend.id,
+          name: friend.name || '未知用户',
+          avatar: friend.avatar || '/default-avatar.png', // 🔥 处理null头像
+          isOnline: friend.isOnline || false,
+          status: friend.isOnline ? '在线' : '离线', // 🔥 根据isOnline生成status
+          institution: friend.institution || '未知机构' // 🔥 补充institution字段
+        }))
+      } else if (res.data.list) {
+        allFriends.value = Array.isArray(res.data.list) ? res.data.list : []
+      } else if (res.data.id) {
+        // 单个好友对象，补充字段后包装成数组
+        allFriends.value = [{
+          id: res.data.id,
+          name: res.data.name || '未知用户',
+          avatar: res.data.avatar || '/default-avatar.png',
+          isOnline: res.data.isOnline || false,
+          status: res.data.isOnline ? '在线' : '离线',
+          institution: res.data.institution || '未知机构'
+        }]
+      } else {
+        allFriends.value = []
+      }
+    } else {
+      allFriends.value = []
+    }
   } catch (error) {
+    console.error('加载好友失败:', error)
     ElMessage.error('加载好友失败')
+    allFriends.value = []
   }
+}
+
+// 🔥 更新getActivityText函数，兼容新的活动类型
+const getActivityText = (type: string) => {
+  const texts: Record<string, string> = {
+    follow: '关注了你',
+    publish_paper: '发表了新论文',
+    start_project: '启动了新项目',
+    join_conference: '参加了会议',
+    like: '点赞了你的内容',
+    comment: '评论了你的内容'
+  }
+  return texts[type] || '有新动态'
+}
+
+// 🔥 更新getActivityLabel函数，兼容新的活动类型
+const getActivityLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    follow: '关注',
+    publish_paper: '论文发表',
+    start_project: '项目启动',
+    join_conference: '会议参加',
+    like: '点赞',
+    comment: '评论'
+  }
+  return labels[type] || '动态'
 }
 
 // 页面初始化
 onMounted(async () => {
+  console.log('Messages组件挂载，开始初始化') // 调试日志
+  
   // 先加载设置，但不显示对话框
   try {
     const response = await messagesAPI.getMessageSettings()
-    Object.assign(messageSettings, response.settings)
+    console.log('初始化设置数据:', response) // 调试日志
+    
+    if (response && response.data && response.data.settings) {
+      Object.assign(messageSettings, response.data.settings)
+    }
   } catch (error) {
-    console.warn('加载设置失败，使用默认设置')
+    console.warn('加载设置失败，使用默认设置:', error)
   }
 
   // 并行加载数据
   await Promise.all([loadCurrentCategory(), loadAllFriends()])
+  console.log('Messages组件初始化完成') // 调试日志
 })
 </script>
 

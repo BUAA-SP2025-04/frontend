@@ -1293,7 +1293,6 @@ const markAsRead = () => {
   }
 }
 
-// 其他辅助方法保持不变...
 const handleShiftEnter = (event: KeyboardEvent) => {
   const textarea = event.target as HTMLTextAreaElement
   const start = textarea.selectionStart
