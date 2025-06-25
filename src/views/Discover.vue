@@ -879,7 +879,7 @@ const selectSuggestion = (suggestion: string) => {
 }
 
 const handlePageChange = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  window.scrollTo({ top: 450, behavior: 'smooth' })
 }
 
 const getSearchPlaceholder = () => {
