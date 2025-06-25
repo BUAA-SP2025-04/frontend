@@ -43,7 +43,12 @@ export const useNotificationStore = defineStore('notification', () => {
     } else {
       switch (message.type) {
         case 'notification':
-          handleNewNotification(message.data)
+          // 添加类型检查，确保 data 是 Notification 类型
+          if (message.data && typeof message.data === 'object' && 'id' in message.data) {
+            handleNewNotification(message.data as Notification)
+          } else {
+            console.warn('收到无效的通知数据:', message.data)
+          }
           break
         case 'error':
           console.error('WebSocket 错误:', message.data)
