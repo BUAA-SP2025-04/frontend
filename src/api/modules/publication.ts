@@ -1,12 +1,12 @@
 import request from '@/utils/request'
 import type {
+  CreatePublicationCommentRequest,
+  CreatePublicationCommentResponse,
+  PublicationCommentResponse,
+  PublicationInformResponse,
   PublicationListResponse,
   PublicationStatsResponse,
   SavePublicationRequest,
-  PublicationInformResponse,
-  PublicationCommentResponse,
-  CreatePublicationCommentRequest,
-  CreatePublicationCommentResponse,
 } from '@/api/types/publication'
 import type { EmptyResponse, UploadResponse } from '@/api/types/utils'
 
@@ -46,6 +46,10 @@ export function deletePublicationFile(oldFilePath: string): Promise<EmptyRespons
   return request.post('/publication/deleteFile', null, {
     params: { oldFilePath },
   })
+}
+
+export function getPublicationFile(pdfUrl: string): Promise<Blob> {
+  return request.get(pdfUrl, { responseType: 'blob' })
 }
 
 export function getPublicationInformById(id: number | string): Promise<PublicationInformResponse> {

@@ -6,7 +6,7 @@
         <div class="flex flex-col md:flex-row items-start gap-8">
           <img
             v-if="user.imgUrl && user.imgUrl !== ''"
-            :src="user.imgUrl"
+            :src="'/api' + user.imgUrl"
             :alt="user.name || '用户头像'"
             class="w-32 h-32 rounded-full object-cover shadow-lg relative"
             @error="handleImageError"
@@ -164,7 +164,7 @@
                   <span
                     v-if="paper.status && paper.status.trim() !== ''"
                     class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium"
-                    >{{ paper.status }}</span
+                    >{{ getStatusLabel(paper.status) }}</span
                   >
                   <span
                     v-if="paper.year && paper.year.toString().trim() !== ''"
@@ -268,6 +268,17 @@ onMounted(async () => {
     const response = await getUserDetail(userId as string)
     if (response.data) {
       user.value = response.data
+      // 获取是否关注
+      try {
+        const followRes = await getIfFollow(response.data.id)
+        if (followRes && typeof followRes.data === 'boolean') {
+          isFollowing.value = followRes.data
+        } else {
+          isFollowing.value = false
+        }
+      } catch (e) {
+        isFollowing.value = false
+      }
       // 获取论文数据
       const paperRes = await getUserPapers(response.data.id)
       console.log(paperRes)
@@ -337,7 +348,8 @@ const handleFollowAction = async () => {
         user.value = userResponse.data
       }
     } catch (e) {
-      ElMessage.error('操作失败，请稍后重试')
+      // ElMessage.error('操作失败，请稍后重试')
+      console.log(e)
     }
   }
 }
@@ -373,9 +385,19 @@ function getAuthors(authors: string | undefined): string[] {
 
 function handleImageError(event: Event) {
   const target = event.target as HTMLImageElement
-  if (target) {
+  if (target && !target.src.endsWith('/default-avatar.png')) {
     target.src = '/default-avatar.png'
   }
+}
+
+function getStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    published: '已发表',
+    accepted: '待发表',
+    'under-review': '审核中',
+    draft: '草稿',
+  }
+  return labels[status] || status
 }
 </script>
 
