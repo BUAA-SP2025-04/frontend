@@ -596,7 +596,8 @@ const replyToComment = (comment: PublicationComment) => {
 
 const openPdf = () => {
   if (publication.value?.pdfUrl) {
-    window.open(publication.value.pdfUrl, '_blank')
+    console.log(publication.value.pdfUrl)
+    router.push({ path: '/pdf-reader', query: { url: publication.value.pdfUrl } })
   }
 }
 

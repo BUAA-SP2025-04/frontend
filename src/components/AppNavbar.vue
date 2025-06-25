@@ -57,7 +57,7 @@
               文献库
             </router-link> --->
 
-            <router-link
+            <!-- <router-link
               to="/pdf-reader"
               :class="[
                 'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
@@ -67,9 +67,9 @@
               ]"
             >
               PDF阅读器
-            </router-link>
+            </router-link> -->
 
-            <router-link
+            <!-- <router-link
               to="/visualization"
               :class="[
                 'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
@@ -79,7 +79,7 @@
               ]"
             >
               数据可视化
-            </router-link>
+            </router-link> -->
           </div>
         </div>
 
@@ -215,7 +215,7 @@
                   科研成果
                 </router-link>
 
-                <router-link
+                <!-- <router-link
                   to="/follow"
                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 >
@@ -228,7 +228,7 @@
                     />
                   </svg>
                   我的关注
-                </router-link>
+                </router-link> -->
 
                 <div class="border-t border-gray-100"></div>
 
