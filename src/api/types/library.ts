@@ -20,21 +20,21 @@ export interface Folder {
 }
 
 export interface CreatePaperRequest {
-    "type": string,
-    "title": string,
-    "authors"?: string[],
-    "venue"?: string,
-    "year"?: string,
-    "abstract"?: string,
-    "keywords"?: string[],
-    "doi"?: string,
-    "pdfUrl"?: string,
-    "status"?: string,
-    "isPublic"?:0
+  type: string
+  title: string
+  authors?: string[]
+  venue?: string
+  year?: string
+  abstract?: string
+  keywords?: string[]
+  doi?: string
+  pdfUrl?: string
+  status?: string
+  isPublic?: 0
 }
 
 // 响应类型
-export type GetListResponse = FavoritePaper[];
-export type GetCategoryListResponse = Folder[];
-export type CreateCategoryResponse = number;
-export type CreatePaperResponse = number;
+export type GetListResponse = FavoritePaper[]
+export type GetCategoryListResponse = Folder[]
+export type CreateCategoryResponse = number
+export type CreatePaperResponse = number

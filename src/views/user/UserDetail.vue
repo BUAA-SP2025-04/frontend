@@ -9,7 +9,7 @@
             :src="user.imgUrl"
             :alt="user.name || '用户头像'"
             class="w-32 h-32 rounded-full object-cover shadow-lg relative"
-            @error="$event.target.src = '/default-avatar.png'"
+            @error="handleImageError"
           />
           <div
             v-else
@@ -176,10 +176,7 @@
                 <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2">
                   <span>作者：</span>
                   <span
-                    v-for="author in (paper.authors || '')
-                      .split(',')
-                      .map(author => author.trim())
-                      .filter(author => author && author !== '')"
+                    v-for="author in getAuthors(paper.authors)"
                     :key="author"
                     class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium"
                     >{{ author }}</span
@@ -298,13 +295,7 @@ onMounted(async () => {
           .filter(paper => paper && typeof paper === 'object' && paper.id) // 确保paper是有效对象
           .map(paper => {
             // 确保authors字段是字符串格式
-            if (paper.authors && Array.isArray(paper.authors)) {
-              paper.authors = paper.authors
-                .map((author: any) =>
-                  typeof author === 'object' && author.name ? author.name : String(author)
-                )
-                .join(', ')
-            } else if (!paper.authors || typeof paper.authors !== 'string') {
+            if (!paper.authors || typeof paper.authors !== 'string') {
               paper.authors = ''
             }
             return paper
@@ -388,14 +379,26 @@ const showPaperDetail = (paper: Paper) => {
     // 为publicationDetail组件准备数据格式
     const formattedPaper = {
       ...paper,
-      // 如果authors是字符串，转换为数组格式
-      authors:
-        typeof paper.authors === 'string'
-          ? paper.authors.split(',').map((author: string) => ({ name: author.trim() }))
-          : paper.authors || [],
+      // authors 保持为字符串类型
+      authors: paper.authors || '',
     }
     currentPaper.value = formattedPaper
     detailDialogVisible.value = true
+  }
+}
+
+function getAuthors(authors: string | undefined): string[] {
+  if (!authors || authors.trim() === '') return []
+  return authors
+    .split(',')
+    .map(a => a.trim())
+    .filter(Boolean)
+}
+
+function handleImageError(event: Event) {
+  const target = event.target as HTMLImageElement
+  if (target) {
+    target.src = '/default-avatar.png'
   }
 }
 </script>
@@ -443,9 +446,7 @@ const showPaperDetail = (paper: Paper) => {
   height: 34px;
   min-height: 34px;
   line-height: 34px;
-  transition:
-    background 0.3s,
-    transform 0.2s;
+  transition: background 0.3s, transform 0.2s;
 }
 .follow-btn:hover {
   background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);

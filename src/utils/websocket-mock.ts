@@ -60,9 +60,9 @@ export class MockWebSocketService {
           fileInfo: data.fileInfo,
           status: 'sent',
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         },
-        tempId: data.tempId
+        tempId: data.tempId,
       })
     }, 300)
 
@@ -83,12 +83,12 @@ export class MockWebSocketService {
       '😊',
       '有时间详细讨论一下',
       '我也是这么想的',
-      '确实如此'
+      '确实如此',
     ]
 
     // 智能回复逻辑
     let reply = replies[Math.floor(Math.random() * replies.length)]
-    
+
     if (originalContent.includes('你好') || originalContent.includes('hi')) {
       reply = '你好！很高兴认识你'
     } else if (originalContent.includes('谢谢') || originalContent.includes('感谢')) {
@@ -98,37 +98,43 @@ export class MockWebSocketService {
     }
 
     // 延迟回复（模拟真实用户）
-    setTimeout(() => {
-      // 先发送正在输入状态
-      this.emit('typing_status', {
-        userId: this.mockUserId,
-        conversationId,
-        isTyping: true
-      })
-
-      // 再发送消息
-      setTimeout(() => {
+    setTimeout(
+      () => {
+        // 先发送正在输入状态
         this.emit('typing_status', {
           userId: this.mockUserId,
           conversationId,
-          isTyping: false
+          isTyping: true,
         })
 
-        this.emit('new_message', {
-          message: {
-            id: `reply_${Date.now()}`,
-            conversationId,
-            senderId: this.mockUserId,
-            receiverId: 1,
-            type: 'text',
-            content: reply,
-            status: 'sent',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
-        })
-      }, 1000 + Math.random() * 2000) // 1-3秒打字时间
-    }, 500 + Math.random() * 1500) // 0.5-2秒反应时间
+        // 再发送消息
+        setTimeout(
+          () => {
+            this.emit('typing_status', {
+              userId: this.mockUserId,
+              conversationId,
+              isTyping: false,
+            })
+
+            this.emit('new_message', {
+              message: {
+                id: `reply_${Date.now()}`,
+                conversationId,
+                senderId: this.mockUserId,
+                receiverId: 1,
+                type: 'text',
+                content: reply,
+                status: 'sent',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+            })
+          },
+          1000 + Math.random() * 2000
+        ) // 1-3秒打字时间
+      },
+      500 + Math.random() * 1500
+    ) // 0.5-2秒反应时间
   }
 
   private handleTypingStatus(message: any) {
@@ -138,14 +144,14 @@ export class MockWebSocketService {
         this.emit('typing_status', {
           userId: this.mockUserId,
           conversationId: message.data.conversationId,
-          isTyping: true
+          isTyping: true,
         })
 
         setTimeout(() => {
           this.emit('typing_status', {
             userId: this.mockUserId,
             conversationId: message.data.conversationId,
-            isTyping: false
+            isTyping: false,
           })
         }, 2000)
       }, 1000)
@@ -158,7 +164,7 @@ export class MockWebSocketService {
       this.emit('read_status', {
         conversationId: message.data.conversationId,
         messageIds: message.data.messageIds,
-        readBy: this.mockUserId
+        readBy: this.mockUserId,
       })
     }, 500)
   }
@@ -183,24 +189,25 @@ export class MockWebSocketService {
       this.emit('user_status', {
         userId: this.mockUserId,
         isOnline: Math.random() > 0.3,
-        lastSeen: new Date().toISOString()
+        lastSeen: new Date().toISOString(),
       })
     }, 60000) // 每分钟随机变化
 
     // 随机接收消息（很低概率）
     setInterval(() => {
-      if (Math.random() < 0.05) { // 5%概率
+      if (Math.random() < 0.05) {
+        // 5%概率
         const randomMessages = [
           '在吗？',
           '最近怎么样？',
           '有个问题想请教你',
           '分享一个有趣的发现',
           '😊',
-          '晚安'
+          '晚安',
         ]
-        
+
         const randomMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)]
-        
+
         this.emit('new_message', {
           message: {
             id: `random_${Date.now()}`,
@@ -211,8 +218,8 @@ export class MockWebSocketService {
             content: randomMessage,
             status: 'sent',
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
+            updatedAt: new Date().toISOString(),
+          },
         })
       }
     }, 30000) // 每30秒检查一次
