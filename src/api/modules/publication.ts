@@ -4,7 +4,7 @@ import type {
   PublicationStatsResponse,
   SavePublicationRequest,
 } from '@/api/types/publication'
-import type { EmptyResponse } from '@/api/types/utils'
+import type { EmptyResponse, UploadResponse } from '@/api/types/utils'
 
 export function savePublication(url: string, data: SavePublicationRequest): Promise<EmptyResponse> {
   return request.post(url, data)
@@ -21,7 +21,25 @@ export function getPublicationsByUser(id: number | string): Promise<PublicationL
 }
 
 export function getPublicationStatsByUser(id: number | string): Promise<PublicationStatsResponse> {
-  return request.get('/publication/getStatsByUserId', {
+  return request.get('/researcher/getStatsByUserId', {
     params: { id },
+  })
+}
+
+export function uploadPublicationFile(formData: FormData): Promise<UploadResponse> {
+  return request.post('/publication/uploadFile', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
+export function updatePublicationFile(formData: FormData): Promise<EmptyResponse> {
+  return request.post('/publication/updateFile', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
+export function deletePublicationFile(oldFilePath: string): Promise<EmptyResponse> {
+  return request.post('/application/deleteFile', {
+    params: { oldFilePath },
   })
 }
