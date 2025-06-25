@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { useGlobalStore } from '@/stores/global'
 
 const routes: RouteRecordRaw[] = [
@@ -18,6 +18,9 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: 'PDF阅读器',
     },
+    props: route => ({
+      url: route.query.url,
+    }),
   },
   {
     path: '/login',
