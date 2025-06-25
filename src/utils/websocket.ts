@@ -2,8 +2,15 @@ import type { WebSocketMessage } from '@/api/types/notification'
 
 export interface ChatMessage {
   type: 'message' | 'typing' | 'read' | 'online_status' | 'error' | 'ping' | 'pong'
-  data: any
+  data: Record<string, unknown>
   timestamp: string
+}
+
+export interface FileInfo {
+  fileName: string
+  fileSize: number
+  fileType: string
+  fileUrl?: string
 }
 
 export class WebSocketService {
@@ -13,18 +20,17 @@ export class WebSocketService {
   private readonly maxReconnectAttempts = 5
   private reconnectTimeout: number = 1000
   private heartbeatTimer: number | null = null
-  private listeners: { [key: string]: Function[] } = {}
+  private listeners: { [key: string]: ((data?: unknown) => void)[] } = {}
   private token: string = ''
 
   constructor(url: string) {
     this.url = url
   }
 
-  // 连接方法 - 增强版
-  connect(token: string) {
-    this.token = token
+  // 连接方法
+  connect(userId: string) {
     try {
-      this.ws = new WebSocket(`${this.url}?token=${token}`)
+      this.ws = new WebSocket(`${this.url}?userId=${userId}`)
 
       this.ws.onopen = () => {
         console.log('WebSocket 连接成功')
@@ -33,18 +39,18 @@ export class WebSocketService {
         this.emit('connected')
       }
 
-      this.ws.onmessage = (event) => {
+      this.ws.onmessage = event => {
         try {
           const message = JSON.parse(event.data)
-          
+
           // 处理心跳响应
           if (message.type === 'pong') {
             return
           }
-          
+
           // 触发对应的监听器
           this.emit(message.type, message.data)
-          
+
           // 兼容旧的通知系统
           if (message.type === 'notification') {
             this.emit('message', message as WebSocketMessage)
@@ -54,14 +60,14 @@ export class WebSocketService {
         }
       }
 
-      this.ws.onclose = (event) => {
+      this.ws.onclose = event => {
         console.log('WebSocket 连接关闭', event.code, event.reason)
         this.stopHeartbeat()
         this.emit('disconnected')
-        
+
         // 非主动关闭时尝试重连
         if (event.code !== 1000) {
-          this.reconnect()
+          this.reconnect(userId)
         }
       }
 
@@ -71,17 +77,17 @@ export class WebSocketService {
       }
     } catch (error) {
       console.error('WebSocket 连接失败:', error)
-      this.reconnect()
+      this.reconnect(userId)
     }
   }
 
   // 重连方法
-  private reconnect() {
+  private reconnect(userId: string) {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++
       console.log(`尝试重连... 第 ${this.reconnectAttempts} 次`)
       setTimeout(() => {
-        this.connect(this.token || localStorage.getItem('token') || '')
+        this.connect(userId)
       }, this.reconnectTimeout * this.reconnectAttempts)
     } else {
       console.error('达到最大重连次数，停止重连')
@@ -93,10 +99,10 @@ export class WebSocketService {
   private startHeartbeat() {
     this.heartbeatTimer = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
-        this.send({ 
-          type: 'ping', 
-          data: {}, 
-          timestamp: new Date().toISOString() 
+        this.send({
+          type: 'ping',
+          data: {},
+          timestamp: new Date().toISOString(),
         })
       }
     }, 30000) as unknown as number // 30秒心跳
@@ -127,13 +133,13 @@ export class WebSocketService {
         conversationId,
         type: 'text',
         content,
-        tempId
+        tempId,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   }
 
-  sendFileMessage(conversationId: string, fileInfo: any, tempId: string) {
+  sendFileMessage(conversationId: string, fileInfo: FileInfo, tempId: string) {
     this.send({
       type: 'message',
       data: {
@@ -141,9 +147,9 @@ export class WebSocketService {
         type: 'file',
         content: fileInfo.fileName,
         fileInfo,
-        tempId
+        tempId,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   }
 
@@ -152,9 +158,9 @@ export class WebSocketService {
       type: 'typing',
       data: {
         conversationId,
-        isTyping
+        isTyping,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   }
 
@@ -163,27 +169,27 @@ export class WebSocketService {
       type: 'read',
       data: {
         conversationId,
-        messageIds
+        messageIds,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   }
 
   // 事件监听系统
-  on(event: string, callback: Function) {
+  on(event: string, callback: (data?: unknown) => void) {
     if (!this.listeners[event]) {
       this.listeners[event] = []
     }
     this.listeners[event].push(callback)
   }
 
-  off(event: string, callback: Function) {
+  off(event: string, callback: (data?: unknown) => void) {
     if (this.listeners[event]) {
       this.listeners[event] = this.listeners[event].filter(cb => cb !== callback)
     }
   }
 
-  private emit(event: string, data?: any) {
+  private emit(event: string, data?: unknown) {
     if (this.listeners[event]) {
       this.listeners[event].forEach(callback => callback(data))
     }
@@ -191,7 +197,11 @@ export class WebSocketService {
 
   // 兼容旧版本的消息监听器
   onMessage(callback: (message: WebSocketMessage) => void) {
-    this.on('message', callback)
+    this.on('message', data => {
+      if (data && typeof data === 'object' && 'type' in data) {
+        callback(data as WebSocketMessage)
+      }
+    })
   }
 
   // 获取连接状态
@@ -216,6 +226,4 @@ export class WebSocketService {
 }
 
 // 创建单例 - 保持兼容
-export const wsService = new WebSocketService(
-  import.meta.env.VITE_WS_URL || 'ws://localhost:3001'
-)
+export const wsService = new WebSocketService(import.meta.env.VITE_WS_URL || 'ws://localhost:3001')

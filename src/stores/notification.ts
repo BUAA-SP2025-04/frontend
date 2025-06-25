@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import type { Notification, WebSocketMessage } from '@/api/types/notification'
 import { wsService } from '@/utils/websocket'
 import request from '@/utils/request'
+import { useUserStore } from './user'
 
 export const useNotificationStore = defineStore('notification', () => {
   const notifications = ref<Notification[]>([])
@@ -10,29 +11,54 @@ export const useNotificationStore = defineStore('notification', () => {
 
   // 初始化 WebSocket 连接
   function initializeWebSocket() {
-    const token = localStorage.getItem('token')
-    if (token) {
-      wsService.connect(token)
+    const userStore = useUserStore()
+    console.log('初始化WebSocket', userStore.user)
+    if (userStore.user?.id) {
+      wsService.connect(String(userStore.user.id))
       wsService.onMessage(handleWebSocketMessage)
     }
   }
 
   // 处理 WebSocket 消息
   function handleWebSocketMessage(message: WebSocketMessage) {
-    switch (message.type) {
-      case 'notification':
-        handleNewNotification(message.data)
-        break
-      case 'error':
-        console.error('WebSocket 错误:', message.data)
-        break
-      // 处理其他类型的消息
+    console.log('收到WebSocket消息:', message)
+    // 假设消息格式为 { type: string, data: any }
+    if (typeof message === 'string') {
+      try {
+        const notification: Notification = {
+          id: Date.now(), // 临时 ID
+          content: message,
+          createdAt: new Date().toISOString(),
+          isRead: false,
+          type: 'system',
+          userId: 0,
+          publicationId: 0,
+          avatarUrl: '',
+        }
+        console.log(message)
+        handleNewNotification(notification)
+      } catch (error) {
+        console.error('解析消息失败:', error)
+      }
+    } else {
+      switch (message.type) {
+        case 'notification':
+          // 添加类型检查，确保 data 是 Notification 类型
+          if (message.data && typeof message.data === 'object' && 'id' in message.data) {
+            handleNewNotification(message.data as Notification)
+          } else {
+            console.warn('收到无效的通知数据:', message.data)
+          }
+          break
+        case 'error':
+          console.error('WebSocket 错误:', message.data)
+          break
+      }
     }
   }
 
   // 处理新通知
-  function handleNewNotification(data: unknown) {
-    const notification = data as Notification
+  function handleNewNotification(notification: Notification) {
     notifications.value.unshift(notification)
     if (!notification.isRead) {
       unreadCount.value++
@@ -64,11 +90,18 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
+  // 清除所有通知
+  function clearNotifications() {
+    notifications.value = []
+    unreadCount.value = 0
+  }
+
   return {
     notifications,
     unreadCount,
     initializeWebSocket,
     markAsRead,
     fetchHistoryNotifications,
+    clearNotifications,
   }
 })
