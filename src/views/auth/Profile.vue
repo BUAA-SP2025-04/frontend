@@ -177,7 +177,37 @@
                     <el-option label="生物信息学" value="生物信息学" />
                     <el-option label="物理学" value="物理学" />
                     <el-option label="化学" value="化学" />
-                  </el-select>
+                    <el-option label="数学" value="数学" />
+                    <el-option label="材料科学" value="材料科学" />
+                    <el-option label="环境科学" value="环境科学" />
+                    <el-option label="地球科学" value="地球科学" />
+                    <el-option label="天文学" value="天文学" />
+                    <el-option label="医学" value="医学" />
+                    <el-option label="药学" value="药学" />
+                    <el-option label="心理学" value="心理学" />
+                    <el-option label="社会学" value="社会学" />
+                    <el-option label="经济学" value="经济学" />
+                    <el-option label="管理学" value="管理学" />
+                    <el-option label="法学" value="法学" />
+                    <el-option label="教育学" value="教育学" />
+                    <el-option label="历史学" value="历史学" />
+                    <el-option label="哲学" value="哲学" />
+                    <el-option label="语言学" value="语言学" />
+                    <el-option label="政治学" value="政治学" />
+                    <el-option label="艺术学" value="艺术学" />
+                    <el-option label="农学" value="农学" />
+                    <el-option label="工程学" value="工程学" />
+                    <el-option label="电子科学" value="电子科学" />
+                    <el-option label="自动化" value="自动化" />
+                    <el-option label="交通运输" value="交通运输" />
+                    <el-option label="能源科学" value="能源科学" />
+                    <el-option label="海洋科学" value="海洋科学" />
+                    <el-option label="统计学" value="统计学" />
+                    <el-option label="信息科学" value="信息科学" />
+                    <el-option label="新闻传播学" value="新闻传播学" />
+                    <el-option label="体育学" value="体育学" />
+                    <el-option label="其他" value="其他" />
+                    </el-select>
                 </el-form-item>
 
                 <div class="flex justify-end space-x-4">
