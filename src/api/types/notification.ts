@@ -1,6 +1,7 @@
 export interface Notification {
   id: number
   content: string
+  name: string
   createdAt: string
   isRead: boolean
   type: 'comment' | 'activity' | 'system'
@@ -12,6 +13,7 @@ export interface Notification {
 
 export interface WebSocketNotification {
   avatarUrl: string
+  name: string
   notification: {
     id: number
     userId: number

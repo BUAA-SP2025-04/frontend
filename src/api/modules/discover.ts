@@ -34,6 +34,6 @@ export function searchResearchersByTitle(params: { title: string }) {
 
 export function searchCasually(data: any) {
   return request.post('/researcher/searchCasually', {
-    data,
+    ...data,
   })
 }

@@ -58,6 +58,10 @@ export function getPublicationInformById(id: number | string): Promise<Publicati
   })
 }
 
+export function readPublication(id: number | string): Promise<any> {
+  return request.post('/publication/read', { id })
+}
+
 // 成果评论相关API
 export function getPublicationComments(
   publicationId: number | string,
