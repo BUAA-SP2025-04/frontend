@@ -254,16 +254,11 @@
           <div v-else class="flex items-center space-x-3">
             <router-link
               to="/login"
-              class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium transition-colors"
+              class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-5 py-2 text-sm font-semibold rounded-full shadow-sm border border-indigo-200 transition-all duration-200"
             >
-              登录
+              登录/注册
             </router-link>
-            <router-link
-              to="/register"
-              class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-medium rounded-md transition-colors"
-            >
-              注册
-            </router-link>
+
           </div>
 
           <!-- 移动端菜单按钮 -->
