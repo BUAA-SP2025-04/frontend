@@ -1101,9 +1101,14 @@ const deletePaper = async (paperId: number) => {
     try {
       const folder = folders.value.find(f => f.id === papers.value.find(p => p.id === paperId)?.folderId)
       if(folder?.count!=undefined) folder.count-=1
-      await libraryAPI.deletePaper(userId, paperId.toString())
       let paper = papers.value.find(p => p.id === paperId)
       if(paper && paper.pdfUrl) await libraryAPI.deleteUrlFile(paper.pdfUrl)
+      await libraryAPI.deletePaper(userId, paperId.toString())
+      records.value.forEach(async r => {
+        if (r.paperId === paperId.toString()) {
+          await libraryAPI.deleteRecord(parseInt(r.id))
+        }
+      })
       papers.value = papers.value.filter(p => p.id !== paperId)
       ElMessage.success('删除成功')
     } catch (error) {
