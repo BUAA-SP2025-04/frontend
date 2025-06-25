@@ -9,7 +9,7 @@
             :src="user.imgUrl"
             :alt="user.name || '用户头像'"
             class="w-32 h-32 rounded-full object-cover shadow-lg relative"
-            @error="$event.target.src = '/default-avatar.png'"
+            @error="handleImageError"
           />
           <div
             v-else
@@ -176,10 +176,7 @@
                 <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2">
                   <span>作者：</span>
                   <span
-                    v-for="author in (paper.authors || '')
-                      .split(',')
-                      .map(author => author.trim())
-                      .filter(author => author && author !== '')"
+                    v-for="author in getAuthors(paper.authors)"
                     :key="author"
                     class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium"
                     >{{ author }}</span
@@ -242,11 +239,6 @@
           </div>
         </div>
         <div v-else class="text-gray-400 text-center py-8 text-base">暂无论文数据</div>
-        <publicationDetail
-          v-if="currentPaper"
-          :achievement="currentPaper"
-          v-model:visible="detailDialogVisible"
-        />
       </div>
     </div>
   </div>
@@ -260,7 +252,6 @@ import type { UserDetail, Paper } from '@/api/types/user'
 import { Male, Female, UserFilled, CircleCheckFilled, Plus, Close } from '@element-plus/icons-vue'
 import { ElIcon, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import publicationDetail from '@/components/publicationDetail.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -268,8 +259,6 @@ const userStore = useUserStore()
 
 const user = ref<UserDetail | null>(null)
 const papers = ref<Paper[]>([])
-const detailDialogVisible = ref(false)
-const currentPaper = ref<Paper | null>(null)
 const isFollowing = ref(false)
 const showFullBio = ref(false)
 
@@ -279,16 +268,6 @@ onMounted(async () => {
     const response = await getUserDetail(userId as string)
     if (response.data) {
       user.value = response.data
-      // // 检查是否已关注该用户
-      // try {
-      //   const followResponse = await getIfFollow(response.data.id)
-      //   if (followResponse.data) {
-      //     isFollowing.value = followResponse.data
-      //   }
-      // } catch (followError) {
-      //   console.error('检查关注状态失败:', followError)
-      //   isFollowing.value = false
-      // }
       // 获取论文数据
       const paperRes = await getUserPapers(response.data.id)
       console.log(paperRes)
@@ -298,13 +277,7 @@ onMounted(async () => {
           .filter(paper => paper && typeof paper === 'object' && paper.id) // 确保paper是有效对象
           .map(paper => {
             // 确保authors字段是字符串格式
-            if (paper.authors && Array.isArray(paper.authors)) {
-              paper.authors = paper.authors
-                .map((author: any) =>
-                  typeof author === 'object' && author.name ? author.name : String(author)
-                )
-                .join(', ')
-            } else if (!paper.authors || typeof paper.authors !== 'string') {
+            if (!paper.authors || typeof paper.authors !== 'string') {
               paper.authors = ''
             }
             return paper
@@ -385,17 +358,23 @@ function formatNumber(num: number | null | undefined): string {
 
 const showPaperDetail = (paper: Paper) => {
   if (paper && paper.id) {
-    // 为publicationDetail组件准备数据格式
-    const formattedPaper = {
-      ...paper,
-      // 如果authors是字符串，转换为数组格式
-      authors:
-        typeof paper.authors === 'string'
-          ? paper.authors.split(',').map((author: string) => ({ name: author.trim() }))
-          : paper.authors || [],
-    }
-    currentPaper.value = formattedPaper
-    detailDialogVisible.value = true
+    // 跳转到成果详情页面
+    router.push(`/publication/${paper.id}`)
+  }
+}
+
+function getAuthors(authors: string | undefined): string[] {
+  if (!authors || authors.trim() === '') return []
+  return authors
+    .split(',')
+    .map(a => a.trim())
+    .filter(Boolean)
+}
+
+function handleImageError(event: Event) {
+  const target = event.target as HTMLImageElement
+  if (target) {
+    target.src = '/default-avatar.png'
   }
 }
 </script>
@@ -443,9 +422,7 @@ const showPaperDetail = (paper: Paper) => {
   height: 34px;
   min-height: 34px;
   line-height: 34px;
-  transition:
-    background 0.3s,
-    transform 0.2s;
+  transition: background 0.3s, transform 0.2s;
 }
 .follow-btn:hover {
   background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);

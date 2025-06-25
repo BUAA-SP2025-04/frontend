@@ -5,7 +5,7 @@
       <div class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-100">
         <div class="max-w-4xl mx-auto">
           <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">发现科研人员</h2>
-          <div class="flex flex-col sm:flex-row gap-4">
+          <div v-if="!isAdvancedSearch" class="flex flex-col sm:flex-row gap-4">
             <!-- 搜索范围选择器 -->
             <div class="relative">
               <select
@@ -80,10 +80,73 @@
               </svg>
               搜索
             </button>
+            <button
+              @click="isAdvancedSearch = true"
+              class="ml-2 text-indigo-600 hover:text-indigo-800 font-semibold underline transition-all duration-200"
+              type="button"
+            >
+              组合搜索
+            </button>
+          </div>
+
+          <!-- 高级搜索表单 -->
+          <div v-else class="space-y-4 animate-fade-in-down">
+            <div class="flex flex-col sm:flex-row gap-4 items-center">
+              <label class="w-32 text-right text-gray-700 font-medium">作者名：</label>
+              <input
+                v-model="advancedSearch.name"
+                type="text"
+                placeholder="请输入作者名"
+                class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-medium"
+              />
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 items-center">
+              <label class="w-32 text-right text-gray-700 font-medium">研究领域：</label>
+              <input
+                v-model="advancedSearch.field"
+                type="text"
+                placeholder="请输入研究领域"
+                class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-medium"
+              />
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 items-center">
+              <label class="w-32 text-right text-gray-700 font-medium">机构：</label>
+              <input
+                v-model="advancedSearch.institution"
+                type="text"
+                placeholder="请输入机构名称"
+                class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-medium"
+              />
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 items-center">
+              <label class="w-32 text-right text-gray-700 font-medium">职称：</label>
+              <input
+                v-model="advancedSearch.title"
+                type="text"
+                placeholder="请输入职称"
+                class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-medium"
+              />
+            </div>
+            <div class="flex gap-4 justify-center mt-4">
+              <button
+                @click="performAdvancedSearch"
+                class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg flex items-center gap-2"
+              >
+                <el-icon><Search /></el-icon>
+                搜索
+              </button>
+              <button
+                @click="isAdvancedSearch = false"
+                class="flex items-center gap-2 px-8 py-3 bg-white border-2 border-indigo-300 text-indigo-700 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:bg-indigo-50 hover:border-indigo-500 shadow"
+              >
+                <el-icon><Back /></el-icon>
+                返回普通搜索
+              </button>
+            </div>
           </div>
 
           <!-- 搜索建议标签 -->
-          <div class="mt-4 flex flex-wrap gap-2 justify-center">
+          <div v-if="!isAdvancedSearch" class="mt-4 flex flex-wrap gap-2 justify-center">
             <button
               v-for="suggestion in searchSuggestions"
               :key="suggestion"
@@ -391,7 +454,7 @@
                       :src="user.imgUrl || '/default-avatar.png'"
                       :alt="user.name || '未知用户'"
                       class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 group-hover:border-indigo-200 transition-colors"
-                      @error="$event.target.src = '/default-avatar.png'"
+                      @error="handleImageError"
                     />
                     <el-icon
                       v-if="user.gender === '男' || user.gender === 'male'"
@@ -588,6 +651,7 @@ import {
   searchResearchersByInstitution,
   searchResearchersByArea,
   searchResearchersByTitle,
+  searchCasually,
 } from '@/api/modules/discover'
 import {
   ElCollapse,
@@ -600,7 +664,7 @@ import {
   ElOption,
   ElIcon,
 } from 'element-plus'
-import { Male, Female } from '@element-plus/icons-vue'
+import { Male, Female, Search, Back } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -652,6 +716,15 @@ const pageSize = 12
 
 // 模拟用户数据（扩展数据）
 const users = ref<User[]>([])
+
+// 高级搜索相关
+const isAdvancedSearch = ref(false)
+const advancedSearch = reactive({
+  name: '',
+  field: '',
+  institution: '',
+  title: '',
+})
 
 // 计算过滤后的用户
 const filteredUsers = computed(() => {
@@ -772,7 +845,6 @@ const formatNumber = (num: number) => {
 const performSearch = async () => {
   currentPage.value = 1
   searchString.value = searchQuery.value || ''
-
   try {
     let response
     if (searchType.value === 'name') {
@@ -978,6 +1050,36 @@ const validateFollowersRange = () => {
       // 如果下限大于上限，将上限调整为下限值
       filters.followersRange.max = min
     }
+  }
+}
+
+const handleImageError = (event: Event) => {
+  const target = event.target as HTMLImageElement
+  if (target && !target.src.includes('/default-avatar.png')) {
+    target.src = '/default-avatar.png'
+  }
+}
+
+const performAdvancedSearch = async () => {
+  currentPage.value = 1
+  // 组装参数，字段名需与searchCasually接口一致
+  const data = {
+    name: advancedSearch.name.trim() || '',
+    area: advancedSearch.field.trim() || '',
+    institution: advancedSearch.institution.trim() || '',
+    title: advancedSearch.title.trim() || '',
+  }
+  searchString.value = Object.values(data).filter(Boolean).join(' / ')
+  try {
+    const response = await searchCasually(data)
+    if (response && response.data) {
+      users.value = response.data
+    } else {
+      users.value = []
+    }
+  } catch (error) {
+    console.error('高级搜索失败:', error)
+    users.value = []
   }
 }
 </script>
