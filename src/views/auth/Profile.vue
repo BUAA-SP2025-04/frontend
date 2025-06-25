@@ -412,7 +412,6 @@ const privacySettings = reactive({
 })
 
 const avatarInput = ref<HTMLInputElement | null>(null)
-
 const researchAreaArray = computed({
   get: () => (userInfo.researchArea ? userInfo.researchArea.split(',') : []),
   set: (val: string[]) => {
@@ -455,6 +454,19 @@ onMounted(() => {
 })
 
 const saveProfile = async () => {
+  // 1. 必填项校验
+  if (
+    !userInfo.name ||
+    !userInfo.email ||
+    !userInfo.gender ||
+    !userInfo.institution ||
+    !userInfo.title ||
+    !userInfo.researchArea
+  ) {
+    ElMessage.error('必要信息缺失，个人资料保存失败')
+    return
+  }
+
   saving.value = true
   try {
     await updateUserProfile({
@@ -463,15 +475,13 @@ const saveProfile = async () => {
       title: userInfo.title,
     })
 
-    // 直接合并新信息到 store
     userStore.setUser({
       bio: userInfo.bio,
       researchArea: userInfo.researchArea,
       title: userInfo.title,
     })
 
-    initUserInfo() // 重新初始化显示
-
+    initUserInfo()
     ElMessage.success('个人资料保存成功')
   } catch (error) {
     ElMessage.error('保存失败，请重试')

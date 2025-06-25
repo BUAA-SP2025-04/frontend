@@ -65,13 +65,16 @@ export const useNotificationStore = defineStore(
     async function markNotificationAsRead(category: string, id: number) {
       try {
         await messagesAPI.markAsRead(category, id)
-        console.log(category, id)
-        // 如果后端没有接口，直接更新本地状态
-        const notification = notifications.value.find(n => n.id === id)
-        if (notification && !notification.isRead) {
-          notification.isRead = true
-          unreadCount.value = Math.max(0, unreadCount.value - 1)
-          console.log('标记通知已读:', id)
+        // 找到通知索引
+        const index = notifications.value.findIndex(n => n.id === id)
+        if (index !== -1) {
+          // 如果未读，减少未读数
+          if (!notifications.value[index].isRead) {
+            unreadCount.value = Math.max(0, unreadCount.value - 1)
+          }
+          // 移除该通知
+          notifications.value.splice(index, 1)
+          console.log('已读并移除通知:', id)
         }
       } catch (error) {
         console.error('标记通知已读失败:', error)

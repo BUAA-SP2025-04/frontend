@@ -45,7 +45,7 @@
               科研发现
             </router-link>
 
-            <!--- <router-link
+            <router-link
               to="/library"
               :class="[
                 'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
@@ -55,7 +55,7 @@
               ]"
             >
               文献库
-            </router-link> --->
+            </router-link>
 
             <!-- <router-link
               to="/pdf-reader"
@@ -309,14 +309,6 @@
           @click="showMobileMenu = false"
         >
           科研发现
-        </router-link>
-
-        <router-link
-          to="/timeline"
-          class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
-          @click="showMobileMenu = false"
-        >
-          动态时间线
         </router-link>
 
         <router-link
