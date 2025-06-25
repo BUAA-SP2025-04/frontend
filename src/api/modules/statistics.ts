@@ -31,3 +31,7 @@ export function getUpdatePublication(): Promise<publication> {
 export function getLikePublication(): Promise<publication> {
   return request.get('/publication/getLikePublication')
 }
+
+export function getHotFields(): Promise<any> {
+  return request.get('/researcher/getHotFields')
+}
