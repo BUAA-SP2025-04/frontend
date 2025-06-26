@@ -476,7 +476,7 @@ const initUserInfo = async () => {
     userInfo.gender = genderMap[res.data.gender as keyof typeof genderMap] || res.data.gender || ''
     userInfo.title = res.data.title || ''
     userInfo.institution = res.data.institution || ''
-    userInfo.imgUrl = res.data.imgUrl ? '/api' + res.data.imgUrl: '' || ''
+    userInfo.imgUrl = res.data.imgUrl ? '/api' + res.data.imgUrl : '/default-avatar.png'
     userInfo.bio = res.data.bio || ''
     userInfo.researchArea = res.data.researchArea || ''
     userInfo.followerNum = res.data.followerNum || 0

@@ -6,7 +6,6 @@ import type {
   UpdateUserProfileRequest,
   LoginResponse,
   UpdateUserPasswordRequest,
-  UserDetail,
 } from '../types/user'
 
 // 注册
