@@ -535,7 +535,7 @@ const handlePdfUrl = async (): Promise<string> => {
       // url类型且有旧文件，删除旧文件
       await deletePublicationFile(oldFilePath.value)
     }
-    return ''
+    return currentPublication.pdfUrl ? currentPublication.pdfUrl : ''
   } else if (pdfInputType.value === 'upload') {
     if (!pdfFile.value) {
       if (oldFilePath.value) return oldFilePath.value
@@ -667,20 +667,20 @@ const handleSave = async () => {
     .validate()
     .then(() => {
       saving.value = true
-      // 统一处理默认值
-      const payload: SavePublicationRequest = {
-        ...currentPublication,
-        year: currentPublication.year ? String(currentPublication.year) : null,
-        isPublic: String(currentPublication.isPublic),
-      }
       // 先处理PDF相关操作
       return handlePdfUrl().then(url => {
-        if (pdfInputType.value === 'upload') {
-          console.log(url)
-          payload.pdfUrl = url
-          currentPublication.pdfUrl = url // 更新当前对象的pdfUrl
-          pdfFile.value = null // 上传后清空
+        currentPublication.pdfUrl = url // 更新当前对象的pdfUrl
+        if (pdfInputType.value === 'upload' && !currentPublication.pdfUrl) {
+          ElMessage.error('文件上传失败')
+          saving.value = false
+          return Promise.reject()
         }
+        const payload: SavePublicationRequest = {
+          ...currentPublication,
+          year: currentPublication.year ? String(currentPublication.year) : null,
+          isPublic: String(currentPublication.isPublic),
+        }
+
         // PDF无异常再保存
         let urlApi = isEditing.value ? '/publication/update' : '/publication/add'
         return savePublication(urlApi, payload)
@@ -691,9 +691,8 @@ const handleSave = async () => {
       else ElMessage.success('添加成功')
       submitSuccess()
     })
-    .catch(err => {
-      console.error('保存失败:', err)
-      ElMessage.error('失败: ' + (err?.message || err))
+    .catch(() => {
+      ElMessage.error('保存失败')
     })
     .finally(() => {
       saving.value = false
