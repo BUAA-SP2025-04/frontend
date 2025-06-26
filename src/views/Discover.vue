@@ -67,8 +67,8 @@
               ></div>
             </div>
             <button
-              @click="performSearch"
               class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg flex items-center justify-center min-w-[100px]"
+              @click="performSearch"
             >
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -81,9 +81,9 @@
               搜索
             </button>
             <button
-              @click="isAdvancedSearch = true"
               class="ml-2 text-indigo-600 hover:text-indigo-800 font-semibold underline transition-all duration-200"
               type="button"
+              @click="isAdvancedSearch = true"
             >
               组合搜索
             </button>
@@ -129,15 +129,15 @@
             </div>
             <div class="flex gap-4 justify-center mt-4">
               <button
-                @click="performAdvancedSearch"
                 class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg flex items-center gap-2"
+                @click="performAdvancedSearch"
               >
                 <el-icon><Search /></el-icon>
                 搜索
               </button>
               <button
-                @click="isAdvancedSearch = false"
                 class="flex items-center gap-2 px-8 py-3 bg-white border-2 border-indigo-300 text-indigo-700 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:bg-indigo-50 hover:border-indigo-500 shadow"
+                @click="isAdvancedSearch = false"
               >
                 <el-icon><Back /></el-icon>
                 返回普通搜索
@@ -150,8 +150,8 @@
             <button
               v-for="suggestion in searchSuggestions"
               :key="suggestion"
-              @click="selectSuggestion(suggestion)"
               class="px-4 py-2 text-sm bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 text-gray-700 hover:text-indigo-700 rounded-full transition-all duration-200 cursor-pointer border border-gray-200 hover:border-indigo-300 hover:shadow-md transform hover:scale-105 font-medium"
+              @click="selectSuggestion(suggestion)"
             >
               {{ suggestion }}
             </button>
@@ -218,7 +218,7 @@
               粉丝数: {{ followersFilterText }}
             </el-tag>
           </div>
-          <el-button @click="clearFilters" type="primary" link class="ml-auto whitespace-nowrap">
+          <el-button type="primary" link @click="clearFilters" class="ml-auto whitespace-nowrap">
             全部清除
           </el-button>
         </div>
@@ -437,8 +437,8 @@
 
           <!-- 研究者卡片网格 -->
           <div
-            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
             v-if="paginatedUsers.length > 0"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
           >
             <div
               v-for="user in paginatedUsers"
@@ -582,7 +582,7 @@
                     </div>
                     <div class="text-xs text-gray-500">发表数</div>
                   </div>
-                  <div class="divider-vertical"></div>
+                  <!-- <div class="divider-vertical"></div>
                   <div class="group metric-block">
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors"
@@ -590,7 +590,7 @@
                       {{ formatNumber(user.subjectNum) }}
                     </div>
                     <div class="text-xs text-gray-500">项目数</div>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>
@@ -618,8 +618,8 @@
             <h3 class="text-lg font-medium text-gray-900 mb-2">未找到匹配的研究者</h3>
             <p class="text-gray-600 mb-6">请尝试调整筛选条件或搜索关键词</p>
             <button
-              @click="clearFilters"
               class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
+              @click="clearFilters"
             >
               清除筛选条件
             </button>
@@ -874,12 +874,17 @@ const performSearch = async () => {
 const selectSuggestion = (suggestion: string) => {
   if (suggestion) {
     searchQuery.value = suggestion
+    if (suggestion == '清华大学' || suggestion == '北京大学' || suggestion == 'MIT') {
+      searchType.value = 'institution'
+    } else {
+      searchType.value = 'field'
+    }
     // performSearch()
   }
 }
 
 const handlePageChange = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  window.scrollTo({ top: 450, behavior: 'smooth' })
 }
 
 const getSearchPlaceholder = () => {
@@ -1139,7 +1144,9 @@ const performAdvancedSearch = async () => {
   transition: all 0.2s ease-in-out;
 }
 .filter-collapse :deep(.el-collapse-item__header:hover) {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
   border-color: #e5e7eb;
 }
 .filter-collapse :deep(.el-collapse-item__header.is-active) {
@@ -1259,7 +1266,9 @@ const performAdvancedSearch = async () => {
 }
 .custom-select .el-input__wrapper:hover {
   border-color: #a5b4fc;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 .custom-select .el-input__inner {
   font-weight: 500;

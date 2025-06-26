@@ -29,7 +29,7 @@
             <div class="text-center">
               <div class="relative inline-block">
                 <img
-                  :src="userInfo.imgUrl || `http://api.btstu.cn/sjtx/api.php?lx=${'c1'}`"
+                  :src="userInfo.imgUrl || `/default-avatar.png`"
                   alt="头像"
                   class="w-32 h-32 rounded-full object-cover mx-auto shadow-lg"
                 />
@@ -78,7 +78,7 @@
               </div>
 
               <!-- 统计信息卡片 -->
-              <div class="grid grid-cols-3 gap-4 mt-6">
+              <div class="grid grid-cols-2 gap-4 mt-6 max-w-xs mx-auto">
                 <div class="text-center">
                   <div class="text-2xl font-bold text-indigo-600">{{ userInfo.followerNum }}</div>
                   <div class="text-xs text-gray-500">关注数</div>
@@ -87,10 +87,10 @@
                   <div class="text-2xl font-bold text-green-600">{{ userInfo.publishNum }}</div>
                   <div class="text-xs text-gray-500">论文数</div>
                 </div>
-                <div class="text-center">
+                <!-- <div class="text-center">
                   <div class="text-2xl font-bold text-purple-600">{{ userInfo.subjectNum }}</div>
                   <div class="text-xs text-gray-500">项目数</div>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -177,6 +177,36 @@
                     <el-option label="生物信息学" value="生物信息学" />
                     <el-option label="物理学" value="物理学" />
                     <el-option label="化学" value="化学" />
+                    <el-option label="数学" value="数学" />
+                    <el-option label="材料科学" value="材料科学" />
+                    <el-option label="环境科学" value="环境科学" />
+                    <el-option label="地球科学" value="地球科学" />
+                    <el-option label="天文学" value="天文学" />
+                    <el-option label="医学" value="医学" />
+                    <el-option label="药学" value="药学" />
+                    <el-option label="心理学" value="心理学" />
+                    <el-option label="社会学" value="社会学" />
+                    <el-option label="经济学" value="经济学" />
+                    <el-option label="管理学" value="管理学" />
+                    <el-option label="法学" value="法学" />
+                    <el-option label="教育学" value="教育学" />
+                    <el-option label="历史学" value="历史学" />
+                    <el-option label="哲学" value="哲学" />
+                    <el-option label="语言学" value="语言学" />
+                    <el-option label="政治学" value="政治学" />
+                    <el-option label="艺术学" value="艺术学" />
+                    <el-option label="农学" value="农学" />
+                    <el-option label="工程学" value="工程学" />
+                    <el-option label="电子科学" value="电子科学" />
+                    <el-option label="自动化" value="自动化" />
+                    <el-option label="交通运输" value="交通运输" />
+                    <el-option label="能源科学" value="能源科学" />
+                    <el-option label="海洋科学" value="海洋科学" />
+                    <el-option label="统计学" value="统计学" />
+                    <el-option label="信息科学" value="信息科学" />
+                    <el-option label="新闻传播学" value="新闻传播学" />
+                    <el-option label="体育学" value="体育学" />
+                    <el-option label="其他" value="其他" />
                   </el-select>
                 </el-form-item>
 
@@ -253,7 +283,7 @@
             </div>
 
             <!-- 隐私设置 -->
-            <div v-if="activeTab === 'privacy'" class="p-6">
+            <!-- <div v-if="activeTab === 'privacy'" class="p-6">
               <div class="space-y-6">
                 <h3 class="text-lg font-medium text-gray-900">隐私设置</h3>
 
@@ -295,7 +325,7 @@
                   <el-button type="primary" @click="savePrivacySettings"> 保存设置 </el-button>
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
@@ -306,7 +336,12 @@
 <script setup lang="ts">
 import { ref, reactive, h, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { updateUserProfile, uploadUserImg, changeUserPassword } from '@/api/modules/user'
+import {
+  updateUserProfile,
+  uploadUserImg,
+  changeUserPassword,
+  getUserInfo,
+} from '@/api/modules/user'
 import { useUserStore } from '@/stores/user'
 
 // 图标组件
@@ -431,21 +466,22 @@ const titleOptions = [
 ]
 
 // 初始化用户信息
-const initUserInfo = () => {
-  if (userStore.user) {
-    userInfo.id = String(userStore.user.id)
-    userInfo.name = userStore.user.name || ''
-    userInfo.email = userStore.user.email || ''
-    userInfo.gender =
-      genderMap[userStore.user.gender as keyof typeof genderMap] || userStore.user.gender || ''
-    userInfo.title = userStore.user.title || ''
-    userInfo.institution = userStore.user.institution || ''
-    userInfo.imgUrl = userStore.user.imgUrl || ''
-    userInfo.bio = userStore.user.bio || ''
-    userInfo.researchArea = userStore.user.researchArea || ''
-    userInfo.followerNum = userStore.user.followerNum || 0
-    userInfo.publishNum = userStore.user.publishNum || 0
-    userInfo.subjectNum = userStore.user.subjectNum || 0
+const initUserInfo = async () => {
+  const res = await getUserInfo()
+  console.log(res)
+  if (res.data) {
+    userInfo.id = String(res.data.id)
+    userInfo.name = res.data.name || ''
+    userInfo.email = res.data.email || ''
+    userInfo.gender = genderMap[res.data.gender as keyof typeof genderMap] || res.data.gender || ''
+    userInfo.title = res.data.title || ''
+    userInfo.institution = res.data.institution || ''
+    userInfo.imgUrl = res.data.imgUrl ? '/api' + res.data.imgUrl : '/default-avatar.png'
+    userInfo.bio = res.data.bio || ''
+    userInfo.researchArea = res.data.researchArea || ''
+    userInfo.followerNum = res.data.followerNum || 0
+    userInfo.publishNum = res.data.publishNum || 0
+    userInfo.subjectNum = res.data.subjectNum || 0
   }
 }
 

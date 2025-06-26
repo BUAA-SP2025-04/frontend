@@ -538,8 +538,10 @@ const handlePdfUrl = async (): Promise<string> => {
     return currentPublication.pdfUrl ? currentPublication.pdfUrl : ''
   } else if (pdfInputType.value === 'upload') {
     if (!pdfFile.value) {
+
       if (oldFilePath.value) return oldFilePath.value
       // 如果没有新文件但有旧文件，返回旧文件路径
+
       return ''
     }
     let res: UploadResponse
@@ -657,7 +659,7 @@ watch(
   }
 )
 
-const handleSave = () => {
+const handleSave = async () => {
   if (!formRef.value) return
   currentPublication.authors =
     userName.value + (otherAuthors.value ? `, ${otherAuthors.value}` : '')
