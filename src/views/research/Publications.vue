@@ -118,12 +118,12 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="likeNum" label="点赞数" width="120" align="center">
-            <template #default="{ row }">
-              <div v-if="row.likeNum" class="font-semibold text-blue-600">{{ row.likeNum }}</div>
-              <div v-else class="text-gray-400">-</div>
-            </template>
-          </el-table-column>
+          <!--          <el-table-column prop="likeNum" label="点赞数" width="120" align="center">-->
+          <!--            <template #default="{ row }">-->
+          <!--              <div v-if="row.likeNum" class="font-semibold text-blue-600">{{ row.likeNum }}</div>-->
+          <!--              <div v-else class="text-gray-400">-</div>-->
+          <!--            </template>-->
+          <!--          </el-table-column>-->
 
           <el-table-column label="状态" width="100" align="center">
             <template #default="{ row }">
