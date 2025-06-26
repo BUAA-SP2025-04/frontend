@@ -120,33 +120,33 @@ const routes: RouteRecordRaw[] = [
       title: '数据可视化',
     },
   },
-{
-  path: '/research',
-  children: [
-    {
-      path: 'qa',
-      component: () => import('@/views/research/QA.vue'),
-      meta: { title: '科研问答' }
-    },
-    {
-      path: 'qa/:id',
-      component: () => import('@/views/research/QuestionDetail.vue'),
-      meta: { title: '问题详情' }
-    }
-  ]
-},
-{
-  path: '/research/projects',
-  name: 'Projects',
-  component: () => import('@/views/research/Projects.vue'),
-  meta: { title: '科研项目' }
-},
-{
-  path: '/research/my-projects',
-  name: 'MyProjects',
-  component: () => import('@/views/research/MyProjects.vue'),
-  meta: { title: '我的项目管理' }
-},
+  {
+    path: '/research',
+    children: [
+      {
+        path: 'qa',
+        component: () => import('@/views/research/QA.vue'),
+        meta: { title: '科研问答' },
+      },
+      {
+        path: 'qa/:id',
+        component: () => import('@/views/research/QuestionDetail.vue'),
+        meta: { title: '问题详情' },
+      },
+    ],
+  },
+  {
+    path: '/research/projects',
+    name: 'Projects',
+    component: () => import('@/views/research/Projects.vue'),
+    meta: { title: '科研项目' },
+  },
+  {
+    path: '/research/my-projects',
+    name: 'MyProjects',
+    component: () => import('@/views/research/MyProjects.vue'),
+    meta: { title: '我的项目管理' },
+  },
 ]
 
 const router = createRouter({
