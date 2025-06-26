@@ -84,7 +84,7 @@
                   v-for="friend in allFriends"
                   :key="friend.id"
                   class="flex items-center p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  @click="startChat(friend.id)"
+                  @click=""
                 >
                   <div class="relative">
                     <img
@@ -166,7 +166,7 @@
                 <!-- 未读标记小图标 -->
                 <button
                   v-if="!conversation.isRead"
-                  @click.stop="markAsReadLocal('conversations', conversation.id)"
+                  @click.stop="markAsReadLocal('conversation', conversation.lastMessage.id)"
                   class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
                   title="标记为已读"
                 >
@@ -432,6 +432,7 @@ import { ref, reactive, computed, h, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { messagesAPI } from '@/api/modules/messages'
+import { useNotificationStore } from '@/stores/notification'
 import type {
 
   Friend,
@@ -442,6 +443,8 @@ import type {
 } from '@/api/types/messages'
 
 const router = useRouter()
+
+const notificationStore = useNotificationStore()
 
 // 图标组件
 const ChatIcon = () =>
@@ -643,12 +646,13 @@ const markAllAsRead = async () => {
 const markAsReadLocal = async (category: string, id: number) => {
   try {
     // 统一传参格式
-    let apiCategory = category
-    if (category === 'chat') {
-      apiCategory = 'conversations'
+    if (category === 'system' || category === 'activity') {
+      // 🔥 只调用状态管理，不再调用messagesAPI.markAsRead
+      await notificationStore.markNotificationAsRead(category, id)
+    } else if (category === 'chat' || category === 'conversation') {
+      // 私信仍然调用原有逻辑
+      await messagesAPI.markAsRead('conversation', id)
     }
-
-    await messagesAPI.markAsRead(apiCategory, id)
     ElMessage.success('已标记为已读')
 
     // 前端直接更新状态，避免重新请求
@@ -681,7 +685,7 @@ const updateAllAsRead = () => {
 
 // 前端更新单条已读状态
 const updateSingleAsRead = (category: string, id: number) => {
-  if (category === 'chat' || category === 'conversations') {
+  if (category === 'chat' || category === 'conversation') {
     const convIndex = conversations.value.findIndex(conv => conv.id === id)
     if (convIndex !== -1) {
       conversations.value[convIndex].isRead = true
@@ -712,11 +716,6 @@ const updateSingleAsRead = (category: string, id: number) => {
   }
 }
 
-const handleNotificationAction = (notification: SystemNotification) => {
-  if (notification.action?.url) {
-    router.push(notification.action.url)
-  }
-}
 
 const handleActivityClick = (activity: ActivityNotification) => {
   if (!activity.isRead) {
