@@ -597,9 +597,19 @@ const replyToComment = (comment: PublicationComment) => {
 
 const openPdf = async () => {
   if (publication.value?.pdfUrl) {
-    await readPublication(publication.value.id);
-    // ElMessage.success("111")
-    router.push({ path: '/pdf-reader', query: { url: publication.value.pdfUrl } })
+    await readPublication(publication.value.id)
+
+    // 检查链接是否以http或https开头
+    if (
+      publication.value.pdfUrl.startsWith('http://') ||
+      publication.value.pdfUrl.startsWith('https://')
+    ) {
+      // 直接跳转到外源网址
+      window.open(publication.value.pdfUrl, '_blank')
+    } else {
+      // 跳转到本地PDF阅读器
+      router.push({ path: '/pdf-reader', query: { url: publication.value.pdfUrl } })
+    }
   }
 }
 

@@ -6,11 +6,9 @@
         <p class="text-gray-600">支持PDF文档阅读和文本层坐标提取</p>
       </div> -->
 
-        <div class="flex items-center space-x-4 mb-4">
-          <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf">
-            下载当前PDF
-          </el-button>
-        </div>
+      <div class="flex items-center space-x-4 mb-4">
+        <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf"> 下载当前PDF </el-button>
+      </div>
 
       <div v-if="pdfUrl" class="card">
         <div class="flex justify-between items-center mb-4">
@@ -26,7 +24,7 @@
           <VuePdfEmbed
             :source="pdfUrl"
             :page="currentPage"
-            :scale="scale"
+            :scale="5"
             @loaded="onPdfLoaded"
             @page-loaded="onPageLoaded"
           />

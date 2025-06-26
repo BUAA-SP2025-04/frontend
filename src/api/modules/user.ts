@@ -69,6 +69,6 @@ export function getIfFollow(id: string | number) {
 }
 
 // 获取当前用户信息
-export function getUserInfo(): Promise<UserDetail> {
+export function getUserInfo(): Promise<any> {
   return request.get('/user/get')
 }
