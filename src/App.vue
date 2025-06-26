@@ -6,14 +6,41 @@
     </main>
     <el-dialog
       v-model="globalStore.showAuthDialog"
-      title="请登录"
-      width="320px"
+      title=""
+      width="360px"
       :close-on-click-modal="false"
+      class="auth-dialog"
+      :show-close="false"
     >
-      <div class="text-center">
-        <p>您需要登录后才能访问该页面</p>
-        <el-button type="primary" class="mt-4" @click="goLogin">去登录</el-button>
-        <el-button class="mt-4 ml-2" @click="goRegister">去注册</el-button>
+      <div class="text-center p-8">
+        <div class="mb-6">
+          <div
+            class="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4"
+          >
+            <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">需要登录</h3>
+          <p class="text-gray-500">登录后即可访问完整功能</p>
+        </div>
+        <button
+          class="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+          @click="goLogin"
+        >
+          立即登录
+        </button>
+        <button
+          class="w-full mt-3 text-gray-500 hover:text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+          @click="globalStore.showAuthDialog = false"
+        >
+          稍后再说
+        </button>
       </div>
     </el-dialog>
   </div>
@@ -30,11 +57,6 @@ const router = useRouter()
 const goLogin = () => {
   globalStore.showAuthDialog = false
   router.push('/login')
-}
-
-const goRegister = () => {
-  globalStore.showAuthDialog = false
-  router.push('/register')
 }
 </script>
 
@@ -82,6 +104,26 @@ body {
 .el-menu--horizontal .el-menu-item.is-active {
   border-bottom-color: var(--el-color-primary) !important;
   color: var(--el-color-primary) !important;
+}
+
+/* 登录弹窗自定义样式 */
+.auth-dialog .el-dialog {
+  border-radius: 24px !important;
+  overflow: hidden;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  border: none !important;
+}
+
+.auth-dialog .el-dialog__header {
+  display: none;
+}
+
+.auth-dialog .el-dialog__body {
+  padding: 0;
+  background: white;
+  border-radius: 24px;
 }
 
 /* 响应式断点 */
