@@ -800,7 +800,7 @@ const getEmptyStateText = () => {
   const texts = {
     chat: '还没有私信对话，去发现页面找找感兴趣的研究者吧！',
     system: '暂无系统通知',
-    activity: '还没有关注任何人，去关注一些研究者来接收他们的动态吧！',
+    activity: '还没有收到动态，去关注一些研究者来接收他们的动态吧！',
   }
   return texts[activeCategory.value as 'chat' | 'system' | 'activity'] || '暂无消息'
 }
