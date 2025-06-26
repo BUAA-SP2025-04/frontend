@@ -314,6 +314,7 @@ import type {
   PublicationStats,
   SavePublicationRequest,
 } from '@/api/types/publication'
+import type { UploadResponse } from '@/api/types/utils'
 import {
   deletePublication,
   deletePublicationFile,

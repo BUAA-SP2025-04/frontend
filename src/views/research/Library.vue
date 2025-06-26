@@ -1168,9 +1168,11 @@ const createFolder = async () => {
 
 const handleFileChange = async (file: UploadFile) => {
   try {
+    console.log(111111)
     if (file && file.raw) {
       const formData = new FormData()
       pdfFile.value = file.raw ?? null
+      console.log(pdfFile.value)
       formData.append('file', pdfFile.value)
       currentFile.value = file.raw;
       // 自动填充标题（去除扩展名）
@@ -1179,6 +1181,7 @@ const handleFileChange = async (file: UploadFile) => {
       newPaper.title = dotIndex !== -1 ? fileName.substring(0, dotIndex) : fileName;
       // 生成文件URL并填充
       const res = await libraryAPI.getFileUrl(formData)
+      console.log(res.data)
       // const fileUrl = URL.createObjectURL(file.raw);
       newPaper.pdfUrl = res.data;
     } 
