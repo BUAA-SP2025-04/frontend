@@ -47,13 +47,16 @@ export const useNotificationStore = defineStore(
     // 处理新通知
     function handleNewNotification(notification: Notification) {
       // 检查是否已存在相同ID的通知，避免重复
-      console.log(notification)
       const existingIndex = notifications.value.findIndex(n => n.id === notification.id)
       if (existingIndex === -1) {
         notifications.value.unshift(notification)
         if (!notification.isRead) {
           unreadCount.value++
         }
+        // 新增：按时间倒序排序
+        notifications.value.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
         console.log('添加新通知:', notification)
       } else {
         console.log('通知已存在，跳过:', notification.id)
