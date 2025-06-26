@@ -538,7 +538,8 @@ const handlePdfUrl = async (): Promise<string> => {
     return ''
   } else if (pdfInputType.value === 'upload') {
     if (!pdfFile.value) {
-      if (oldFilePath.value) currentPublication.pdfUrl = oldFilePath.value // 如果没有新文件但有旧文件，返回旧文件路径
+      if (oldFilePath.value) return oldFilePath.value
+      // 如果没有新文件但有旧文件，返回旧文件路径
       return ''
     }
     let res: UploadResponse
@@ -565,8 +566,6 @@ const handlePdfUrl = async (): Promise<string> => {
 }
 
 const submitSuccess = () => {
-  resetForm()
-  closeDialog()
   if (!isEditing.value && userStore.user?.id) {
     loading.value = true
     getPublicationsByUser(userStore.user.id)
@@ -586,6 +585,8 @@ const submitSuccess = () => {
       Object.assign(publications[idx], currentPublication)
     }
   }
+  resetForm()
+  closeDialog()
 }
 
 const handleDelete = (id: number) => {
@@ -618,13 +619,11 @@ const resetForm = () => {
   Object.assign(currentPublication, JSON.parse(JSON.stringify(emptyPublication)))
   pdfInputType.value = 'url'
   pdfFile.value = null
-  isEditing.value = false
   oldFilePath.value = ''
 }
 
 const closeDialog = () => {
   showAddDialog.value = false
-  if (isEditing.value) resetForm()
 }
 
 const userStore = useUserStore()
@@ -674,11 +673,10 @@ const handleSave = () => {
       }
       // 先处理PDF相关操作
       return handlePdfUrl().then(url => {
-        if (pdfInputType.value === 'upload' && pdfFile.value) {
-          if (!url) {
-            return Promise.reject(new Error('PDF上传失败'))
-          }
+        if (pdfInputType.value === 'upload') {
+          console.log(url)
           payload.pdfUrl = url
+          currentPublication.pdfUrl = url // 更新当前对象的pdfUrl
           pdfFile.value = null // 上传后清空
         }
         // PDF无异常再保存
