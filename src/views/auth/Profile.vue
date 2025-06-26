@@ -78,7 +78,7 @@
               </div>
 
               <!-- 统计信息卡片 -->
-              <div class="grid grid-cols-3 gap-4 mt-6">
+              <div class="grid grid-cols-2 gap-4 mt-6 max-w-xs mx-auto">
                 <div class="text-center">
                   <div class="text-2xl font-bold text-indigo-600">{{ userInfo.followerNum }}</div>
                   <div class="text-xs text-gray-500">关注数</div>
@@ -87,10 +87,10 @@
                   <div class="text-2xl font-bold text-green-600">{{ userInfo.publishNum }}</div>
                   <div class="text-xs text-gray-500">论文数</div>
                 </div>
-                <div class="text-center">
+                <!-- <div class="text-center">
                   <div class="text-2xl font-bold text-purple-600">{{ userInfo.subjectNum }}</div>
                   <div class="text-xs text-gray-500">项目数</div>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -207,7 +207,7 @@
                     <el-option label="新闻传播学" value="新闻传播学" />
                     <el-option label="体育学" value="体育学" />
                     <el-option label="其他" value="其他" />
-                    </el-select>
+                  </el-select>
                 </el-form-item>
 
                 <div class="flex justify-end space-x-4">
@@ -283,7 +283,7 @@
             </div>
 
             <!-- 隐私设置 -->
-            <div v-if="activeTab === 'privacy'" class="p-6">
+            <!-- <div v-if="activeTab === 'privacy'" class="p-6">
               <div class="space-y-6">
                 <h3 class="text-lg font-medium text-gray-900">隐私设置</h3>
 
@@ -325,7 +325,7 @@
                   <el-button type="primary" @click="savePrivacySettings"> 保存设置 </el-button>
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
@@ -336,7 +336,12 @@
 <script setup lang="ts">
 import { ref, reactive, h, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { updateUserProfile, uploadUserImg, changeUserPassword } from '@/api/modules/user'
+import {
+  updateUserProfile,
+  uploadUserImg,
+  changeUserPassword,
+  getUserInfo,
+} from '@/api/modules/user'
 import { useUserStore } from '@/stores/user'
 
 // 图标组件
@@ -461,21 +466,22 @@ const titleOptions = [
 ]
 
 // 初始化用户信息
-const initUserInfo = () => {
-  if (userStore.user) {
-    userInfo.id = String(userStore.user.id)
-    userInfo.name = userStore.user.name || ''
-    userInfo.email = userStore.user.email || ''
-    userInfo.gender =
-      genderMap[userStore.user.gender as keyof typeof genderMap] || userStore.user.gender || ''
-    userInfo.title = userStore.user.title || ''
-    userInfo.institution = userStore.user.institution || ''
-    userInfo.imgUrl = userStore.user.imgUrl || ''
-    userInfo.bio = userStore.user.bio || ''
-    userInfo.researchArea = userStore.user.researchArea || ''
-    userInfo.followerNum = userStore.user.followerNum || 0
-    userInfo.publishNum = userStore.user.publishNum || 0
-    userInfo.subjectNum = userStore.user.subjectNum || 0
+const initUserInfo = async () => {
+  const res = await getUserInfo()
+  console.log(res)
+  if (res.data) {
+    userInfo.id = String(res.data.id)
+    userInfo.name = res.data.name || ''
+    userInfo.email = res.data.email || ''
+    userInfo.gender = genderMap[res.data.gender as keyof typeof genderMap] || res.data.gender || ''
+    userInfo.title = res.data.title || ''
+    userInfo.institution = res.data.institution || ''
+    userInfo.imgUrl = res.data.imgUrl ? '/api' + res.data.imgUrl : '/default-avatar.png'
+    userInfo.bio = res.data.bio || ''
+    userInfo.researchArea = res.data.researchArea || ''
+    userInfo.followerNum = res.data.followerNum || 0
+    userInfo.publishNum = res.data.publishNum || 0
+    userInfo.subjectNum = res.data.subjectNum || 0
   }
 }
 
