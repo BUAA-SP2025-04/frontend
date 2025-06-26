@@ -74,7 +74,7 @@
           style="width: 100%"
           :default-sort="{ prop: 'year', order: 'descending' }"
         >
-          <el-table-column type="selection" width="55" />
+          <!-- <el-table-column type="selection" width="55" /> -->
 
           <el-table-column label="类型" width="100">
             <template #default="{ row }">
@@ -538,7 +538,6 @@ const handlePdfUrl = async (): Promise<string> => {
     return currentPublication.pdfUrl ? currentPublication.pdfUrl : ''
   } else if (pdfInputType.value === 'upload') {
     if (!pdfFile.value) {
-
       if (oldFilePath.value) return oldFilePath.value
       // 如果没有新文件但有旧文件，返回旧文件路径
 
@@ -597,19 +596,20 @@ const handleDelete = (id: number) => {
     cancelButtonText: '取消',
     type: 'warning',
   })
-    .then(() => {
-      deletePublication(id)
-    })
-    .then(() => {
+    .then(async () => {
+      // 等待删除操作完成
+      await deletePublication(id)
+
       ElMessage.success('删除成功')
       // 删除后从publications中移除
       const idx = publications.findIndex(item => item.id === id)
       if (idx !== -1) publications.splice(idx, 1)
       // 删除后刷新统计数据
       if (userStore.user?.id) {
-        getPublicationStatsByUser(userStore.user.id).then(res => {
-          if (res.data) Object.assign(stats, res.data)
-        })
+        const res = await getPublicationStatsByUser(userStore.user.id)
+        if (res.data) {
+          Object.assign(stats, res.data)
+        }
       }
     })
     .catch(err => {
