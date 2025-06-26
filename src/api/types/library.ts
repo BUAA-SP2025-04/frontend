@@ -7,7 +7,7 @@ export interface FavoritePaper {
   citations?: number
   readCount?: number
   folderId: number
-  publishDate?: string
+  // publishDate?: string
   type: string,
   authors?: string,
   venue?: string,
