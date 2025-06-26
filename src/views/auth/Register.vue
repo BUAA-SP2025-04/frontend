@@ -52,23 +52,33 @@
           </div>
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700">邮箱地址</label>
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="请输入邮箱地址"
-            />
-            <el-tooltip
-              content="仅支持学术邮箱：xxx@buaa.edu.cn、xxx@tsinghua.edu.cn、xxx@pku.edu.cn、xxx@ustc.edu.cn、xxx@mit.edu"
-              placement="right"
-              effect="dark"
-            >
-              <el-icon style="margin-left: 8px; cursor: pointer">
-                <QuestionFilled />
-              </el-icon>
-            </el-tooltip>
+            <div class="relative">
+              <input
+                id="email"
+                v-model="form.email"
+                type="email"
+                required
+                class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pr-10"
+                placeholder="请输入邮箱地址"
+              />
+              <div
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-help group"
+                title="仅支持学术邮箱：xxx@buaa.edu.cn、xxx@tsinghua.edu.cn、xxx@pku.edu.cn、xxx@ustc.edu.cn、xxx@mit.edu"
+              >
+                <el-icon>
+                  <QuestionFilled />
+                </el-icon>
+                <!-- 自定义 tooltip -->
+                <div
+                  class="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50"
+                >
+                  仅支持学术邮箱：xxx@buaa.edu.cn、xxx@tsinghua.edu.cn、xxx@pku.edu.cn、xxx@ustc.edu.cn、xxx@mit.edu
+                  <div
+                    class="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"
+                  ></div>
+                </div>
+              </div>
+            </div>
             <p v-if="emailError" class="text-red-500 text-xs mt-1">{{ emailError }}</p>
           </div>
           <div>
@@ -251,3 +261,13 @@ const handleRegister = async () => {
   }
 }
 </script>
+
+<style scoped>
+.email-tooltip {
+  z-index: 9999 !important;
+}
+
+.el-tooltip__popper {
+  z-index: 9999 !important;
+}
+</style>
