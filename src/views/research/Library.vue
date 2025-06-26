@@ -624,7 +624,7 @@
               <el-input v-model="newPaper.abstract" placeholder="请输入摘要" />
             </el-form-item>
             <el-form-item label="doi">
-              <el-input v-model="newPaper.venue" placeholder="请输入doi" />
+              <el-input v-model="newPaper.doi" placeholder="请输入doi" />
             </el-form-item>
 
             <el-form-item label="发表日期" required>
@@ -1400,7 +1400,7 @@ const handleUpload = async () => {
           }
           currentFile.value = undefined;
           pdfFile.value = null
-          router.push({ path: '/library'})
+          location.reload()
         } else {
           ElMessage.error("文件夹关系出错，请刷新后重试")
         }
