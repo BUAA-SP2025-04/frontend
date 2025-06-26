@@ -283,7 +283,7 @@
             </div>
 
             <!-- 隐私设置 -->
-            <div v-if="activeTab === 'privacy'" class="p-6">
+            <!-- <div v-if="activeTab === 'privacy'" class="p-6">
               <div class="space-y-6">
                 <h3 class="text-lg font-medium text-gray-900">隐私设置</h3>
 
@@ -325,7 +325,7 @@
                   <el-button type="primary" @click="savePrivacySettings"> 保存设置 </el-button>
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
