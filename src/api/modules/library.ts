@@ -9,7 +9,9 @@ import type {
   GetByIDResponse,
   CreateRecordResponse,
   GetFileUrlResponse,
+  GetUpdateResponse,
 } from '@/api/types/library'
+import { number } from 'echarts'
 
 export const libraryAPI = {
   // 获取所有文献
@@ -18,7 +20,7 @@ export const libraryAPI = {
       params: { userId },
     }),
 
-  // 获取所有文献
+  // 获取所有收藏夹
   getCategoryList: (userId: string): Promise<GetCategoryListResponse> =>
     request.get('/favorite-categories/list', {
       params: { userId },
@@ -54,7 +56,7 @@ export const libraryAPI = {
       params: { categoryId }
     }),
 
-  // 上传文献
+  // 上传文献并收藏
   createPaper: (userId: string, categoryId: number, createPaperRequest: Paper): Promise<CreatePaperResponse>  =>
     request.post('/favorites/upload', createPaperRequest, {
       params: { userId, categoryId }
@@ -94,6 +96,22 @@ export const libraryAPI = {
   deleteUrlFile: (oldFilePath: string)  =>
     request.post('/publication/deleteFile', null, {
       params: { oldFilePath }
+    }),
+
+  // 删除成果
+  deletePublication: (id: string)  =>
+    request.post('/publication/delete', {
+      id: id 
+    }),
+
+  // 获取最新成果
+  getNewPapers: (): Promise<GetUpdateResponse>  =>
+    request.get('/publication/getUpdatePublication'),
+
+  // 收藏文献
+  favoritePaper: (userId: number, paperId: number, categoryId: number)  =>
+    request.post('/favorites/add', null, {
+      params: { userId: userId, paperId: paperId, categoryId: categoryId }
     }),
 
 }

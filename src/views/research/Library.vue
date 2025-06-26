@@ -210,12 +210,43 @@
               </div>
             </div> -->
           </div>
+
+          <div class="bg-white rounded-lg shadow px-6 py-4 sticky top-8 mt-10">
+            <div
+              :class="['text-lg font-medium flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
+                  selectedFolder === -10 ? 'bg-indigo-100 text-indigo-700' : 'text-gray-900']"
+              @click="selectFolder(-10)"
+            >
+              <div class="flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 ml-1 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0H8v0z"
+                  />
+                </svg>
+                发现文献
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 右侧文献列表 -->
         <div class="lg:w-3/4">
           <!-- 搜索和筛选 -->
-          <div class="bg-white rounded-lg shadow p-6 mb-6">
+          <div class="bg-white rounded-lg shadow p-6 mb-6" v-if="selectedFolder !== -10">
             <div class="flex flex-col md:flex-row gap-4">
               <div class="flex-1">
                 <el-input
@@ -226,10 +257,10 @@
                 />
               </div>
               <el-select v-model="sortBy" placeholder="排序方式" size="large" style="width: 150px">
-                <el-option label="时间" value="date" />
+                <el-option label="时间" value="id" />
                 <el-option label="标题" value="title" />
-                <!-- <el-option label="作者" value="author" /> -->
-                <el-option label="引用数" value="citations" />
+                <el-option label="作者" value="author" />
+                <el-option label="阅读数" value="readcount" />
               </el-select>
               <!-- <el-select v-model="viewMode" size="large" style="width: 120px">
                 <el-option label="列表视图" value="list" />
@@ -410,7 +441,7 @@
                           </svg>
                           编辑
                         </el-dropdown-item> -->
-                        <el-dropdown-item :command="`delete-${paper.id}`" divided>
+                        <el-dropdown-item :command="`delete-${paper.id}`" divided v-if="selectedFolder !== -10">
                           <svg
                             class="w-4 h-4 mr-2"
                             fill="none"
@@ -425,6 +456,22 @@
                             />
                           </svg>
                           删除
+                        </el-dropdown-item>
+                        <el-dropdown-item :command="`favorite-${paper.id}`" divided v-if="selectedFolder === -10">
+                          <svg
+                            class="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                          收藏
                         </el-dropdown-item>
                       </el-dropdown-menu>
                     </template>
@@ -485,7 +532,7 @@
                 </div>
 
                 <div class="flex items-center justify-between text-xs text-gray-500">
-                  <span>引用 {{ paper.citations }}</span>
+                  <!-- <span>引用 {{ paper.citations }}</span> -->
                   <span>{{ paper.year }}</span>
                 </div>
               </div>
@@ -573,6 +620,13 @@
               </div>
             </el-form-item>
 
+            <el-form-item label="摘要">
+              <el-input v-model="newPaper.abstract" placeholder="请输入摘要" />
+            </el-form-item>
+            <el-form-item label="doi">
+              <el-input v-model="newPaper.venue" placeholder="请输入doi" />
+            </el-form-item>
+
             <el-form-item label="发表日期" required>
               <el-date-picker
                 v-model="newPaper.publishDate"
@@ -584,7 +638,7 @@
               ></el-date-picker>
             </el-form-item>
 
-            <el-form-item label="引用次数">
+            <!-- <el-form-item label="引用次数">
               <el-input-number 
                 v-model="newPaper.citations" 
                 :min="0" 
@@ -592,7 +646,7 @@
                 controls-position="right"
                 style="width: 100%"
               ></el-input-number>
-            </el-form-item>
+            </el-form-item> -->
 
             <el-form-item label="标签">
               <el-input 
@@ -684,6 +738,32 @@
         </template>
       </el-dialog>
 
+      <!-- 收藏文献对话框 -->
+      <el-dialog v-model="showFavoriteDialog" title="收藏文献" width="50%">
+        <el-form ref="paperForm" :model="newPaper" label-width="120px">
+          <el-form-item label="分类" required>
+          <el-select v-model="newFolder.id" placeholder="请选择分类" style="width:100%">
+            <el-option 
+              v-for="folder in folders" 
+              :key="folder.id" 
+              :label="folder.name" 
+              :value="folder.name">
+              <div style="display: flex; justify-content: space-between;">
+                <span>{{ folder.name }}</span>
+                <span style="color: #718096; font-size: 13px;">{{ folder.count }} 篇</span>
+              </div>
+            </el-option>
+          </el-select>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="showFavoriteDialog = false; favoritePaperId = -1">取消</el-button>
+            <el-button type="primary" @click="favoritePaper()">收藏</el-button>
+          </span>
+        </template>
+      </el-dialog>
+
     </div>
   </div>
 </template>
@@ -707,13 +787,14 @@ const searchQuery = ref('')
 const selectedFolder = ref(0)
 const selectedTags = ref<string[]>([])
 const selectedPapers = ref<number[]>([])
-const sortBy = ref('date')
+const sortBy = ref('id')
 const viewMode = ref('list')
 const currentPage = ref(1)
 const pageSize = 20
 const showUploadDialog = ref(false)
 const showFolderDialog = ref(false)
 const showFolderRenameDialog = ref(false)
+const showFavoriteDialog = ref(false)
 
 const userStore = useUserStore()
 let userId = ''
@@ -745,6 +826,7 @@ const popularTags = ref([
 ])
 
 const papers = ref<FavoritePaper[]>([])
+const updatePapers = ref<FavoritePaper[]>([])
 const examplPapers = ref<FavoritePaper[]>([
   {
     type: '',
@@ -752,7 +834,7 @@ const examplPapers = ref<FavoritePaper[]>([
     title: 'Attention Is All You Need',
     authors: ['Ashish Vaswani', 'Noam Shazeer', 'Niki Parmar'].join(', '),
     venue: 'NIPS',
-    citations: 50000,
+    // citations: 50000,
     readCount: 1250,
     keywords: ['Transformer', '注意力机制', '自然语言处理'].join(', '),
     folderId: 1,
@@ -767,7 +849,7 @@ const examplPapers = ref<FavoritePaper[]>([
     title: 'BERT: Pre-training of Deep Bidirectional Transformers',
     authors: ['Jacob Devlin', 'Ming-Wei Chang', 'Kenton Lee'].join(', '),
     venue: 'NAACL',
-    citations: 35000,
+    // citations: 35000,
     readCount: 980,
     keywords: ['BERT', 'Transformer', '预训练'].join(', '),
     folderId: 4,
@@ -782,11 +864,13 @@ const examplPapers = ref<FavoritePaper[]>([
 const records = ref<Record[]>([])
 
 const newFolder = reactive({
+  id: 0,
   name: '',
   // description: '',
 })
 
 let renameFolderId = -1
+let favoritePaperId = -1
 
 const currentFile = ref<UploadRawFile>();
 const uploadRef = ref(null);
@@ -797,12 +881,14 @@ const newPaper = reactive({
   title: '',
   authors: [] as string[], 
   venue: '',
-  citations: 0,
+  // citations: 0,
   tags: [] as string[], 
   folderName: '',
   publishDate: new Date(),
   pdfUrl: '',
   isPublic: false,
+  doi: '',
+  abstract: '',
 })
 const authorInput = ref('');
 const tagInput = ref('');
@@ -812,7 +898,7 @@ onMounted(async () => {
   // console.log(userId)
   try {
     const res = await libraryAPI.getList(userId)
-    console.log(res.data.data)
+    // console.log(res.data.data)
     let responsePapers = res.data.data
     responsePapers.forEach( async resp => {
       try {
@@ -822,20 +908,20 @@ onMounted(async () => {
           id: resp.paperId,
           title: respaper.data.title,
           authors: '',
-          venue: respaper.data.venue,
+          venue: '',
           readCount: 0,
           keywords: '',
           folderId: resp.categoryId,
           pdfUrl: respaper.data.pdfUrl,
-          status: respaper.data.status,
+          status: '',
           isPublic: respaper.data.isPublic,
-          year: ''
+          year: '',
         }
-        if (respaper.data.authors) {
-          paper.authors = respaper.data.authors
-        }
+        if (respaper.data.authors) { paper.authors = respaper.data.authors }
         if (respaper.data.year) { paper.year = respaper.data.year.toString() }
         if (respaper.data.keywords) { paper.keywords = respaper.data.keywords }
+        if (respaper.data.venue) { paper.venue = respaper.data.venue }
+        if (respaper.data.status) { paper.status = respaper.data.status }
         papers.value.push(paper)
       } catch (error) {
         ElMessage.error("有一篇文献出现了读取问题")
@@ -847,7 +933,7 @@ onMounted(async () => {
   }
   try {
     const res = await libraryAPI.getCategoryList(userId)
-    console.log(res.data)
+    // console.log(res.data)
     folders.value = res.data
   } catch (error) {
     folders.value = exampleFolders.value
@@ -868,10 +954,38 @@ onMounted(async () => {
   }
   try {
     const res = await libraryAPI.getRecordList(userId)
-    console.log(res.data)
+    // console.log(res.data)
     records.value = res.data
   } catch (error) {
     ElMessage.error("读取历史记录失败")
+  }
+  try {
+    const res = await libraryAPI.getNewPapers()
+    // console.log(res.data)
+    res.data.forEach(p => {
+      let paper = {
+          type: p.type,
+          id: p.id,
+          title: p.title,
+          authors: '',
+          venue: '',
+          readCount: 0,
+          keywords: '',
+          folderId: 0,
+          pdfUrl: p.pdfUrl,
+          status: '',
+          isPublic: p.isPublic,
+          year: '',
+        }
+        if (p.authors) { paper.authors = p.authors }
+        if (p.year) { paper.year = p.year.toString() }
+        if (p.keywords) { paper.keywords = p.keywords }
+        if (p.venue) { paper.venue = p.venue }
+        if (p.status) { paper.status = p.status }
+        updatePapers.value.push(paper)
+    })
+  } catch (error) {
+    ElMessage.error("读取发现文献列表失败")
   }
   folders.value.forEach(folder => {
     folder.count = papers.value.reduce((count, p) => 
@@ -883,13 +997,18 @@ onMounted(async () => {
       parseInt(r.paperId) === paper.id ? count + 1 : count, 0
     );
   })
+  updatePapers.value.forEach(paper => {
+    paper.readCount = records.value.reduce((count, r) => 
+      parseInt(r.paperId) === paper.id ? count + 1 : count, 0
+    );
+  })
 })
 
 const filteredPapers = computed( () => {
 
   let fPapers = papers.value
-  console.log(fPapers)
-  if (selectedFolder.value !== 0 && selectedFolder.value !== -5) {
+  // console.log(fPapers)
+  if (selectedFolder.value !== 0 && selectedFolder.value !== -5 && selectedFolder.value !== -10) {
     fPapers = fPapers.filter(paper => paper.folderId === selectedFolder.value)
     let folder = folders.value.find(f => f.id === selectedFolder.value)
     if(folder?.count){
@@ -903,6 +1022,13 @@ const filteredPapers = computed( () => {
         if(paper) fPapers.push(paper)
       }
     });
+  } else if (selectedFolder.value == -10) {
+    fPapers = []
+    updatePapers.value.forEach(p => {
+      if (p.isPublic == '1'){
+        fPapers.push(p)
+      }
+    })
   }
 
   if (searchQuery.value) {
@@ -919,9 +1045,11 @@ const filteredPapers = computed( () => {
   }
 
   // 排序
-  if (selectedFolder.value != -5){
+  if (selectedFolder.value != -5 && selectedFolder.value != -10){
     fPapers.sort((a, b) => {
       switch (sortBy.value) {
+        case 'id':
+          return a.id - b.id
         case 'title':
           return a.title.localeCompare(b.title)
         case 'author':
@@ -930,9 +1058,9 @@ const filteredPapers = computed( () => {
           } else {
             return 1
           }
-        case 'citations':
-          if (a.citations && b.citations) {
-            return b.citations - a.citations
+        case 'readcount':
+          if (a.readCount && b.readCount) {
+            return b.readCount - a.readCount
           } else {
             return 1
           }
@@ -1015,12 +1143,20 @@ const handlePaperAction = async (command: string) => {
         records.value.push({userId: userId, paperId: paperId.toString(), id: res.data.id})
         let paper = papers.value.find(p => p.id === paperId)
         if(paper && paper.readCount) paper.readCount = paper.readCount + 1
+        else{
+          paper = updatePapers.value.find(p => p.id === paperId)
+          if(paper && paper.readCount) paper.readCount = paper.readCount + 1
+        }
       } catch (error) {
         ElMessage.error("创建历史记录失败")
       }
       let paper = papers.value.find(p => p.id === paperId)
       if(paper) {
         router.push({ path: '/pdf-reader', query: { url: paper.pdfUrl } })
+        // window.open(`/pdf-readerpdfUrl=${paper.pdfUrl}`, '_blank')
+      }else{
+        paper = updatePapers.value.find(p => p.id === paperId)
+        if(paper && paper.pdfUrl) router.push({ path: '/pdf-reader', query: { url: paper.pdfUrl } })
         // window.open(`/pdf-readerpdfUrl=${paper.pdfUrl}`, '_blank')
       }
       break
@@ -1032,6 +1168,9 @@ const handlePaperAction = async (command: string) => {
       break
     case 'delete':
       deletePaper(paperId)
+      break
+    case 'favorite':
+      favoritePaperShow(paperId)
       break
   }
 }
@@ -1072,6 +1211,7 @@ const deletePaper = async (paperId: number) => {
       let paper = papers.value.find(p => p.id === paperId)
       if(paper && paper.pdfUrl) await libraryAPI.deleteUrlFile(paper.pdfUrl)
       await libraryAPI.deletePaper(userId, paperId.toString())
+      if (paper && paper.isPublic === '0') await libraryAPI.deletePublication(paperId.toString())
       records.value.forEach(async r => {
         if (r.paperId === paperId.toString()) {
           await libraryAPI.deleteRecord(parseInt(r.id))
@@ -1086,6 +1226,19 @@ const deletePaper = async (paperId: number) => {
     }
   } catch {
     // 用户取消
+  }
+}
+
+const favoritePaperShow = async (paperId: number) => {
+  favoritePaperId = paperId
+  showFavoriteDialog.value = true
+}
+
+const favoritePaper = async () => {
+  try {
+    await libraryAPI.favoritePaper(parseInt(userId), favoritePaperId, newFolder.id)
+  } catch (error) {
+    ElMessage.error("收藏失败，请稍后重试")
   }
 }
 
@@ -1202,20 +1355,21 @@ const handleUpload = async () => {
         })
         let folderId = -1;
         let folder0 = folders.value.find(folder => (folder.name === newPaper.folderName))
+        let isPublic = newPaper.isPublic ? '1' : '0'
         if (folder0) {
           folderId = folder0.id
           let paper = {
-              type: newPaper.folderName,
-              title: newPaper.title,
-              authors: [...newPaper.authors].join(', '),
-              venue: newPaper.venue,
-              // year: formatDate(newPaper.publishDate).slice(0,4),
-              // "abstract": null,
-              keywords: [...newPaper.tags].join(', '),
-              // "doi": null,
-              pdfUrl: newPaper.pdfUrl,
-              status: '',
-              isPublic: newPaper.isPublic.toString()
+            type: newPaper.folderName,
+            title: newPaper.title,
+            authors: [...newPaper.authors].join(', '),
+            venue: newPaper.venue,
+            // year: formatDate(newPaper.publishDate).slice(0,4),   // 待完成
+            keywords: [...newPaper.tags].join(', '),
+            pdfUrl: newPaper.pdfUrl,
+            status: '',
+            isPublic: isPublic,
+            doi: newPaper.doi,
+            abstract: newPaper.abstract,
           }
           console.log("即将上传")
           const res = await libraryAPI.createPaper(userId, folderId, paper)
@@ -1224,7 +1378,7 @@ const handleUpload = async () => {
             title: newPaper.title,
             authors: [...newPaper.authors].join(', '),
             venue: newPaper.venue,
-            citations: newPaper.citations,
+            // citations: newPaper.citations,
             readCount: 0,
             type: [...newPaper.tags].join(', '),
             folderId: folderId,
@@ -1232,7 +1386,9 @@ const handleUpload = async () => {
             "year": newPaper.publishDate.toString().slice(0,4),
             pdfUrl: newPaper.pdfUrl,
             "status": '',
-            "isPublic": newPaper.isPublic.toString()
+            "isPublic": isPublic,
+            doi: newPaper.doi,
+            abstract: newPaper.abstract,
           })
           const folder = folders.value.find(f => f.id === folderId)
           if(folder?.count!=undefined) folder.count+=1
@@ -1243,6 +1399,8 @@ const handleUpload = async () => {
             uploadRef.value = null;
           }
           currentFile.value = undefined;
+          pdfFile.value = null
+          router.push({ path: '/library'})
         } else {
           ElMessage.error("文件夹关系出错，请刷新后重试")
         }
@@ -1294,7 +1452,7 @@ const resetNewPaper = async () => {
   newPaper.title = ''
   newPaper.authors = []
   newPaper.venue = ''
-  newPaper.citations = 0
+  // newPaper.citations = 0
   newPaper.tags = []
   newPaper.folderName = ''
   newPaper.publishDate = new Date()
@@ -1314,7 +1472,7 @@ const formatDate = (date: Date) => {
 }
 
 const cancelUpload = async () => {
-  await libraryAPI.deleteUrlFile(newPaper.pdfUrl); 
+  if(!newPaper.pdfUrl.trim()) await libraryAPI.deleteUrlFile(newPaper.pdfUrl); 
   showUploadDialog.value = false
   resetNewPaper()
 }
