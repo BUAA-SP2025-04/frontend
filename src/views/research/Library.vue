@@ -34,7 +34,7 @@
             </svg>
             上传文献
           </el-button>
-          <el-button type="primary" @click="showFolderDialog = true">
+          <el-button type="primary" @click="showFolderDialog = true; newFolder.name = ''">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
@@ -273,7 +273,7 @@
                   <p class="text-sm text-gray-600 mt-1">
                     {{ paper.authors }}
                   </p>
-                  <p class="text-sm text-gray-500 mt-1">{{ paper.venue ? paper.venue : '未知' }} • {{ paper.year }}</p>
+                  <p class="text-sm text-gray-500 mt-1">{{ paper.venue ? paper.venue : '未知' }} • {{ paper.year ? paper.year : '未知' }}</p>
 
                   <div class="mt-3 flex flex-wrap gap-2" v-if="paper.keywords">
                     <span
@@ -507,35 +507,6 @@
 
       <!-- 上传文献对话框 -->
       <el-dialog v-model="showUploadDialog" title="上传文献" width="50%">
-        <!-- <el-upload
-          ref="uploadRef"
-          class="upload-demo"
-          drag
-          :auto-upload="false"
-          :on-change="handleFileChange"
-          accept=".pdf"
-          multiple
-        >
-          <div class="el-upload__text">
-            <svg
-              class="w-16 h-16 mx-auto text-gray-400 mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              />
-            </svg>
-            将文件拖到此处，或<em>点击上传</em>
-          </div>
-          <template #tip>
-            <div class="el-upload__tip">支持 PDF 格式，单文件大小不超过50MB</div>
-          </template>
-        </el-upload> -->
         <div class="upload-section">
           <el-upload
             class="upload-demo"
@@ -623,16 +594,6 @@
               ></el-input-number>
             </el-form-item>
 
-            <!-- <el-form-item label="阅读次数" required>
-              <el-input-number 
-                v-model="newPaper.readCount" 
-                :min="0" 
-                :precision="0" 
-                controls-position="right"
-                style="width: 100%"
-              ></el-input-number>
-            </el-form-item> -->
-
             <el-form-item label="标签">
               <el-input 
                 v-model="tagInput" 
@@ -664,6 +625,12 @@
             </el-select>
             </el-form-item>
 
+            <el-form-item label="是否发表" required>
+              <el-checkbox-button v-model="newPaper.isPublic" style="width: 100%">
+                {{ newPaper.isPublic ? '已发表' : '未发表' }}
+              </el-checkbox-button>
+            </el-form-item>
+
             <label class="required">文献链接</label>
               <div class="url-container">
                 <div class="url-display">{{ newPaper.pdfUrl || '文件上传后自动生成URL' }}</div>
@@ -673,7 +640,7 @@
 
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="showUploadDialog = false; resetNewPaper()">取消</el-button>
+            <el-button @click="showUploadDialog = false; cancelUpload()">取消</el-button>
             <el-button type="primary" @click="handleUpload">上传</el-button>
           </span>
         </template>
@@ -696,7 +663,7 @@
 
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="showFolderDialog = false; newFolder.name = ''">取消</el-button>
+            <el-button @click="cancelCreateFolder()">取消</el-button>
             <el-button type="primary" @click="createFolder">创建</el-button>
           </span>
         </template>
@@ -711,7 +678,7 @@
         </el-form>
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="showFolderRenameDialog = false; newFolder.name = ''">取消</el-button>
+            <el-button @click="cancelRenameFolder()">取消</el-button>
             <el-button type="primary" @click="renameFolder">重命名</el-button>
           </span>
         </template>
@@ -789,7 +756,7 @@ const examplPapers = ref<FavoritePaper[]>([
     readCount: 1250,
     keywords: ['Transformer', '注意力机制', '自然语言处理'].join(', '),
     folderId: 1,
-    publishDate: '2024-01-15',
+    year: '2024',
     pdfUrl: 'https://example.com/paper1.pdf',
     status: '1',
     isPublic: '1',
@@ -804,7 +771,7 @@ const examplPapers = ref<FavoritePaper[]>([
     readCount: 980,
     keywords: ['BERT', 'Transformer', '预训练'].join(', '),
     folderId: 4,
-    publishDate: '2024-01-20',
+    year: '2024',
     pdfUrl: 'https://example.com/paper2.pdf',
     status: '1',
     isPublic: '1',
@@ -835,6 +802,7 @@ const newPaper = reactive({
   folderName: '',
   publishDate: new Date(),
   pdfUrl: '',
+  isPublic: false,
 })
 const authorInput = ref('');
 const tagInput = ref('');
@@ -861,7 +829,7 @@ onMounted(async () => {
           pdfUrl: respaper.data.pdfUrl,
           status: respaper.data.status,
           isPublic: respaper.data.isPublic,
-          year: '1970'
+          year: ''
         }
         if (respaper.data.authors) {
           paper.authors = respaper.data.authors
@@ -1101,9 +1069,14 @@ const deletePaper = async (paperId: number) => {
     try {
       const folder = folders.value.find(f => f.id === papers.value.find(p => p.id === paperId)?.folderId)
       if(folder?.count!=undefined) folder.count-=1
-      await libraryAPI.deletePaper(userId, paperId.toString())
       let paper = papers.value.find(p => p.id === paperId)
       if(paper && paper.pdfUrl) await libraryAPI.deleteUrlFile(paper.pdfUrl)
+      await libraryAPI.deletePaper(userId, paperId.toString())
+      records.value.forEach(async r => {
+        if (r.paperId === paperId.toString()) {
+          await libraryAPI.deleteRecord(parseInt(r.id))
+        }
+      })
       papers.value = papers.value.filter(p => p.id !== paperId)
       ElMessage.success('删除成功')
     } catch (error) {
@@ -1119,6 +1092,7 @@ const deletePaper = async (paperId: number) => {
 const editFolder = async (folderId: number) => {
   renameFolderId = folderId
   showFolderRenameDialog.value = true
+  newFolder.name = ''
 }
 
 const renameFolder = async() => {
@@ -1194,9 +1168,11 @@ const createFolder = async () => {
 
 const handleFileChange = async (file: UploadFile) => {
   try {
+    console.log(111111)
     if (file && file.raw) {
       const formData = new FormData()
       pdfFile.value = file.raw ?? null
+      console.log(pdfFile.value)
       formData.append('file', pdfFile.value)
       currentFile.value = file.raw;
       // 自动填充标题（去除扩展名）
@@ -1205,6 +1181,7 @@ const handleFileChange = async (file: UploadFile) => {
       newPaper.title = dotIndex !== -1 ? fileName.substring(0, dotIndex) : fileName;
       // 生成文件URL并填充
       const res = await libraryAPI.getFileUrl(formData)
+      console.log(res.data)
       // const fileUrl = URL.createObjectURL(file.raw);
       newPaper.pdfUrl = res.data;
     } 
@@ -1230,8 +1207,6 @@ const handleUpload = async () => {
         let folder0 = folders.value.find(folder => (folder.name === newPaper.folderName))
         if (folder0) {
           folderId = folder0.id
-          let isPublic = ''
-          if(newPaper.citations>0) {isPublic = ''} // 还需要修改具体值
           let paper = {
               type: newPaper.folderName,
               title: newPaper.title,
@@ -1243,7 +1218,7 @@ const handleUpload = async () => {
               // "doi": null,
               pdfUrl: newPaper.pdfUrl,
               status: '',
-              isPublic: isPublic
+              isPublic: newPaper.isPublic.toString()
           }
           console.log("即将上传")
           const res = await libraryAPI.createPaper(userId, folderId, paper)
@@ -1256,11 +1231,11 @@ const handleUpload = async () => {
             readCount: 0,
             type: [...newPaper.tags].join(', '),
             folderId: folderId,
-            publishDate: newPaper.publishDate.toString().slice(0,10),
+            // publishDate: newPaper.publishDate.toString().slice(0,10),
             "year": newPaper.publishDate.toString().slice(0,4),
             pdfUrl: newPaper.pdfUrl,
             "status": '',
-            "isPublic": isPublic
+            "isPublic": newPaper.isPublic.toString()
           })
           const folder = folders.value.find(f => f.id === folderId)
           if(folder?.count!=undefined) folder.count+=1
@@ -1292,6 +1267,7 @@ const removeFile = async () => {
     if (uploadRef.value) {
       uploadRef.value = null;
     }
+    pdfFile.value = null
     currentFile.value = undefined;
     newPaper.pdfUrl = '';
     newPaper.title = '';
@@ -1310,7 +1286,7 @@ const removeTag = (index: number) => {
 
 const resetNewPaper = async () => {
   try {
-    await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
+    // await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
     if (uploadRef.value) {
       uploadRef.value = null;
     }
@@ -1340,7 +1316,8 @@ const formatDate = (date: Date) => {
   }).format(date)
 }
 
-const cancelUpload = () => {
+const cancelUpload = async () => {
+  await libraryAPI.deleteUrlFile(newPaper.pdfUrl); 
   showUploadDialog.value = false
   resetNewPaper()
 }

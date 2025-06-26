@@ -207,7 +207,7 @@
                     <el-option label="新闻传播学" value="新闻传播学" />
                     <el-option label="体育学" value="体育学" />
                     <el-option label="其他" value="其他" />
-                    </el-select>
+                  </el-select>
                 </el-form-item>
 
                 <div class="flex justify-end space-x-4">

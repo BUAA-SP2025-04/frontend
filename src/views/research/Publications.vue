@@ -314,6 +314,7 @@ import type {
   PublicationStats,
   SavePublicationRequest,
 } from '@/api/types/publication'
+import type { UploadResponse } from '@/api/types/utils'
 import {
   deletePublication,
   deletePublicationFile,
@@ -326,6 +327,7 @@ import {
 import { useUserStore } from '@/stores/user'
 import PublicationStatsCardGroup from '@/components/publication/PublicationStatsCardGroup.vue'
 import PublicationInfo from '@/components/publication/PublicationInfo.vue'
+import type { UploadResponse } from '@/api/types/utils'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -540,7 +542,7 @@ const handlePdfUrl = async (): Promise<string> => {
       if (oldFilePath.value) currentPublication.pdfUrl = oldFilePath.value // 如果没有新文件但有旧文件，返回旧文件路径
       return ''
     }
-    let res: string
+    let res: UploadResponse
     if (oldFilePath.value) {
       // upload类型且有旧文件，更新文件
       const formData = new FormData()
