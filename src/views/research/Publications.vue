@@ -565,8 +565,6 @@ const handlePdfUrl = async (): Promise<string> => {
 }
 
 const submitSuccess = () => {
-  resetForm()
-  closeDialog()
   if (!isEditing.value && userStore.user?.id) {
     loading.value = true
     getPublicationsByUser(userStore.user.id)
@@ -586,6 +584,8 @@ const submitSuccess = () => {
       Object.assign(publications[idx], currentPublication)
     }
   }
+  resetForm()
+  closeDialog()
 }
 
 const handleDelete = (id: number) => {
@@ -658,7 +658,7 @@ watch(
   }
 )
 
-const handleSave = () => {
+const handleSave = async () => {
   if (!formRef.value) return
   currentPublication.authors =
     userName.value + (otherAuthors.value ? `, ${otherAuthors.value}` : '')
