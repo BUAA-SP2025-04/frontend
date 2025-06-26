@@ -874,6 +874,11 @@ const performSearch = async () => {
 const selectSuggestion = (suggestion: string) => {
   if (suggestion) {
     searchQuery.value = suggestion
+    if (suggestion == '清华大学' || suggestion == '北京大学' || suggestion == 'MIT') {
+      searchType.value = 'institution'
+    } else {
+      searchType.value = 'field'
+    }
     // performSearch()
   }
 }
