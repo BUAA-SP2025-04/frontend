@@ -1,12 +1,12 @@
 <!-- filepath: c:\Users\Windows11\Desktop\小学期\frontend\src\views\research\QuestionDetail.vue -->
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 返回按钮 -->
       <div class="mb-6">
         <button
           @click="goBack"
-          class="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          class="flex items-center text-slate-600 hover:text-cyan-600 transition-all duration-300 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-xl border border-cyan-100/50 hover:border-cyan-200/80"
         >
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -19,17 +19,19 @@
         <!-- 主内容区域 -->
         <div class="lg:col-span-3">
           <!-- 问题详情卡片 -->
-          <div class="bg-white rounded-lg shadow-sm mb-6">
+          <div class="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-cyan-100/50 mb-6">
             <div class="p-8">
               <!-- 问题标题和操作 -->
               <div class="flex items-start justify-between mb-6">
                 <div class="flex-1">
-                  <h1 class="text-2xl font-bold text-gray-900 mb-4">{{ question.title }}</h1>
+                  <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-4">
+                    {{ question.title }}
+                  </h1>
                   <div class="flex flex-wrap gap-2 mb-4">
                     <span
                       v-for="tag in question.tags"
                       :key="tag"
-                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-cyan-100/80 to-blue-100/80 text-cyan-700 border border-cyan-200/50"
                     >
                       {{ tag }}
                     </span>
@@ -41,13 +43,13 @@
                   <button
                     @click="toggleFollow"
                     :class="[
-                      'px-4 py-2 rounded-lg font-medium transition-colors',
+                      'px-6 py-3 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm',
                       question.isFollowed
-                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg hover:shadow-xl'
+                        : 'bg-white/60 text-slate-700 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 border border-cyan-200/50'
                     ]"
                   >
-                    <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                     </svg>
                     {{ question.isFollowed ? '已关注' : '关注问题' }}
@@ -55,9 +57,9 @@
                   
                   <button
                     @click="shareQuestion"
-                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                    class="px-6 py-3 bg-white/60 text-slate-700 rounded-xl hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 transition-all duration-300 border border-cyan-200/50"
                   >
-                    <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
                     </svg>
                     分享
@@ -66,40 +68,40 @@
               </div>
 
               <!-- 问题描述 -->
-              <div 
-                class="prose prose-lg max-w-none mb-6"
-                v-html="renderedDescription"
-              ></div>
+              <Markdown
+                class="prose prose-lg max-w-none mb-6 text-slate-700"
+                :source="renderedDescription"
+              />
 
               <!-- 问题元信息 -->
-              <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+              <div class="flex items-center justify-between pt-6 border-t border-cyan-100/50">
                 <div class="flex items-center space-x-6">
                   <div class="flex items-center">
                     <img
                       :src="question.author.avatar"
                       :alt="question.author.name"
-                      class="w-10 h-10 rounded-full mr-3"
+                      class="w-12 h-12 rounded-full mr-3 ring-2 ring-cyan-200/50"
                     />
                     <div>
-                      <p class="font-medium text-gray-900">{{ question.author.name }}</p>
-                      <p class="text-sm text-gray-500">{{ question.author.institution }}</p>
+                      <p class="font-medium text-slate-800">{{ question.author.name }}</p>
+                      <p class="text-sm text-slate-500">{{ question.author.institution }}</p>
                     </div>
                   </div>
-                  <div class="text-sm text-gray-500">
+                  <div class="text-sm text-slate-500">
                     发布于 {{ formatTime(question.createdAt) }}
                   </div>
                 </div>
                 
-                <div class="flex items-center space-x-6 text-sm text-gray-500">
-                  <span class="flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex items-center space-x-4 text-sm text-slate-500">
+                  <span class="flex items-center px-3 py-1 bg-cyan-50/80 rounded-full">
+                    <svg class="w-4 h-4 mr-1 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                     </svg>
                     {{ question.viewCount }} 浏览
                   </span>
-                  <span class="flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span class="flex items-center px-3 py-1 bg-blue-50/80 rounded-full">
+                    <svg class="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                     </svg>
                     {{ question.followCount }} 关注
@@ -110,17 +112,17 @@
           </div>
 
           <!-- 回答区域 -->
-          <div class="bg-white rounded-lg shadow-sm mb-6">
-            <div class="px-8 py-6 border-b border-gray-200">
+          <div class="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-cyan-100/50 mb-6">
+            <div class="px-8 py-6 border-b border-cyan-100/50 bg-gradient-to-r from-cyan-50/30 to-blue-50/30">
               <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold text-gray-900">
+                <h2 class="text-xl font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
                   {{ answers.length }} 个回答
                 </h2>
                 <div class="flex items-center space-x-3">
-                  <label class="text-sm text-gray-600">排序方式：</label>
+                  <label class="text-sm text-slate-600">排序方式：</label>
                   <select
                     v-model="answerSortBy"
-                    class="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    class="px-3 py-2 bg-white/80 border border-cyan-200/50 rounded-lg text-sm focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400 transition-all duration-300"
                   >
                     <option value="helpful">最有帮助</option>
                     <option value="latest">最新回答</option>
@@ -131,23 +133,22 @@
             </div>
 
             <!-- 回答列表 -->
-            <div class="divide-y divide-gray-200">
-              <div
-                v-for="answer in sortedAnswers"
-                :key="answer.id"
-                class="p-8"
-              >
+            <div >
+              <template v-for="(answer, idx) in sortedAnswers" :key="answer.id">
+                <div
+                  class="p-8 hover:bg-gradient-to-r hover:from-cyan-25/20 hover:to-blue-25/20 transition-all duration-300"
+                >
                 <!-- 回答者信息 -->
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center">
                     <img
                       :src="answer.author.avatar"
                       :alt="answer.author.name"
-                      class="w-10 h-10 rounded-full mr-3"
+                      class="w-12 h-12 rounded-full mr-3 ring-2 ring-cyan-200/50"
                     />
                     <div>
-                      <p class="font-medium text-gray-900">{{ answer.author.name }}</p>
-                      <p class="text-sm text-gray-500">
+                      <p class="font-medium text-slate-800">{{ answer.author.name }}</p>
+                      <p class="text-sm text-slate-500">
                         {{ answer.author.institution }} · {{ formatTime(answer.createdAt) }}
                       </p>
                     </div>
@@ -155,7 +156,7 @@
                   
                   <!-- 最佳答案标记 -->
                   <div v-if="answer.isBest" class="flex items-center">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-emerald-100/80 to-green-100/80 text-emerald-700 border border-emerald-200/50">
                       <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                       </svg>
@@ -165,45 +166,50 @@
                 </div>
 
                 <!-- 回答内容 -->
-                <div 
-                  class="prose prose-lg max-w-none mb-6"
-                  v-html="renderMarkdown(answer.content)"
-                ></div>
+              <Markdown
+                class="prose prose-lg max-w-none mb-6 text-slate-700"
+                :source="answer.content"
+              />
 
                 <!-- 回答操作 -->
-                <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                <div class="flex items-center justify-between pt-4 border-t border-cyan-100/30">
                   <div class="flex items-center space-x-4">
                     <!-- 点赞 -->
                     <button
                       @click="toggleLike(answer.id)"
                       :class="[
-                        'flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                        'flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300',
                         answer.isLiked
-                          ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-gradient-to-r from-cyan-100/80 to-blue-100/80 text-cyan-700 border border-cyan-200/50'
+                          : 'bg-white/60 text-slate-600 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 border border-slate-200/50'
                       ]"
                     >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L9 7m5 3v4M9 7H5a2 2 0 00-2 2v6a2 2 0 002 2h2.5l1.5-3h2z"></path>
-                      </svg>
+                    <svg v-if="answer.isLiked" class="w-5 h-5 text-cyan-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+                    </svg>
+                  <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M16.5 3.75c-1.74 0-3.41.81-4.5 2.09A6.235 6.235 0 0 0 7.5 3.75C4.42 3.75 2 6.09 2 9.08c0 3.4 3.4 6.36 8.55 11.13a1.5 1.5 0 0 0 2.1 0C18.6 15.44 22 12.48 22 9.08c0-2.99-2.42-5.33-5.5-5.33z"/>
+                  </svg>
                       <span>{{ answer.likeCount }}</span>
                     </button>
 
                     <!-- 评论 -->
                     <button
                       @click="toggleComments(answer.id)"
-                      class="flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                      class="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium bg-white/60 text-slate-600 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 transition-all duration-300 border border-slate-200/50"
                     >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"></path>
-                      </svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6A8.38 8.38 0 0112.5 3a8.5 8.5 0 018.5 8.5z"/>
+                    </svg>
                       <span>{{ answer.commentCount }}</span>
                     </button>
 
                     <!-- 分享 -->
                     <button
                       @click="shareAnswer(answer.id)"
-                      class="flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                      class="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium bg-white/60 text-slate-600 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 transition-all duration-300 border border-slate-200/50"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
@@ -216,34 +222,147 @@
                   <div v-if="isQuestionAuthor && !answer.isBest && !hasBestAnswer">
                     <button
                       @click="markAsBest(answer.id)"
-                      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                      class="px-6 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-xl"
                     >
                       采纳为最佳答案
                     </button>
                   </div>
                 </div>
 
-                <!-- 评论区域 -->
-                <div v-if="answer.showComments" class="mt-6 pt-6 border-t border-gray-100">
+                <!-- 多级评论区域 -->
+                                 <!-- 多级评论区域 -->
+                <div v-if="answer.showComments" class="mt-6 pt-6 border-t border-cyan-100/30">
                   <!-- 评论列表 -->
-                  <div v-if="answer.comments && answer.comments.length > 0" class="space-y-4 mb-4">
+                  <div v-if="answer.comments && answer.comments.length > 0" class="space-y-4 mb-6">
                     <div
                       v-for="comment in answer.comments"
                       :key="comment.id"
-                      class="flex space-x-3"
+                      class="group"
                     >
-                      <img
-                        :src="comment.author.avatar"
-                        :alt="comment.author.name"
-                        class="w-8 h-8 rounded-full"
-                      />
-                      <div class="flex-1">
-                        <div class="bg-gray-50 rounded-lg p-3">
-                          <div class="flex items-center justify-between mb-1">
-                            <span class="text-sm font-medium text-gray-900">{{ comment.author.name }}</span>
-                            <span class="text-xs text-gray-500">{{ formatTime(comment.createdAt) }}</span>
+                      <!-- 主评论 -->
+                      <div class="flex space-x-3">
+                        <img
+                          :src="comment.author.avatar || '/default-avatar.png'"
+                          :alt="comment.author.name"
+                          class="w-8 h-8 rounded-full ring-2 ring-cyan-200/30"
+                        />
+                        <div class="flex-1">
+                          <div class="bg-gradient-to-r from-slate-50/80 to-cyan-50/60 backdrop-blur-sm rounded-xl p-4 border border-cyan-100/30">
+                            <div class="flex items-center justify-between mb-2">
+                              <span class="text-sm font-medium text-slate-800">{{ comment.author.name }}</span>
+                              <div class="flex items-center space-x-2">
+                                <span class="text-xs text-slate-500">{{ formatTime(comment.createdAt) }}</span>
+                                <button
+                                  @click="replyToComment(answer.id, comment.id)"
+                                  class="text-xs text-cyan-600 hover:text-cyan-700 transition-colors opacity-0 group-hover:opacity-100"
+                                >
+                                  回复
+                                </button>
+                              </div>
+                            </div>
+                            <p class="text-sm text-slate-700">{{ comment.content }}</p>
+                            
+                            <!-- 评论操作 -->
+                            <div class="flex items-center space-x-4 mt-2">
+                              <button
+                                @click="toggleCommentLike(comment.id)"
+                                :class="[
+                                  'flex items-center space-x-1 text-xs transition-colors',
+                                  comment.isLiked ? 'text-cyan-600' : 'text-slate-500 hover:text-cyan-600'
+                                ]"
+                              >
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                <span>{{ comment.likeCount || 0 }}</span>
+                              </button>
+                            </div>
                           </div>
-                          <p class="text-sm text-gray-700">{{ comment.content }}</p>
+
+                          <!-- 二级评论 -->
+                          <div v-if="comment.replies && comment.replies.length > 0" class="ml-4 mt-3 space-y-3">
+                            <div
+                              v-for="reply in comment.replies"
+                              :key="reply.id"
+                              class="flex space-x-3 group"
+                            >
+                              <img
+                                :src="reply.author.avatar || '/default-avatar.png'"
+                                :alt="reply.author.name"
+                                class="w-6 h-6 rounded-full ring-1 ring-cyan-200/30"
+                              />
+                              <div class="flex-1">
+                                <div class="bg-gradient-to-r from-white/60 to-slate-50/60 backdrop-blur-sm rounded-lg p-3 border border-slate-200/30">
+                                  <div class="flex items-center justify-between mb-1">
+                                    <span class="text-xs font-medium text-slate-700">{{ reply.author.name }}</span>
+                                    <div class="flex items-center space-x-2">
+                                      <span class="text-xs text-slate-400">{{ formatTime(reply.createdAt) }}</span>
+                                      <button
+                                        @click="replyToComment(answer.id, comment.id, reply.id)"
+                                        class="text-xs text-cyan-600 hover:text-cyan-700 transition-colors opacity-0 group-hover:opacity-100"
+                                      >
+                                        回复
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <p class="text-xs text-slate-600">
+                                    <span v-if="reply.replyTo" class="text-cyan-600 font-medium">@{{ reply.replyTo.name }} </span>
+                                    {{ reply.content }}
+                                  </p>
+                                  
+                                  <!-- 二级评论操作 -->
+                                  <div class="flex items-center space-x-3 mt-2">
+                                    <button
+                                      @click="toggleCommentLike(reply.id)"
+                                      :class="[
+                                        'flex items-center space-x-1 text-xs transition-colors',
+                                        reply.isLiked ? 'text-cyan-600' : 'text-slate-400 hover:text-cyan-600'
+                                      ]"
+                                    >
+                                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                      </svg>
+                                      <span>{{ reply.likeCount || 0 }}</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- 回复框 -->
+                          <div v-if="replyingTo[comment.id]" class="ml-4 mt-3">
+                            <div class="flex space-x-3">
+                              <img
+                                src="/default-avatar.png"
+                                alt="当前用户"
+                                class="w-6 h-6 rounded-full"
+                              />
+                              <div class="flex-1">
+                                <textarea
+                                  v-model="replyContents[comment.id]"
+                                  :placeholder="getReplyPlaceholder(comment.id)"
+                                  rows="2"
+                                  class="w-full px-3 py-2 bg-white/80 border border-cyan-200/50 rounded-lg focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400 text-sm transition-all duration-300"
+                                ></textarea>
+                                <div class="flex justify-end space-x-2 mt-2">
+                                  <button
+                                    @click="cancelReply(comment.id)"
+                                    class="px-3 py-1 text-xs text-slate-600 hover:text-slate-800 transition-colors"
+                                  >
+                                    取消
+                                  </button>
+                                  <button
+                                    @click="submitReply(answer.id, comment.id)"
+                                    :disabled="!replyContents[comment.id]?.trim()"
+                                    class="px-4 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-xs"
+                                  >
+                                    发布回复
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -254,20 +373,20 @@
                     <img
                       src="/default-avatar.png"
                       alt="当前用户"
-                      class="w-8 h-8 rounded-full"
+                      class="w-8 h-8 rounded-full ring-2 ring-cyan-200/30"
                     />
                     <div class="flex-1">
                       <textarea
                         v-model="newComments[answer.id]"
                         placeholder="写下你的评论..."
-                        rows="2"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        rows="3"
+                        class="w-full px-4 py-3 bg-white/80 border border-cyan-200/50 rounded-xl focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400 text-sm transition-all duration-300"
                       ></textarea>
-                      <div class="flex justify-end mt-2">
+                      <div class="flex justify-end mt-3">
                         <button
                           @click="addComment(answer.id)"
                           :disabled="!newComments[answer.id]?.trim()"
-                          class="px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm"
+                          class="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-xl"
                         >
                           发布评论
                         </button>
@@ -276,106 +395,123 @@
                   </div>
                 </div>
               </div>
+                  <div
+                  v-if="idx < sortedAnswers.length - 1"
+                  class="mx-8 my-4 border-t-2 border-dashed border-cyan-400"
+                  style="border-radius: 2px;"
+                ></div>
+              </template>
             </div>
           </div>
 
           <!-- 写回答 -->
-          <div class="bg-white rounded-lg shadow-sm">
-            <div class="px-8 py-6 border-b border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-900">写回答</h3>
-              <p class="text-sm text-gray-600 mt-1">分享你的见解，帮助解决这个问题</p>
-            </div>
-            
-            <div class="p-8">
-              <!-- Markdown编辑器 -->
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- 编辑区 -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    编写回答（支持Markdown）
-                  </label>
-                  <textarea
-                    v-model="newAnswerContent"
-                    placeholder="你可以使用 Markdown 语法来格式化你的回答...
+<!-- 写回答 -->
+<div class="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-cyan-100/50">
 
-例如：
-**粗体文字**
-*斜体文字*
-`代码`
-```代码块```
-- 列表项
-1. 有序列表"
-                    rows="12"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-                  ></textarea>
-                </div>
-                
-                <!-- 预览区 -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">预览</label>
-                  <div 
-                    class="w-full min-h-[300px] p-3 border border-gray-300 rounded-lg bg-gray-50 prose prose-sm max-w-none"
-                    v-html="previewContent"
-                  ></div>
-                </div>
-              </div>
+  <!-- Header -->
+  <div class="px-8 py-6 border-b border-cyan-100/50 bg-gradient-to-r from-cyan-50/30 to-blue-50/30">
+    <h3 class="text-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+      写回答
+    </h3>
+    <p class="text-sm text-slate-600 mt-1">分享你的见解，帮助解决这个问题</p>
+  </div>
 
-              <!-- 提交按钮 -->
-              <div class="flex justify-end mt-6 pt-6 border-t border-gray-200">
-                <button
-                  @click="submitAnswer"
-                  :disabled="!newAnswerContent.trim()"
-                  class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
-                >
-                  发布回答
-                </button>
-              </div>
-            </div>
-          </div>
+  <!-- Body -->
+  <div class="p-8">
+    <!-- 编辑 + 预览 -->
+    <div class="grid gap-6 lg:grid-cols-12">
+
+      <!-- 编辑区 -->
+      <div class="flex flex-col lg:col-span-7">
+        <label class="block text-sm font-medium text-slate-700 mb-3">编写回答（支持 Markdown）</label>
+        <textarea
+          v-model="newAnswerContent"
+          rows="14"
+          class="flex-1 w-full px-4 py-3 bg-white/80 border border-cyan-200/50 rounded-xl focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400 font-mono text-sm resize-none transition-all duration-300"
+          placeholder="你可以使用 Markdown 语法来格式化你的回答..."
+        ></textarea>
+      </div>
+
+      <!-- 预览区 -->
+      <div class="flex flex-col lg:col-span-5">
+        <label class="block text-sm font-medium text-slate-700 mb-3">预览</label>
+        <div class="flex-1 overflow-auto">
+          <Markdown
+            class="h-full w-full p-4 bg-gradient-to-br from-slate-50/80 to-cyan-50/60 border border-cyan-200/50 rounded-xl prose prose-sm max-w-none"
+            :source="previewContent"
+          />
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 提交 -->
+    <div class="flex justify-end mt-6 pt-6 border-t border-cyan-100/50">
+      <button
+        @click="submitAnswer"
+        :disabled="!newAnswerContent.trim()"
+        class="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+      >
+        发布回答
+      </button>
+    </div>
+  </div>
+</div>
+
         </div>
 
         <!-- 侧边栏 -->
         <div class="lg:col-span-1">
           <!-- 问题统计 -->
-          <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">问题统计</h3>
+          <div class="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-cyan-100/50 p-6 mb-6">
+            <h3 class="text-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-4">问题统计</h3>
             <div class="space-y-4">
-              <div class="flex justify-between">
-                <span class="text-gray-600">回答数</span>
-                <span class="font-medium">{{ answers.length }}</span>
+              <div class="flex justify-between items-center p-3 bg-gradient-to-r from-cyan-50/40 to-blue-50/40 rounded-xl">
+                <span class="text-slate-600">回答数</span>
+                <span class="font-semibold text-slate-800 px-2 py-1 bg-white/60 rounded-lg">{{ answers.length }}</span>
               </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">浏览数</span>
-                <span class="font-medium">{{ question.viewCount }}</span>
+              <div class="flex justify-between items-center p-3 bg-gradient-to-r from-cyan-50/40 to-blue-50/40 rounded-xl">
+                <span class="text-slate-600">浏览数</span>
+                <span class="font-semibold text-slate-800 px-2 py-1 bg-white/60 rounded-lg">{{ question.viewCount }}</span>
               </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">关注数</span>
-                <span class="font-medium">{{ question.followCount }}</span>
+              <div class="flex justify-between items-center p-3 bg-gradient-to-r from-cyan-50/40 to-blue-50/40 rounded-xl">
+                <span class="text-slate-600">关注数</span>
+                <span class="font-semibold text-slate-800 px-2 py-1 bg-white/60 rounded-lg">{{ question.followCount }}</span>
               </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">发布时间</span>
-                <span class="font-medium">{{ formatDate(question.createdAt) }}</span>
+              <div class="flex justify-between items-center p-3 bg-gradient-to-r from-cyan-50/40 to-blue-50/40 rounded-xl">
+                <span class="text-slate-600">发布时间</span>
+                <span class="font-semibold text-slate-800 px-2 py-1 bg-white/60 rounded-lg text-xs">{{ formatDate(question.createdAt) }}</span>
               </div>
             </div>
           </div>
 
           <!-- 相关问题 -->
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">相关问题</h3>
+          <div class="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-cyan-100/50 p-6">
+            <h3 class="text-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-4">相关问题</h3>
             <div class="space-y-4">
               <div
                 v-for="relatedQ in relatedQuestions"
                 :key="relatedQ.id"
-                class="group cursor-pointer"
+                class="group cursor-pointer p-3 rounded-xl hover:bg-gradient-to-r hover:from-cyan-50/60 hover:to-blue-50/60 transition-all duration-300 border border-transparent hover:border-cyan-200/50"
                 @click="goToQuestion(relatedQ.id)"
               >
-                <h4 class="text-sm font-medium text-gray-900 group-hover:text-blue-600 line-clamp-2 mb-1">
+                <h4 class="text-sm font-medium text-slate-800 group-hover:text-cyan-600 line-clamp-2 mb-2 transition-colors">
                   {{ relatedQ.title }}
                 </h4>
-                <div class="flex items-center text-xs text-gray-500">
-                  <span>{{ relatedQ.answerCount }} 回答</span>
-                  <span class="mx-1">·</span>
-                  <span>{{ relatedQ.viewCount }} 浏览</span>
+                <div class="flex items-center text-xs text-slate-500 space-x-3">
+                  <span class="flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"></path>
+                    </svg>
+                    {{ relatedQ.answerCount }} 回答
+                  </span>
+                  <span class="flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    {{ relatedQ.viewCount }} 浏览
+                  </span>
                 </div>
               </div>
             </div>
@@ -393,32 +529,39 @@ import { ElMessage } from 'element-plus'
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
+import Markdown from '@/components/Markdown.vue' 
+
 
 const route = useRoute()
 const router = useRouter()
 
 // 配置marked
 marked.setOptions({
-  // @ts-expect-error: highlight is a valid option for marked but not in MarkedOptions type
-  highlight: function(code, lang) {
+  breaks: true,
+  gfm: true,
+  renderer: new marked.Renderer(),
+  highlight: function(code: string, lang: string) {
     if (lang && hljs.getLanguage(lang)) {
       try {
         return hljs.highlight(code, { language: lang }).value
       } catch (__) {}
     }
     return hljs.highlightAuto(code).value
-  },
-  breaks: true,
-  gfm: true
+  }
 } as any)
+
+
 
 // 响应式数据
 const answerSortBy = ref('helpful')
 const newAnswerContent = ref('')
 const newComments = ref<Record<number, string>>({})
-const isQuestionAuthor = ref(false) // 当前用户是否为问题作者
+const replyingTo = ref<Record<number, boolean>>({})
+const replyContents = ref<Record<number, string>>({})
+const replyTargets = ref<Record<number, any>>({}) // 存储回复的目标用户
+const isQuestionAuthor = ref(false)
 
-// 模拟问题数据
+// 模拟问题数据（更新avatar路径）
 const question = ref({
   id: 1,
   title: '如何选择合适的机器学习算法来解决多分类问题？',
@@ -460,7 +603,7 @@ model = Sequential([
   author: {
     id: 1,
     name: '张研究员',
-    avatar: '/images/avatar/1.png',
+    avatar: '/default-avatar.png',
     institution: '清华大学'
   },
   createdAt: '2025-06-25T10:30:00',
@@ -469,7 +612,7 @@ model = Sequential([
   isFollowed: false
 })
 
-// 模拟回答数据
+// 模拟回答数据（增加多级评论）
 const answers = ref([
   {
     id: 1,
@@ -531,47 +674,17 @@ def focal_loss(gamma=2., alpha=0.25):
     return focal_loss_fixed
 \`\`\`
 
-### 数据采样策略
-- **过采样**：对少数类别使用SMOTE或简单复制
-- **欠采样**：减少多数类别的样本
-- **组合采样**：结合过采样和欠采样
-
-## 3. 数据增强策略
-
-\`\`\`python
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
-datagen = ImageDataGenerator(
-    rotation_range=20,
-    width_shift_range=0.2,
-    height_shift_range=0.2,
-    horizontal_flip=True,
-    zoom_range=0.2,
-    shear_range=0.2,
-    fill_mode='nearest',
-    # 高级增强
-    channel_shift_range=0.1,
-    brightness_range=[0.8, 1.2]
-)
-\`\`\`
-
-## 4. 训练策略
-
-1. **学习率调度**：使用余弦退火或阶梯式衰减
-2. **早停策略**：监控验证损失，防止过拟合
-3. **模型集成**：训练多个模型进行集成预测
-
 预期通过这些优化，你的模型准确率应该能提升到**85-90%**以上。`,
     author: {
       id: 2,
       name: '李教授',
-      avatar: '/images/avatar/2.png',
+      avatar: '/default-avatar.png',
       institution: '北京大学',
       title: '机器学习教授'
     },
     createdAt: '2025-06-25T11:15:00',
     likeCount: 24,
-    commentCount: 8,
+    commentCount: 5,
     isLiked: false,
     isBest: true,
     showComments: false,
@@ -581,18 +694,68 @@ datagen = ImageDataGenerator(
         content: '非常详细的回答！Focal Loss确实很有效，我在项目中使用过。',
         author: {
           name: '王研究生',
-          avatar: '/images/avatar/3.png'
+          avatar: '/default-avatar.png'
         },
-        createdAt: '2025-06-25T12:00:00'
+        createdAt: '2025-06-25T12:00:00',
+        likeCount: 3,
+        isLiked: false,
+        replies: [
+          {
+            id: 11,
+            content: '同意！Focal Loss对我的医学图像分类项目帮助很大。',
+            author: {
+              name: '陈博士',
+              avatar: '/default-avatar.png'
+            },
+            replyTo: {
+              name: '王研究生'
+            },
+            createdAt: '2025-06-25T12:30:00',
+            likeCount: 1,
+            isLiked: false
+          },
+          {
+            id: 12,
+            content: '请问Focal Loss的gamma参数如何调优？',
+            author: {
+              name: '赵同学',
+              avatar: '/default-avatar.png'
+            },
+            replyTo: {
+              name: '王研究生'
+            },
+            createdAt: '2025-06-25T13:00:00',
+            likeCount: 0,
+            isLiked: false
+          }
+        ]
       },
       {
         id: 2,
         content: '请问EfficientNet和ResNet在计算效率上有多大差别？',
         author: {
-          name: '陈同学',
-          avatar: '/images/avatar/4.png'
+          name: '孙工程师',
+          avatar: '/default-avatar.png'
         },
-        createdAt: '2025-06-25T13:30:00'
+        createdAt: '2025-06-25T13:30:00',
+        likeCount: 2,
+        isLiked: true,
+        replies: [
+          {
+            id: 21,
+            content: 'EfficientNet通常比同等精度的ResNet快20-30%，参数量也更少。',
+            author: {
+              name: '李教授',
+              avatar: '/default-avatar.png'
+            },
+            replyTo: {
+              name: '孙工程师'
+            },
+            createdAt: '2025-06-25T14:00:00',
+            likeCount: 5,
+            isLiked: false
+          }
+        ]
       }
     ]
   },
@@ -616,183 +779,34 @@ model = timm.create_model(
 
 ViT在大规模数据集上表现很好，但需要更多的计算资源。
 
-## 实用的评估指标
-
-对于不平衡数据集，不要只看准确率，还要关注：
-
-1. **F1-Score（宏平均和微平均）**
-2. **每个类别的精确率和召回率**
-3. **混淆矩阵**
-
-\`\`\`python
-from sklearn.metrics import classification_report, confusion_matrix
-import seaborn as sns
-
-# 获取预测结果
-y_pred = model.predict(X_test)
-y_pred_classes = np.argmax(y_pred, axis=1)
-
-# 分类报告
-print(classification_report(y_test, y_pred_classes))
-
-# 混淆矩阵可视化
-cm = confusion_matrix(y_test, y_pred_classes)
-plt.figure(figsize=(10, 8))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-plt.title('Confusion Matrix')
-plt.ylabel('True Label')
-plt.xlabel('Predicted Label')
-plt.show()
-\`\`\`
-
-## 超参数调优建议
-
-使用**Optuna**进行自动化超参数搜索：
-
-\`\`\`python
-import optuna
-
-def objective(trial):
-    # 建议的超参数范围
-    learning_rate = trial.suggest_float('learning_rate', 1e-5, 1e-2, log=True)
-    batch_size = trial.suggest_categorical('batch_size', [16, 32, 64])
-    dropout_rate = trial.suggest_float('dropout_rate', 0.2, 0.7)
-    
-    # 训练模型并返回验证准确率
-    model = build_model(dropout_rate)
-    model.compile(
-        optimizer=Adam(learning_rate=learning_rate),
-        loss='categorical_crossentropy',
-        metrics=['accuracy']
-    )
-    
-    history = model.fit(X_train, y_train, 
-                       batch_size=batch_size,
-                       validation_data=(X_val, y_val),
-                       epochs=50, verbose=0)
-    
-    return max(history.history['val_accuracy'])
-
-study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=100)
-\`\`\`
-
 希望这些补充信息对你有帮助！`,
     author: {
       id: 3,
       name: '赵工程师',
-      avatar: '/images/avatar/5.png',
+      avatar: '/default-avatar.png',
       institution: '字节跳动',
       title: '高级算法工程师'
     },
     createdAt: '2025-06-25T14:20:00',
     likeCount: 18,
-    commentCount: 5,
+    commentCount: 2,
     isLiked: true,
     isBest: false,
     showComments: false,
     comments: [
       {
         id: 3,
-        content: 'Optuna确实很好用，自动调参省了很多时间。',
+        content: 'ViT确实强大，但训练时间比CNN长很多。',
         author: {
-          name: '孙研究员',
-          avatar: '/images/avatar/6.png'
+          name: '周研究员',
+          avatar: '/default-avatar.png'
         },
-        createdAt: '2025-06-25T15:00:00'
+        createdAt: '2025-06-25T15:00:00',
+        likeCount: 1,
+        isLiked: false,
+        replies: []
       }
     ]
-  },
-  {
-    id: 3,
-    content: `我最近也遇到了类似的问题，分享一下我的解决方案：
-
-## 数据预处理的重要性
-
-很多人忽视了数据预处理，但这往往是提升性能的关键：
-
-### 1. 数据清洗
-- 检查并移除损坏的图片
-- 统一图片格式和尺寸
-- 检查标注错误
-
-### 2. 数据标准化
-\`\`\`python
-# ImageNet预训练模型的标准化
-mean = [0.485, 0.456, 0.406]
-std = [0.229, 0.224, 0.225]
-
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=mean, std=std)
-])
-\`\`\`
-
-## 渐进式训练策略
-
-我采用了**渐进式训练**的方法：
-
-1. **第一阶段**：冻结预训练模型，只训练分类头
-2. **第二阶段**：解冻最后几层，低学习率微调
-3. **第三阶段**：全模型微调，更低学习率
-
-\`\`\`python
-# 第一阶段：冻结特征提取器
-for param in base_model.parameters():
-    param.requires_grad = False
-
-# 训练分类头
-optimizer = Adam(model.classifier.parameters(), lr=1e-3)
-
-# 第二阶段：解冻最后几层
-for param in base_model.layer4.parameters():
-    param.requires_grad = True
-
-optimizer = Adam(model.parameters(), lr=1e-4)
-
-# 第三阶段：全模型微调
-for param in model.parameters():
-    param.requires_grad = True
-
-optimizer = Adam(model.parameters(), lr=1e-5)
-\`\`\`
-
-这种方法在我的项目中将准确率从78%提升到了87%。
-
-## 模型融合技巧
-
-最后，尝试集成多个模型：
-
-\`\`\`python
-# 简单的投票集成
-models = [resnet_model, efficientnet_model, vit_model]
-predictions = []
-
-for model in models:
-    pred = model.predict(X_test)
-    predictions.append(pred)
-
-# 平均预测概率
-ensemble_pred = np.mean(predictions, axis=0)
-final_pred = np.argmax(ensemble_pred, axis=1)
-\`\`\`
-
-希望这些经验对你有用！有问题随时交流。`,
-    author: {
-      id: 4,
-      name: '钱博士后',
-      avatar: '/images/avatar/7.png',
-      institution: '中科院计算所',
-      title: '博士后研究员'
-    },
-    createdAt: '2025-06-25T16:45:00',
-    likeCount: 12,
-    commentCount: 3,
-    isLiked: false,
-    isBest: false,
-    showComments: false,
-    comments: []
   }
 ])
 
@@ -826,11 +840,11 @@ const relatedQuestions = ref([
 
 // 计算属性
 const renderedDescription = computed(() => {
-  return renderMarkdown(question.value.description)
+  return question.value.description
 })
 
 const previewContent = computed(() => {
-  return newAnswerContent.value ? renderMarkdown(newAnswerContent.value) : '<p class="text-gray-400">预览将在这里显示...</p>'
+  return newAnswerContent.value || '<p class="text-gray-400">预览将在这里显示...</p>'
 })
 
 const sortedAnswers = computed(() => {
@@ -838,7 +852,6 @@ const sortedAnswers = computed(() => {
   
   switch (answerSortBy.value) {
     case 'helpful':
-      // 最佳答案优先，然后按点赞数排序
       sorted.sort((a, b) => {
         if (a.isBest && !b.isBest) return -1
         if (!a.isBest && b.isBest) return 1
@@ -905,7 +918,6 @@ const toggleFollow = () => {
 }
 
 const shareQuestion = () => {
-  // 复制链接到剪贴板
   const url = window.location.href
   navigator.clipboard.writeText(url).then(() => {
     ElMessage.success('链接已复制到剪贴板')
@@ -929,6 +941,93 @@ const toggleComments = (answerId: number) => {
   }
 }
 
+const toggleCommentLike = (commentId: number) => {
+  // 在所有答案的评论和回复中查找
+  answers.value.forEach(answer => {
+    if (answer.comments) {
+      answer.comments.forEach(comment => {
+        if (comment.id === commentId) {
+          comment.isLiked = !comment.isLiked
+          comment.likeCount = (comment.likeCount || 0) + (comment.isLiked ? 1 : -1)
+        }
+        if (comment.replies) {
+          comment.replies.forEach(reply => {
+            if (reply.id === commentId) {
+              reply.isLiked = !reply.isLiked
+              reply.likeCount = (reply.likeCount || 0) + (reply.isLiked ? 1 : -1)
+            }
+          })
+        }
+      })
+    }
+  })
+}
+
+const replyToComment = (answerId: number, commentId: number, replyId?: number) => {
+  replyingTo.value[commentId] = true
+  
+  // 设置回复目标
+  const answer = answers.value.find(a => a.id === answerId)
+  if (answer && answer.comments) {
+    const comment = answer.comments.find(c => c.id === commentId)
+    if (replyId && comment && comment.replies) {
+      const reply = comment.replies.find(r => r.id === replyId)
+      if (reply) {
+        replyTargets.value[commentId] = reply.author
+      }
+    } else if (comment) {
+      replyTargets.value[commentId] = comment.author
+    }
+  }
+  
+  replyContents.value[commentId] = ''
+}
+
+const getReplyPlaceholder = (commentId: number) => {
+  const target = replyTargets.value[commentId]
+  return target ? `回复 @${target.name}...` : '写下你的回复...'
+}
+
+const cancelReply = (commentId: number) => {
+  replyingTo.value[commentId] = false
+  replyContents.value[commentId] = ''
+  delete replyTargets.value[commentId]
+}
+
+const submitReply = (answerId: number, commentId: number) => {
+  const content = replyContents.value[commentId]?.trim()
+  if (!content) return
+
+  const answer = answers.value.find(a => a.id === answerId)
+  if (answer && answer.comments) {
+    const comment = answer.comments.find(c => c.id === commentId)
+    if (comment) {
+      if (!comment.replies) comment.replies = []
+      
+      const newReply = {
+        id: Date.now(),
+        content,
+        author: {
+          name: '当前用户',
+          avatar: '/default-avatar.png'
+        },
+        replyTo: replyTargets.value[commentId] || null,
+        createdAt: new Date().toISOString(),
+        likeCount: 0,
+        isLiked: false
+      }
+      
+      comment.replies.push(newReply)
+      answer.commentCount++
+      
+      // 清理状态
+      cancelReply(commentId)
+      
+      ElMessage.success('回复发布成功')
+    }
+  }
+}
+
 const addComment = (answerId: number) => {
   const content = newComments.value[answerId]?.trim()
   if (!content) return
@@ -942,9 +1041,12 @@ const addComment = (answerId: number) => {
       content,
       author: {
         name: '当前用户',
-        avatar: '/images/avatar/default.png'
+        avatar: '/default-avatar.png'
       },
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      likeCount: 0,
+      isLiked: false,
+      replies: []
     })
     
     answer.commentCount++
@@ -956,9 +1058,7 @@ const addComment = (answerId: number) => {
 const markAsBest = (answerId: number) => {
   const answer = answers.value.find(a => a.id === answerId)
   if (answer) {
-    // 移除其他最佳答案标记
     answers.value.forEach(a => a.isBest = false)
-    // 标记当前答案为最佳
     answer.isBest = true
     ElMessage.success('已采纳为最佳答案')
   }
@@ -982,7 +1082,7 @@ const submitAnswer = () => {
     author: {
       id: 999,
       name: '当前用户',
-      avatar: '/images/avatar/default.png',
+      avatar: '/default-avatar.png',
       institution: '我的大学',
       title: '研究生'
     },
@@ -998,14 +1098,6 @@ const submitAnswer = () => {
   answers.value.push(newAnswer)
   newAnswerContent.value = ''
   ElMessage.success('回答发布成功！')
-  
-  // 滚动到新回答
-  setTimeout(() => {
-    const element = document.querySelector(`[data-answer-id="${newAnswer.id}"]`)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, 100)
 }
 
 const goToQuestion = (questionId: number) => {
@@ -1013,13 +1105,9 @@ const goToQuestion = (questionId: number) => {
 }
 
 onMounted(() => {
-  // 模拟增加浏览量
   question.value.viewCount++
+  isQuestionAuthor.value = false
   
-  // 检查当前用户是否为问题作者（模拟逻辑）
-  isQuestionAuthor.value = false // 实际应用中根据登录用户判断
-  
-  // 初始化评论对象
   answers.value.forEach(answer => {
     newComments.value[answer.id] = ''
   })
@@ -1034,14 +1122,14 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* Markdown样式优化 */
+/* 增强的Markdown样式 */
 .prose {
-  color: #374151;
+  color: #475569;
   max-width: none;
 }
 
 .prose h1, .prose h2, .prose h3, .prose h4 {
-  color: #111827;
+  color: #1e293b;
   font-weight: 600;
 }
 
@@ -1049,18 +1137,23 @@ onMounted(() => {
   font-size: 1.5rem;
   margin-top: 0;
   margin-bottom: 1rem;
+  background: linear-gradient(to right, #0891b2, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .prose h2 {
   font-size: 1.25rem;
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
+  color: #0e7490;
 }
 
 .prose h3 {
   font-size: 1.125rem;
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
+  color: #0e7490;
 }
 
 .prose p {
@@ -1078,68 +1171,106 @@ onMounted(() => {
 }
 
 .prose code {
-  background-color: #f3f4f6;
-  color: #e11d48;
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
+  background: linear-gradient(to right, #f1f5f9, #e0f2fe);
+  color: #0c4a6e;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.375rem;
   font-size: 0.875rem;
+  border: 1px solid #bae6fd;
 }
 
 .prose pre {
-  background-color: #1f2937;
-  color: #f9fafb;
-  padding: 1rem;
-  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #1e293b, #334155);
+  color: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
   overflow-x: auto;
-  margin: 1rem 0;
+  margin: 1.5rem 0;
+  border: 1px solid #475569;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .prose pre code {
   background: none;
   color: inherit;
   padding: 0;
+  border: none;
 }
 
 .prose blockquote {
-  border-left: 4px solid #e5e7eb;
+  border-left: 4px solid #0891b2;
   padding-left: 1rem;
-  margin: 1rem 0;
+  margin: 1.5rem 0;
   font-style: italic;
-  color: #6b7280;
+  color: #64748b;
+  background: linear-gradient(to right, #f0f9ff, #f8fafc);
+  padding: 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
 }
 
 .prose table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1rem 0;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .prose th, .prose td {
-  border: 1px solid #e5e7eb;
-  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem;
   text-align: left;
 }
 
 .prose th {
-  background-color: #f9fafb;
+  background: linear-gradient(to right, #0891b2, #3b82f6);
+  color: white;
   font-weight: 600;
+}
+
+.prose td {
+  background: #fafafa;
 }
 
 .prose strong {
   font-weight: 600;
-  color: #111827;
+  color: #1e293b;
 }
 
 .prose em {
   font-style: italic;
+  color: #475569;
 }
 
 .prose a {
-  color: #2563eb;
+  color: #0891b2;
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 .prose a:hover {
+  color: #0e7490;
   text-decoration: underline;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #0891b2, #3b82f6);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #0e7490, #2563eb);
 }
 </style>
