@@ -27,7 +27,7 @@
             </router-link>
             <router-link
               v-if="!isLoggedIn"
-              to="/register"
+              to="/login"
               class="bg-white text-indigo-900 hover:bg-gray-100 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 shadow-lg"
             >
               加入我们
@@ -524,7 +524,7 @@
         </p>
         <div v-if="!isLoggedIn" class="flex flex-col sm:flex-row gap-4 justify-center">
           <router-link
-            to="/register"
+            to="/login"
             class="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 shadow-lg"
           >
             免费注册

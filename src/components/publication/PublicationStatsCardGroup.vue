@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
+import { defineProps, watch } from 'vue'
 import type { PublicationStats } from '@/api/types/publication'
 
 const props = defineProps<{
   stats: PublicationStats
 }>()
+
+watch(() => props.stats, (newStats, oldStats) => {
+  console.log('stats 变化:', newStats)
+  // 强制更新组件
+}, { deep: true, immediate: true })
 </script>
 
 <template>

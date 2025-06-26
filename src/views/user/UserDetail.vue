@@ -128,15 +128,15 @@
 
     <!-- 统计卡片 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-2xl mx-auto">
         <div class="bg-white rounded-lg shadow p-6 text-center">
           <div class="text-3xl font-bold text-blue-600">{{ formatNumber(user.publishNum) }}</div>
           <div class="text-gray-600 mt-1">发表论文</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6 text-center">
+        <!-- <div class="bg-white rounded-lg shadow p-6 text-center">
           <div class="text-3xl font-bold text-green-600">{{ formatNumber(user.subjectNum) }}</div>
           <div class="text-gray-600 mt-1">进行项目数</div>
-        </div>
+        </div> -->
         <div class="bg-white rounded-lg shadow p-6 text-center">
           <div class="text-3xl font-bold text-purple-600">{{ formatNumber(user.followerNum) }}</div>
           <div class="text-gray-600 mt-1">关注者</div>

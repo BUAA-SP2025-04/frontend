@@ -74,7 +74,7 @@
           style="width: 100%"
           :default-sort="{ prop: 'year', order: 'descending' }"
         >
-          <el-table-column type="selection" width="55" />
+          <!-- <el-table-column type="selection" width="55" /> -->
 
           <el-table-column label="类型" width="100">
             <template #default="{ row }">
@@ -118,12 +118,12 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="likeNum" label="点赞数" width="120" align="center">
-            <template #default="{ row }">
-              <div v-if="row.likeNum" class="font-semibold text-blue-600">{{ row.likeNum }}</div>
-              <div v-else class="text-gray-400">-</div>
-            </template>
-          </el-table-column>
+          <!--          <el-table-column prop="likeNum" label="点赞数" width="120" align="center">-->
+          <!--            <template #default="{ row }">-->
+          <!--              <div v-if="row.likeNum" class="font-semibold text-blue-600">{{ row.likeNum }}</div>-->
+          <!--              <div v-else class="text-gray-400">-</div>-->
+          <!--            </template>-->
+          <!--          </el-table-column>-->
 
           <el-table-column label="状态" width="100" align="center">
             <template #default="{ row }">
@@ -314,7 +314,6 @@ import type {
   PublicationStats,
   SavePublicationRequest,
 } from '@/api/types/publication'
-import type { UploadResponse } from '@/api/types/utils'
 import {
   deletePublication,
   deletePublicationFile,
@@ -536,10 +535,12 @@ const handlePdfUrl = async (): Promise<string> => {
       // url类型且有旧文件，删除旧文件
       await deletePublicationFile(oldFilePath.value)
     }
-    return ''
+    return currentPublication.pdfUrl ? currentPublication.pdfUrl : ''
   } else if (pdfInputType.value === 'upload') {
     if (!pdfFile.value) {
-      if (oldFilePath.value) currentPublication.pdfUrl = oldFilePath.value // 如果没有新文件但有旧文件，返回旧文件路径
+      if (oldFilePath.value) return oldFilePath.value
+      // 如果没有新文件但有旧文件，返回旧文件路径
+
       return ''
     }
     let res: UploadResponse
@@ -566,8 +567,6 @@ const handlePdfUrl = async (): Promise<string> => {
 }
 
 const submitSuccess = () => {
-  resetForm()
-  closeDialog()
   if (!isEditing.value && userStore.user?.id) {
     loading.value = true
     getPublicationsByUser(userStore.user.id)
@@ -587,6 +586,8 @@ const submitSuccess = () => {
       Object.assign(publications[idx], currentPublication)
     }
   }
+  resetForm()
+  closeDialog()
 }
 
 const handleDelete = (id: number) => {
@@ -595,19 +596,20 @@ const handleDelete = (id: number) => {
     cancelButtonText: '取消',
     type: 'warning',
   })
-    .then(() => {
-      deletePublication(id)
-    })
-    .then(() => {
+    .then(async () => {
+      // 等待删除操作完成
+      await deletePublication(id)
+
       ElMessage.success('删除成功')
       // 删除后从publications中移除
       const idx = publications.findIndex(item => item.id === id)
       if (idx !== -1) publications.splice(idx, 1)
       // 删除后刷新统计数据
       if (userStore.user?.id) {
-        getPublicationStatsByUser(userStore.user.id).then(res => {
-          if (res.data) Object.assign(stats, res.data)
-        })
+        const res = await getPublicationStatsByUser(userStore.user.id)
+        if (res.data) {
+          Object.assign(stats, res.data)
+        }
       }
     })
     .catch(err => {
@@ -619,13 +621,11 @@ const resetForm = () => {
   Object.assign(currentPublication, JSON.parse(JSON.stringify(emptyPublication)))
   pdfInputType.value = 'url'
   pdfFile.value = null
-  isEditing.value = false
   oldFilePath.value = ''
 }
 
 const closeDialog = () => {
   showAddDialog.value = false
-  if (isEditing.value) resetForm()
 }
 
 const userStore = useUserStore()
@@ -659,7 +659,7 @@ watch(
   }
 )
 
-const handleSave = () => {
+const handleSave = async () => {
   if (!formRef.value) return
   currentPublication.authors =
     userName.value + (otherAuthors.value ? `, ${otherAuthors.value}` : '')
@@ -667,21 +667,20 @@ const handleSave = () => {
     .validate()
     .then(() => {
       saving.value = true
-      // 统一处理默认值
-      const payload: SavePublicationRequest = {
-        ...currentPublication,
-        year: currentPublication.year ? String(currentPublication.year) : null,
-        isPublic: String(currentPublication.isPublic),
-      }
       // 先处理PDF相关操作
       return handlePdfUrl().then(url => {
-        if (pdfInputType.value === 'upload' && pdfFile.value) {
-          if (!url) {
-            return Promise.reject(new Error('PDF上传失败'))
-          }
-          payload.pdfUrl = url
-          pdfFile.value = null // 上传后清空
+        currentPublication.pdfUrl = url // 更新当前对象的pdfUrl
+        if (pdfInputType.value === 'upload' && !currentPublication.pdfUrl) {
+          ElMessage.error('文件上传失败')
+          saving.value = false
+          return Promise.reject()
         }
+        const payload: SavePublicationRequest = {
+          ...currentPublication,
+          year: currentPublication.year ? String(currentPublication.year) : null,
+          isPublic: String(currentPublication.isPublic),
+        }
+
         // PDF无异常再保存
         let urlApi = isEditing.value ? '/publication/update' : '/publication/add'
         return savePublication(urlApi, payload)
@@ -692,9 +691,8 @@ const handleSave = () => {
       else ElMessage.success('添加成功')
       submitSuccess()
     })
-    .catch(err => {
-      console.error('保存失败:', err)
-      ElMessage.error('失败: ' + (err?.message || err))
+    .catch(() => {
+      ElMessage.error('保存失败')
     })
     .finally(() => {
       saving.value = false
