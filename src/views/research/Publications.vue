@@ -5,12 +5,7 @@
       <div class="flex justify-between items-center mb-8">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-            <svg
-              class="w-8 h-8 mr-3 text-indigo-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-8 h-8 mr-3 text-indigo-600" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -20,11 +15,10 @@
             </svg>
             科研成果管理
           </h1>
-          <!--          <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>-->
-          <p class="text-gray-600 mt-2">管理您的研究成果</p>
+          <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>
         </div>
         <el-button type="primary" size="large" @click="showAddDialog = true">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -118,12 +112,12 @@
             </template>
           </el-table-column>
 
-          <!--          <el-table-column prop="likeNum" label="点赞数" width="120" align="center">-->
-          <!--            <template #default="{ row }">-->
-          <!--              <div v-if="row.likeNum" class="font-semibold text-blue-600">{{ row.likeNum }}</div>-->
-          <!--              <div v-else class="text-gray-400">-</div>-->
-          <!--            </template>-->
-          <!--          </el-table-column>-->
+          <el-table-column prop="likeNum" label="点赞数" width="120" align="center">
+            <template #default="{ row }">
+              <div v-if="row.likeNum" class="font-semibold text-blue-600">{{ row.likeNum }}</div>
+              <div v-else class="text-gray-400">-</div>
+            </template>
+          </el-table-column>
 
           <el-table-column label="状态" width="100" align="center">
             <template #default="{ row }">
@@ -136,7 +130,7 @@
           <el-table-column label="操作" width="150" align="center">
             <template #default="{ row }">
               <el-button size="small" @click="editPublication(row)">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -146,7 +140,7 @@
                 </svg>
               </el-button>
               <el-button size="small" type="danger" @click="handleDelete(row.id)">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -538,7 +532,6 @@ const handlePdfUrl = async (): Promise<string> => {
     return currentPublication.pdfUrl ? currentPublication.pdfUrl : ''
   } else if (pdfInputType.value === 'upload') {
     if (!pdfFile.value) {
-
       if (oldFilePath.value) return oldFilePath.value
       // 如果没有新文件但有旧文件，返回旧文件路径
 
@@ -598,22 +591,21 @@ const handleDelete = (id: number) => {
     type: 'warning',
   })
     .then(() => {
-      deletePublication(id)
+      return deletePublication(id)
     })
     .then(() => {
       ElMessage.success('删除成功')
-      // 删除后从publications中移除
       const idx = publications.findIndex(item => item.id === id)
       if (idx !== -1) publications.splice(idx, 1)
       // 删除后刷新统计数据
       if (userStore.user?.id) {
-        getPublicationStatsByUser(userStore.user.id).then(res => {
+        return getPublicationStatsByUser(userStore.user.id).then(res => {
           if (res.data) Object.assign(stats, res.data)
         })
       }
     })
     .catch(err => {
-      ElMessage.error(err)
+      ElMessage.error('删除失败', err)
     })
 }
 
