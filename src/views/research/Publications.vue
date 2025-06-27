@@ -191,7 +191,6 @@
               :disabled="true"
             />
             <el-input
-              v-if="allowAddAuthors"
               v-model="otherAuthors"
               placeholder="可添加其他作者，用英文逗号分隔"
               style="margin-top: 8px"
@@ -364,6 +363,28 @@ const oldFilePath = ref<string>('')
 
 const formRef = ref<FormInstance>()
 
+onMounted(async () => {
+  if (userStore.user?.id) {
+    loading.value = true
+    try {
+      const [pubRes, statsRes] = await Promise.all([
+        getPublicationsByUser(userStore.user.id),
+        getPublicationStatsByUser(userStore.user.id),
+      ])
+      if (Array.isArray(pubRes.data)) {
+        publications.splice(0, publications.length, ...pubRes.data)
+      }
+      if (statsRes.data) {
+        Object.assign(stats, statsRes.data)
+      }
+    } catch (e) {
+      ElMessage.error('获取论文列表或统计数据失败')
+    } finally {
+      loading.value = false
+    }
+  }
+})
+
 const doiPattern = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i
 const urlPattern = /^(https?:\/\/)[^\s/$.?#].\S*$/i
 const rules: FormRules = {
@@ -516,6 +537,7 @@ const handlePdfFileChange = (file: UploadFile) => {
   }
   pdfFile.value = file.raw ?? null
 }
+
 const handlePdfExceed = (files: File[]) => {
   if (files.length > 0) {
     pdfFile.value = files[files.length - 1]
@@ -624,9 +646,6 @@ const userStore = useUserStore()
 const userName = computed(() => userStore.user?.name || '')
 const otherAuthors = ref('')
 
-// 控制是否允许添加其他作者（可根据需求调整）
-const allowAddAuthors = true
-
 // 在打开添加对话框时，默认 authors 为当前用户 name，且不可删除
 watch(
   () => showAddDialog.value,
@@ -657,7 +676,7 @@ const handleSave = async () => {
     userName.value + (otherAuthors.value ? `, ${otherAuthors.value}` : '')
   formRef.value
     .validate()
-    .then(() => {
+    .then(async () => {
       saving.value = true
       // 先处理PDF相关操作
       return handlePdfUrl().then(url => {
@@ -690,28 +709,6 @@ const handleSave = async () => {
       saving.value = false
     })
 }
-
-onMounted(async () => {
-  if (userStore.user?.id) {
-    loading.value = true
-    try {
-      const [pubRes, statsRes] = await Promise.all([
-        getPublicationsByUser(userStore.user.id),
-        getPublicationStatsByUser(userStore.user.id),
-      ])
-      if (Array.isArray(pubRes.data)) {
-        publications.splice(0, publications.length, ...pubRes.data)
-      }
-      if (statsRes.data) {
-        Object.assign(stats, statsRes.data)
-      }
-    } catch (e) {
-      ElMessage.error('获取论文列表或统计数据失败')
-    } finally {
-      loading.value = false
-    }
-  }
-})
 
 function onShowInfo(row: Publication) {
   shownPublication.value = row

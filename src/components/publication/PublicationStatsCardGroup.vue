@@ -83,3 +83,8 @@ const props = defineProps<{
     </div>
   </div>
 </template>
+<style>
+svg path {
+  fill: none;
+}
+</style>
