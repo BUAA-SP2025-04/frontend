@@ -51,7 +51,7 @@
     <!-- 平台统计 -->
     <section class="py-16 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-8 text-center">
+        <div class="grid grid-cols-4 gap-8 text-center">
           <div>
             <div class="text-4xl md:text-5xl font-extrabold text-indigo-600 mb-2">
               {{ formatNumber(animatedResearcherCount) }}
@@ -70,10 +70,12 @@
             </div>
             <div class="text-base md:text-xl font-semibold text-gray-700">学术动态</div>
           </div>
-          <!-- <div>
-            <div class="text-4xl font-bold text-orange-600 mb-2">{{ formatNumber(12834) }}</div>
-            <div class="text-gray-600">合作项目</div>
-          </div> -->
+          <div>
+            <div class="text-4xl md:text-5xl font-extrabold text-orange-600 mb-2">
+              {{ formatNumber(animatedProjectCount) }}
+            </div>
+            <div class="text-base md:text-xl font-semibold text-gray-700">合作项目</div>
+          </div>
         </div>
       </div>
     </section>
@@ -88,7 +90,7 @@
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div class="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
           <!-- 科研发现 -->
           <div
             class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
@@ -256,7 +258,7 @@
           </div>
 
           <!-- 暂时隐藏的模块 - 学术社交 -->
-          <!--
+
           <div
             class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
           >
@@ -296,53 +298,8 @@
               </router-link>
             </div>
           </div>
-          -->
-
-          <!-- 暂时隐藏的模块 - 数据可视化 -->
-          <!--
-          <div
-            class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
-          >
-            <div class="p-8">
-              <div
-                class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
-              >
-                <svg
-                  class="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <h3 class="text-2xl font-bold text-gray-900 mb-3">数据可视化</h3>
-              <p class="text-gray-600 mb-6">知识图谱、研究趋势、学术网络等多维度数据可视化</p>
-              <router-link
-                to="/visualization"
-                class="text-orange-600 hover:text-orange-700 font-semibold flex items-center"
-              >
-                查看图表
-                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-              </router-link>
-            </div>
-          </div>
-          -->
 
           <!-- 暂时隐藏的模块 - PDF阅读器 -->
-          <!--
           <div
             class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
           >
@@ -376,13 +333,12 @@
               </router-link>
             </div>
           </div>
-          -->
         </div>
       </div>
     </section>
 
     <!-- 热门动态 -->
-    <!-- <section class="py-20 bg-white">
+    <section class="py-20 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
           <h2 class="text-4xl font-bold text-gray-900 mb-4">学术动态</h2>
@@ -478,7 +434,7 @@
           </router-link>
         </div>
       </div>
-    </section> -->
+    </section>
 
     <!-- 研究领域 -->
     <section class="py-20 bg-gray-50">
@@ -659,6 +615,7 @@ const messageCount = ref(0)
 const animatedResearcherCount = ref(0)
 const animatedPaperCount = ref(0)
 const animatedMessageCount = ref(0)
+const animatedProjectCount = ref(0)
 
 function animateNumber(target: number, animatedRef: any) {
   const duration = 800 // ms
@@ -682,6 +639,10 @@ function animateNumber(target: number, animatedRef: any) {
 watch(researcherCount, val => animateNumber(val, animatedResearcherCount))
 watch(paperCount, val => animateNumber(val, animatedPaperCount))
 watch(messageCount, val => animateNumber(val, animatedMessageCount))
+
+// 合作项目静态数值
+const projectCount = ref(12834)
+watch(projectCount, val => animateNumber(val, animatedProjectCount))
 
 // 判断是否已登录
 const isLoggedIn = computed(() => userStore.isAuthenticated)
@@ -711,6 +672,8 @@ onMounted(async () => {
         .slice(0, 6)
         .map((item, idx) => ({ ...item, color: top6Colors[idx] || 'bg-gray-400' }))
     }
+    // 启动合作项目动画
+    projectCount.value = 12834
   } catch (e) {
     console.log(e)
   }

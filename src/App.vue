@@ -13,7 +13,6 @@
       <div class="text-center">
         <p>您需要登录后才能访问该页面</p>
         <el-button type="primary" class="mt-4" @click="goLogin">去登录</el-button>
-        <el-button class="mt-4 ml-2" @click="goRegister">去注册</el-button>
       </div>
     </el-dialog>
   </div>
@@ -39,8 +38,12 @@ const goRegister = () => {
 </script>
 
 <style>
+/*
+字体选择列表
+font-family: 'Inter', system-ui, sans-serif;
+*/
 #app {
-  font-family: 'Inter', system-ui, sans-serif;
+    font-family: "LXGW WenKai", sans-serif;
 }
 
 /* 全局样式重置 */
@@ -53,6 +56,7 @@ const goRegister = () => {
 html,
 body {
   height: 100%;
+
 }
 
 /* 自定义滚动条全局样式 */

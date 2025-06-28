@@ -1,22 +1,23 @@
+<!-- filepath: c:\Users\Windows11\Desktop\小学期\frontend\src\views\research\MyProjects.vue -->
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50">
+  <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 页面标题和操作按钮 -->
       <div class="flex justify-between items-center mb-8">
         <div>
-          <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">我的项目</h1>
-          <p class="mt-2 text-slate-600">管理你发布的项目和收到的申请</p>
+          <h1 class="text-3xl font-bold text-gray-900">我的项目</h1>
+          <p class="mt-2 text-gray-600">管理你发布的项目和收到的申请</p>
         </div>
         <div class="flex space-x-4">
           <button
             @click="router.push('/research/projects')"
-            class="bg-white/80 hover:bg-white text-slate-700 px-6 py-3 rounded-xl font-medium transition-all duration-300 border border-slate-200/50"
+            class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors border border-gray-200 hover:bg-gray-50"
           >
             浏览项目
           </button>
           <button
             @click="showPublishDialog = true"
-            class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-sm"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
           >
             <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -27,18 +28,18 @@
       </div>
 
       <!-- 标签页切换 -->
-      <div class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm mb-6 border border-slate-200/50">
-        <div class="border-b border-slate-200/50">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+        <div class="border-b border-gray-200">
           <nav class="-mb-px flex">
             <button
               v-for="tab in tabs"
               :key="tab.key"
               @click="activeTab = tab.key"
               :class="[
-                'py-4 px-6 text-sm font-medium border-b-2 transition-all duration-300',
+                'py-4 px-6 text-sm font-medium border-b-2 transition-colors',
                 activeTab === tab.key
-                  ? 'border-cyan-500 text-cyan-600 bg-cyan-50/50'
-                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               ]"
             >
               <svg
@@ -65,51 +66,82 @@
                 :class="[
                   'ml-2 inline-flex items-center justify-center px-2.5 py-1 text-xs font-bold rounded-full',
                   activeTab === tab.key
-                    ? 'bg-cyan-100 text-cyan-700'
-                    : 'bg-slate-100 text-slate-600'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-gray-100 text-gray-600'
                 ]"
               >
                 {{ tab.count }}
               </span>
             </button>
           </nav>
+          
+          <!-- 筛选工具栏 - 整合到标签页内 -->
+          <div class="px-6 py-4 bg-white ">
+            <div v-if="activeTab === 'my-projects'" class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <select
+                  v-model="projectStatusFilter"
+                  class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">全部状态</option>
+                  <option value="recruiting">招募中</option>
+                  <option value="ongoing">进行中</option>
+                  <option value="completed">已完成</option>
+                </select>
+              </div>
+              <span class="text-sm text-gray-500">
+                共 {{ myProjects.length }} 个项目
+              </span>
+            </div>
+            
+            <div v-if="activeTab === 'applications'" class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <select
+                  v-model="applicationStatusFilter"
+                  class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">全部状态</option>
+                  <option value="pending">待处理</option>
+                  <option value="approved">已通过</option>
+                  <option value="rejected">已拒绝</option>
+                </select>
+                <select
+                  v-model="selectedProjectFilter"
+                  class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">全部项目</option>
+                  <option
+                    v-for="project in myProjects"
+                    :key="project.id"
+                    :value="project.id"
+                  >
+                    {{ project.title }}
+                  </option>
+                </select>
+              </div>
+              <span class="text-sm text-gray-500">
+                共 {{ filteredApplications.length }} 个申请
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- 我发布的项目 -->
       <div v-if="activeTab === 'my-projects'" class="space-y-6">
-        <!-- 项目筛选 -->
-        <div class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm p-6 border border-slate-200/50">
-          <div class="flex items-center space-x-4">
-            <select
-              v-model="projectStatusFilter"
-              class="px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
-            >
-              <option value="">全部状态</option>
-              <option value="recruiting">招募中</option>
-              <option value="ongoing">进行中</option>
-              <option value="completed">已完成</option>
-            </select>
-            <div class="flex-1"></div>
-            <span class="text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
-              共 {{ myProjects.length }} 个项目
-            </span>
-          </div>
-        </div>
-
         <!-- 项目列表 -->
         <div class="space-y-4">
           <div
             v-for="project in filteredMyProjects"
             :key="project.id"
-            class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-300"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
           >
             <div class="p-6">
               <!-- 项目头部 -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex-1">
                   <div class="flex items-center gap-3 mb-2">
-                    <h3 class="text-xl font-semibold text-slate-900">{{ project.title }}</h3>
+                    <h3 class="text-xl font-semibold text-gray-900">{{ project.title }}</h3>
                     <span
                       :class="[
                         'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
@@ -132,7 +164,7 @@
                     <span
                       v-for="field in project.fields"
                       :key="field"
-                      class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                      class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
                     >
                       {{ field }}
                     </span>
@@ -143,7 +175,7 @@
                 <div class="flex space-x-2">
                   <button
                     @click="editProject(project)"
-                    class="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm"
+                    class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
                   >
                     编辑
                   </button>
@@ -168,44 +200,49 @@
               </div>
 
               <!-- 项目描述 -->
-              <p class="text-slate-600 mb-4 line-clamp-2">{{ project.description }}</p>
+              <p class="text-gray-600 mb-4 line-clamp-2">{{ project.description }}</p>
 
-              <!-- 项目统计 -->
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                  <div class="text-sm text-slate-500">团队成员</div>
-                  <div class="text-lg font-semibold text-slate-900">
-                    {{ project.memberCount }}/{{ project.maxMembers }}
-                  </div>
-                </div>
-                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                  <div class="text-sm text-slate-500">申请人数</div>
-                  <div class="text-lg font-semibold text-slate-900">
-                    {{ project.applicationCount }}
-                    <span
-                      v-if="project.pendingApplications > 0"
-                      class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-red-500 text-white rounded-full"
-                    >
-                      {{ project.pendingApplications }}
-                    </span>
-                  </div>
-                </div>
-                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                  <div class="text-sm text-slate-500">浏览次数</div>
-                  <div class="text-lg font-semibold text-slate-900">{{ project.viewCount }}</div>
-                </div>
-                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                  <div class="text-sm text-slate-500">发布时间</div>
-                  <div class="text-lg font-semibold text-slate-900">{{ formatDate(project.createdAt) }}</div>
-                </div>
+              <!-- 项目统计 - 简化为横向布局 -->
+              <div class="flex items-center space-x-6 text-sm text-gray-500 mb-4">
+                <span class="flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                  </svg>
+                  {{ project.memberCount }}/{{ project.maxMembers }} 成员
+                </span>
+                <span class="flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                  </svg>
+                  {{ project.applicationCount }} 申请
+                  <span
+                    v-if="project.pendingApplications > 0"
+                    class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-red-500 text-white rounded-full"
+                  >
+                    {{ project.pendingApplications }}
+                  </span>
+                </span>
+                <span class="flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  {{ project.viewCount }} 浏览
+                </span>
+                <span class="flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  {{ formatDate(project.createdAt) }}
+                </span>
               </div>
 
               <!-- 操作按钮 -->
-              <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+              <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                 <div class="flex space-x-3">
                   <button
                     @click="viewProjectApplications(project)"
-                    class="flex items-center px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors text-sm font-medium shadow-sm"
+                    class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                   >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
@@ -214,7 +251,7 @@
                   </button>
                   <button
                     @click="showProjectDetail(project)"
-                    class="flex items-center px-4 py-2 bg-white text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium border border-slate-300"
+                    class="flex items-center px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium border border-gray-300"
                   >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -223,7 +260,7 @@
                     查看详情
                   </button>
                 </div>
-                <div class="text-sm text-slate-500">
+                <div class="text-sm text-gray-500">
                   更新于 {{ formatTime(project.updatedAt) }}
                 </div>
               </div>
@@ -232,15 +269,15 @@
         </div>
 
         <!-- 空状态 -->
-        <div v-if="filteredMyProjects.length === 0" class="bg-white/80 rounded-xl shadow-sm border border-slate-200/50 p-12 text-center">
-          <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div v-if="filteredMyProjects.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
           </svg>
-          <h3 class="text-lg font-medium text-slate-900 mb-2">暂无项目</h3>
-          <p class="text-slate-500 mb-4">你还没有发布任何项目</p>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">暂无项目</h3>
+          <p class="text-gray-500 mb-4">你还没有发布任何项目</p>
           <button
             @click="showPublishDialog = true"
-            class="inline-flex items-center px-6 py-3 bg-cyan-500 text-white rounded-xl hover:bg-cyan-600 transition-colors shadow-sm"
+            class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
           >
             发布第一个项目
           </button>
@@ -249,82 +286,48 @@
 
       <!-- 申请管理 -->
       <div v-if="activeTab === 'applications'" class="space-y-6">
-        <!-- 申请筛选 -->
-        <div class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm p-6 border border-slate-200/50">
-          <div class="flex items-center space-x-4">
-            <select
-              v-model="applicationStatusFilter"
-              class="px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
-            >
-              <option value="">全部状态</option>
-              <option value="pending">待处理</option>
-              <option value="approved">已通过</option>
-              <option value="rejected">已拒绝</option>
-            </select>
-            <select
-              v-model="selectedProjectFilter"
-              class="px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
-            >
-              <option value="">全部项目</option>
-              <option
-                v-for="project in myProjects"
-                :key="project.id"
-                :value="project.id"
-              >
-                {{ project.title }}
-              </option>
-            </select>
-            <div class="flex-1"></div>
-            <span class="text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
-              共 {{ filteredApplications.length }} 个申请
-            </span>
-          </div>
-        </div>
-
-        <!-- 申请列表 - 优化视觉层次 -->
-        <div class="space-y-6">
+        <!-- 申请列表 - 简化设计 -->
+        <div class="space-y-4">
           <div
             v-for="application in filteredApplications"
             :key="application.id"
-            class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-300"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
           >
-            <div class="p-8">
+            <div class="p-6">
               <!-- 申请头部 -->
-              <div class="flex items-start justify-between mb-6">
+              <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center space-x-4">
                   <img
                     :src="application.applicant.avatar"
                     :alt="application.applicant.name"
-                    class="w-16 h-16 rounded-full ring-4 ring-slate-100"
+                    class="w-12 h-12 rounded-full ring-2 ring-gray-200"
                   />
                   <div>
-                    <h3 class="text-xl font-bold text-slate-900">{{ application.applicant.name }}</h3>
-                    <p class="text-slate-600 font-medium">{{ application.applicant.institution }}</p>
-                    <p class="text-sm text-slate-500 flex items-center mt-1">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ application.applicant.name }}</h3>
+                    <p class="text-gray-600">{{ application.applicant.institution }}</p>
+                    <p class="text-sm text-gray-500 flex items-center mt-1">
                       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                       </svg>
-                      申请时间：{{ formatTime(application.createdAt) }}
+                      {{ formatTime(application.createdAt) }}
                     </p>
                   </div>
                 </div>
                 
-                <div class="flex items-center space-x-3">
-                  <span
-                    :class="[
-                      'inline-flex items-center px-4 py-2 rounded-full text-sm font-bold',
-                      getApplicationStatusColor(application.status)
-                    ]"
-                  >
-                    {{ getApplicationStatusText(application.status) }}
-                  </span>
-                </div>
+                <span
+                  :class="[
+                    'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
+                    getApplicationStatusColor(application.status)
+                  ]"
+                >
+                  {{ getApplicationStatusText(application.status) }}
+                </span>
               </div>
 
               <!-- 申请的项目 -->
-              <div class="mb-6 p-4   rounded-xl ">
-                <h4 class="font-bold text-slate-900 mb-2 flex items-center">
-                  <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-2 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                   </svg>
                   申请项目：{{ application.project.title }}
@@ -333,68 +336,88 @@
                   <span
                     v-for="field in application.project.fields"
                     :key="field"
-                    class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                    class="inline-flex items-center px-2 py-1 rounded text-sm font-medium bg-blue-100 text-blue-800"
                   >
                     {{ field }}
                   </span>
                 </div>
               </div>
 
-              <!-- 申请内容 - 增强视觉层次 -->
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <!-- 申请理由 -->
-                <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                  <h4 class="text-lg font-bold text-slate-900 mb-3 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"></path>
-                    </svg>
-                    申请理由
-                  </h4>
-                  <p class="text-slate-700 leading-relaxed">{{ application.reason }}</p>
-                </div>
-                
-                <!-- 相关经验 -->
-                <div class="bg-amber-50 rounded-xl p-6 border border-amber-200">
-                  <h4 class="text-lg font-bold text-slate-900 mb-3 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                    </svg>
-                    相关经验
-                  </h4>
-                  <p class="text-slate-700 leading-relaxed">{{ application.experience }}</p>
-                </div>
-              </div>
-              
-              <!-- 其他信息 -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- 时间投入 -->
-                <div class="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                  <h4 class="text-base font-bold text-slate-900 mb-2 flex items-center">
-                    <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    时间投入
-                  </h4>
-                  <p class="text-slate-700 font-medium">{{ getTimeCommitmentText(application.timeCommitment) }}</p>
-                </div>
-                
-                <!-- 联系方式 -->
-                <div class="bg-green-50 rounded-xl p-4 border border-green-200">
-                  <h4 class="text-base font-bold text-slate-900 mb-2 flex items-center">
-                    <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                    联系方式
-                  </h4>
-                  <p class="text-slate-700 font-mono">{{ application.contact }}</p>
-                </div>
-              </div>
+              <!-- 申请内容 - 简化布局 -->
+<div class="mb-6">
+  <div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+    <table class="min-w-full bg-white">
+      <tbody>
+        <tr class="hover:bg-gray-50 transition">
+          <td class="w-40 px-6 py-4 bg-gray-50 font-bold text-gray-800 border-b border-gray-100 text-base align-middle">
+            <div class="flex items-center justify-end">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                class="w-5 h-5 text-blue-500 mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+              </svg>
+              <span>申请理由</span>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-gray-700 border-b border-gray-100 leading-relaxed align-middle">
+            {{ application.reason }}
+          </td>
+        </tr>
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 bg-gray-50 font-bold text-gray-800 border-b border-gray-100 text-base align-middle">
+            <div class="flex items-center justify-end">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                class="w-5 h-5 text-green-500 mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
+              </svg>
+              <span>相关经验</span>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-gray-700 border-b border-gray-100 leading-relaxed align-middle">
+            {{ application.experience }}
+          </td>
+        </tr>
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 bg-gray-50 font-bold text-gray-800 border-b border-gray-100 text-base align-middle">
+            <div class="flex items-center justify-end">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                class="w-5 h-5 text-yellow-500 mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              <span>时间投入</span>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-gray-700 border-b border-gray-100 align-middle">
+            {{ getTimeCommitmentText(application.timeCommitment) }}
+          </td>
+        </tr>
+        <tr>
+          <td class="px-6 py-4 bg-gray-50 font-bold text-gray-800 text-base align-middle rounded-bl-xl">
+            <div class="flex items-center justify-end">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                class="w-5 h-5 text-purple-500 mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+              </svg>
+              <span>联系方式</span>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-gray-700 font-mono align-middle rounded-br-xl">
+            {{ application.contact }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
               <!-- 操作按钮 -->
-              <div v-if="application.status === 'pending'" class="flex flex-wrap gap-3 pt-6 border-t border-slate-200">
+              <div v-if="application.status === 'pending'" class="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   @click="approveApplication(application.id)"
-                  class="flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 text-sm font-bold shadow-lg"
+                  class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
                 >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -403,7 +426,7 @@
                 </button>
                 <button
                   @click="rejectApplication(application.id)"
-                  class="flex items-center px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 transition-all duration-300 text-sm font-bold shadow-lg"
+                  class="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                 >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -412,7 +435,7 @@
                 </button>
                 <button
                   @click="contactApplicant(application)"
-                  class="flex items-center px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl hover:from-cyan-600 hover:to-blue-600 transition-all duration-300 text-sm font-bold shadow-lg"
+                  class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                 >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"></path>
@@ -422,22 +445,16 @@
               </div>
 
               <!-- 已处理状态 -->
-              <div v-else class="pt-6 border-t border-slate-200">
-                <div class="bg-slate-100 rounded-xl p-4">
-                  <p class="text-sm text-slate-600 font-medium">
-                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+              <div v-else class="pt-4 border-t border-gray-200">
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <p class="text-sm text-gray-600">
                     处理时间：{{ formatTime(application.processedAt || '') }}
                     <span v-if="application.processedBy" class="ml-4">
-                      <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                      </svg>
                       处理人：{{ application.processedBy }}
                     </span>
                   </p>
-                  <p v-if="application.processNote" class="text-sm text-slate-700 mt-2 font-medium">
-                    💭 备注：{{ application.processNote }}
+                  <p v-if="application.processNote" class="text-sm text-gray-700 mt-1">
+                    备注：{{ application.processNote }}
                   </p>
                 </div>
               </div>
@@ -446,17 +463,13 @@
         </div>
 
         <!-- 空状态 -->
-    <div v-if="filteredApplications.length === 0" class="bg-white/80 rounded-xl shadow-sm border border-slate-200/50 p-12 text-center">
-      <div class="max-w-md mx-auto">
-        <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center">
-          <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div v-if="filteredApplications.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
           </svg>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">暂无申请</h3>
+          <p class="text-gray-500">你的项目还没有收到任何申请</p>
         </div>
-        <h3 class="text-xl font-bold text-slate-900 mb-2">暂无申请</h3>
-        <p class="text-slate-500">你的项目还没有收到任何申请</p>
-      </div>
-    </div>
       </div>
     </div>
 

@@ -206,7 +206,7 @@
             </div> -->
           </div>
 
-          <div class="bg-white rounded-lg shadow px-6 py-4 sticky top-8 mt-10">
+          <!-- <div class="bg-white rounded-lg shadow px-6 py-4 sticky top-8 mt-10">
             <div
               :class="['text-lg font-medium flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
                   selectedFolder === -10 ? 'bg-indigo-100 text-indigo-700' : 'text-gray-900']"
@@ -231,7 +231,7 @@
                 发现文献
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
 
         <!-- 右侧文献列表 -->
