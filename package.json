@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@antv/g6": "^4.8.17",
+    "@types/pdfjs-dist": "^2.10.377",
     "axios": "^1.6.2",
     "echarts": "^5.6.0",
     "element-plus": "^2.4.4",
@@ -21,12 +22,13 @@
     "markdown-it-katex": "^2.0.3",
     "markdown-it-table-of-contents": "^0.9.0",
     "marked": "^15.0.12",
-    "pdfjs-dist": "^4.0.379",
+    "pdf-annotate": "^0.0.0",
+    "pdfjs-dist": "^3.11.174",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
     "vue": "^3.4.0",
     "vue-echarts": "^6.7.3",
-    "vue-pdf-embed": "^1.1.6",
+    "vue-pdf-embed": "^1.2.1",
     "vue-router": "^4.2.5",
     "vue3-markdown-it": "^1.0.10"
   },
