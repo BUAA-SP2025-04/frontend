@@ -103,15 +103,9 @@ export const useChatStore = defineStore('chat', () => {
     wsService.on('disconnected', handleDisconnected)
     wsService.on('error', handleError)
     wsService.on('message', (data: unknown) => handleNewMessage(data as { message: Message }))
-    wsService.on('typing', (data: unknown) =>
-      handleTypingStatus(data as { userId: number; conversationId: string; isTyping: boolean })
-    )
-    wsService.on('read', (data: unknown) =>
-      handleReadStatus(data as { conversationId: string; messageIds: string[]; readBy: number })
-    )
-    wsService.on('online_status', (data: unknown) =>
-      handleOnlineStatus(data as { userId: number; isOnline: boolean; lastSeen?: string })
-    )
+    wsService.on('typing', (data: unknown) => handleTypingStatus(data as { userId: number; conversationId: string; isTyping: boolean }))
+    wsService.on('read', (data: unknown) => handleReadStatus(data as { conversationId: string; messageIds: string[]; readBy: number }))
+    wsService.on('online_status', (data: unknown) => handleOnlineStatus(data as { userId: number; isOnline: boolean; lastSeen?: string }))
     wsService.on('reconnect_failed', handleReconnectFailed)
 
     // 连接
@@ -294,14 +288,10 @@ export const useChatStore = defineStore('chat', () => {
       messages.value[conversationId].push(tempMessage)
 
       // 发送文件消息
-      wsService.sendFileMessage(
-        conversationId,
-        {
-          ...uploadResult,
-          fileType: uploadResult.mimeType,
-        },
-        tempId
-      )
+      wsService.sendFileMessage(conversationId, {
+        ...uploadResult,
+        fileType: uploadResult.mimeType
+      }, tempId)
     } catch (error) {
       throw error
     }

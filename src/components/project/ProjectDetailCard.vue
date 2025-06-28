@@ -29,8 +29,8 @@
             </span>
           </div>
           <button
-            @click="$emit('close')"
             class="text-slate-400 hover:text-slate-600 transition-colors"
+            @click="$emit('close')"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -284,16 +284,16 @@
         <!-- 底部操作按钮 -->
         <div class="flex justify-end space-x-3 pt-6 border-t border-slate-200">
           <button
-            @click="$emit('close')"
             class="px-6 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+            @click="$emit('close')"
           >
             关闭
           </button>
           <button
             v-if="!isMyProject"
-            @click="$emit('apply', project.id)"
             :disabled="project.status !== 'recruiting'"
             class="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+            @click="$emit('apply', project.id)"
           >
             申请加入
           </button>
@@ -352,7 +352,17 @@ const getStatusText = (status: string) => {
 }
 
 const formatTime = (dateString: string) => {
+  if (!dateString) {
+    return '未知时间'
+  }
+
   const date = new Date(dateString)
+
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return '无效时间'
+  }
+
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
@@ -368,10 +378,21 @@ const formatTime = (dateString: string) => {
 }
 
 const formatDate = (dateString: string) => {
+  if (!dateString) {
+    return '未知日期'
+  }
+
+  const date = new Date(dateString)
+
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return '无效日期'
+  }
+
   return new Intl.DateTimeFormat('zh-CN', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  }).format(new Date(dateString))
+  }).format(date)
 }
 </script>

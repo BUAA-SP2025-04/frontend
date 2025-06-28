@@ -5,39 +5,18 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 页面标题和发布按钮 -->
       <div class="flex justify-between items-center mb-8">
-        <div class="relative">
-          <div
-            class="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-lg blur opacity-25"
-          ></div>
-          <div
-            class="relative bg-white/80 backdrop-blur-sm rounded-lg p-6 border border-cyan-100/50"
-          >
-            <h1
-              class="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent"
-            >
-              科研问答
-            </h1>
-            <p class="mt-2 text-slate-600">分享知识，解决科研难题</p>
-          </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">科研问答</h1>
+          <p class="mt-2 text-gray-600">分享知识，解决科研难题</p>
         </div>
         <button
           @click="showPublishDialog = true"
           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
         >
-          <div
-            class="absolute -inset-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"
-          ></div>
-          <div class="relative flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              ></path>
-            </svg>
-            发布问题
-          </div>
+          <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          发布问题
         </button>
       </div>
 
@@ -45,28 +24,13 @@
         <!-- 主内容区域 -->
         <div class="lg:col-span-3">
           <!-- 筛选和搜索栏 -->
-          <div
-            class="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-cyan-100/50 p-6 mb-6"
-          >
+          <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div class="flex flex-col sm:flex-row gap-4">
               <!-- 搜索框 -->
-              <div class="flex-1 relative">
-                <div
-                  class="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-blue-400/20 rounded-lg blur"
-                ></div>
+              <div class="flex-1">
                 <div class="relative">
-                  <svg
-                    class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    ></path>
+                  <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                   </svg>
                   <input
                     v-model="searchQuery"
@@ -76,7 +40,7 @@
                   />
                 </div>
               </div>
-
+              
               <!-- 分类筛选 -->
               <select
                 v-model="selectedCategory"
@@ -110,18 +74,11 @@
               :key="question.id"
               class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
             >
-              <!-- 渐变背景装饰 -->
-              <div
-                class="absolute -inset-0.5 bg-gradient-to-r from-cyan-400/10 to-blue-400/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-300"
-              ></div>
-
-              <div class="relative p-6">
+              <div class="p-6">
                 <!-- 问题标题和标签 -->
                 <div class="flex items-start justify-between mb-4">
                   <div class="flex-1">
-                    <h3
-                      class="text-xl font-semibold text-slate-800 mb-3 hover:bg-gradient-to-r hover:from-cyan-600 hover:to-blue-600 hover:bg-clip-text hover:text-transparent cursor-pointer transition-all duration-300"
-                    >
+                    <h3 class="text-xl font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors mb-3">
                       {{ question.title }}
                     </h3>
                     <div class="flex flex-wrap gap-2 mb-3">
@@ -134,29 +91,19 @@
                       </span>
                     </div>
                   </div>
-
+                  
                   <!-- 关注按钮 -->
                   <button
                     @click="toggleFollow(question.id)"
                     :class="[
                       'ml-4 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                       question.isFollowed
-                        ? 'bg-gradient-to-r from-cyan-100/80 to-blue-100/80 text-cyan-700 hover:from-cyan-200/80 hover:to-blue-200/80 border border-cyan-200/50'
-                        : 'bg-white/60 text-slate-600 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 border border-slate-200/50',
+                        ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     ]"
                   >
-                    <svg
-                      class="w-4 h-4 inline-block mr-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      ></path>
+                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                     </svg>
                     {{ question.isFollowed ? '已关注' : '关注' }}
                   </button>
@@ -180,43 +127,18 @@
                     </div>
                     <span class="text-gray-400">{{ formatTime(question.createdAt) }}</span>
                   </div>
-
+                  
                   <div class="flex items-center space-x-4">
-                    <span class="flex items-center px-3 py-1 bg-cyan-50/80 rounded-full">
-                      <svg
-                        class="w-4 h-4 mr-1 text-cyan-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"
-                        ></path>
+                    <span class="flex items-center px-2 py-1 bg-gray-100 rounded-full">
+                      <svg class="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"></path>
                       </svg>
                       {{ question.answerCount }} 回答
                     </span>
-                    <span class="flex items-center px-3 py-1 bg-blue-50/80 rounded-full">
-                      <svg
-                        class="w-4 h-4 mr-1 text-blue-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        ></path>
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        ></path>
+                    <span class="flex items-center px-2 py-1 bg-gray-100 rounded-full">
+                      <svg class="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                       </svg>
                       {{ question.viewCount }} 浏览
                     </span>
@@ -224,20 +146,16 @@
                 </div>
 
                 <!-- 回答预览 -->
-                <div v-if="question.topAnswer" class="mt-4 pt-4 border-t border-cyan-100/50">
-                  <div
-                    class="bg-gradient-to-r from-cyan-25/50 to-blue-25/50 rounded-xl p-4 backdrop-blur-sm border border-cyan-100/30"
-                  >
+                <div v-if="question.topAnswer" class="mt-4 pt-4 border-t border-gray-200">
+                  <div class="bg-gray-50 rounded-lg p-4">
                     <div class="flex items-center mb-2">
                       <img
                         :src="question.topAnswer.author.avatar"
                         :alt="question.topAnswer.author.name"
                         class="w-6 h-6 rounded-full mr-2"
                       />
-                      <span class="text-sm font-medium text-slate-700">{{
-                        question.topAnswer.author.name
-                      }}</span>
-                      <span class="text-sm text-slate-500 ml-2">的回答</span>
+                      <span class="text-sm font-medium text-gray-700">{{ question.topAnswer.author.name }}</span>
+                      <span class="text-sm text-gray-500 ml-2">的回答</span>
                     </div>
                     <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">
                       {{ question.topAnswer.content }}
@@ -261,8 +179,8 @@
                       查看详情
                     </button>
                   </div>
-
-                  <div class="flex items-center space-x-1 text-sm text-slate-500">
+                  
+                  <div class="flex items-center space-x-1 text-sm text-gray-500">
                     <span>{{ question.followCount }} 人关注</span>
                   </div>
                 </div>
@@ -280,8 +198,8 @@
                 :class="[
                   'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                   currentPage === page
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg'
-                    : 'bg-white/60 text-slate-700 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 backdrop-blur-sm border border-cyan-100/50',
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
                 ]"
               >
                 {{ page }}
@@ -293,12 +211,8 @@
         <!-- 侧边栏 -->
         <div class="lg:col-span-1">
           <!-- 热门标签 -->
-          <div
-            class="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-cyan-100/50 p-6 mb-6"
-          >
-            <h3
-              class="text-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-4"
-            >
+          <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
               热门标签
             </h3>
             <div class="space-y-2">
@@ -315,12 +229,8 @@
           </div>
 
           <!-- 活跃用户 -->
-          <div
-            class="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-cyan-100/50 p-6"
-          >
-            <h3
-              class="text-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-4"
-            >
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
               活跃用户
             </h3>
             <div class="space-y-3">
@@ -346,20 +256,11 @@
     </div>
 
     <!-- 发布问题对话框 -->
-    <div
-      v-if="showPublishDialog"
-      class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-    >
-      <div
-        class="bg-white/95 backdrop-blur-sm rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-cyan-100/50"
-      >
-        <div
-          class="px-6 py-4 border-b border-cyan-100/50 bg-gradient-to-r from-cyan-50/50 to-blue-50/50"
-        >
+    <div v-if="showPublishDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
-            <h3
-              class="text-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent"
-            >
+            <h3 class="text-lg font-semibold text-gray-900">
               发布科研问题
             </h3>
             <button
@@ -367,17 +268,12 @@
               class="text-gray-400 hover:text-gray-600 transition-colors"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                ></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </button>
           </div>
         </div>
-
+        
         <form @submit.prevent="publishQuestion" class="p-6 space-y-6">
           <!-- 问题标题 -->
           <div>
@@ -479,20 +375,11 @@
     </div>
 
     <!-- 回答问题对话框 -->
-    <div
-      v-if="showAnswerForm"
-      class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-    >
-      <div
-        class="bg-white/95 backdrop-blur-sm rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-cyan-100/50"
-      >
-        <div
-          class="px-6 py-4 border-b border-cyan-100/50 bg-gradient-to-r from-cyan-50/50 to-blue-50/50"
-        >
+    <div v-if="showAnswerForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
-            <h3
-              class="text-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent"
-            >
+            <h3 class="text-lg font-semibold text-gray-900">
               回答问题
             </h3>
             <button
@@ -500,26 +387,18 @@
               class="text-gray-400 hover:text-gray-600 transition-colors"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                ></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </button>
           </div>
         </div>
-
+        
         <!-- 问题信息 -->
-        <div
-          v-if="selectedQuestion"
-          class="px-6 py-4 bg-gradient-to-r from-cyan-25/30 to-blue-25/30 border-b border-cyan-100/50"
-        >
-          <h4 class="font-medium text-slate-800 mb-2">{{ selectedQuestion.title }}</h4>
-          <p class="text-sm text-slate-600 line-clamp-2">{{ selectedQuestion.description }}</p>
+        <div v-if="selectedQuestion" class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <h4 class="font-medium text-gray-800 mb-2">{{ selectedQuestion.title }}</h4>
+          <p class="text-sm text-gray-600 line-clamp-2">{{ selectedQuestion.description }}</p>
         </div>
-
+        
         <form @submit.prevent="submitAnswer" class="p-6 space-y-6">
           <!-- 回答内容 -->
           <div>
@@ -572,7 +451,7 @@ const itemsPerPage = 10
 // 对话框控制
 const showPublishDialog = ref(false)
 const showAnswerForm = ref(false)
-type Question = (typeof questions.value)[number]
+type Question = typeof questions.value[number]
 const selectedQuestion = ref<Question | null>(null)
 
 // 发布问题表单
@@ -585,13 +464,13 @@ const newQuestion = ref<{
   title: '',
   description: '',
   category: '',
-  tags: [],
+  tags: []
 })
 const tagInput = ref('')
 
 // 回答表单
 const newAnswer = ref({
-  content: '',
+  content: ''
 })
 
 // 模拟数据
@@ -599,15 +478,14 @@ const questions = ref([
   {
     id: 1,
     title: '如何选择合适的机器学习算法来解决多分类问题？',
-    description:
-      '我正在处理一个包含10个类别的图像分类任务，数据集大小约为50000张图片。目前考虑使用CNN，但不确定具体应该选择哪种架构。数据集存在一定的类别不平衡问题，有些类别的样本数量较少。希望能得到一些关于算法选择和数据预处理的建议。',
+    description: '我正在处理一个包含10个类别的图像分类任务，数据集大小约为50000张图片。目前考虑使用CNN，但不确定具体应该选择哪种架构。数据集存在一定的类别不平衡问题，有些类别的样本数量较少。希望能得到一些关于算法选择和数据预处理的建议。',
     category: '机器学习',
     tags: ['CNN', '图像分类', '多分类', '类别不平衡'],
     author: {
       id: 1,
       name: '张研究员',
       avatar: '/default-avatar.png',
-      institution: '清华大学',
+      institution: '清华大学'
     },
     createdAt: '2025-06-25T10:30:00',
     answerCount: 5,
@@ -617,24 +495,22 @@ const questions = ref([
     topAnswer: {
       author: {
         name: '李教授',
-        avatar: '/default-avatar.png',
+        avatar: '/default-avatar.png'
       },
-      content:
-        '对于多分类图像任务，我建议从ResNet或EfficientNet开始尝试。针对类别不平衡，可以考虑使用焦点损失(Focal Loss)或加权交叉熵损失...',
-    },
+      content: '对于多分类图像任务，我建议从ResNet或EfficientNet开始尝试。针对类别不平衡，可以考虑使用焦点损失(Focal Loss)或加权交叉熵损失...'
+    }
   },
   {
     id: 2,
     title: '深度学习模型在小样本数据集上的过拟合问题如何解决？',
-    description:
-      '我的数据集只有2000个样本，但特征维度很高（约1000维）。使用传统的深度网络容易出现过拟合，验证集准确率远低于训练集。已经尝试了dropout和L2正则化，但效果有限。',
+    description: '我的数据集只有2000个样本，但特征维度很高（约1000维）。使用传统的深度网络容易出现过拟合，验证集准确率远低于训练集。已经尝试了dropout和L2正则化，但效果有限。',
     category: '机器学习',
     tags: ['深度学习', '小样本', '过拟合', '正则化'],
     author: {
       id: 2,
       name: '王博士',
       avatar: '/default-avatar.png',
-      institution: '北京大学',
+      institution: '北京大学'
     },
     createdAt: '2025-06-25T09:15:00',
     answerCount: 8,
@@ -644,44 +520,41 @@ const questions = ref([
     topAnswer: {
       author: {
         name: '陈研究员',
-        avatar: '/default-avatar.png',
+        avatar: '/default-avatar.png'
       },
-      content:
-        '小样本问题建议考虑迁移学习，使用预训练模型进行微调。另外可以尝试数据增强、早停法和集成学习等方法...',
-    },
+      content: '小样本问题建议考虑迁移学习，使用预训练模型进行微调。另外可以尝试数据增强、早停法和集成学习等方法...'
+    }
   },
   {
     id: 3,
     title: '如何评估时间序列预测模型的性能？',
-    description:
-      '我在做股价预测的研究，使用LSTM模型。除了常见的RMSE和MAE，还有哪些指标可以更好地评估时间序列预测的效果？特别是在金融领域的应用。',
+    description: '我在做股价预测的研究，使用LSTM模型。除了常见的RMSE和MAE，还有哪些指标可以更好地评估时间序列预测的效果？特别是在金融领域的应用。',
     category: '数据分析',
     tags: ['时间序列', 'LSTM', '股价预测', '模型评估'],
     author: {
       id: 3,
       name: '刘分析师',
       avatar: '/default-avatar.png',
-      institution: '复旦大学',
+      institution: '复旦大学'
     },
     createdAt: '2025-06-25T08:45:00',
     answerCount: 3,
     viewCount: 89,
     followCount: 7,
     isFollowed: false,
-    topAnswer: null,
+    topAnswer: null
   },
   {
     id: 4,
     title: '研究论文中的实验部分应该如何设计才能更有说服力？',
-    description:
-      '即将投稿一篇关于自然语言处理的论文，但担心实验部分不够充分。应该包含哪些对比实验？如何选择基线模型？消融实验的设计有什么要点？',
+    description: '即将投稿一篇关于自然语言处理的论文，但担心实验部分不够充分。应该包含哪些对比实验？如何选择基线模型？消融实验的设计有什么要点？',
     category: '论文写作',
     tags: ['论文写作', '实验设计', '对比实验', '消融实验'],
     author: {
       id: 4,
       name: '赵硕士',
       avatar: '/default-avatar.png',
-      institution: '上海交通大学',
+      institution: '上海交通大学'
     },
     createdAt: '2025-06-24T16:20:00',
     answerCount: 12,
@@ -691,24 +564,22 @@ const questions = ref([
     topAnswer: {
       author: {
         name: '孙教授',
-        avatar: '/default-avatar.png',
+        avatar: '/default-avatar.png'
       },
-      content:
-        '实验设计需要考虑完整性和公平性。建议包含与最新SOTA方法的对比、不同数据集上的验证、详细的消融实验分析...',
-    },
+      content: '实验设计需要考虑完整性和公平性。建议包含与最新SOTA方法的对比、不同数据集上的验证、详细的消融实验分析...'
+    }
   },
   {
     id: 5,
     title: 'Transformer架构在视觉任务上的应用前景如何？',
-    description:
-      'Vision Transformer (ViT) 最近很热门，想了解它相比传统CNN的优势在哪里？在什么场景下使用ViT会更好？计算资源需求如何？',
+    description: 'Vision Transformer (ViT) 最近很热门，想了解它相比传统CNN的优势在哪里？在什么场景下使用ViT会更好？计算资源需求如何？',
     category: '理论研究',
     tags: ['Transformer', 'ViT', '计算机视觉', 'CNN'],
     author: {
       id: 5,
       name: '钱研究生',
       avatar: '/default-avatar.png',
-      institution: '中科院',
+      institution: '中科院'
     },
     createdAt: '2025-06-24T14:10:00',
     answerCount: 6,
@@ -718,12 +589,11 @@ const questions = ref([
     topAnswer: {
       author: {
         name: '周专家',
-        avatar: '/default-avatar.png',
+        avatar: '/default-avatar.png'
       },
-      content:
-        'ViT在大规模数据集上表现优异，特别是在需要捕捉长距离依赖的任务中。但计算成本较高，小数据集上可能不如CNN...',
-    },
-  },
+      content: 'ViT在大规模数据集上表现优异，特别是在需要捕捉长距离依赖的任务中。但计算成本较高，小数据集上可能不如CNN...'
+    }
+  }
 ])
 
 const popularTags = ref([
@@ -734,7 +604,7 @@ const popularTags = ref([
   { name: '论文写作', count: 18 },
   { name: 'Transformer', count: 15 },
   { name: '时间序列', count: 12 },
-  { name: '算法优化', count: 20 },
+  { name: '算法优化', count: 20 }
 ])
 
 const activeUsers = ref([
@@ -742,26 +612,26 @@ const activeUsers = ref([
     id: 1,
     name: '李教授',
     avatar: '/default-avatar.png',
-    answerCount: 127,
+    answerCount: 127
   },
   {
     id: 2,
     name: '陈研究员',
     avatar: '/default-avatar.png',
-    answerCount: 89,
+    answerCount: 89
   },
   {
     id: 3,
     name: '孙教授',
     avatar: '/default-avatar.png',
-    answerCount: 76,
+    answerCount: 76
   },
   {
     id: 4,
     name: '周专家',
     avatar: '/default-avatar.png',
-    answerCount: 54,
-  },
+    answerCount: 54
+  }
 ])
 
 // 计算属性
@@ -771,11 +641,10 @@ const filteredQuestions = computed(() => {
   // 搜索过滤
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(
-      q =>
-        q.title.toLowerCase().includes(query) ||
-        q.description.toLowerCase().includes(query) ||
-        q.tags.some(tag => tag.toLowerCase().includes(query))
+    filtered = filtered.filter(q => 
+      q.title.toLowerCase().includes(query) ||
+      q.description.toLowerCase().includes(query) ||
+      q.tags.some(tag => tag.toLowerCase().includes(query))
     )
   }
 
@@ -790,7 +659,7 @@ const filteredQuestions = computed(() => {
       filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       break
     case 'hot':
-      filtered.sort((a, b) => b.answerCount + b.viewCount - (a.answerCount + a.viewCount))
+      filtered.sort((a, b) => (b.answerCount + b.viewCount) - (a.answerCount + a.viewCount))
       break
     case 'unanswered':
       filtered.sort((a, b) => a.answerCount - b.answerCount)
@@ -806,11 +675,10 @@ const totalPages = computed(() => {
   let filtered = questions.value
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(
-      q =>
-        q.title.toLowerCase().includes(query) ||
-        q.description.toLowerCase().includes(query) ||
-        q.tags.some(tag => tag.toLowerCase().includes(query))
+    filtered = filtered.filter(q => 
+      q.title.toLowerCase().includes(query) ||
+      q.description.toLowerCase().includes(query) ||
+      q.tags.some(tag => tag.toLowerCase().includes(query))
     )
   }
   if (selectedCategory.value) {
@@ -832,12 +700,12 @@ const formatTime = (dateString: string) => {
   if (minutes < 60) return `${minutes}分钟前`
   if (hours < 24) return `${hours}小时前`
   if (days < 7) return `${days}天前`
-
+  
   return new Intl.DateTimeFormat('zh-CN', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit',
+    minute: '2-digit'
   }).format(date)
 }
 
@@ -881,26 +749,26 @@ const publishQuestion = () => {
       id: 999,
       name: '当前用户',
       avatar: '/default-avatar.png',
-      institution: '我的大学',
+      institution: '我的大学'
     },
     createdAt: new Date().toISOString(),
     answerCount: 0,
     viewCount: 0,
     followCount: 0,
     isFollowed: false,
-    topAnswer: null,
+    topAnswer: null
   }
 
   questions.value.unshift(question)
-
+  
   // 重置表单
   newQuestion.value = {
     title: '',
     description: '',
     category: '',
-    tags: [],
+    tags: []
   }
-
+  
   showPublishDialog.value = false
   ElMessage.success('问题发布成功！')
 }

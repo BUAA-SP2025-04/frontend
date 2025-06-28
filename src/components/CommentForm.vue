@@ -131,4 +131,4 @@ const submitComment = async () => {
 export default {
   name: 'CommentForm',
 }
-</script>
+</script> 
