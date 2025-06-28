@@ -57,6 +57,42 @@
               文献库
             </router-link>
 
+            <router-link
+              to="/research/projects"
+              :class="[
+                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
+                $route.path === '/research/projects'
+                  ? 'border-indigo-500 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+              ]"
+            >
+              科研项目
+            </router-link>
+
+            <router-link
+              to="/research/qa"
+              :class="[
+                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
+                $route.path === '/research/qa'
+                  ? 'border-indigo-500 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+              ]"
+            >
+              科研问答
+            </router-link>
+
+            <router-link
+              to="/research/knowledge-graph"
+              :class="[
+                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
+                $route.path === '/research/knowledge-graph'
+                  ? 'border-indigo-500 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+              ]"
+            >
+              知识图谱
+            </router-link>
+
             <!-- <router-link
               to="/pdf-reader"
               :class="[
@@ -213,6 +249,34 @@
                     />
                   </svg>
                   科研成果
+                </router-link>
+
+                <router-link
+                  to="/research/my-projects"
+                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 7a2 2 0 012-2h3.172a2 2 0 011.414.586l1.828 1.828A2 2 0 0012.828 8H19a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                    />
+                  </svg>
+                  我的项目
+                </router-link>
+
+                                <router-link
+                  to="/research/my-questions"
+                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+            <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+              />
+            </svg>
+
+                  我的提问
                 </router-link>
 
                 <!-- <router-link
