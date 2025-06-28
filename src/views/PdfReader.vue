@@ -18,7 +18,7 @@
               <el-button size="small" @click="zoomOut">缩小</el-button>
               <el-button size="small" @click="resetZoom">重置</el-button>
             </div> -->
-          <!-- <div class="tools">
+          <div class="tools">
             <button 
               class="tool-btn" 
               :class="{ active: activeTool === 'highlight' }"
@@ -33,7 +33,7 @@
             <button class="tool-btn" @click="downloadAnnotations">
               <i class="fas fa-download"></i> 导出批注
             </button>
-          </div> -->
+          </div>
         </div>
 
         <div class="border rounded-lg overflow-hidden relative">
@@ -48,7 +48,8 @@
             ref="annotationLayer" 
             class="annotation-layer"
             :style="{ cursor: activeTool === 'highlight' ? 'crosshair' : 'default',
-              pointerEvents: activeTool === 'highlight' ? 'auto' : 'none' }"
+              pointerEvents: activeTool === 'highlight' ? 'auto' : 'none',
+              zIndex: 100 }"
           ></div>
         </div>
         
@@ -163,6 +164,7 @@ const pdfBlob = ref<Blob | null>(null)
 const pdfContainer = ref<HTMLElement | null>(null)
 const pdfLoaded = ref(false)
 const isPdfRendered = ref(false)
+const resizeObserver = ref<ResizeObserver | null>(null)
 
 const route = useRoute()
 
@@ -205,8 +207,6 @@ const onPageLoaded = (page: any) => {
       pdfContainer.value = document.querySelector('.pdf-container') as HTMLElement
     }
     
-    // 确保批注层存在
-    ensureAnnotationLayer()
     // 初始化批注层
     initAnnotationCanvas()
     attachEventListeners()
@@ -249,6 +249,13 @@ onMounted(async () => {
       pdfUrl.value = URL.createObjectURL(blob)
       currentPage.value = 1
       selectedFile.value = null
+      if (pdfContainer.value) {
+        resizeObserver.value = new ResizeObserver(() => {
+          initAnnotationCanvas()
+          redrawAnnotations()
+        })
+        resizeObserver.value.observe(pdfContainer.value)
+      }
     } catch (e) {
       pdfUrl.value = ''
       pdfBlob.value = null
@@ -271,45 +278,29 @@ const downloadPdf = () => {
 
 // 确保批注层元素存在
 const ensureAnnotationLayer = () => {
-  if (!annotationLayer.value) {
-    console.log('尝试重新获取批注层元素');
-    
-    // 尝试从 DOM 获取元素
-    annotationLayer.value = document.querySelector('.annotation-layer') as HTMLElement;
-    
-    // 如果仍然不存在，创建并添加批注层
-    if (!annotationLayer.value && pdfContainer.value) {
-      console.log('创建新的批注层元素');
-      
-      // 确保我们找到正确的容器
-      const container = pdfContainer.value.querySelector('.border.rounded-lg.overflow-hidden');
-      
-      if (container) {
-        const layer = document.createElement('div');
-        layer.className = 'annotation-layer';
-        layer.style.cssText = `
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          z-index: 20;
-          pointer-events: none;
-        `;
-        container.appendChild(layer);
-        annotationLayer.value = layer;
-      } else {
-        console.error('找不到PDF容器来添加批注层');
-      }
-    }
+  // 确保PDF容器存在
+  if (!pdfContainer.value) {
+    console.error('PDF容器未初始化')
+    return false
   }
   
-  // 动态更新指针事件
+  // 不再动态创建，直接使用模板中的ref
   if (annotationLayer.value) {
-    annotationLayer.value.style.pointerEvents = activeTool.value === 'highlight' ? 'auto' : 'none';
-    annotationLayer.value.style.cursor = activeTool.value === 'highlight' ? 'crosshair' : 'default';
+    // 设置必要的样式
+    annotationLayer.value.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 100;
+      pointer-events: ${activeTool.value === 'highlight' ? 'auto' : 'none'};
+    `
+    console.log("创建了批注层")
+    return true
   }
-};
+  return false
+}
 
 // 初始化批注画布
 const initAnnotationCanvas = () => {
@@ -351,7 +342,6 @@ const initAnnotationCanvas = () => {
 
 const retryAnnotationInit = () => {
   console.log('重试批注层设置')
-  ensureAnnotationLayer()
   initAnnotationCanvas()
   attachEventListeners()
 };
@@ -373,7 +363,7 @@ const redrawAnnotations = () => {
     .filter(anno => anno.page === currentPage.value)
     .forEach(anno => {
       // 绘制高亮区域
-      ctx.fillStyle = 'rgba(255, 235, 59, 0.4)';
+      ctx.fillStyle = 'rgba(255, 235, 59, 0.3)';
       ctx.fillRect(anno.x, anno.y, anno.width, anno.height);
       
       // // 绘制高亮边框
@@ -400,6 +390,8 @@ const toggleHighlightMode = () => {
   activeTool.value = activeTool.value === 'highlight' ? null : 'highlight';
   
   if (activeTool.value === 'highlight') {
+    initAnnotationCanvas()
+    attachEventListeners()
     ElMessage.success('已进入高亮批注模式，请拖动鼠标选择区域');
   } else {
     ElMessage.info('已退出高亮批注模式');
@@ -407,44 +399,52 @@ const toggleHighlightMode = () => {
 };
 
 // 鼠标事件处理
-const handleMouseDown = (e: { clientX: number; clientY: number }) => {
-  if (activeTool.value !== 'highlight') return;
+const getRelativeCoordinates = (e: MouseEvent) => {
+  if (!annotationLayer.value) return { x: 0, y: 0 }
+  // 获取PDF容器的边界矩形
+  const container = pdfContainer.value?.querySelector('.border') as HTMLElement
+  if (!container) return { x: 0, y: 0 }
+
+  const rect = container.getBoundingClientRect()
+  // 计算相对于PDF容器的坐标
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
   
-  isDrawing.value = true;
-  console.log('开始绘制高亮了！')
-  if (annotationLayer.value) {
-    const rect = annotationLayer.value.getBoundingClientRect();
-    startPos.value = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
+  // 确保坐标在PDF容器范围内
+  return {
+    x: Math.max(0, Math.min(x, rect.width)),
+    y: Math.max(0, Math.min(y, rect.height))
   }
+}
+
+const handleMouseDown = (e: MouseEvent) => {
+  if (activeTool.value !== 'highlight') return
+  
+  isDrawing.value = true
+  const { x, y } = getRelativeCoordinates(e)
+  startPos.value = { x, y }
   
   highlightPreview.value = {
     visible: true,
-    x: startPos.value.x,
-    y: startPos.value.y,
+    x,
+    y,
     width: 0,
     height: 0
-  };
-};
-
-const handleMouseMove = (e: { clientX: number; clientY: number }) => {
-  if (!isDrawing.value) return;
-  
-  if (annotationLayer.value) {
-    const rect = annotationLayer.value.getBoundingClientRect();
-    const currentX = e.clientX - rect.left;
-    const currentY = e.clientY - rect.top;
-    highlightPreview.value = {
-      visible: true,
-      x: Math.min(startPos.value.x, currentX),
-      y: Math.min(startPos.value.y, currentY),
-      width: Math.abs(currentX - startPos.value.x),
-      height: Math.abs(currentY - startPos.value.y)
-    };
   }
-};
+}
+
+const handleMouseMove = (e: MouseEvent) => {
+  if (!isDrawing.value) return
+  
+  const { x, y } = getRelativeCoordinates(e)
+  highlightPreview.value = {
+    visible: true,
+    x: Math.min(startPos.value.x, x),
+    y: Math.min(startPos.value.y, y),
+    width: Math.abs(x - startPos.value.x),
+    height: Math.abs(y - startPos.value.y)
+  }
+}
 
 const handleMouseUp = () => {
   if (!isDrawing.value) return;
@@ -549,6 +549,7 @@ const detachEventListeners = () => {
 
 onUnmounted(() => {
   detachEventListeners();
+  resizeObserver.value?.disconnect()
 });
 
 // 计算当前页可见批注
@@ -560,7 +561,6 @@ const visibleAnnotations = computed<Annotation[]>(() => {
 watch(currentPage, () => {
   if (!isPdfRendered.value) return
   nextTick(() => {
-    ensureAnnotationLayer()
     initAnnotationCanvas()
     attachEventListeners()
   })
@@ -572,7 +572,7 @@ onMounted(() => {
   setTimeout(() => {
     initAnnotationCanvas();
     attachEventListeners();
-  }, 500);
+  }, 2000);
 });
 
 </script>
@@ -602,10 +602,6 @@ box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 padding: 25px;
 margin-bottom: 30px;
 transition: transform 0.3s ease;
-}
-
-.card:hover {
-transform: translateY(-5px);
 }
 
 .toolbar {
@@ -651,8 +647,8 @@ font-size: 16px;
 }
 
 .tool-btn.active {
-background: #e74c3c;
-box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+background: green;
+box-shadow: 0 4px 12px rgba(green, 0.3);
 }
 
 .annotation-layer {
@@ -729,13 +725,13 @@ transition: color 0.3s;
 }
 
 .annotation-actions button:hover {
-color: #e74c3c;
+color: yellow;
 }
 
 .highlight-preview {
 position: absolute;
-border: 2px dashed #e74c3c;
-background: rgba(231, 76, 60, 0.1);
+border: 2px dashed yellow;
+background: rgba(yellow, 0.2);
 z-index: 100;
 }
 
@@ -743,7 +739,7 @@ z-index: 100;
 position: absolute;
 width: 24px;
 height: 24px;
-background: #e74c3c;
+background: blue;
 border-radius: 50%;
 display: flex;
 align-items: center;
@@ -855,10 +851,22 @@ line-height: 1.6;
   position: absolute !important;
 }
 
-/* 确保 PDF 渲染层在批注层下方 */
+/* 层级调整 */
 .vue-pdf-embed {
   position: relative;
-  z-index: 10;
+  z-index: 10; /* PDF渲染层 */
+}
+
+.annotation-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100; /* 批注层高于PDF层 */
+  pointer-events: none; /* 默认不拦截事件 */
+}
+
+.annotation-layer.active {
+  pointer-events: auto; /* 批注模式时捕获事件 */
 }
 
 /* 高亮预览层级 */
