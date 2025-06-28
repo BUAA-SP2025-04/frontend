@@ -17,17 +17,30 @@
           </h1>
           <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>
         </div>
-        <el-button type="primary" size="large" @click="showAddDialog = true">
-          <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-          添加成果
-        </el-button>
+        <div class="flex gap-2">
+          <el-button type="primary" size="large" @click="showAddDialog = true">
+            <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+            添加成果
+          </el-button>
+          <el-button type="success" size="large" @click="showExcelImporter = true">
+            <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v16h16V4H4zm4 4h8v8H8V8z"
+              />
+            </svg>
+            批量导入
+          </el-button>
+        </div>
       </div>
 
       <!-- 统计数据卡片组 -->
@@ -249,7 +262,6 @@
                 :limit="1"
                 :on-exceed="handlePdfExceed"
                 accept="application/pdf"
-                :before-upload="beforePdfUpload"
                 style="width: 100%; height: 40px; display: flex; align-items: center"
               >
                 <el-button type="primary">选择PDF文件</el-button>
@@ -293,6 +305,12 @@
         v-model:visible="showInfo"
         :publication="shownPublication"
       ></PublicationInfo>
+      <ExcelImporter
+        v-model:show-excel-importer="showExcelImporter"
+        :existing-titles="publications.map(p => p.title)"
+        :current-username="userStore.user?.name"
+        @close="showExcelImporter = false"
+      />
     </div>
   </div>
 </template>
@@ -319,12 +337,15 @@ import {
 import { useUserStore } from '@/stores/user'
 import PublicationStatsCardGroup from '@/components/publication/PublicationStatsCardGroup.vue'
 import PublicationInfo from '@/components/publication/PublicationInfo.vue'
+import ExcelImporter from '@/components/publication/ExcelImporter.vue'
 import type { UploadResponse } from '@/api/types/utils'
+import { doiPattern, urlPattern } from '@/utils/publications'
 
 const loading = ref(false)
 const saving = ref(false)
 const showAddDialog = ref(false)
 const showInfo = ref(false)
+const showExcelImporter = ref(false)
 const isEditing = ref(false)
 const searchQuery = ref('')
 const filterType = ref('')
@@ -385,8 +406,6 @@ onMounted(async () => {
   }
 })
 
-const doiPattern = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i
-const urlPattern = /^(https?:\/\/)[^\s/$.?#].\S*$/i
 const rules: FormRules = {
   title: [
     { required: true, message: '请输入标题', trigger: 'blur' },
@@ -524,6 +543,15 @@ const editPublication = (publicationProfile: PublicationProfile) => {
   showAddDialog.value = true
 }
 
+const checkPdfSize = (file: File) => {
+  const maxSize = 80 * 1024 * 1024
+  if (file.size > maxSize) {
+    ElMessage.error('PDF文件大小不能超过80MB')
+    return false
+  }
+  return true
+}
+
 const handlePdfFileChange = (file: UploadFile) => {
   if (file.raw && file.raw.type !== 'application/pdf') {
     ElMessage.error('只能上传 PDF 文件')
@@ -531,7 +559,7 @@ const handlePdfFileChange = (file: UploadFile) => {
     return
   }
   // 手动调用大小校验
-  if (file.raw && !beforePdfUpload(file.raw)) {
+  if (file.raw && !checkPdfSize(file.raw)) {
     pdfFile.value = null
     return
   }
@@ -714,14 +742,10 @@ function onShowInfo(row: Publication) {
   shownPublication.value = row
   showInfo.value = true
 }
-
-// PDF大小限制：80MB
-const beforePdfUpload = (file: File) => {
-  const maxSize = 80 * 1024 * 1024
-  if (file.size > maxSize) {
-    ElMessage.error('PDF文件大小不能超过80MB')
-    return false
-  }
-  return true
-}
 </script>
+
+<style scoped>
+svg path {
+  fill: none;
+}
+</style>

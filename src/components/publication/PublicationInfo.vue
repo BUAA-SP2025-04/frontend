@@ -104,13 +104,13 @@
           <span class="pub-value pub-readerNum">
             {{ publication.readerNum }}
           </span>
-          <!--          <span class="pub-label pub-metric pub-like-label">-->
-          <!--            <el-icon class="pub-icon"><Star /></el-icon>-->
-          <!--            点赞数：-->
-          <!--          </span>-->
-          <!--          <span class="pub-value pub-likeNum">-->
-          <!--            {{ publication.likeNum }}-->
-          <!--          </span>-->
+          <span class="pub-label pub-metric pub-like-label">
+            <el-icon class="pub-icon"><Star /></el-icon>
+            点赞数：
+          </span>
+          <span class="pub-value pub-likeNum">
+            {{ publication.likeNum }}
+          </span>
         </div>
         <div v-if="publication.pdfUrl" class="pub-detail-section pub-pdf">
           <template v-if="isExternalPdf(publication.pdfUrl)">
@@ -142,7 +142,7 @@
 <script setup lang="ts">
 import { defineProps, ref, watch } from 'vue'
 import { ElButton, ElDialog, ElIcon, ElLink, ElTag } from 'element-plus'
-import { View } from '@element-plus/icons-vue'
+import { Star, View } from '@element-plus/icons-vue'
 import type { Publication } from '@/api/types/publication'
 import { useRouter } from 'vue-router'
 
