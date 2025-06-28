@@ -15,7 +15,8 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 
+                00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
             </svg>
             文献库
@@ -68,13 +69,14 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0H8v0z"
+                    d="m7.875 14.25 1.214 1.942a2.25 2.25 0 0 0 1.908 1.058h2.006c.776 0 1.497-.4 
+                    1.908-1.058l1.214-1.942M2.41 9h4.636a2.25 2.25 0 0 1 1.872 1.002l.164.246a2.25 2.25 0 0 0 
+                    1.872 1.002h2.092a2.25 2.25 0 0 0 1.872-1.002l.164-.246A2.25 2.25 0 0 1 16.954 9h4.636M2.41 
+                    9a2.25 2.25 0 0 0-.16.832V12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 
+                    12V9.832c0-.287-.055-.57-.16-.832M2.41 9a2.25 2.25 0 0 1 .382-.632l3.285-3.832a2.25 2.25 0 0 
+                    1 1.708-.786h8.43c.657 0 1.281.287 1.709.786l3.284 3.832c.163.19.291.404.382.632M4.5 
+                    20.25h15A2.25 2.25 0 0 0 21.75 18v-2.625c0-.621-.504-1.125-1.125-1.125H3.375c-.621 
+                    0-1.125.504-1.125 1.125V18a2.25 2.25 0 0 0 2.25 2.25Z"
                   />
                 </svg>
                 全部文献
@@ -97,13 +99,11 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0H8v0z"
+                  d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 
+                  1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 
+                  2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 
+                  18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 
+                  2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z"
                 />
               </svg>
               文献分类
@@ -141,7 +141,8 @@
                           stroke-linecap="round"
                           stroke-linejoin="round"
                           stroke-width="2"
-                          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 
+                          1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
                         />
                       </svg>
                     </button>
@@ -172,13 +173,7 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0H8v0z"
+                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                   />
                 </svg>
                 阅读历史
@@ -228,13 +223,9 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0H8v0z"
+                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 
+                    7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 
+                    1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
                   />
                 </svg>
                 发现文献
@@ -288,7 +279,8 @@
                     <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fill-rule="evenodd"
-                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 
+                        0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
                         clip-rule="evenodd"
                       />
                     </svg>
@@ -304,7 +296,9 @@
                   <p class="text-sm text-gray-600 mt-1">
                     {{ paper.authors }}
                   </p>
-                  <p class="text-sm text-gray-500 mt-1">{{ paper.venue ? paper.venue : '未知' }} • {{ paper.year ? paper.year : '未知' }}</p>
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ paper.venue ? paper.venue : '未知' }} • {{ paper.year ? paper.year : '未知' }}
+                  </p>
 
                   <div class="mt-3 flex flex-wrap gap-2" v-if="paper.keywords">
                     <span
@@ -328,7 +322,8 @@
                           stroke-linecap="round"
                           stroke-linejoin="round"
                           stroke-width="2"
-                          d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m3 0a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h3z"
+                          d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m3 0a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 
+                          01-2-2V6a2 2 0 012-2h3z"
                         />
                       </svg>
                       引用: {{ paper.citations }}
@@ -350,7 +345,8 @@
                           stroke-linecap="round"
                           stroke-linejoin="round"
                           stroke-width="2"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 
+                          7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                         />
                       </svg>
                       阅读: {{ paper.readCount }}
@@ -387,7 +383,8 @@
                           stroke-linecap="round"
                           stroke-linejoin="round"
                           stroke-width="2"
-                          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 
+                          1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
                         />
                       </svg>
                     </button>
@@ -404,7 +401,9 @@
                               stroke-linecap="round"
                               stroke-linejoin="round"
                               stroke-width="2"
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 
+                              0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 
+                              2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
                             />
                           </svg>
                           阅读
@@ -420,7 +419,8 @@
                               stroke-linecap="round"
                               stroke-linejoin="round"
                               stroke-width="2"
-                              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 
+                              12 12 16.5m0 0L7.5 12m4.5 4.5V3"
                             />
                           </svg>
                           下载
@@ -452,7 +452,8 @@
                               stroke-linecap="round"
                               stroke-linejoin="round"
                               stroke-width="2"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 
+                              4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                             />
                           </svg>
                           删除
@@ -468,7 +469,8 @@
                               stroke-linecap="round"
                               stroke-linejoin="round"
                               stroke-width="2"
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 
+                              00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                             />
                           </svg>
                           收藏
@@ -499,7 +501,8 @@
                     <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fill-rule="evenodd"
-                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 
+                        2H6a2 2 0 01-2-2V4z"
                         clip-rule="evenodd"
                       />
                     </svg>
@@ -570,7 +573,8 @@
             <div class="upload-area">
               <div class="upload-icon">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="#4299e1">
-                  <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                  <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 
+                  3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
                 </svg>
               </div>
               <div class="upload-text">将文件拖到此处，或<span>点击上传</span></div>
@@ -1139,11 +1143,12 @@ const handlePaperAction = async (command: string) => {
   switch (action) {
     case 'read':
       try {
-        let res = await libraryAPI.createRecord(userId, paperId.toString())
-        records.value.push({userId: userId, paperId: paperId.toString(), id: res.data.id})
         let paper = papers.value.find(p => p.id === paperId)
-        if(paper && paper.readCount) paper.readCount = paper.readCount + 1
-        else{
+        if(paper && paper.readCount) {
+          paper.readCount = paper.readCount + 1
+          let res = await libraryAPI.createRecord(userId, paperId.toString())       // 暂时去除全局文献阅读记录的功能
+          records.value.push({userId: userId, paperId: paperId.toString(), id: res.data.id})
+        } else{
           paper = updatePapers.value.find(p => p.id === paperId)
           if(paper && paper.readCount) paper.readCount = paper.readCount + 1
         }
@@ -1284,9 +1289,18 @@ const deleteFolder = async (folderId: number) => {
       console.log(folderId)
       await libraryAPI.deleteFolder(folderId)
       folders.value = folders.value.filter(f => f.id !== folderId)
-      papers.value.forEach(p => {
-        if (p.folderId === folderId && p.pdfUrl) {
-           libraryAPI.deleteUrlFile(p.pdfUrl)
+      papers.value.forEach(async p => {
+        if (p.folderId === folderId) {
+          await libraryAPI.deletePaper(userId, p.id.toString())
+          if (p.isPublic === '0') {
+            if (p.pdfUrl) { await libraryAPI.deleteUrlFile(p.pdfUrl) }
+            await libraryAPI.deletePublication(p.id.toString())
+          }
+          records.value.forEach(async r => {
+            if (r.paperId === p.id.toString()) {
+              await libraryAPI.deleteRecord(parseInt(r.id))
+            }
+          })
         }
       })
       papers.value = papers.value.filter(p => p.folderId !== folderId)
@@ -1363,7 +1377,7 @@ const handleUpload = async () => {
             title: newPaper.title,
             authors: [...newPaper.authors].join(', '),
             venue: newPaper.venue,
-            // year: formatDate(newPaper.publishDate).slice(0,4),   // 待完成
+            year: newPaper.publishDate.toString().slice(0,4),   // 待完成
             keywords: [...newPaper.tags].join(', '),
             pdfUrl: newPaper.pdfUrl,
             status: '',
