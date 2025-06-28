@@ -28,7 +28,8 @@ export interface Message {
 
 export interface Conversation {
   id: string
-  participants: ChatUser[]
+  userA: ChatUser
+  userB: ChatUser
   lastMessage?: Message
   unreadCount: number
   createdAt: string
@@ -104,4 +105,41 @@ export interface WSOnlineStatusMessage {
     isOnline: boolean
     lastSeen?: string
   }
+}
+
+export interface WSFileMessage {
+  type: 'message'
+  data: {
+    message: Message & {
+      fileInfo?: {
+        name: string
+        size: number
+        url: string
+        mimeType: string
+      }
+    }
+  }
+}
+
+// 统一的 WebSocket 消息格式
+export type WSMessageType = WSTextMessage | WSFileMessage | WSTypingMessage | WSReadMessage | WSOnlineStatusMessage
+
+// WebSocket 发送消息格式
+export interface WSSendMessage {
+  type: 'send_message' | 'typing' | 'read' | 'ping'
+  data: {
+    conversationId: string
+    content?: string
+    type?: 'text' | 'image' | 'file'
+    fileInfo?: {
+      name: string
+      size: number
+      url: string
+      mimeType: string
+    }
+    tempId?: string
+    isTyping?: boolean
+    messageIds?: string[]
+  }
+  timestamp: string
 }
