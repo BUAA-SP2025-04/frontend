@@ -1,5 +1,3 @@
-import type { InputNumberEmits } from "element-plus"
-
 // 收藏论文类型
 export interface FavoritePaper {
   id: number
