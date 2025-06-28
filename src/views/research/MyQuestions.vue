@@ -1,6 +1,6 @@
 <!-- filepath: c:\Users\Windows11\Desktop\小学期\frontend\src\views\research\MyQuestions.vue -->
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50">
+  <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 页面标题和操作按钮 -->
       <div class="flex justify-between items-center mb-8">
@@ -15,13 +15,13 @@
         <div class="flex space-x-4">
           <button
             @click="router.push('/research/qa')"
-            class="bg-white/80 hover:bg-white text-slate-700 px-6 py-3 rounded-xl font-medium transition-all duration-300 border border-slate-200/50"
+            class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors border border-gray-200 hover:bg-gray-50"
           >
             浏览问题
           </button>
           <button
             @click="showPublishDialog = true"
-            class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-sm"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
           >
             <svg
               class="w-5 h-5 inline-block mr-2"
@@ -49,7 +49,7 @@
           <div class="flex items-center space-x-4">
             <select
               v-model="statusFilter"
-              class="px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
+              class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">全部状态</option>
               <option value="open">待解决</option>
@@ -58,7 +58,7 @@
             </select>
             <select
               v-model="categoryFilter"
-              class="px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
+              class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">全部分类</option>
               <option value="机器学习">机器学习</option>
@@ -68,7 +68,7 @@
             </select>
             <select
               v-model="sortBy"
-              class="px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
+              class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="latest">最新发布</option>
               <option value="mostAnswered">回答最多</option>
@@ -96,7 +96,7 @@
         <div
           v-for="question in filteredQuestions"
           :key="question.id"
-          class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-300"
+          class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
         >
           <div class="p-6">
             <!-- 问题头部 -->
@@ -130,14 +130,14 @@
                   <span
                     v-for="tag in question.tags"
                     :key="tag"
-                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700"
+                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
                   >
                     {{ tag }}
                   </span>
                 </div>
 
                 <!-- 统计信息 -->
-                <div class="flex items-center space-x-4 text-sm text-slate-500">
+                <div class="flex items-center space-x-4 text-sm text-gray-500">
                   <span class="flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
@@ -190,14 +190,14 @@
               <div class="flex space-x-2 ml-6">
                 <button
                   @click="editQuestion(question)"
-                  class="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm"
+                  class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
                 >
                   编辑
                 </button>
                 <button
                   v-if="question.status !== 'solved'"
                   @click="markAsSolved(question.id)"
-                  class="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors text-sm"
+                  class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm"
                 >
                   标记已解决
                 </button>
@@ -211,12 +211,12 @@
             </div>
 
             <!-- 问题描述 -->
-            <p class="text-slate-600 mb-4 line-clamp-2">{{ question.description }}</p>
+            <p class="text-gray-600 mb-4 line-clamp-2">{{ question.description }}</p>
 
             <!-- 最新回答预览 -->
-            <div v-if="question.latestAnswer" class="bg-slate-50 rounded-lg p-4 mb-4">
+            <div v-if="question.latestAnswer" class="bg-gray-50 rounded-lg p-4 mb-4">
               <div class="flex items-center justify-between mb-2">
-                <h4 class="text-sm font-medium text-slate-700">最新回答</h4>
+                <h4 class="text-sm font-medium text-gray-700">最新回答</h4>
                 <div class="flex items-center space-x-2">
                   <span class="text-xs text-slate-500">{{
                     formatTime(question.latestAnswer.createdAt)
@@ -246,15 +246,15 @@
                   question.latestAnswer.author.name
                 }}</span>
               </div>
-              <p class="text-sm text-slate-600 line-clamp-2">{{ question.latestAnswer.excerpt }}</p>
+              <p class="text-sm text-gray-600 line-clamp-2">{{ question.latestAnswer.excerpt }}</p>
             </div>
 
             <!-- 底部操作 -->
-            <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
               <div class="flex space-x-3">
                 <button
                   @click="viewQuestion(question.id)"
-                  class="flex items-center px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors text-sm font-medium"
+                  class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                 >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -296,11 +296,11 @@
             d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           ></path>
         </svg>
-        <h3 class="text-lg font-medium text-slate-900 mb-2">暂无问题</h3>
-        <p class="text-slate-500 mb-4">你还没有发布任何问题</p>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">暂无问题</h3>
+        <p class="text-gray-500 mb-4">你还没有发布任何问题</p>
         <button
           @click="showPublishDialog = true"
-          class="inline-flex items-center px-6 py-3 bg-cyan-500 text-white rounded-xl hover:bg-cyan-600 transition-colors shadow-sm"
+          class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
         >
           发布第一个问题
         </button>
@@ -315,10 +315,10 @@
       <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="px-6 py-4 border-b border-slate-200">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-slate-900">发布新问题</h3>
+            <h3 class="text-lg font-semibold text-gray-900">发布新问题</h3>
             <button
               @click="showPublishDialog = false"
-              class="text-slate-400 hover:text-slate-600 transition-colors"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -335,22 +335,22 @@
         <form @submit.prevent="publishQuestion" class="p-6 space-y-6">
           <!-- 问题标题 -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">问题标题</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">问题标题</label>
             <input
               v-model="newQuestion.title"
               type="text"
               placeholder="简洁明确地描述你的问题..."
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
 
           <!-- 问题分类 -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">问题分类</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">问题分类</label>
             <select
               v-model="newQuestion.category"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
               <option value="">选择分类</option>
@@ -365,18 +365,18 @@
 
           <!-- 标签 -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">标签</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">标签</label>
             <div class="flex flex-wrap gap-2 mb-2">
               <span
                 v-for="tag in newQuestion.tags"
                 :key="tag"
-                class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-slate-100 text-slate-700"
+                class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
               >
                 {{ tag }}
                 <button
                   @click="removeTag(tag)"
                   type="button"
-                  class="ml-1 text-slate-500 hover:text-slate-700"
+                  class="ml-1 text-blue-600 hover:text-blue-800"
                 >
                   ×
                 </button>
@@ -388,12 +388,12 @@
                 @keyup.enter="addTag"
                 type="text"
                 placeholder="输入标签后按回车添加"
-                class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <button
                 @click="addTag"
                 type="button"
-                class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 添加
               </button>
@@ -409,23 +409,23 @@
               v-model="newQuestion.description"
               rows="8"
               placeholder="详细描述你的问题，包括背景、具体遇到的困难、已尝试的方法等..."
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 font-mono text-sm transition-colors"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
               required
             ></textarea>
           </div>
 
           <!-- 操作按钮 -->
-          <div class="flex justify-end space-x-3 pt-4 border-t border-slate-200">
+          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               @click="showPublishDialog = false"
               type="button"
-              class="px-6 py-2 text-slate-700 bg-white rounded-lg hover:bg-slate-50 transition-colors border border-slate-300"
+              class="px-6 py-2 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors border border-gray-300"
             >
               取消
             </button>
             <button
               type="submit"
-              class="px-6 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               发布问题
             </button>
@@ -442,10 +442,10 @@
       <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="px-6 py-4 border-b border-slate-200">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-slate-900">编辑问题</h3>
+            <h3 class="text-lg font-semibold text-gray-900">编辑问题</h3>
             <button
               @click="showEditDialog = false"
-              class="text-slate-400 hover:text-slate-600 transition-colors"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -462,21 +462,21 @@
         <form @submit.prevent="updateQuestion" class="p-6 space-y-6">
           <!-- 问题标题 -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">问题标题</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">问题标题</label>
             <input
               v-model="editingQuestion.title"
               type="text"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
 
           <!-- 问题分类 -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">问题分类</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">问题分类</label>
             <select
               v-model="editingQuestion.category"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
               <option value="机器学习">机器学习</option>
@@ -490,18 +490,18 @@
 
           <!-- 标签 -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">标签</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">标签</label>
             <div class="flex flex-wrap gap-2 mb-2">
               <span
                 v-for="tag in editingQuestion.tags"
                 :key="tag"
-                class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-slate-100 text-slate-700"
+                class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
               >
                 {{ tag }}
                 <button
                   @click="removeEditTag(tag)"
                   type="button"
-                  class="ml-1 text-slate-500 hover:text-slate-700"
+                  class="ml-1 text-blue-600 hover:text-blue-800"
                 >
                   ×
                 </button>
@@ -513,12 +513,12 @@
                 @keyup.enter="addEditTag"
                 type="text"
                 placeholder="输入标签后按回车添加"
-                class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <button
                 @click="addEditTag"
                 type="button"
-                class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 添加
               </button>
@@ -533,23 +533,23 @@
             <textarea
               v-model="editingQuestion.description"
               rows="8"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 font-mono text-sm transition-colors"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
               required
             ></textarea>
           </div>
 
           <!-- 操作按钮 -->
-          <div class="flex justify-end space-x-3 pt-4 border-t border-slate-200">
+          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               @click="showEditDialog = false"
               type="button"
-              class="px-6 py-2 text-slate-700 bg-white rounded-lg hover:bg-slate-50 transition-colors border border-slate-300"
+              class="px-6 py-2 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors border border-gray-300"
             >
               取消
             </button>
             <button
               type="submit"
-              class="px-6 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               保存修改
             </button>

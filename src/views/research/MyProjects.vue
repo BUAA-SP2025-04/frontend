@@ -1,5 +1,6 @@
+<!-- filepath: c:\Users\Windows11\Desktop\小学期\frontend\src\views\research\MyProjects.vue -->
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50">
+  <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 页面标题和操作按钮 -->
       <div class="flex justify-between items-center mb-8">
@@ -14,13 +15,13 @@
         <div class="flex space-x-4">
           <button
             @click="router.push('/research/projects')"
-            class="bg-white/80 hover:bg-white text-slate-700 px-6 py-3 rounded-xl font-medium transition-all duration-300 border border-slate-200/50"
+            class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors border border-gray-200 hover:bg-gray-50"
           >
             浏览项目
           </button>
           <button
             @click="showPublishDialog = true"
-            class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-sm"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
           >
             <svg
               class="w-5 h-5 inline-block mr-2"
@@ -51,7 +52,7 @@
               :key="tab.key"
               @click="activeTab = tab.key"
               :class="[
-                'py-4 px-6 text-sm font-medium border-b-2 transition-all duration-300',
+                'py-4 px-6 text-sm font-medium border-b-2 transition-colors',
                 activeTab === tab.key
                   ? 'border-cyan-500 text-cyan-600 bg-cyan-50/50'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300',
@@ -99,6 +100,56 @@
               </span>
             </button>
           </nav>
+          
+          <!-- 筛选工具栏 - 整合到标签页内 -->
+          <div class="px-6 py-4 bg-white ">
+            <div v-if="activeTab === 'my-projects'" class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <select
+                  v-model="projectStatusFilter"
+                  class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">全部状态</option>
+                  <option value="recruiting">招募中</option>
+                  <option value="ongoing">进行中</option>
+                  <option value="completed">已完成</option>
+                </select>
+              </div>
+              <span class="text-sm text-gray-500">
+                共 {{ myProjects.length }} 个项目
+              </span>
+            </div>
+            
+            <div v-if="activeTab === 'applications'" class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <select
+                  v-model="applicationStatusFilter"
+                  class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">全部状态</option>
+                  <option value="pending">待处理</option>
+                  <option value="approved">已通过</option>
+                  <option value="rejected">已拒绝</option>
+                </select>
+                <select
+                  v-model="selectedProjectFilter"
+                  class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">全部项目</option>
+                  <option
+                    v-for="project in myProjects"
+                    :key="project.id"
+                    :value="project.id"
+                  >
+                    {{ project.title }}
+                  </option>
+                </select>
+              </div>
+              <span class="text-sm text-gray-500">
+                共 {{ filteredApplications.length }} 个申请
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -130,14 +181,14 @@
           <div
             v-for="project in filteredMyProjects"
             :key="project.id"
-            class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-300"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
           >
             <div class="p-6">
               <!-- 项目头部 -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex-1">
                   <div class="flex items-center gap-3 mb-2">
-                    <h3 class="text-xl font-semibold text-slate-900">{{ project.title }}</h3>
+                    <h3 class="text-xl font-semibold text-gray-900">{{ project.title }}</h3>
                     <span
                       :class="[
                         'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
@@ -164,7 +215,7 @@
                     <span
                       v-for="field in project.fields"
                       :key="field"
-                      class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                      class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
                     >
                       {{ field }}
                     </span>
@@ -175,7 +226,7 @@
                 <div class="flex space-x-2">
                   <button
                     @click="editProject(project)"
-                    class="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm"
+                    class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
                   >
                     编辑
                   </button>
@@ -200,7 +251,7 @@
               </div>
 
               <!-- 项目描述 -->
-              <p class="text-slate-600 mb-4 line-clamp-2">{{ project.description }}</p>
+              <p class="text-gray-600 mb-4 line-clamp-2">{{ project.description }}</p>
 
               <!-- 项目统计 -->
               <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -235,11 +286,11 @@
               </div>
 
               <!-- 操作按钮 -->
-              <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+              <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                 <div class="flex space-x-3">
                   <button
                     @click="viewProjectApplications(project)"
-                    class="flex items-center px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors text-sm font-medium shadow-sm"
+                    class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                   >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
@@ -253,7 +304,7 @@
                   </button>
                   <button
                     @click="showProjectDetail(project)"
-                    class="flex items-center px-4 py-2 bg-white text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium border border-slate-300"
+                    class="flex items-center px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium border border-gray-300"
                   >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
@@ -296,11 +347,11 @@
               d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
             ></path>
           </svg>
-          <h3 class="text-lg font-medium text-slate-900 mb-2">暂无项目</h3>
-          <p class="text-slate-500 mb-4">你还没有发布任何项目</p>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">暂无项目</h3>
+          <p class="text-gray-500 mb-4">你还没有发布任何项目</p>
           <button
             @click="showPublishDialog = true"
-            class="inline-flex items-center px-6 py-3 bg-cyan-500 text-white rounded-xl hover:bg-cyan-600 transition-colors shadow-sm"
+            class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
           >
             发布第一个项目
           </button>
@@ -344,16 +395,16 @@
           <div
             v-for="application in filteredApplications"
             :key="application.id"
-            class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-300"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
           >
-            <div class="p-8">
+            <div class="p-6">
               <!-- 申请头部 -->
-              <div class="flex items-start justify-between mb-6">
+              <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center space-x-4">
                   <img
                     :src="application.applicant.avatar"
                     :alt="application.applicant.name"
-                    class="w-16 h-16 rounded-full ring-4 ring-slate-100"
+                    class="w-12 h-12 rounded-full ring-2 ring-gray-200"
                   />
                   <div>
                     <h3 class="text-xl font-bold text-slate-900">
@@ -376,7 +427,7 @@
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         ></path>
                       </svg>
-                      申请时间：{{ formatTime(application.createdAt) }}
+                      {{ formatTime(application.createdAt) }}
                     </p>
                   </div>
                 </div>
@@ -415,7 +466,7 @@
                   <span
                     v-for="field in application.project.fields"
                     :key="field"
-                    class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                    class="inline-flex items-center px-2 py-1 rounded text-sm font-medium bg-blue-100 text-blue-800"
                   >
                     {{ field }}
                   </span>
@@ -521,7 +572,7 @@
               >
                 <button
                   @click="approveApplication(application.id)"
-                  class="flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 text-sm font-bold shadow-lg"
+                  class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
                 >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -535,7 +586,7 @@
                 </button>
                 <button
                   @click="rejectApplication(application.id)"
-                  class="flex items-center px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 transition-all duration-300 text-sm font-bold shadow-lg"
+                  class="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                 >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -549,7 +600,7 @@
                 </button>
                 <button
                   @click="contactApplicant(application)"
-                  class="flex items-center px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl hover:from-cyan-600 hover:to-blue-600 transition-all duration-300 text-sm font-bold shadow-lg"
+                  class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                 >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -598,8 +649,8 @@
                       处理人：{{ application.processedBy }}
                     </span>
                   </p>
-                  <p v-if="application.processNote" class="text-sm text-slate-700 mt-2 font-medium">
-                    💭 备注：{{ application.processNote }}
+                  <p v-if="application.processNote" class="text-sm text-gray-700 mt-1">
+                    备注：{{ application.processNote }}
                   </p>
                 </div>
               </div>

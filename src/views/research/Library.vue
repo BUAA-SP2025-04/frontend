@@ -623,11 +623,20 @@
 
         <div class="form-section">
           <el-form ref="paperForm" :model="newPaper" label-width="120px">
-            <el-form-item label="文献标题" required>
-              <el-input v-model="newPaper.title" placeholder="请输入文献标题" />
+            <el-form-item label="类型" required>
+              <el-select
+                v-model="newPaper.type"
+                placeholder="请选择类型"
+                style="width: 100%"
+              >
+                <el-option label="期刊论文" value="journal" />
+                <el-option label="会议论文" value="conference" />
+                <el-option label="专利" value="patent" />
+                <el-option label="其他" value="other" />
+              </el-select>
             </el-form-item>
-            <el-form-item label="会议">
-              <el-input v-model="newPaper.venue" placeholder="请输入会议名称" />
+            <el-form-item label="标题" required>
+              <el-input v-model="newPaper.title" placeholder="请输入文献标题" />
             </el-form-item>
 
             <el-form-item label="作者" required>
@@ -645,14 +654,30 @@
               </div>
             </el-form-item>
 
-            <el-form-item label="摘要">
-              <el-input v-model="newPaper.abstract" placeholder="请输入摘要" />
-            </el-form-item>
-            <el-form-item label="doi">
-              <el-input v-model="newPaper.doi" placeholder="请输入doi" />
+            <el-form-item label="期刊/会议">
+              <el-input v-model="newPaper.venue" placeholder="请输入期刊/会议名称" />
             </el-form-item>
 
-            <el-form-item label="发表日期" required>
+            <el-form-item label="年份">
+              <el-input
+                v-model="newPaper.year"
+                placeholder="请输入年份"
+                maxlength="4"
+                type="number"
+                class="w-full"
+              />
+            </el-form-item>
+
+            <el-form-item label="摘要">
+              <el-input
+                v-model="newPaper.abstract"
+                type="textarea"
+                :rows="4"
+                placeholder="请输入摘要"
+              />
+            </el-form-item>
+
+            <!-- <el-form-item label="发表日期" required>
               <el-date-picker
                 v-model="newPaper.publishDate"
                 type="date"
@@ -661,16 +686,6 @@
                 value-format="YYYY-MM-DD"
                 style="width: 100%"
               ></el-date-picker>
-            </el-form-item>
-
-            <!-- <el-form-item label="引用次数">
-              <el-input-number 
-                v-model="newPaper.citations" 
-                :min="0" 
-                :precision="0" 
-                controls-position="right"
-                style="width: 100%"
-              ></el-input-number>
             </el-form-item> -->
 
             <el-form-item label="标签">
@@ -686,6 +701,10 @@
                   <span class="tag-remove" @click="removeTag(index)">×</span>
                 </div>
               </div>
+            </el-form-item>
+
+            <el-form-item label="doi">
+              <el-input v-model="newPaper.doi" placeholder="数字对象标识符" />
             </el-form-item>
 
             <el-form-item label="所属分类" required>
@@ -704,7 +723,7 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="是否发表" required>
+            <el-form-item v-show="newPaper.type != 'other'" label="是否发表" required>
               <el-checkbox-button v-model="newPaper.isPublic" style="width: 100%">
                 {{ newPaper.isPublic ? '已发表' : '未发表' }}
               </el-checkbox-button>
@@ -897,17 +916,19 @@ const pdfFile = ref<File | null>(null)
 const router = useRouter()
 
 const newPaper = reactive({
+  type: '',
   title: '',
   authors: [] as string[],
   venue: '',
   // citations: 0,
   tags: [] as string[],
   folderName: '',
-  publishDate: new Date(),
+  // publishDate: new Date(),
   pdfUrl: '',
   isPublic: false,
   doi: '',
   abstract: '',
+  year: 1700,
 })
 const authorInput = ref('')
 const tagInput = ref('')
@@ -1184,13 +1205,14 @@ const handlePaperAction = async (command: string) => {
     case 'read':
       try {
         let paper = papers.value.find(p => p.id === paperId)
-        if (paper && paper.readCount) {
-          paper.readCount = paper.readCount + 1
-          let res = await libraryAPI.createRecord(userId, paperId.toString()) // 暂时去除全局文献阅读记录的功能
-          records.value.push({ userId: userId, paperId: paperId.toString(), id: res.data.id })
+        if(paper) {
+          if (paper.readCount != undefined) paper.readCount = paper.readCount + 1
+          console.log('开始记录'+paperId+'的阅读记录')
+          let res = await libraryAPI.createRecord(userId, paperId.toString())       // 暂时去除全局文献阅读记录的功能
+          records.value.push({userId: userId, paperId: paperId.toString(), id: res.data.id})
         } else {
           paper = updatePapers.value.find(p => p.id === paperId)
-          if (paper && paper.readCount) paper.readCount = paper.readCount + 1
+          if(paper && paper.readCount != undefined) paper.readCount = paper.readCount + 1
         }
       } catch (error) {
         ElMessage.error('创建历史记录失败')

@@ -902,59 +902,30 @@ const hasMore = ref(true)
 const isTyping = ref(false)
 const isConnected = ref(false)
 
-// 获取当前用户ID
-const currentUserId = computed(() => userStore.user?.id || 1)
+// 获取当前用户ID - 确保类型一致
+const currentUserId = computed(() => {
+  const userId = userStore.user?.id
+  return typeof userId === 'string' ? parseInt(userId) : (userId || 1)
+})
 const currentUser = computed(() => userStore.user)
-const chatUserId = computed(() => parseInt(route.params.userId as string) || 999)
-const conversationId = computed(
-  () => (route.params.conversationId as string) || `conv_${currentUserId.value}_${chatUserId.value}`
-)
+const chatUserId = computed(() => parseInt(route.params.userId as string))
+const conversationId = computed(() => {
+  if (route.params.conversationId) {
+    return route.params.conversationId as string
+  }
+  const userIdNum = Number(currentUserId.value)
+  const chatIdNum = Number(chatUserId.value)
+  return `conv_${Math.min(userIdNum, chatIdNum)}_${Math.max(userIdNum, chatIdNum)}`
+})
 
-// 常用表情
+// 常用表情和快捷短语
 const commonEmojis = [
-  '😀',
-  '😃',
-  '😄',
-  '😁',
-  '😆',
-  '😅',
-  '😂',
-  '🤣',
-  '😊',
-  '😇',
-  '🙂',
-  '🙃',
-  '😉',
-  '😌',
-  '😍',
-  '🥰',
-  '😘',
-  '😗',
-  '😙',
-  '😚',
-  '😋',
-  '😛',
-  '😝',
-  '😜',
-  '🤪',
-  '🤨',
-  '🧐',
-  '🤓',
-  '😎',
-  '🤩',
-  '🥳',
-  '👍',
-  '👎',
-  '👌',
-  '✌️',
-  '🤞',
-  '🤝',
-  '👏',
-  '🙌',
-  '💪',
+  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
+  '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
+  '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩',
+  '🥳', '👍', '👎', '👌', '✌️', '🤞', '🤝', '👏', '🙌', '💪',
 ]
 
-// 快捷短语
 const quickPhrases = [
   '好的，我明白了',
   '感谢您的分享',
@@ -992,142 +963,398 @@ const initializeChat = async () => {
   try {
     isInitializing.value = true
 
-    // 模拟加载聊天用户信息
-    setTimeout(() => {
-      chatUser.value = {
-        id: chatUserId.value,
-        name: `用户${chatUserId.value}`,
-        avatar: '/default-avatar.png',
-        institution: '测试机构',
-        isOnline: true,
-        lastSeen: new Date().toISOString(),
-      }
-    }, 500)
+    console.log('初始化聊天 - 当前用户ID:', currentUserId.value, '聊天用户ID:', chatUserId.value)
 
-    // 模拟加载历史消息
-    setTimeout(() => {
-      messages.value = [
-        {
-          id: '1',
-          conversationId: conversationId.value,
-          senderId: chatUserId.value,
-          receiverId: currentUserId.value,
-          type: 'text',
-          content: '你好！很高兴认识你 😊',
-          status: 'read',
-          createdAt: new Date(Date.now() - 300000).toISOString(), // 5分钟前
-          updatedAt: new Date(Date.now() - 300000).toISOString(),
-        },
-        {
-          id: '2',
-          conversationId: conversationId.value,
-          senderId: chatUserId.value,
-          receiverId: currentUserId.value,
-          type: 'text',
-          content: '有什么想聊的吗？',
-          status: 'read',
-          createdAt: new Date(Date.now() - 240000).toISOString(), // 4分钟前
-          updatedAt: new Date(Date.now() - 240000).toISOString(),
-        },
-      ]
-      isInitializing.value = false
-    }, 1000)
+    // 检查参数有效性
+    if (!chatUserId.value || isNaN(chatUserId.value)) {
+      ElMessage.error('无效的用户ID')
+      router.push('/messages')
+      return
+    }
+
+    if (chatUserId.value === currentUserId.value) {
+      ElMessage.error('不能与自己聊天')
+      router.push('/messages')
+      return
+    }
+
+    // 加载聊天用户信息
+    await loadChatUser()
+
+    // 加载历史消息
+    await loadMessages()
 
     // 初始化 WebSocket 连接
     initializeWebSocket()
   } catch (error) {
     console.error('初始化聊天失败:', error)
     ElMessage.error('初始化失败，请刷新页面重试')
+  } finally {
     isInitializing.value = false
+  }
+}
+
+// 加载聊天用户信息
+const loadChatUser = async () => {
+  try {
+    const response = await chatAPI.getChatUser(chatUserId.value)
+    chatUser.value = response.user
+    console.log('加载聊天用户信息成功:', chatUser.value)
+  } catch (error) {
+    console.error('加载用户信息失败:', error)
+    // 设置默认用户信息
+    chatUser.value = {
+      id: chatUserId.value,
+      name: `用户${chatUserId.value}`,
+      avatar: '',
+      institution: '未知机构',
+      isOnline: false,
+      lastSeen: new Date().toISOString(),
+    }
   }
 }
 
 // 初始化 WebSocket 连接
 const initializeWebSocket = () => {
-  // 连接 Mock WebSocket
-  mockWS.connect('test-token')
+  console.log('初始化 WebSocket 连接...')
+  
+  // 先断开现有连接
+  wsService.disconnect()
+  
+  // 清除之前的监听器
+  wsService.off('connected', handleConnected)
+  wsService.off('disconnected', handleDisconnected)
+  wsService.off('max_reconnect_attempts', handleMaxReconnectAttempts)
+  wsService.off('new_message', handleNewMessage)
+  wsService.off('message_sent', handleMessageSent)
+  wsService.off('typing_status', handleTypingStatus)
+  wsService.off('read_status', handleReadStatus)
+  wsService.off('user_status', handleUserStatus)
+
+  // 连接 WebSocket
+  wsService.connect(currentUserId.value.toString())
 
   // 监听连接状态
-  mockWS.on('connected', () => {
-    isConnected.value = true
-    isOfflineMode.value = false
-    ElMessage.success('连接成功')
-    console.log('WebSocket 连接成功')
-  })
+  wsService.on('connected', handleConnected)
+  wsService.on('disconnected', handleDisconnected)
+  wsService.on('max_reconnect_attempts', handleMaxReconnectAttempts)
 
-  mockWS.on('disconnected', () => {
-    isConnected.value = false
-    isOfflineMode.value = true
-    ElMessage.warning('连接断开')
-  })
+  // 监听消息事件
+  wsService.on('new_message', handleNewMessage)
+  wsService.on('message_sent', handleMessageSent)
+  wsService.on('typing_status', handleTypingStatus)
+  wsService.on('read_status', handleReadStatus)
+  wsService.on('user_status', handleUserStatus)
+}
 
-  // 监听新消息
-  mockWS.on('new_message', (data: any) => {
-    console.log('收到新消息:', data)
-    if (data.message) {
+// WebSocket 事件处理函数
+const handleConnected = () => {
+  isConnected.value = true
+  isOfflineMode.value = false
+  ElMessage.success('连接成功')
+  console.log('WebSocket 连接成功')
+}
+
+const handleDisconnected = () => {
+  isConnected.value = false
+  isOfflineMode.value = true
+  ElMessage.warning('连接断开')
+}
+
+const handleMaxReconnectAttempts = () => {
+  ElMessage.error('连接失败，请检查网络或刷新页面重试')
+}
+
+const handleNewMessage = (data: any) => {
+  console.log('收到新消息事件:', data)
+  if (data.message && data.message.conversationId === conversationId.value) {
+    // 检查是否已经存在相同的消息（避免重复）
+    const existingMessage = messages.value.find(m => m.id === data.message.id)
+    if (!existingMessage) {
       messages.value.push(data.message)
       scrollToBottom()
-
-      // 播放消息提示音（可选）
-      // playNotificationSound()
-    }
-  })
-
-  // 监听消息发送确认
-  mockWS.on('message_sent', (data: any) => {
-    console.log('消息发送确认:', data)
-    // 更新临时消息的状态
-    const tempMessage = messages.value.find(m => m.id === data.tempId)
-    if (tempMessage) {
-      Object.assign(tempMessage, data.message)
-    }
-  })
-
-  // 监听正在输入状态
-  mockWS.on('typing_status', (data: any) => {
-    console.log('正在输入状态:', data)
-    if (data.userId !== currentUserId.value) {
-      isTyping.value = data.isTyping
-      if (data.isTyping) {
-        // 3秒后自动清除正在输入状态
-        setTimeout(() => {
-          isTyping.value = false
-        }, 3000)
+      
+      // 如果消息不是自己发送的，播放提示音
+      if (data.message.senderId !== currentUserId.value) {
+        
       }
     }
-  })
+  }
+}
 
-  // 监听已读状态
-  mockWS.on('read_status', (data: any) => {
-    console.log('已读状态:', data)
-    // 更新消息已读状态
+const handleMessageSent = (data: any) => {
+  console.log('消息发送确认事件:', data)
+  if (data.tempId) {
+    const tempMessage = messages.value.find(m => m.id === data.tempId)
+    if (tempMessage && data.message) {
+      // 更新临时消息为正式消息
+      Object.assign(tempMessage, data.message)
+      tempMessage.status = 'sent'
+    }
+  }
+}
+
+const handleTypingStatus = (data: any) => {
+  console.log('正在输入状态事件:', data)
+  if (data.userId !== currentUserId.value && data.conversationId === conversationId.value) {
+    isTyping.value = data.isTyping
+    if (data.isTyping) {
+      setTimeout(() => {
+        isTyping.value = false
+      }, 3000)
+    }
+  }
+}
+
+const handleReadStatus = (data: any) => {
+  console.log('已读状态事件:', data)
+  if (data.conversationId === conversationId.value) {
     const convMessages = messages.value.filter(m => m.conversationId === data.conversationId)
     convMessages.forEach(msg => {
       if (data.messageIds.includes(msg.id) && msg.senderId === currentUserId.value) {
         msg.status = 'read'
       }
     })
-  })
-
-  // 监听用户在线状态
-  mockWS.on('user_status', (data: any) => {
-    console.log('用户状态变化:', data)
-    if (chatUser.value && chatUser.value.id === data.userId) {
-      chatUser.value.isOnline = data.isOnline
-      chatUser.value.lastSeen = data.lastSeen
-    }
-  })
+  }
 }
 
-// 安全的方法实现
+const handleUserStatus = (data: any) => {
+  console.log('用户状态变化事件:', data)
+  if (chatUser.value && chatUser.value.id === data.userId) {
+    chatUser.value.isOnline = data.isOnline
+    chatUser.value.lastSeen = data.lastSeen
+  }
+}
 
+// 发送消息
+const sendMessage = async () => {
+  if ((!messageInput.value.trim() && selectedFiles.value.length === 0) || isSending.value) {
+    return
+  }
+
+  if (!isConnected.value) {
+    ElMessage.error('连接断开，无法发送消息')
+    return
+  }
+
+  try {
+    isSending.value = true
+
+    // 发送文本消息
+    if (messageInput.value.trim()) {
+      await sendTextMessage(messageInput.value.trim())
+      messageInput.value = ''
+    }
+
+    // 发送文件消息
+    if (selectedFiles.value.length > 0) {
+      for (const file of selectedFiles.value) {
+        await sendFileMessage(file)
+      }
+      selectedFiles.value = []
+    }
+
+    scrollToBottom()
+  } catch (error) {
+    console.error('发送消息失败:', error)
+    ElMessage.error('发送失败，请重试')
+  } finally {
+    isSending.value = false
+  }
+}
+
+// 发送文本消息
+const sendTextMessage = async (content: string) => {
+  const tempId = `temp_${Date.now()}_${Math.random()}`
+
+  console.log('发送文本消息:', {
+    conversationId: conversationId.value,
+    content,
+    senderId: currentUserId.value,
+    receiverId: chatUserId.value,
+    tempId,
+  })
+
+  // 立即添加到本地消息列表（乐观更新）
+  const tempMessage = {
+    id: tempId,
+    conversationId: conversationId.value,
+    senderId: currentUserId.value,
+    receiverId: chatUserId.value,
+    type: 'text',
+    content,
+    status: 'sending',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+
+  messages.value.push(tempMessage)
+  nextTick(() => scrollToBottom())
+
+  try {
+    // 通过 WebSocket 发送消息
+    wsService.sendTextMessage(conversationId.value, content, tempId, chatUserId.value)
+  } catch (error) {
+    console.error('WebSocket 发送失败:', error)
+    // 更新消息状态为失败
+    tempMessage.status = 'failed'
+    throw error
+  }
+}
+
+// 发送文件消息
+const sendFileMessage = async (file: File) => {
+  const tempId = `temp_file_${Date.now()}_${Math.random()}`
+
+  try {
+    console.log('开始上传文件:', file.name, file.size, file.type)
+    
+    // 上传文件
+    const uploadResponse = await uploadFile(file)
+    console.log('文件上传响应:', uploadResponse)
+
+    // 创建临时消息
+    const tempMessage = {
+      id: tempId,
+      conversationId: conversationId.value,
+      senderId: currentUserId.value,
+      receiverId: chatUserId.value,
+      type: file.type.startsWith('image/') ? 'image' : 'file',
+      content: file.type.startsWith('image/') ? uploadResponse.fileUrl : uploadResponse.fileName,
+      fileInfo: {
+        name: uploadResponse.fileName,
+        size: uploadResponse.fileSize,
+        url: uploadResponse.fileUrl,
+        mimeType: uploadResponse.mimeType || file.type,
+      },
+      status: 'sending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    messages.value.push(tempMessage)
+    nextTick(() => scrollToBottom())
+
+    // 通过 WebSocket 发送文件消息
+    wsService.sendFileMessage(conversationId.value, uploadResponse, tempId, chatUserId.value)
+  } catch (error) {
+    console.error('文件消息发送失败:', error)
+    ElMessage.error(`文件发送失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    throw error
+  }
+}
+
+// 处理输入变化
+const handleInputChange = () => {
+  if (isConnected.value) {
+    wsService.sendTypingStatus(conversationId.value, true)
+
+    clearTimeout(typingTimer.value)
+    typingTimer.value = setTimeout(() => {
+      if (isConnected.value) {
+        wsService.sendTypingStatus(conversationId.value, false)
+      }
+    }, 1000) as unknown as number
+  }
+}
+
+// 标记消息为已读
+const markAsRead = () => {
+  if (isConnected.value) {
+    const unreadMessages = messages.value
+      .filter(m => m.senderId !== currentUserId.value && m.status !== 'read')
+      .map(m => m.id)
+
+    if (unreadMessages.length > 0) {
+      wsService.sendReadStatus(conversationId.value, unreadMessages)
+    }
+  }
+}
+
+// 加载历史消息
+const loadMessages = async (loadMore = false) => {
+  if (isLoading.value) return
+
+  isLoading.value = true
+  try {
+    const response = await chatAPI.getConversationHistory({
+      conversationId: conversationId.value,
+      page: loadMore ? Math.floor(messages.value.length / 20) + 1 : 1,
+      size: 20,
+    })
+
+    if (loadMore) {
+      messages.value = [...response.messages, ...messages.value]
+    } else {
+      messages.value = response.messages || []
+    }
+
+    hasMore.value = response.hasMore
+    console.log('加载历史消息:', messages.value.length, '条')
+  } catch (error) {
+    console.error('加载消息失败:', error)
+    // ElMessage.error('加载消息失败')
+    // 静默处理，因为可能是首次聊天没有历史消息
+    messages.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// 播放提示音
+const playNotificationSound = () => {
+  try {
+    const audio = new Audio()
+    audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjeN1O/MeiMGI3vD8OGOQQIUXrTp66hVFApGn+DyvmwhBjeN1O/MeiMGI3vD8OGOQQIUXrTp66hVFApGn+DyvmwhBjaLy/DJciMFImY=' 
+    audio.play().catch(() => {
+      // 静默处理，某些浏览器不允许自动播放
+    })
+  } catch (error) {
+    // 静默处理
+  }
+}
+
+// 生命周期钩子
+onMounted(async () => {
+  console.log('Chat.vue 组件挂载')
+  await initializeChat()
+  scrollToBottom()
+
+  window.addEventListener('dragover', handleDragOver)
+  window.addEventListener('dragleave', handleDragLeave)
+})
+
+onUnmounted(() => {
+  console.log('Chat.vue 组件卸载')
+  window.removeEventListener('dragover', handleDragOver)
+  window.removeEventListener('dragleave', handleDragLeave)
+
+  if (typingTimer.value) {
+    clearTimeout(typingTimer.value)
+  }
+
+  // 断开 WebSocket 连接
+  wsService.disconnect()
+})
+
+// 监听路由变化，重新初始化聊天
+watch(
+  () => route.params.userId,
+  (newUserId) => {
+    if (newUserId) {
+      console.log('路由变化，重新初始化聊天:', newUserId)
+      initializeChat()
+    }
+  }
+)
+
+// 其他方法保持不变...
 const getMessageSenderName = (message: any) => {
   if (!message) return '未知用户'
-
   if (message.senderId === currentUserId.value) {
     return currentUser.value?.name || '我'
   } else {
-    return chatUser.value?.name || '用户'
+    return chatUser.value?.name || `用户${message.senderId}`
   }
 }
 
@@ -1149,153 +1376,6 @@ const getLastSeenText = () => {
     return `${days}天前在线`
   } catch (error) {
     return '未知'
-  }
-}
-
-// 发送消息
-const sendMessage = async () => {
-  if ((!messageInput.value.trim() && selectedFiles.value.length === 0) || isSending.value) {
-    return
-  }
-
-  try {
-    isSending.value = true
-
-    // 发送文本消息
-    if (messageInput.value.trim()) {
-      const tempId = `temp_${Date.now()}`
-      const content = messageInput.value.trim()
-
-      // 立即添加到本地消息列表（乐观更新）
-      const tempMessage = {
-        id: tempId,
-        conversationId: conversationId.value,
-        senderId: currentUserId.value,
-        receiverId: chatUserId.value,
-        type: 'text',
-        content,
-        status: 'sending',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-
-      messages.value.push(tempMessage)
-      messageInput.value = ''
-
-      // 通过 WebSocket 发送消息
-      mockWS.send({
-        type: 'send_message',
-        data: {
-          conversationId: conversationId.value,
-          type: 'text',
-          content,
-          receiverId: chatUserId.value,
-          senderId: currentUserId.value,
-          tempId,
-        },
-        timestamp: new Date().toISOString(),
-      })
-    }
-
-    // 发送文件消息
-    if (selectedFiles.value.length > 0) {
-      for (const file of selectedFiles.value) {
-        const tempId = `temp_file_${Date.now()}_${Math.random()}`
-
-        const tempMessage = {
-          id: tempId,
-          conversationId: conversationId.value,
-          senderId: currentUserId.value,
-          receiverId: chatUserId.value,
-          type: file.type.startsWith('image/') ? 'image' : 'file',
-          content: file.type.startsWith('image/') ? URL.createObjectURL(file) : file.name,
-          fileInfo: {
-            name: file.name,
-            size: file.size,
-            url: URL.createObjectURL(file),
-            mimeType: file.type,
-          },
-          status: 'sending',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-
-        messages.value.push(tempMessage)
-
-        // 发送文件消息
-        mockWS.send({
-          type: 'send_message',
-          data: {
-            conversationId: conversationId.value,
-            type: tempMessage.type,
-            content: tempMessage.content,
-            fileInfo: tempMessage.fileInfo,
-            receiverId: chatUserId.value,
-            senderId: currentUserId.value,
-            tempId,
-          },
-          timestamp: new Date().toISOString(),
-        })
-      }
-      selectedFiles.value = []
-    }
-
-    scrollToBottom()
-  } catch (error) {
-    console.error('发送消息失败:', error)
-    ElMessage.error('发送失败，请重试')
-  } finally {
-    isSending.value = false
-  }
-}
-
-// 处理输入变化
-const handleInputChange = () => {
-  if (isConnected.value) {
-    // 发送正在输入状态
-    mockWS.send({
-      type: 'typing_status',
-      data: {
-        conversationId: conversationId.value,
-        isTyping: true,
-      },
-      timestamp: new Date().toISOString(),
-    })
-
-    // 清除之前的定时器
-    clearTimeout(typingTimer.value)
-
-    // 1秒后停止输入状态
-    typingTimer.value = setTimeout(() => {
-      mockWS.send({
-        type: 'typing_status',
-        data: {
-          conversationId: conversationId.value,
-          isTyping: false,
-        },
-        timestamp: new Date().toISOString(),
-      })
-    }, 1000) as unknown as number
-  }
-}
-
-// 标记消息为已读
-const markAsRead = () => {
-  if (isConnected.value) {
-    const unreadMessages = messages.value
-      .filter(m => m.senderId !== currentUserId.value && m.status !== 'read')
-      .map(m => m.id)
-
-    if (unreadMessages.length > 0) {
-      mockWS.send({
-        type: 'read_status',
-        data: {
-          conversationId: conversationId.value,
-          messageIds: unreadMessages,
-        },
-        timestamp: new Date().toISOString(),
-      })
-    }
   }
 }
 
@@ -1328,12 +1408,16 @@ const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
   const files = Array.from(target.files || [])
   selectedFiles.value.push(...files)
+  // 清空 input 以允许重复选择同一文件
+  target.value = ''
 }
 
 const handleImageSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
   const files = Array.from(target.files || [])
   selectedFiles.value.push(...files)
+  // 清空 input 以允许重复选择同一文件
+  target.value = ''
 }
 
 const handleFileDrop = (event: DragEvent) => {
@@ -1358,27 +1442,24 @@ const downloadFile = (fileInfo: any) => {
     const link = document.createElement('a')
     link.href = fileInfo.url
     link.download = fileInfo.name || '文件'
+    document.body.appendChild(link)
     link.click()
+    document.body.removeChild(link)
   }
 }
 
-// 错误处理方法
 const avatarError = ref(new Set<string>())
 
 const handleAvatarError = (event: Event) => {
   const img = event.target as HTMLImageElement
   const originalSrc = img.src
 
-  // 避免无限循环
   if (avatarError.value.has(originalSrc)) {
     return
   }
 
   avatarError.value.add(originalSrc)
-
-  // 设置默认头像，使用base64编码的默认图片或者确保存在的图片
-  img.src =
-    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNFNUU3RUIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNiIgcj0iNiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMzIgMzJDMzIgMjYuNDc3MiAyNy41MjI4IDIyIDIyIDIySDE4QzEyLjQ3NzIgMjIgOCAyNi40NzcyIDggMzJWMzJIMzJWMzJaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo='
+  img.src = getDefaultAvatar()
 }
 
 const handleImageError = (event: Event) => {
@@ -1387,7 +1468,6 @@ const handleImageError = (event: Event) => {
   ElMessage.error('图片加载失败')
 }
 
-// 获取消息头像的安全方法
 const getMessageAvatar = (message: any) => {
   if (!message) return getDefaultAvatar()
 
@@ -1398,12 +1478,10 @@ const getMessageAvatar = (message: any) => {
   }
 }
 
-// 获取默认头像
 const getDefaultAvatar = () => {
-  return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNFNUU3RUIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNiIgcj0iNiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMzIgMzJDMzIgMjYuNDc3MiAyNy41MjI4IDIyIDIySDE4QzEyLjQ3NzIgMjIgOCAyNi40NzcyIDggMzJWMzJIMzJWMzJaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo='
+  return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNFNUU3RUIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNiIgcj0iNiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMzIgMzJDMzIgMjYuNDc3MiAyNy41MjI4IDIyIDIyIDIySDE4QzEyLjQ3NzIgMjIgOCAyNi40NzcyIDggMzJWMzJIMzJWMzJaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo='
 }
 
-// 导航方法
 const goBack = () => {
   router.push('/messages')
 }
@@ -1425,38 +1503,6 @@ const handleScroll = () => {
   }
 }
 
-const loadMessages = async (loadMore = false) => {
-  if (isLoading.value) return
-
-  isLoading.value = true
-  try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    if (loadMore) {
-      const moreMessages = [
-        {
-          id: `older_${Date.now()}`,
-          conversationId: conversationId.value,
-          senderId: chatUserId.value,
-          receiverId: currentUserId.value,
-          type: 'text',
-          content: '这是一条更早的历史消息',
-          status: 'read',
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          updatedAt: new Date(Date.now() - 86400000).toISOString(),
-        },
-      ]
-      messages.value = [...moreMessages, ...messages.value]
-      hasMore.value = Math.random() > 0.7
-    }
-  } catch (error) {
-    console.error('加载消息失败:', error)
-  } finally {
-    isLoading.value = false
-  }
-}
-
-// 格式化方法
 const formatMessageTime = (date: Date | string) => {
   if (!date) return ''
 
@@ -1511,7 +1557,6 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
-// 通话功能（待实现）
 const startVoiceCall = () => {
   ElMessage.info('语音通话功能开发中...')
 }
@@ -1539,7 +1584,6 @@ const handleMoreAction = (command: string) => {
   }
 }
 
-// 拖拽事件处理
 const handleDragOver = (event: DragEvent) => {
   event.preventDefault()
   if (!isDragging.value) {
@@ -1553,49 +1597,13 @@ const handleDragLeave = (event: DragEvent) => {
   }
 }
 
-// 生命周期钩子
-onMounted(async () => {
-  await initializeChat()
-  scrollToBottom()
-
-  // 添加拖拽事件监听
-  window.addEventListener('dragover', handleDragOver)
-  window.addEventListener('dragleave', handleDragLeave)
-})
-
-onUnmounted(() => {
-  // 清理事件监听
-  window.removeEventListener('dragover', handleDragOver)
-  window.removeEventListener('dragleave', handleDragLeave)
-
-  // 清理定时器
-  if (typingTimer.value) {
-    clearTimeout(typingTimer.value)
-  }
-
-  // 断开 WebSocket 连接
-  mockWS.disconnect()
-})
-
-// 监听消息变化，自动滚动到底部
 watch(
   () => messages.value.length,
   () => {
-    scrollToBottom()
-  }
-)
-
-// 监听路由变化，重新初始化聊天
-watch(
-  () => route.params.userId,
-  () => {
-    if (route.params.userId) {
-      initializeChat()
-    }
+    nextTick(() => scrollToBottom())
   }
 )
 </script>
-
 <style scoped>
 /* 自定义滚动条样式 */
 .overflow-y-auto::-webkit-scrollbar {

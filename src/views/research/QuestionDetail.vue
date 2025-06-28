@@ -1,12 +1,11 @@
-<!-- filepath: c:\Users\Windows11\Desktop\小学期\frontend\src\views\research\QuestionDetail.vue -->
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50">
+  <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 返回按钮 -->
       <div class="mb-6">
         <button
           @click="goBack"
-          class="flex items-center text-slate-600 hover:text-cyan-600 transition-all duration-300 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-xl border border-cyan-100/50 hover:border-cyan-200/80"
+          class="flex items-center text-gray-600 hover:text-blue-600 transition-colors bg-white px-4 py-2 rounded-lg border border-gray-200 hover:border-blue-200"
         >
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -40,7 +39,7 @@
                     <span
                       v-for="tag in question.tags"
                       :key="tag"
-                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-cyan-100/80 to-blue-100/80 text-cyan-700 border border-cyan-200/50"
+                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
                     >
                       {{ tag }}
                     </span>
@@ -52,7 +51,7 @@
                   <button
                     @click="toggleFollow"
                     :class="[
-                      'px-6 py-3 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm',
+                      'px-6 py-3 rounded-lg font-medium transition-colors',
                       question.isFollowed
                         ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg hover:shadow-xl'
                         : 'bg-white/60 text-slate-700 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 border border-cyan-200/50',
@@ -76,7 +75,7 @@
 
                   <button
                     @click="shareQuestion"
-                    class="px-6 py-3 bg-white/60 text-slate-700 rounded-xl hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 transition-all duration-300 border border-cyan-200/50"
+                    class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-200"
                   >
                     <svg
                       class="w-5 h-5 inline-block mr-2"
@@ -98,25 +97,25 @@
 
               <!-- 问题描述 -->
               <Markdown
-                class="prose prose-lg max-w-none mb-6 text-slate-700"
+                class="prose prose-lg max-w-none mb-6 text-gray-700"
                 :source="renderedDescription"
               />
 
               <!-- 问题元信息 -->
-              <div class="flex items-center justify-between pt-6 border-t border-cyan-100/50">
+              <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                 <div class="flex items-center space-x-6">
                   <div class="flex items-center">
                     <img
                       :src="question.author.avatar"
                       :alt="question.author.name"
-                      class="w-12 h-12 rounded-full mr-3 ring-2 ring-cyan-200/50"
+                      class="w-12 h-12 rounded-full mr-3 ring-2 ring-gray-200"
                     />
                     <div>
-                      <p class="font-medium text-slate-800">{{ question.author.name }}</p>
-                      <p class="text-sm text-slate-500">{{ question.author.institution }}</p>
+                      <p class="font-medium text-gray-800">{{ question.author.name }}</p>
+                      <p class="text-sm text-gray-500">{{ question.author.institution }}</p>
                     </div>
                   </div>
-                  <div class="text-sm text-slate-500">
+                  <div class="text-sm text-gray-500">
                     发布于 {{ formatTime(question.createdAt) }}
                   </div>
                 </div>
@@ -179,10 +178,10 @@
                   {{ answers.length }} 个回答
                 </h2>
                 <div class="flex items-center space-x-3">
-                  <label class="text-sm text-slate-600">排序方式：</label>
+                  <label class="text-sm text-gray-600">排序方式：</label>
                   <select
                     v-model="answerSortBy"
-                    class="px-3 py-2 bg-white/80 border border-cyan-200/50 rounded-lg text-sm focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400 transition-all duration-300"
+                    class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="helpful">最有帮助</option>
                     <option value="latest">最新回答</option>
@@ -193,6 +192,7 @@
             </div>
 
             <!-- 回答列表 -->
+            <div>
             <div>
               <template v-for="(answer, idx) in sortedAnswers" :key="answer.id">
                 <div
@@ -660,7 +660,7 @@
               <div
                 v-for="relatedQ in relatedQuestions"
                 :key="relatedQ.id"
-                class="group cursor-pointer p-3 rounded-xl hover:bg-gradient-to-r hover:from-cyan-50/60 hover:to-blue-50/60 transition-all duration-300 border border-transparent hover:border-cyan-200/50"
+                class="group cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
                 @click="goToQuestion(relatedQ.id)"
               >
                 <h4
@@ -668,7 +668,7 @@
                 >
                   {{ relatedQ.title }}
                 </h4>
-                <div class="flex items-center text-xs text-slate-500 space-x-3">
+                <div class="flex items-center text-xs text-gray-500 space-x-3">
                   <span class="flex items-center">
                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
