@@ -20,13 +20,8 @@
     </div>
 
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- 加载状态 -->
-      <div v-if="loading" class="text-center py-12">
-        <el-loading text="加载中..." />
-      </div>
-
       <!-- 成果详情 -->
-      <div v-else-if="publication" class="space-y-8">
+      <div v-if="publication" class="space-y-8">
         <!-- 成果基本信息 -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
           <div class="p-8">
@@ -327,13 +322,19 @@
         </div>
 
         <!-- 评论区 -->
-        <!-- <div id="comments" class="bg-white rounded-xl shadow-lg overflow-hidden mt-8">
+        <div
+          id="comments"
+          class="bg-white rounded-xl shadow-lg overflow-hidden mt-8"
+          v-loading="commentsLoading"
+          element-loading-text="精彩评论马上到来..."
+        >
           <div class="p-8">
             <div class="flex items-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900 mr-4">
-                评论 <span class="text-blue-600 text-lg">{{ comments.length }}</span>
+                评论区
+                <span class="text-blue-600 text-lg">{{ totalCommentsCount }}</span>
               </h2>
-              <div class="flex items-center space-x-2 text-gray-500 text-sm">
+              <!-- <div class="flex items-center space-x-2 text-gray-500 text-sm">
                 <span
                   :class="sortType === 'hot' ? 'font-bold text-gray-900' : 'cursor-pointer'"
                   @click="sortType = 'hot'"
@@ -345,133 +346,37 @@
                   @click="sortType = 'new'"
                   >最新</span
                 >
-              </div>
+              </div> -->
             </div>
 
-            <div
-              class="flex items-start gap-4 bg-white rounded-lg p-5 mb-8 shadow-sm border border-gray-100"
-            >
-              <div
-                class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0"
-              >
-                <svg
-                  class="w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <div class="flex-1">
-                <el-input
-                  v-model="newComment"
-                  type="textarea"
-                  :rows="3"
-                  placeholder="进来来和UP唠会嗑~"
-                  maxlength="500"
-                  show-word-limit
-                  @keydown.ctrl.enter="submitComment"
-                  class="bili-comment-input"
-                />
-                <div class="flex justify-end mt-2">
-                  <el-button
-                    type="primary"
-                    :disabled="!newComment.trim()"
-                    :loading="submitting"
-                    @click="submitComment"
-                    class="px-6 py-1.5 rounded font-semibold"
-                  >
-                    发表评论
-                  </el-button>
-                </div>
-              </div>
+            <div class="mb-8">
+              <CommentForm
+                :publication-id="publication.id"
+                :parent-id="activeReplyId"
+                :reply-to-user-name="getReplyToUserName()"
+                :replied-user-id="getrepliedUserIdString()"
+                @submitted="loadComments"
+              />
             </div>
 
+            <!-- 评论列表 -->
             <div v-if="sortedComments.length > 0" class="space-y-8">
-              <div
+              <PublicationCommentComp
                 v-for="comment in sortedComments"
                 :key="comment.id"
-                class="flex items-start gap-4"
-              >
-                <div
-                  class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center"
-                >
-                  <img
-                    v-if="comment.author.avatar"
-                    :src="comment.author.avatar"
-                    class="w-full h-full object-cover"
-                  />
-                  <svg
-                    v-else
-                    class="w-5 h-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </div>
-                <div class="flex-1 border-b border-gray-100 pb-6">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="font-bold text-gray-900">{{ comment.author.name }}</span>
-                    <span
-                      v-if="comment.author.level"
-                      class="bg-orange-100 text-orange-600 text-xs rounded px-1.5 py-0.5 font-bold"
-                      >LV{{ comment.author.level }}</span
-                    >
-                  </div>
-                  <div class="text-gray-800 mb-2 leading-relaxed">{{ comment.content }}</div>
-                  <div class="flex items-center gap-4 text-gray-400 text-sm">
-                    <span>{{ formatTime(comment.createdAt) }}</span>
-                    <button
-                      @click="toggleCommentLike(comment)"
-                      :class="comment.isLiked ? 'text-red-500' : 'hover:text-red-500'"
-                      class="flex items-center gap-1 transition-colors"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                      </svg>
-                      <span>{{ comment.likesCount }}</span>
-                    </button>
-                    <button
-                      @click="replyToComment(comment)"
-                      class="flex items-center gap-1 hover:text-blue-500 transition-colors"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                        />
-                      </svg>
-                      回复
-                    </button>
-                  </div>
-                </div>
-              </div>
+                :comment="comment"
+                :replies="comment.replies"
+                :active-reply-id="activeReplyId"
+                @like="toggleCommentLike"
+                @set-active-reply="setActiveReply"
+                @reply-submitted="handleReplySubmitted"
+              />
             </div>
             <div v-else class="text-center py-12 text-gray-400">
               暂无评论，快来发表第一条评论吧！
             </div>
           </div>
-        </div> -->
+        </div>
       </div>
 
       <!-- 错误状态 -->
@@ -493,32 +398,62 @@
         <el-button type="primary" class="mt-4" @click="$router.go(-1)">返回上一页</el-button>
       </div>
     </div>
+
+    <!-- 浮动回到顶部按钮 -->
+    <div
+      v-show="showBackToTop"
+      @click="scrollToTop"
+      class="fixed bottom-8 right-8 w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 z-50"
+    >
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 10l7-7m0 0l7 7m-7-7v18"
+        />
+      </svg>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { getPublicationInformById, readPublication } from '@/api/modules/publication'
 import {
-  getPublicationInformById,
   getPublicationComments,
-  createPublicationComment,
-  togglePublicationCommentLike,
-  readPublication,
-} from '@/api/modules/publication'
-import type { Publication, PublicationComment } from '@/api/types/publication'
+  likeComment,
+  disLikeComment,
+  getReplyComments,
+} from '@/api/modules/comment'
+import type { Publication } from '@/api/types/publication'
+import type { Comment } from '@/api/types/comment'
+import type { UserDetail } from '@/api/types/user'
+import PublicationCommentComp from '@/components/PublicationComment.vue'
+import CommentForm from '@/components/CommentForm.vue'
 
 const route = useRoute()
 const router = useRouter()
 
-const loading = ref(true)
-const submitting = ref(false)
 const publication = ref<Publication | null>(null)
-const comments = ref<PublicationComment[]>([])
-const newComment = ref('')
+const comments = ref<Comment[]>([])
+const commentsLoading = ref(true)
 const isAbstractExpanded = ref(false)
 const sortType = ref('hot')
+const activeReplyId = ref<number | null>(null)
+const showBackToTop = ref(false)
+
+// 回复目标信息
+const replyTarget = ref<{
+  id: number
+  name: string
+  type: 'comment' | 'reply'
+} | null>(null)
+
+// 初始加载状态
+const isInitialLoad = ref(true)
 
 onMounted(async () => {
   const publicationId = route.params.id
@@ -536,63 +471,127 @@ onMounted(async () => {
       publication.value = processPublicationData(response.data)
     }
 
-    // 获取评论列表
-    // await loadComments()
+    // 获取评论列表（异步加载，不影响页面显示）
+    loadComments()
   } catch (error) {
     console.error('加载成果详情失败:', error)
     ElMessage.error('加载成果详情失败')
-  } finally {
-    loading.value = false
   }
+
+  // 添加滚动监听
+  window.addEventListener('scroll', handleScroll)
 })
+
+// 组件卸载时移除滚动监听
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+
+// 滚动处理函数
+const handleScroll = () => {
+  showBackToTop.value = window.scrollY > 300
+}
 
 const loadComments = async () => {
   if (!publication.value) return
 
+  commentsLoading.value = true
   try {
-    const response = await getPublicationComments(publication.value.id, { page: 1, size: 20 })
+    const response = await getPublicationComments(publication.value.id)
     if (response.data) {
-      comments.value = response.data.comments
+      console.log(response.data)
+
+      // 等待所有二级评论加载完成
+      const commentsWithReplies = await Promise.all(
+        response.data.map(async comment => {
+          try {
+            // 获取二级评论
+            const repliesResponse = await getReplyComments(comment.id)
+            const replies = repliesResponse.data || []
+
+            // 过滤掉内容为"该评论已删除"的二级评论
+            const filteredReplies = replies.filter(reply => reply.content !== '该评论已删除')
+
+            // 返回包含回复的评论
+            return {
+              ...comment,
+              replies: filteredReplies,
+            }
+          } catch (error) {
+            console.error(`获取评论 ${comment.id} 的回复失败:`, error)
+            return {
+              ...comment,
+              replies: [],
+            }
+          }
+        })
+      )
+
+      // 过滤掉没有二级评论且内容为"该评论已删除"的一级评论
+      const filteredComments = commentsWithReplies.filter(comment => {
+        // 如果评论内容为"该评论已删除"且没有二级评论，则过滤掉
+        if (
+          comment.content === '该评论已删除' &&
+          (!comment.replies || comment.replies.length === 0)
+        ) {
+          return false
+        }
+        return true
+      })
+
+      // 只在初始加载时对评论进行排序
+      if (isInitialLoad.value) {
+        comments.value = filteredComments.sort((a, b) => {
+          if (b.likes !== a.likes) {
+            return b.likes - a.likes
+          }
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        })
+        isInitialLoad.value = false // 标记初始加载完成
+      } else {
+        // 非初始加载时保持原有顺序
+        comments.value = filteredComments
+      }
     }
   } catch (error) {
     console.error('加载评论失败:', error)
     ElMessage.error('加载评论失败')
-  }
-}
-
-const submitComment = async () => {
-  if (!newComment.value.trim() || !publication.value) return
-
-  try {
-    submitting.value = true
-    await createPublicationComment(publication.value.id, {
-      content: newComment.value.trim(),
-    })
-
-    newComment.value = ''
-    await loadComments()
-    ElMessage.success('评论发表成功')
-  } catch (error) {
-    console.error('发表评论失败:', error)
-    ElMessage.error('发表评论失败')
   } finally {
-    submitting.value = false
+    commentsLoading.value = false
   }
 }
 
-const toggleCommentLike = async (comment: PublicationComment) => {
+const toggleCommentLike = async (comment: Comment) => {
   try {
-    const response = await togglePublicationCommentLike(comment.id)
-    comment.isLiked = response.isLiked
-    comment.likesCount = response.likesCount
+    if (comment.isLiked) {
+      await disLikeComment(comment.id)
+      comment.isLiked = false
+      comment.likes--
+    } else {
+      await likeComment(comment.id)
+      comment.isLiked = true
+      comment.likes++
+    }
   } catch (error) {
     console.error('点赞失败:', error)
     ElMessage.error('操作失败')
   }
 }
 
-const replyToComment = (comment: PublicationComment) => {
-  ElMessage.info('回复功能开发中...')
+// 设置活跃的回复ID
+function setActiveReply(
+  commentId: number | null,
+  targetInfo?: { id: number; name: string; type: 'comment' | 'reply' }
+) {
+  activeReplyId.value = commentId
+  replyTarget.value = targetInfo || null
+}
+
+// 处理回复提交
+function handleReplySubmitted() {
+  activeReplyId.value = null // 清除活跃回复状态
+  replyTarget.value = null // 清除回复目标信息
+  loadComments() // 重新加载评论列表
 }
 
 const openPdf = async () => {
@@ -626,10 +625,6 @@ const downloadPdf = () => {
 
 const applyPdf = () => {
   ElMessage.info('请联系作者或管理员申请PDF全文。')
-}
-
-const scrollToComments = () => {
-  document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' })
 }
 
 const getStatusType = (status: string) => {
@@ -669,11 +664,15 @@ const formatTime = (timeStr: string) => {
     return `${minutes}分钟前`
   } else if (hours < 24) {
     return `${hours}小时前`
-  } else if (days < 30) {
+  } else if (days < 7) {
     return `${days}天前`
   } else {
-    return date.toLocaleDateString('zh-CN')
+    return date.toLocaleDateString()
   }
+}
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const getAuthorsList = (authors: string | null) => {
@@ -722,9 +721,34 @@ const sortedComments = computed(() => {
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
   }
-  // 默认"最热"按点赞数排序
-  return [...comments.value].sort((a, b) => b.likesCount - a.likesCount)
+  // 默认返回当前顺序，排序已在loadComments中处理
+  return comments.value
 })
+
+// 计算所有评论的总数量（包括一级评论和二级评论）
+const totalCommentsCount = computed(() => {
+  return comments.value.reduce((total, comment) => {
+    // 一级评论算1个
+    let count = 1
+
+    // 加上二级评论数量
+    if (comment.replies) {
+      count += comment.replies.length
+    }
+
+    return total + count
+  }, 0)
+})
+
+const getReplyToUserName = () => {
+  return replyTarget.value?.name || ''
+}
+
+const getrepliedUserIdString = () => {
+  if (!replyTarget.value) return ''
+  // 格式: "id,name"
+  return `${replyTarget.value.id},${replyTarget.value.name}`
+}
 </script>
 
 <style scoped>
@@ -760,4 +784,4 @@ const sortedComments = computed(() => {
   color: #b6c2e1;
   opacity: 1;
 }
-</style> 
+</style>
