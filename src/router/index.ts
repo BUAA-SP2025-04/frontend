@@ -147,6 +147,21 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/research/MyProjects.vue'),
     meta: { title: '我的项目管理' },
   },
+  {
+    path: '/research/my-questions',
+    name: 'MyQuestions',
+    component: () => import('@/views/research/MyQuestions.vue'),
+    meta: { title: '我的提问' },
+  },
+  {
+    path: '/research/knowledge-graph',
+    name: 'KnowledgeGraph',
+    component: () => import('@/views/research/KnowledgeGraph.vue'),
+    meta: {
+      title: '知识图谱',
+      requiresAuth: true,
+    },
+  },
 ]
 
 const router = createRouter({

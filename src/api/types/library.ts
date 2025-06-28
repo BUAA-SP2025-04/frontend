@@ -1,10 +1,8 @@
-import type { InputNumberEmits } from "element-plus"
-
 // 收藏论文类型
 export interface FavoritePaper {
   id: number
   title: string
-  citations?: number
+  // citations?: number
   readCount?: number
   folderId: number
   // publishDate?: string
@@ -44,7 +42,7 @@ export interface Paper {
   keywords?: string,
   doi?: string,
   pdfUrl?: string,
-  status: string,
+  status?: string,
   isPublic: string
 }
 
@@ -60,11 +58,11 @@ export interface RPaper{
   type: string,
   title: string,
   authors: string | null,
-  conference: string | null,
+  conference?: string | null,
   year: number | null,
-  venue: string,
+  venue: string | null,
   keywords: string | null,
-  status: string,
+  status: string | null,
   doi?: string | null,
   pdfUrl: string,
   abstracts?: string | null,
@@ -92,3 +90,6 @@ export type GetRecordListResponse = {
 export type CreateRecordResponse = {data: Record};
 export type GetByIDResponse = {data: RPaper};
 export type GetFileUrlResponse = {data: string}
+export type GetUpdateResponse = {
+  data: RPaper[]
+};
