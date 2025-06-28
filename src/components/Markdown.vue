@@ -14,7 +14,7 @@ import hljs from 'highlight.js'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github.css'
 
-const props = defineProps<{ 
+const props = defineProps<{
   source: string
   enableToc?: boolean
 }>()
@@ -33,11 +33,11 @@ const md: MarkdownIt = new MarkdownIt({
       } catch {}
     }
     return `<pre class="hljs"><code>${md.utils.escapeHtml(str)}</code></pre>`
-  }
+  },
 })
   .use(katex, {
     throwOnError: false,
-    errorColor: '#cc0000'
+    errorColor: '#cc0000',
   })
   .use(taskLists, { enabled: true })
   .use(container, 'info')
@@ -46,9 +46,9 @@ const md: MarkdownIt = new MarkdownIt({
 
 if (props.enableToc) {
   md.use(anchor, {
-    permalink: anchor.permalink.headerLink()
+    permalink: anchor.permalink.headerLink(),
   }).use(toc, {
-    includeLevel: [1, 2, 3]
+    includeLevel: [1, 2, 3],
   })
 }
 
@@ -68,7 +68,9 @@ const rendered = computed(() => md.render(props.source || ''))
   background: linear-gradient(135deg, #f1f5f9 60%, #e0f2fe 100%);
   border: 1.5px solid #bae6fd;
   border-radius: 0.75rem;
-  box-shadow: 0 4px 24px 0 rgba(56, 189, 248, 0.08), 0 1.5px 4px 0 rgba(30, 58, 138, 0.08);
+  box-shadow:
+    0 4px 24px 0 rgba(56, 189, 248, 0.08),
+    0 1.5px 4px 0 rgba(30, 58, 138, 0.08);
   padding: 1.25rem 1.5rem;
   margin: 1.5rem 0;
   overflow-x: auto;
@@ -78,7 +80,9 @@ const rendered = computed(() => md.render(props.source || ''))
 }
 
 .markdown-content pre:hover {
-  box-shadow: 0 8px 32px 0 rgba(56, 189, 248, 0.16), 0 2px 8px 0 rgba(30, 58, 138, 0.12);
+  box-shadow:
+    0 8px 32px 0 rgba(56, 189, 248, 0.16),
+    0 2px 8px 0 rgba(30, 58, 138, 0.12);
 }
 
 .markdown-content code {
@@ -109,9 +113,9 @@ const rendered = computed(() => md.render(props.source || ''))
   font-style: italic;
 }
 
-.markdown-content h1, 
-.markdown-content h2, 
-.markdown-content h3, 
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
 .markdown-content h4 {
   font-weight: 700;
   background: linear-gradient(to right, #06b6d4, #3b82f6);
@@ -119,7 +123,8 @@ const rendered = computed(() => md.render(props.source || ''))
   -webkit-text-fill-color: transparent;
 }
 
-.markdown-content ul, .markdown-content ol {
+.markdown-content ul,
+.markdown-content ol {
   margin-left: 1.5em;
   margin-bottom: 1em;
 }
@@ -133,7 +138,8 @@ const rendered = computed(() => md.render(props.source || ''))
   box-shadow: 0 2px 8px rgba(56, 189, 248, 0.08);
 }
 
-.markdown-content th, .markdown-content td {
+.markdown-content th,
+.markdown-content td {
   border: 1px solid #e0e7ef;
   padding: 0.75em 1em;
 }

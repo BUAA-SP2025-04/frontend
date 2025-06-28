@@ -33,9 +33,9 @@ export const libraryAPI = {
     }),
 
   // 删除文献
-  deletePaper: (userId: string, paperId: string)  =>
+  deletePaper: (userId: string, paperId: string) =>
     request.post('/favorites/remove', null, {
-      params: { userId, paperId }
+      params: { userId, paperId },
     }),
 
   // 重命名收藏夹
@@ -51,67 +51,67 @@ export const libraryAPI = {
     }),
 
   // 删除收藏夹
-  deleteFolder: (categoryId: number)  =>
+  deleteFolder: (categoryId: number) =>
     request.post('/favorite-categories/delete', null, {
-      params: { categoryId }
+      params: { categoryId },
     }),
 
   // 上传文献并收藏
-  createPaper: (userId: string, categoryId: number, createPaperRequest: Paper): Promise<CreatePaperResponse>  =>
+  createPaper: (
+    userId: string,
+    categoryId: number,
+    createPaperRequest: Paper
+  ): Promise<CreatePaperResponse> =>
     request.post('/favorites/upload', createPaperRequest, {
-      params: { userId, categoryId }
+      params: { userId, categoryId },
     }),
 
   // 创建历史记录
-  createRecord: (userId: string, paperId: string): Promise<CreateRecordResponse>  =>
-    request.post('/readingRecord/add', 
-      { userId: userId, paperId: paperId }
-    ),
-    
+  createRecord: (userId: string, paperId: string): Promise<CreateRecordResponse> =>
+    request.post('/readingRecord/add', { userId: userId, paperId: paperId }),
+
   // 获取所有历史记录
-  getRecordList: (userId: string): Promise<GetRecordListResponse>  =>
+  getRecordList: (userId: string): Promise<GetRecordListResponse> =>
     request.get('/readingRecord/list', {
-      params: { userId }
+      params: { userId },
     }),
 
   // 获取所有历史记录
-  deleteRecord: (id: number): Promise<GetRecordListResponse>  =>
+  deleteRecord: (id: number): Promise<GetRecordListResponse> =>
     request.post('/readingRecord/list', null, {
-      params: { id }
+      params: { id },
     }),
 
   // 通过 ID 获取文献
-  getByID: (id: number): Promise<GetByIDResponse>  =>
+  getByID: (id: number): Promise<GetByIDResponse> =>
     request.get('/publication/getById', {
-      params: { id }
+      params: { id },
     }),
 
   // 获取文献URL
-  getFileUrl: (formData: FormData): Promise<GetFileUrlResponse>  =>
+  getFileUrl: (formData: FormData): Promise<GetFileUrlResponse> =>
     request.post('/publication/uploadFile', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 
   // 删除URL对应文献
-  deleteUrlFile: (oldFilePath: string)  =>
+  deleteUrlFile: (oldFilePath: string) =>
     request.post('/publication/deleteFile', null, {
-      params: { oldFilePath }
+      params: { oldFilePath },
     }),
 
   // 删除成果
-  deletePublication: (id: string)  =>
+  deletePublication: (id: string) =>
     request.post('/publication/delete', {
-      id: id 
+      id: id,
     }),
 
   // 获取最新成果
-  getNewPapers: (): Promise<GetUpdateResponse>  =>
-    request.get('/publication/getUpdatePublication'),
+  getNewPapers: (): Promise<GetUpdateResponse> => request.get('/publication/getUpdatePublication'),
 
   // 收藏文献
-  favoritePaper: (userId: number, paperId: number, categoryId: number)  =>
+  favoritePaper: (userId: number, paperId: number, categoryId: number) =>
     request.post('/favorites/add', null, {
-      params: { userId: userId, paperId: paperId, categoryId: categoryId }
+      params: { userId: userId, paperId: paperId, categoryId: categoryId },
     }),
-
 }
