@@ -10,12 +10,12 @@ export interface Friend {
 
 // 私信会话
 export interface Conversation {
-  id: number                // 可以用 userId 赋值
+  id: number // 可以用 userId 赋值
   userId: number
   name: string
   avatar: string
   institution: string
-  isOnline: boolean        
+  isOnline: boolean
   unreadCount: number
   lastMessage: {
     id: number
@@ -25,8 +25,8 @@ export interface Conversation {
     createdAt: string
     isRead: boolean
   }
-  lastMessageTime?: string  
-  isRead?: boolean          
+  lastMessageTime?: string
+  isRead?: boolean
 }
 
 // 系统通知
@@ -47,7 +47,14 @@ export interface SystemNotification {
 // 动态提醒（兼容后端多种结构）
 export interface ActivityNotification {
   id: number
-  type: 'publish_paper' | 'start_project' | 'join_conference' | 'follow' | 'like' | 'comment' | 'activity'
+  type:
+    | 'publish_paper'
+    | 'start_project'
+    | 'join_conference'
+    | 'follow'
+    | 'like'
+    | 'comment'
+    | 'activity'
   isRead: boolean
   createdAt: string
   userId?: number
@@ -73,11 +80,13 @@ export interface ActivityNotification {
     avatar: string
     institution: string
   }
-  content?: string | {
-    title: string
-    description: string
-    paperTitle?: string
-  }
+  content?:
+    | string
+    | {
+        title: string
+        description: string
+        paperTitle?: string
+      }
 }
 
 // 消息设置
@@ -100,11 +109,16 @@ export interface ApiResponse<T = any> {
 // API 响应类型 - 包含完整响应结构
 export interface GetFriendsResponse extends ApiResponse<Friend[] | Friend | { list: Friend[] }> {}
 
-export interface GetConversationsResponse extends ApiResponse<Conversation[] | { list: Conversation[]; unreadCount: number }> {}
+export interface GetConversationsResponse
+  extends ApiResponse<Conversation[] | { list: Conversation[]; unreadCount: number }> {}
 
-export interface GetSystemNotificationsResponse extends ApiResponse<SystemNotification[] | { list: SystemNotification[]; unreadCount: number }> {}
+export interface GetSystemNotificationsResponse
+  extends ApiResponse<SystemNotification[] | { list: SystemNotification[]; unreadCount: number }> {}
 
-export interface GetActivityNotificationsResponse extends ApiResponse<ActivityNotification[] | { list: ActivityNotification[]; unreadCount: number }> {}
+export interface GetActivityNotificationsResponse
+  extends ApiResponse<
+    ActivityNotification[] | { list: ActivityNotification[]; unreadCount: number }
+  > {}
 
 export interface GetMessageSettingsResponse extends ApiResponse<{ settings: MessageSettings }> {}
 
@@ -115,5 +129,9 @@ export interface SaveSettingsResponse extends ApiResponse<{ success: boolean }> 
 // 导出联合类型，方便使用
 export type FriendsData = Friend[] | Friend | { list: Friend[] }
 export type ConversationsData = Conversation[] | { list: Conversation[]; unreadCount: number }
-export type SystemNotificationsData = SystemNotification[] | { list: SystemNotification[]; unreadCount: number }
-export type ActivityNotificationsData = ActivityNotification[] | { list: ActivityNotification[]; unreadCount: number }
+export type SystemNotificationsData =
+  | SystemNotification[]
+  | { list: SystemNotification[]; unreadCount: number }
+export type ActivityNotificationsData =
+  | ActivityNotification[]
+  | { list: ActivityNotification[]; unreadCount: number }

@@ -754,37 +754,43 @@ class MockWebSocketService {
     }
 
     // 延迟回复（模拟真实用户）
-    setTimeout(() => {
-      // 先发送正在输入状态
-      this.emit('typing_status', {
-        userId: this.mockUserId,
-        conversationId,
-        isTyping: true,
-      })
-
-      // 再发送消息
-      setTimeout(() => {
+    setTimeout(
+      () => {
+        // 先发送正在输入状态
         this.emit('typing_status', {
           userId: this.mockUserId,
           conversationId,
-          isTyping: false,
+          isTyping: true,
         })
 
-        this.emit('new_message', {
-          message: {
-            id: `reply_${Date.now()}`,
-            conversationId,
-            senderId: this.mockUserId,
-            receiverId: 1,
-            type: 'text',
-            content: reply,
-            status: 'sent',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+        // 再发送消息
+        setTimeout(
+          () => {
+            this.emit('typing_status', {
+              userId: this.mockUserId,
+              conversationId,
+              isTyping: false,
+            })
+
+            this.emit('new_message', {
+              message: {
+                id: `reply_${Date.now()}`,
+                conversationId,
+                senderId: this.mockUserId,
+                receiverId: 1,
+                type: 'text',
+                content: reply,
+                status: 'sent',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+            })
           },
-        })
-      }, 1000 + Math.random() * 2000) // 1-3秒打字时间
-    }, 500 + Math.random() * 1500) // 0.5-2秒反应时间
+          1000 + Math.random() * 2000
+        ) // 1-3秒打字时间
+      },
+      500 + Math.random() * 1500
+    ) // 0.5-2秒反应时间
   }
 
   private handleTypingStatus(message: any) {

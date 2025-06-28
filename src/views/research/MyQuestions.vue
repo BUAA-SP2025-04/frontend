@@ -5,7 +5,11 @@
       <!-- 页面标题和操作按钮 -->
       <div class="flex justify-between items-center mb-8">
         <div>
-          <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">我的问题</h1>
+          <h1
+            class="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent"
+          >
+            我的问题
+          </h1>
           <p class="mt-2 text-slate-600">管理你发布的问题和收到的回答</p>
         </div>
         <div class="flex space-x-4">
@@ -19,8 +23,18 @@
             @click="showPublishDialog = true"
             class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-sm"
           >
-            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            <svg
+              class="w-5 h-5 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              ></path>
             </svg>
             发布新问题
           </button>
@@ -28,7 +42,9 @@
       </div>
 
       <!-- 简化的筛选栏 -->
-      <div class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200/50 p-6 mb-6">
+      <div
+        class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200/50 p-6 mb-6"
+      >
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
             <select
@@ -59,12 +75,18 @@
               <option value="mostViewed">浏览最多</option>
             </select>
           </div>
-          
+
           <!-- 简化的统计信息 -->
           <div class="flex items-center space-x-6 text-sm text-slate-600">
-            <span>总计: <strong class="text-slate-800">{{ myQuestions.length }}</strong></span>
-            <span>已解决: <strong class="text-emerald-600">{{ solvedCount }}</strong></span>
-            <span>待解决: <strong class="text-orange-600">{{ openCount }}</strong></span>
+            <span
+              >总计: <strong class="text-slate-800">{{ myQuestions.length }}</strong></span
+            >
+            <span
+              >已解决: <strong class="text-emerald-600">{{ solvedCount }}</strong></span
+            >
+            <span
+              >待解决: <strong class="text-orange-600">{{ openCount }}</strong></span
+            >
           </div>
         </div>
       </div>
@@ -81,7 +103,7 @@
             <div class="flex items-start justify-between mb-4">
               <div class="flex-1">
                 <div class="flex items-center gap-3 mb-2">
-                  <h3 
+                  <h3
                     class="text-lg font-semibold text-slate-800 hover:text-cyan-600 cursor-pointer transition-colors"
                     @click="viewQuestion(question.id)"
                   >
@@ -90,7 +112,7 @@
                   <span
                     :class="[
                       'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                      getStatusStyle(question.status)
+                      getStatusStyle(question.status),
                     ]"
                   >
                     {{ getStatusText(question.status) }}
@@ -102,7 +124,7 @@
                     有新回答
                   </span>
                 </div>
-                
+
                 <!-- 标签 -->
                 <div class="flex flex-wrap gap-1.5 mb-3">
                   <span
@@ -118,7 +140,12 @@
                 <div class="flex items-center space-x-4 text-sm text-slate-500">
                   <span class="flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"
+                      ></path>
                     </svg>
                     {{ question.answerCount }} 回答
                     <span
@@ -130,20 +157,35 @@
                   </span>
                   <span class="flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      ></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      ></path>
                     </svg>
                     {{ question.viewCount }} 浏览
                   </span>
                   <span class="flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
                     </svg>
                     {{ formatTime(question.createdAt) }}
                   </span>
                 </div>
               </div>
-              
+
               <!-- 操作按钮 -->
               <div class="flex space-x-2 ml-6">
                 <button
@@ -176,7 +218,9 @@
               <div class="flex items-center justify-between mb-2">
                 <h4 class="text-sm font-medium text-slate-700">最新回答</h4>
                 <div class="flex items-center space-x-2">
-                  <span class="text-xs text-slate-500">{{ formatTime(question.latestAnswer.createdAt) }}</span>
+                  <span class="text-xs text-slate-500">{{
+                    formatTime(question.latestAnswer.createdAt)
+                  }}</span>
                   <button
                     v-if="!question.latestAnswer.isBest && question.status !== 'solved'"
                     @click="markAsBestAnswer(question.id, question.latestAnswer.id)"
@@ -198,7 +242,9 @@
                   :alt="question.latestAnswer.author.name"
                   class="w-6 h-6 rounded-full"
                 />
-                <span class="text-sm font-medium text-slate-700">{{ question.latestAnswer.author.name }}</span>
+                <span class="text-sm font-medium text-slate-700">{{
+                  question.latestAnswer.author.name
+                }}</span>
               </div>
               <p class="text-sm text-slate-600 line-clamp-2">{{ question.latestAnswer.excerpt }}</p>
             </div>
@@ -211,8 +257,18 @@
                   class="flex items-center px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors text-sm font-medium"
                 >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    ></path>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    ></path>
                   </svg>
                   查看详情
                 </button>
@@ -223,9 +279,22 @@
       </div>
 
       <!-- 空状态 -->
-      <div v-if="filteredQuestions.length === 0" class="bg-white/80 rounded-xl shadow-sm border border-slate-200/50 p-12 text-center">
-        <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      <div
+        v-if="filteredQuestions.length === 0"
+        class="bg-white/80 rounded-xl shadow-sm border border-slate-200/50 p-12 text-center"
+      >
+        <svg
+          class="w-16 h-16 text-slate-300 mx-auto mb-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
         </svg>
         <h3 class="text-lg font-medium text-slate-900 mb-2">暂无问题</h3>
         <p class="text-slate-500 mb-4">你还没有发布任何问题</p>
@@ -239,7 +308,10 @@
     </div>
 
     <!-- 发布问题对话框 -->
-    <div v-if="showPublishDialog" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div
+      v-if="showPublishDialog"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    >
       <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="px-6 py-4 border-b border-slate-200">
           <div class="flex items-center justify-between">
@@ -249,12 +321,17 @@
               class="text-slate-400 hover:text-slate-600 transition-colors"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
               </svg>
             </button>
           </div>
         </div>
-        
+
         <form @submit.prevent="publishQuestion" class="p-6 space-y-6">
           <!-- 问题标题 -->
           <div>
@@ -325,7 +402,9 @@
 
           <!-- 问题描述 -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">问题描述（支持Markdown）</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2"
+              >问题描述（支持Markdown）</label
+            >
             <textarea
               v-model="newQuestion.description"
               rows="8"
@@ -356,7 +435,10 @@
     </div>
 
     <!-- 编辑问题对话框 -->
-    <div v-if="showEditDialog" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div
+      v-if="showEditDialog"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    >
       <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="px-6 py-4 border-b border-slate-200">
           <div class="flex items-center justify-between">
@@ -366,12 +448,17 @@
               class="text-slate-400 hover:text-slate-600 transition-colors"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
               </svg>
             </button>
           </div>
         </div>
-        
+
         <form @submit.prevent="updateQuestion" class="p-6 space-y-6">
           <!-- 问题标题 -->
           <div>
@@ -440,7 +527,9 @@
 
           <!-- 问题描述 -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">问题描述（支持Markdown）</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2"
+              >问题描述（支持Markdown）</label
+            >
             <textarea
               v-model="editingQuestion.description"
               rows="8"
@@ -497,7 +586,7 @@ const newQuestion = ref<{
   title: '',
   category: '',
   description: '',
-  tags: []
+  tags: [],
 })
 
 // 编辑问题表单
@@ -512,7 +601,7 @@ const editingQuestion = ref<{
   title: '',
   category: '',
   description: '',
-  tags: []
+  tags: [],
 })
 
 // 模拟我的问题数据
@@ -521,7 +610,8 @@ const myQuestions = ref([
     id: 1,
     title: '如何选择合适的机器学习算法来解决多分类问题？',
     category: '机器学习',
-    description: '我正在处理一个包含10个类别的图像分类任务，数据集大小约为50000张图片。目前考虑使用CNN，但不确定具体应该选择哪种架构...',
+    description:
+      '我正在处理一个包含10个类别的图像分类任务，数据集大小约为50000张图片。目前考虑使用CNN，但不确定具体应该选择哪种架构...',
     tags: ['CNN', '图像分类', '多分类', '类别不平衡'],
     status: 'answered',
     answerCount: 8,
@@ -536,12 +626,13 @@ const myQuestions = ref([
       id: 101,
       author: {
         name: '李教授',
-        avatar: '/default-avatar.png'
+        avatar: '/default-avatar.png',
       },
-      excerpt: '对于你的多分类图像任务，我建议从以下几个方面来优化：首先是模型架构选择，根据你的数据集规模...',
+      excerpt:
+        '对于你的多分类图像任务，我建议从以下几个方面来优化：首先是模型架构选择，根据你的数据集规模...',
       createdAt: '2025-06-26T14:20:00',
-      isBest: true
-    }
+      isBest: true,
+    },
   },
   {
     id: 2,
@@ -562,18 +653,20 @@ const myQuestions = ref([
       id: 102,
       author: {
         name: '张研究员',
-        avatar: '/default-avatar.png'
+        avatar: '/default-avatar.png',
       },
-      excerpt: '可以尝试使用Transformer架构，它在处理长序列方面表现更好。另外，注意力机制能够直接建模长距离依赖...',
+      excerpt:
+        '可以尝试使用Transformer架构，它在处理长序列方面表现更好。另外，注意力机制能够直接建模长距离依赖...',
       createdAt: '2025-06-25T16:30:00',
-      isBest: false
-    }
+      isBest: false,
+    },
   },
   {
     id: 3,
     title: '如何评估推荐系统的效果？有哪些关键指标？',
     category: '数据科学',
-    description: '我在开发一个电商推荐系统，想了解如何科学地评估推荐效果，除了准确率还有什么重要指标...',
+    description:
+      '我在开发一个电商推荐系统，想了解如何科学地评估推荐效果，除了准确率还有什么重要指标...',
     tags: ['推荐系统', '评估指标', '协同过滤', 'A/B测试'],
     status: 'solved',
     answerCount: 12,
@@ -588,13 +681,14 @@ const myQuestions = ref([
       id: 103,
       author: {
         name: '王工程师',
-        avatar: '/default-avatar.png'
+        avatar: '/default-avatar.png',
       },
-      excerpt: '推荐系统评估需要考虑多个维度：准确性指标（精确率、召回率、F1）、排序指标（NDCG、MAP）、多样性指标...',
+      excerpt:
+        '推荐系统评估需要考虑多个维度：准确性指标（精确率、召回率、F1）、排序指标（NDCG、MAP）、多样性指标...',
       createdAt: '2025-06-23T11:20:00',
-      isBest: true
-    }
-  }
+      isBest: true,
+    },
+  },
 ])
 
 // 计算属性
@@ -638,10 +732,10 @@ const formatTime = (dateString: string) => {
   if (days === 0) return '今天'
   if (days === 1) return '昨天'
   if (days < 7) return `${days}天前`
-  
+
   return new Intl.DateTimeFormat('zh-CN', {
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   }).format(date)
 }
 
@@ -649,7 +743,7 @@ const getStatusStyle = (status: string) => {
   const styles = {
     open: 'bg-orange-100 text-orange-700',
     answered: 'bg-blue-100 text-blue-700',
-    solved: 'bg-emerald-100 text-emerald-700'
+    solved: 'bg-emerald-100 text-emerald-700',
   }
   return styles[status as keyof typeof styles] || styles.open
 }
@@ -658,7 +752,7 @@ const getStatusText = (status: 'open' | 'answered' | 'solved' | string) => {
   const texts: Record<'open' | 'answered' | 'solved', string> = {
     open: '待解决',
     answered: '已有回答',
-    solved: '已解决'
+    solved: '已解决',
   }
   return texts[status as 'open' | 'answered' | 'solved'] || texts.open
 }
@@ -673,7 +767,7 @@ const editQuestion = (question: any) => {
     title: question.title,
     category: question.category,
     description: question.description,
-    tags: [...question.tags]
+    tags: [...question.tags],
   }
   showEditDialog.value = true
 }
@@ -686,7 +780,7 @@ const updateQuestion = () => {
     question.description = editingQuestion.value.description
     question.tags = [...editingQuestion.value.tags]
     question.updatedAt = new Date().toISOString()
-    
+
     showEditDialog.value = false
     ElMessage.success('问题更新成功')
   }
@@ -694,16 +788,12 @@ const updateQuestion = () => {
 
 const markAsSolved = async (questionId: number) => {
   try {
-    await ElMessageBox.confirm(
-      '确定要标记这个问题为已解决吗？',
-      '确认操作',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'success',
-      }
-    )
-    
+    await ElMessageBox.confirm('确定要标记这个问题为已解决吗？', '确认操作', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'success',
+    })
+
     const question = myQuestions.value.find(q => q.id === questionId)
     if (question) {
       question.status = 'solved'
@@ -717,16 +807,12 @@ const markAsSolved = async (questionId: number) => {
 
 const markAsBestAnswer = async (questionId: number, answerId: number) => {
   try {
-    await ElMessageBox.confirm(
-      '确定要将此回答设为最佳答案吗？',
-      '确认操作',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'success',
-      }
-    )
-    
+    await ElMessageBox.confirm('确定要将此回答设为最佳答案吗？', '确认操作', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'success',
+    })
+
     const question = myQuestions.value.find(q => q.id === questionId)
     if (question && question.latestAnswer) {
       question.latestAnswer.isBest = true
@@ -741,16 +827,12 @@ const markAsBestAnswer = async (questionId: number, answerId: number) => {
 
 const deleteQuestion = async (questionId: number) => {
   try {
-    await ElMessageBox.confirm(
-      '确定要删除这个问题吗？此操作不可撤销。',
-      '确认删除',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }
-    )
-    
+    await ElMessageBox.confirm('确定要删除这个问题吗？此操作不可撤销。', '确认删除', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+
     const index = myQuestions.value.findIndex(q => q.id === questionId)
     if (index > -1) {
       myQuestions.value.splice(index, 1)
@@ -815,24 +897,24 @@ const publishQuestion = () => {
       id: 0,
       author: {
         name: '',
-        avatar: ''
+        avatar: '',
       },
       excerpt: '',
       createdAt: '',
-      isBest: false
-    }
+      isBest: false,
+    },
   }
 
   myQuestions.value.unshift(question)
-  
+
   // 重置表单
   newQuestion.value = {
     title: '',
     category: '',
     description: '',
-    tags: []
+    tags: [],
   }
-  
+
   showPublishDialog.value = false
   ElMessage.success('问题发布成功！')
 }

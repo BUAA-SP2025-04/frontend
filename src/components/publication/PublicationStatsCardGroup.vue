@@ -6,10 +6,14 @@ const props = defineProps<{
   stats: PublicationStats
 }>()
 
-watch(() => props.stats, (newStats, oldStats) => {
-  console.log('stats 变化:', newStats)
-  // 强制更新组件
-}, { deep: true, immediate: true })
+watch(
+  () => props.stats,
+  (newStats, oldStats) => {
+    console.log('stats 变化:', newStats)
+    // 强制更新组件
+  },
+  { deep: true, immediate: true }
+)
 </script>
 
 <template>
