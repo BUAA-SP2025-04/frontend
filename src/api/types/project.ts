@@ -83,7 +83,6 @@ export interface AddProjectRequest {
   startTime: string
   endTime: string
   recruitNum: number
-  urgent: boolean
   contact: string
 }
 
@@ -129,15 +128,25 @@ export interface HandleApplicationRequest {
 
 // API响应类型
 export interface ProjectsResponse {
-  projects: Project[]
+  code: string
+  message: string
+  data: Project[]
 }
 
 export interface ProjectWithApplicationsResponse {
-  projects: ProjectWithApplications[]
+  code: string
+  message: string
+  data: ProjectWithApplications[]
 }
 
 export interface ApplicationsResponse {
-  applications: ApplicationDetail[]
+  code: string
+  message: string
+  data: ApplicationDetail[]
 }
 
-export interface EmptyResponse {}
+export interface EmptyResponse {
+  code: string
+  message: string
+  data: unknown
+}

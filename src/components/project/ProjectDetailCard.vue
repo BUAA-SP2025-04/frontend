@@ -352,7 +352,17 @@ const getStatusText = (status: string) => {
 }
 
 const formatTime = (dateString: string) => {
+  if (!dateString) {
+    return '未知时间'
+  }
+
   const date = new Date(dateString)
+
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return '无效时间'
+  }
+
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
@@ -368,10 +378,21 @@ const formatTime = (dateString: string) => {
 }
 
 const formatDate = (dateString: string) => {
+  if (!dateString) {
+    return '未知日期'
+  }
+
+  const date = new Date(dateString)
+
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return '无效日期'
+  }
+
   return new Intl.DateTimeFormat('zh-CN', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  }).format(new Date(dateString))
+  }).format(date)
 }
 </script>
