@@ -7,7 +7,7 @@
       </div> -->
 
       <div class="flex items-center space-x-4 mb-4">
-        <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf"> 下载当前PDF </el-button>
+        <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf"> 下载当前PDF</el-button>
       </div>
 
       <div v-if="pdfUrl" class="card">
@@ -148,10 +148,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import VuePdfEmbed from 'vue-pdf-embed'
 import { getPublicationFile } from '@/api/modules/publication'
+import { ElMessage } from 'element-plus'
 
 const selectedFile = ref<File | null>(null)
 const pdfUrl = ref<string>('')
@@ -161,9 +162,36 @@ const showDownload = ref(false)
 const pdfBlob = ref<Blob | null>(null)
 const isAISummaryVisible = ref(false)
 const pdfContainer = ref<HTMLElement | null>(null)
-const pdfLoaded = ref(false)
+const annotationLayer = ref<HTMLElement | null>(null)
+const canvasContext = ref<CanvasRenderingContext2D | null>(null)
+
+// 定义缺失的变量
+const activeTool = ref(null)
+const highlightPreview = ref({ visible: false, x: 0, y: 0, width: 0, height: 0 })
+const annotations = ref([])
+const isDrawing = ref(false)
+const startPos = ref({ x: 0, y: 0 })
+const popupPosition = ref({ x: 0, y: 0 })
+const activePopup = ref<{
+  comment?: string
+  page?: number
+} | null>(null)
 const isPdfRendered = ref(false)
 const resizeObserver = ref<ResizeObserver | null>(null)
+
+// 定义 Annotation 类型
+interface Annotation {
+  id: string
+  type: string
+  page: number
+  x: number
+  y: number
+  width: number
+  height: number
+  comment: string
+  markerX: number
+  markerY: number
+}
 
 const route = useRoute()
 
@@ -320,7 +348,7 @@ const redrawAnnotations = () => {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
   annotations.value
-    .filter(anno => anno.page === currentPage.value)
+    .filter((anno: Annotation) => anno.page === currentPage.value)
     .forEach(anno => {
       // 绘制高亮区域
       ctx.fillStyle = 'rgba(255, 235, 59, 0.3)'
@@ -527,7 +555,7 @@ onUnmounted(() => {
 
 // 计算当前页可见批注
 const visibleAnnotations = computed<Annotation[]>(() => {
-  return annotations.value.filter(anno => anno.page === currentPage.value)
+  return annotations.value.filter((anno: Annotation) => anno.page === currentPage.value)
 })
 
 // 监听当前页变化
@@ -554,11 +582,6 @@ const toggleAISummary = () => {
 </script>
 
 <style>
-/* 添加一些基本样式 */
-.upload-demo {
-  cursor: pointer;
-}
-
 .card {
   background-color: #fff;
   border-radius: 8px;
@@ -577,20 +600,6 @@ const toggleAISummary = () => {
   padding: 25px;
   margin-bottom: 30px;
   transition: transform 0.3s ease;
-}
-
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 0;
-  border-bottom: 1px solid #eee;
-  margin-bottom: 20px;
-}
-
-.toolbar h3 {
-  font-size: 1.4rem;
-  color: #3498db;
 }
 
 .tools {
@@ -623,7 +632,7 @@ const toggleAISummary = () => {
 
 .tool-btn.active {
   background: green;
-  box-shadow: 0 4px 12px rgba(green, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 128, 0, 0.3); /* 修复 green 参数 */
 }
 
 .annotation-layer {
@@ -706,7 +715,7 @@ const toggleAISummary = () => {
 .highlight-preview {
   position: absolute;
   border: 2px dashed yellow;
-  background: rgba(yellow, 0.2);
+  background: rgba(255, 255, 0, 0.2); /* 修复 yellow 参数 */
   z-index: 100;
 }
 
@@ -822,6 +831,7 @@ footer {
   height: 100%;
   z-index: 20; /* 提高层级 */
 }
+
 .annotation-layer[style] {
   position: absolute !important;
 }

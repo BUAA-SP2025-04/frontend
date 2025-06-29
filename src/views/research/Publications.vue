@@ -310,6 +310,7 @@
         :existing-titles="publications.map(p => p.title)"
         :current-username="userStore.user?.name"
         @close="showExcelImporter = false"
+        @upload-success="getPublicationData"
       />
     </div>
   </div>
@@ -382,10 +383,12 @@ const shownPublication = ref<Publication | null>(null)
 const pdfInputType = ref<'url' | 'upload'>('url')
 const pdfFile = ref<File | null>(null)
 const oldFilePath = ref<string>('')
-
 const formRef = ref<FormInstance>()
 
-onMounted(async () => {
+const userStore = useUserStore()
+const userName = computed(() => userStore.user?.name || '')
+
+const getPublicationData = async () => {
   if (userStore.user?.id) {
     loading.value = true
     try {
@@ -409,7 +412,9 @@ onMounted(async () => {
       loading.value = false
     }
   }
-})
+}
+
+onMounted(getPublicationData)
 
 const rules: FormRules = {
   title: [
@@ -674,9 +679,6 @@ const resetForm = () => {
 const closeDialog = () => {
   showAddDialog.value = false
 }
-
-const userStore = useUserStore()
-const userName = computed(() => userStore.user?.name || '')
 const otherAuthors = ref('')
 
 // 在打开添加对话框时，默认 authors 为当前用户 name，且不可删除
