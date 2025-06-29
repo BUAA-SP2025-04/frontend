@@ -84,7 +84,7 @@
                   v-for="friend in allFriends"
                   :key="friend.id"
                   class="flex items-center p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  @click=""
+                  @click="startChat(friend.id)"
                 >
                   <div class="relative">
                     <img
@@ -433,6 +433,8 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { messagesAPI } from '@/api/modules/messages'
 import { useNotificationStore } from '@/stores/notification'
+import { chatAPI } from '@/api/modules/chat'
+import { useUserStore } from '@/stores/user'
 import type {
 
   Friend,
@@ -445,6 +447,14 @@ import type {
 const router = useRouter()
 
 const notificationStore = useNotificationStore()
+
+const userStore = useUserStore()
+
+// 在其他计算属性附近添加
+const currentUserId = computed(() => {
+  const userId = userStore.user?.id
+  return typeof userId === 'string' ? parseInt(userId) : (userId || 1)
+})
 
 // 图标组件
 const ChatIcon = () =>
@@ -615,8 +625,29 @@ const setActiveCategory = (categoryId: string) => {
   loadCurrentCategory()
 }
 
-const startChat = (userId: number) => {
-  router.push(`/chat/${userId}`)
+const startChat = async (userId: number) => {
+  // 生成标准格式的 conversationId
+  const myId = currentUserId.value
+  const conversationId = `conv_${Math.min(myId, userId)}_${Math.max(myId, userId)}`
+
+  // 检查是否已经存在该会话
+  const existingConversation = conversations.value.find(conv => conv.conversationId === conversationId)
+
+  if (existingConversation) {
+    // 已有会话，直接跳转
+    router.push(`/chat/${userId}`)
+  } else {
+    try {
+      // 创建新会话
+      const response = await chatAPI.createConversation({ participantId: userId })
+      // 跳转到聊天页面
+      router.push(`/chat/${userId}`)
+      // 可选：更新本地会话列表
+    } catch (error) {
+      console.error('创建对话失败:', error)
+      ElMessage.error('无法开始聊天，请重试')
+    }
+  }
 }
 
 const openChat = (userId: number) => {
@@ -886,6 +917,9 @@ const loadCurrentCategory = async () => {
           conversations.value = res.data.map(conv => ({
             id: conv.userId,
             userId: conv.userId,
+            conversationId: conv.conversationId
+              ? conv.conversationId
+              : `conv_${Math.min(currentUserId.value, conv.userId)}_${Math.max(currentUserId.value, conv.userId)}`,
             name: conv.name,
             avatar: getFullImageUrl(conv.avatar), // 拼接头像URL
             institution: conv.institution || '',

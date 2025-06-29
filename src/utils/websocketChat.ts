@@ -5,9 +5,9 @@ export interface ChatMessage {
     content?: string
     type?: 'text' | 'image' | 'file'
     fileInfo?: {
-      name: string
-      size: number
-      url: string
+      fileName: string
+      fileSize: number
+      fileUrl: string
       mimeType: string
     }
     tempId?: string
@@ -146,9 +146,9 @@ export class WebSocketService {
         type: fileInfo.mimeType?.startsWith('image/') ? 'image' as const : 'file' as const,
         content: fileInfo.mimeType?.startsWith('image/') ? fileInfo.fileUrl : fileInfo.fileName,
         fileInfo: {
-          name: fileInfo.fileName,
-          size: fileInfo.fileSize,
-          url: fileInfo.fileUrl,
+          fileName: fileInfo.fileName,
+          fileSize: fileInfo.fileSize,
+          fileUrl: fileInfo.fileUrl,
           mimeType: fileInfo.mimeType,
         },
         tempId,
@@ -247,5 +247,5 @@ export class WebSocketService {
 }
 
 // 创建全局 WebSocket 实例
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws'
+const WS_URL = import.meta.env.VITE_CHAT_URL || 'ws://localhost:8080/ws'
 export const wsService = new WebSocketService(WS_URL)

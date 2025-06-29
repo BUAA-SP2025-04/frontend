@@ -25,8 +25,9 @@
 
             <div class="flex items-center space-x-3">
               <div class="relative">
+                
                 <img
-                  :src="chatUser?.avatar || getDefaultAvatar()"
+                  :src="getChatUserAvatar()"
                   :alt="chatUser?.name || '用户'"
                   class="w-10 h-10 rounded-full object-cover"
                   @error="handleAvatarError"
@@ -38,66 +39,58 @@
               </div>
 
               <div>
+              <div class="flex items-center space-x-2">
                 <h2 class="text-lg font-semibold text-gray-900">
                   {{ chatUser?.name || '加载中...' }}
                 </h2>
-                <p class="text-sm text-gray-500">
-                  {{ chatUser?.isOnline ? (isTyping ? '正在输入...' : '在线') : getLastSeenText() }}
-                </p>
+
+              </div>
+                  <p class="text-sm flex items-center space-x-1 mt-1">
+                    <template v-if="isTyping">
+                      <span class="inline-flex items-center">
+                        <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse mr-1"></span>
+                        正在输入...
+                      </span>
+                    </template>
+                    <template v-else-if="chatUser?.online">
+                      <span class="inline-flex items-center">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-1"></span>
+                        在线
+                      </span>
+                    </template>
+                    <template v-else>ba
+                      <span class="inline-flex items-center">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full mr-1"></span>
+                        {{ getLastSeenText() }}
+                      </span>
+                    </template>
+                  </p>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center space-x-2">
-            <!-- 连接状态指示器 -->
-            <div class="flex items-center space-x-2">
-              <div
-                :class="['w-2 h-2 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500']"
-                :title="isConnected ? '已连接' : '连接断开'"
-              ></div>
-            </div>
+  <div class="flex items-center space-x-4">
+    <!-- 机构信息 - 卡片式 -->
+    <div v-if="chatUser?.institution" class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg px-3 py-2 shadow-sm">
+      <div class="flex items-center space-x-2">
+        <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.84L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.84l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+        </svg>
+        <span class="text-sm font-medium text-purple-700">{{ chatUser.institution }}</span>
+      </div>
+    </div>
 
-            <!-- 语音通话 -->
-            <button
-              @click="startVoiceCall"
-              class="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              title="语音通话"
-            >
-              <svg
-                class="w-5 h-5 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                />
-              </svg>
-            </button>
+    <!-- 连接状态 - WiFi图标风格 -->
+    <div class="flex items-center space-x-2 text-xs text-gray-500">
+        <svg   v-if="isConnected"  xmlns="http://www.w3.org/2000/svg"  fill="none"  viewBox="0 0 24 24"  stroke-width="1.5"  stroke="rgb(59,130,246)"  class="size-5 animate-pulse">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
+        </svg>
 
-            <!-- 视频通话 -->
-            <button
-              @click="startVideoCall"
-              class="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              title="视频通话"
-            >
-              <svg
-                class="w-5 h-5 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
-            </button>
+      <svg v-else class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.366zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
+      </svg>
+    </div>
+           
 
             <!-- 更多选项 -->
             <el-dropdown trigger="click" @command="handleMoreAction">
@@ -167,6 +160,11 @@
               <span class="ml-2 text-sm text-gray-500">加载更多消息...</span>
             </div>
 
+            <!-- 没有更多消息提示 -->
+            <div v-else-if="!hasMore && messages.length > 0" class="text-center py-4">
+              <span class="text-sm text-gray-400">没有更多消息了</span>
+            </div>
+
             <!-- 初始化加载状态 -->
             <div v-if="isInitializing" class="text-center py-12">
               <el-spin size="large" />
@@ -225,10 +223,10 @@
                       <div
                         v-else-if="message.type === 'image'"
                         class="rounded-lg overflow-hidden cursor-pointer shadow-sm"
-                        @click="previewImage(message.content)"
+                        @click="previewImage(getImageUrl(message))"
                       >
                         <img
-                          :src="message.content"
+                          :src="getImageUrl(message)"
                           alt="图片"
                           class="max-w-full h-auto max-h-64 object-cover"
                           loading="lazy"
@@ -236,7 +234,7 @@
                         />
                       </div>
 
-                      <!-- 文件消息 -->
+                     <!-- 文件消息 -->
                       <div
                         v-else-if="message.type === 'file'"
                         :class="[
@@ -248,9 +246,7 @@
                         @click="downloadFile(message.fileInfo)"
                       >
                         <div class="flex items-center space-x-3">
-                          <div
-                            class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"
-                          >
+                          <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                             <svg
                               class="w-5 h-5 text-gray-600"
                               fill="currentColor"
@@ -265,10 +261,10 @@
                           </div>
                           <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-gray-900 truncate">
-                              {{ message.fileInfo?.name || '未知文件' }}
+                              {{ message.fileInfo?.name || message.fileInfo?.fileName || '未知文件' }}
                             </p>
                             <p class="text-xs text-gray-500">
-                              {{ formatFileSize(message.fileInfo?.size || 0) }}
+                              {{ formatFileSize(message.fileInfo?.size || message.fileInfo?.fileSize || 0) }}
                             </p>
                           </div>
                           <svg
@@ -286,7 +282,6 @@
                           </svg>
                         </div>
                       </div>
-
                       <!-- 系统消息 -->
                       <div
                         v-else-if="message.type === 'system'"
@@ -655,7 +650,7 @@ import { useUserStore } from '@/stores/user'
 import { wsService } from '@/utils/websocketChat'
 import { uploadFile } from '@/utils/fileUpload'
 import { chatAPI } from '@/api/modules/chat'
-
+import type { GetConversationHistoryRequest } from '@/api/types/chat'
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
@@ -814,7 +809,7 @@ const initializeChat = async () => {
 const loadChatUser = async () => {
   try {
     const response = await chatAPI.getChatUser(chatUserId.value)
-    chatUser.value = response.user
+    chatUser.value = response.data
     console.log('加载聊天用户信息成功:', chatUser.value)
   } catch (error) {
     console.error('加载用户信息失败:', error)
@@ -828,6 +823,20 @@ const loadChatUser = async () => {
       lastSeen: new Date().toISOString(),
     }
   }
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+
+const getChatUserAvatar = () => {
+  if (!chatUser.value) return '/default-avatar.png'
+  if (chatUser.value.avatar) {
+    // 如果是完整URL则直接用，否则拼接
+    if (/^https?:\/\//.test(chatUser.value.avatar)) {
+      return chatUser.value.avatar
+    }
+    return API_BASE_URL + chatUser.value.avatar
+  }
+  return  '/default-avatar.png'
 }
 
 // 初始化 WebSocket 连接
@@ -921,12 +930,20 @@ const handleTypingStatus = (data: any) => {
   }
 }
 
-const handleReadStatus = (data: any) => {
+const handleReadStatus = (raw: any) => {
+  // 兼容 data.data 和 data 结构
+  const data = raw.data || raw
   console.log('已读状态事件:', data)
-  if (data.conversationId === conversationId.value) {
-    const convMessages = messages.value.filter(m => m.conversationId === data.conversationId)
-    convMessages.forEach(msg => {
-      if (data.messageIds.includes(msg.id) && msg.senderId === currentUserId.value) {
+  // 只处理对方已读我发的消息
+  if (
+    data.conversationId === conversationId.value &&
+    data.readBy !== currentUserId.value // 不是自己已读自己
+  ) {
+    messages.value.forEach(msg => {
+      if (
+        data.messageIds.includes(String(msg.id)) &&
+        msg.senderId === currentUserId.value
+      ) {
         msg.status = 'read'
       }
     })
@@ -936,7 +953,7 @@ const handleReadStatus = (data: any) => {
 const handleUserStatus = (data: any) => {
   console.log('用户状态变化事件:', data)
   if (chatUser.value && chatUser.value.id === data.userId) {
-    chatUser.value.isOnline = data.isOnline
+    chatUser.value.isOnline = data.online
     chatUser.value.lastSeen = data.lastSeen
   }
 }
@@ -1037,9 +1054,9 @@ const sendFileMessage = async (file: File) => {
       type: file.type.startsWith('image/') ? 'image' : 'file',
       content: file.type.startsWith('image/') ? uploadResponse.fileUrl : uploadResponse.fileName,
       fileInfo: {
-        name: uploadResponse.fileName,
-        size: uploadResponse.fileSize,
-        url: uploadResponse.fileUrl,
+        fileName: uploadResponse.fileName,
+        fileSize: uploadResponse.fileSize,
+        fileUrl: uploadResponse.fileUrl,
         mimeType: uploadResponse.mimeType || file.type,
       },
       status: 'sending',
@@ -1076,65 +1093,227 @@ const handleInputChange = () => {
 // 标记消息为已读
 const markAsRead = () => {
   if (isConnected.value) {
-    const unreadMessages = messages.value
-      .filter(m => m.senderId !== currentUserId.value && m.status !== 'read')
-      .map(m => m.id)
+
+  const unreadMessages = messages.value
+    .filter(m => m.senderId !== currentUserId.value && m.status !== 'read')
+    .map(m => String(m.id))
 
     if (unreadMessages.length > 0) {
+      console.log('标记消息已读:', unreadMessages)
       wsService.sendReadStatus(conversationId.value, unreadMessages)
     }
   }
+  else{
+    console.warn('无法标记已读，WebSocket未连接')
+  }
 }
 
-// 加载历史消息
+const getImageUrl = (message: any) => {
+  if (message.fileInfo?.url) {
+    return message.fileInfo.url
+  }
+  if (message.content?.startsWith('/chat/')) {
+    return API_BASE_URL + message.content
+  }
+  if (message.content?.startsWith('http')) {
+    return message.content
+  }
+  return message.content
+}
+
+
+
+const nextCursor = ref<string | undefined>(undefined)
+
+function getLocalISOString() {
+  const date = new Date()
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const h = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  const s = String(date.getSeconds()).padStart(2, '0')
+  const ms = String(date.getMilliseconds()).padStart(3, '0')
+  return `${y}-${m}-${d}T${h}:${min}:${s}.${ms}Z`
+}
+
 const loadMessages = async (loadMore = false) => {
   if (isLoading.value) return
 
   isLoading.value = true
   try {
-    const response = await chatAPI.getConversationHistory({
+    const params: GetConversationHistoryRequest = {
       conversationId: conversationId.value,
-      page: loadMore ? Math.floor(messages.value.length / 20) + 1 : 1,
-      size: 20,
+    }
+
+    if (loadMore) {
+      if (nextCursor.value) {
+        const cursor = nextCursor.value.replace(/([+-]\d{2}:\d{2}|Z)$/, '')+ 'Z' // 确保格式正确
+        console.log('加载更多消息，before:', cursor)
+        params.before = cursor
+      }
+    } else {
+      // 首次加载，使用当前时间
+      nextCursor.value = getLocalISOString()
+      params.before = nextCursor.value
+      console.log('加载最新消息，before:', params.before)
+    }
+    
+    const response = await chatAPI.getConversationHistory(params)
+
+    // 格式化消息数据
+    const formattedMessages = (response.data.messages || []).map(msg => {
+      // 1. 优先使用后端的 type 字段
+      let type = msg.type
+      if (!type) {
+        type = determineMessageType(msg.content)
+      }
+
+      // 2. 处理 fileInfo 字段
+      let fileInfo = undefined
+      if (type === 'file' && typeof msg.fileInfo === 'string') {
+        try {
+          fileInfo = JSON.parse(msg.fileInfo)
+        } catch {
+          fileInfo = undefined
+        }
+      } else if (type === 'file' && typeof msg.fileInfo === 'object') {
+        fileInfo = msg.fileInfo
+      } else if (type === 'image' && msg.content?.startsWith('/chat/')) {
+        // 图片消息兼容
+        fileInfo = {
+          name: extractFileName(msg.content),
+          url: API_BASE_URL + msg.content,
+          size: 0,
+          mimeType: getFileType(msg.content)
+        }
+      }
+
+      return {
+        ...msg,
+        id: msg.id || `msg_${Date.now()}_${Math.random()}`,
+        conversationId: conversationId.value,
+        senderId: msg.senderId,
+        receiverId: msg.receiverId,
+        content: msg.content || '',
+        type,
+        fileInfo,
+        createdAt: formatBackendTime(msg.createdAt),
+        updatedAt: formatBackendTime(msg.updatedAt || msg.createdAt),
+        status: msg.status,
+      }
     })
 
     if (loadMore) {
-      messages.value = [...response.messages, ...messages.value]
+      messages.value = [...formattedMessages, ...messages.value]
     } else {
-      messages.value = response.messages || []
+      messages.value = formattedMessages
     }
 
-    hasMore.value = response.hasMore
-    console.log('加载历史消息:', messages.value.length, '条')
+    hasMore.value = response.data.hasMore
+    nextCursor.value = response.data.nextCursor
+
+    if (!loadMore) {
+      scrollToBottom()
+      nextTick(() => {
+      checkAndLoadMore()
+      })
+    }
+
+    console.log('加载历史消息:', messages.value.length, '条', '还有更多:', hasMore.value)
+    console.log('格式化后的消息:', messages.value)
   } catch (error) {
     console.error('加载消息失败:', error)
-    // ElMessage.error('加载消息失败')
-    // 静默处理，因为可能是首次聊天没有历史消息
-    messages.value = []
+    if (!loadMore) {
+      messages.value = []
+    }
   } finally {
     isLoading.value = false
   }
 }
 
-// 播放提示音
-const playNotificationSound = () => {
-  try {
-    const audio = new Audio()
-    audio.src =
-      'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjeN1O/MeiMGI3vD8OGOQQIUXrTp66hVFApGn+DyvmwhBjeN1O/MeiMGI3vD8OGOQQIUXrTp66hVFApGn+DyvmwhBjaLy/DJciMFImY='
-    audio.play().catch(() => {
-      // 静默处理，某些浏览器不允许自动播放
-    })
-  } catch (error) {
-    // 静默处理
+// 添加辅助函数
+const determineMessageType = (content: string) => {
+  if (!content) return 'text'
+  if (content.startsWith('/chat/') && /\.(jpg|jpeg|png|gif|webp)$/i.test(content)) {
+    return 'image'
+  }
+  if (content.startsWith('/chat/')) {
+    return 'file'
+  }
+  return 'text'
+}
+
+// 检查并自动加载更多消息（如果内容不足以撑满页面）
+const checkAndLoadMore = () => {
+  if (messagesContainer.value && hasMore.value && !isLoading.value) {
+    const { scrollHeight, clientHeight } = messagesContainer.value
+    // 如果内容高度小于容器高度，说明没有滚动条，自动加载更多
+    if (scrollHeight < clientHeight) {
+      console.log('内容不足以滚动，自动加载更多消息')
+      loadMessages(true)
+    }
   }
 }
+
+const extractFileName = (filePath: string) => {
+  const parts = filePath.split('/')
+  return parts[parts.length - 1] || 'unknown'
+}
+
+const getFileType = (filePath: string) => {
+  const ext = filePath.split('.').pop()?.toLowerCase()
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+  if (imageExts.includes(ext || '')) {
+    return `image/${ext === 'jpg' ? 'jpeg' : ext}`
+  }
+  return 'application/octet-stream'
+}
+
+const formatBackendTime = (timeStr: string) => {
+  if (!timeStr) return getLocalDateTimeString(new Date())
+  try {
+    // 处理带时区的格式，如 "2025-06-29T16:13:16+08:00",去掉后面的时区
+
+    // 如果是 "2025-06-29 11:56:22" 格式，直接转 Date
+    if (timeStr.includes(' ') && !timeStr.includes('T')) {
+      const date = new Date(timeStr.replace(' ', 'T'))
+      return getLocalDateTimeString(date)
+    }
+    // 如果是 ISO 字符串但带 Z，去掉 Z
+    if (timeStr.endsWith('Z')) {
+      const date = new Date(timeStr)
+      return getLocalDateTimeString(date)
+    }
+    // 其它情况直接 new Date
+    const date = new Date(timeStr)
+    return getLocalDateTimeString(date)
+  } catch (error) {
+    console.warn('时间格式转换失败:', timeStr)
+    return getLocalDateTimeString(new Date())
+  }
+}
+
+// 输出 "2025-06-29 14:15:58" 这种本地时间字符串
+function getLocalDateTimeString(date: Date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const h = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  const s = String(date.getSeconds()).padStart(2, '0')
+  return `${y}-${m}-${d} ${h}:${min}:${s}`
+}
+
 
 // 生命周期钩子
 onMounted(async () => {
   console.log('Chat.vue 组件挂载')
   await initializeChat()
   scrollToBottom()
+    nextTick(() => {
+    markAsRead()
+  })
 
   window.addEventListener('dragover', handleDragOver)
   window.addEventListener('dragleave', handleDragLeave)
@@ -1164,7 +1343,6 @@ watch(
   }
 )
 
-// 其他方法保持不变...
 const getMessageSenderName = (message: any) => {
   if (!message) return '未知用户'
   if (message.senderId === currentUserId.value) {
@@ -1248,19 +1426,32 @@ const removeFile = (index: number) => {
   selectedFiles.value.splice(index, 1)
 }
 
+// 更新图片预览函数
 const previewImage = (imageUrl: string) => {
   previewImageUrl.value = imageUrl
   showImagePreview.value = true
 }
 
+
 const downloadFile = (fileInfo: any) => {
-  if (fileInfo?.url) {
+  if (!fileInfo) {
+    ElMessage.error('文件信息无效')
+    return
+  }
+  // 兼容 fileInfo.url 和 fileInfo.fileUrl
+  let url = fileInfo.url || fileInfo.fileUrl
+  if (url && !/^https?:\/\//.test(url)) {
+    url = API_BASE_URL + url
+  }
+  if (url) {
     const link = document.createElement('a')
-    link.href = fileInfo.url
-    link.download = fileInfo.name || '文件'
+    link.href = url
+    link.download = fileInfo.name || fileInfo.fileName || '文件'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+  } else {
+    ElMessage.error('文件地址无效')
   }
 }
 
@@ -1290,12 +1481,12 @@ const getMessageAvatar = (message: any) => {
   if (message.senderId === currentUserId.value) {
     return currentUser.value?.avatar || currentUser.value?.imgUrl || getDefaultAvatar()
   } else {
-    return chatUser.value?.avatar || getDefaultAvatar()
+    return getChatUserAvatar() || getDefaultAvatar()
   }
 }
 
 const getDefaultAvatar = () => {
-  return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNFNUU3RUIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNiIgcj0iNiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMzIgMzJDMzIgMjYuNDc3MiAyNy41MjI4IDIyIDIySDE4QzEyLjQ3NzIgMjIgOCAyNi40NzcyIDggMzJWMzJIMzJWMzJaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo='
+  return '/default-avatar.png'
 }
 
 const goBack = () => {
@@ -1321,22 +1512,31 @@ const handleScroll = () => {
 
 const formatMessageTime = (date: Date | string) => {
   if (!date) return ''
-
+  let messageDate: Date
   try {
-    const messageDate = new Date(date)
+    messageDate = new Date(date)
+    if (isNaN(messageDate.getTime())) return ''
+    
     const now = new Date()
     const diff = now.getTime() - messageDate.getTime()
+    
+    // 如果 messageDate 在未来，或者 diff 超过一天，都直接格式化
+    if (diff < 0 || diff >= 24 * 60 * 60 * 1000) {
+      return new Intl.DateTimeFormat('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(messageDate)
+    }
+
     const minutes = Math.floor(diff / (1000 * 60))
     const hours = Math.floor(diff / (1000 * 60 * 60))
 
     if (minutes < 1) return '刚刚'
     if (minutes < 60) return `${minutes}分钟前`
-    if (hours < 24) return `${hours}小时前`
-
-    return new Intl.DateTimeFormat('zh-CN', {
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(messageDate)
+    // hours 一定在 1..23 之间
+    return `${hours}小时前`
   } catch (error) {
     return ''
   }
@@ -1416,7 +1616,7 @@ const handleDragLeave = (event: DragEvent) => {
 watch(
   () => messages.value.length,
   () => {
-    nextTick(() => scrollToBottom())
+
   }
 )
 </script>
