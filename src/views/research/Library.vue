@@ -206,7 +206,7 @@
             </div> -->
           </div>
 
-          <!-- <div class="bg-white rounded-lg shadow px-6 py-4 sticky top-8 mt-10">
+          <div class="bg-white rounded-lg shadow px-6 py-4 sticky top-8 mt-10">
             <div
               :class="['text-lg font-medium flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
                   selectedFolder === -10 ? 'bg-indigo-100 text-indigo-700' : 'text-gray-900']"
@@ -231,7 +231,7 @@
                 发现文献
               </div>
             </div>
-          </div> -->
+          </div>
         </div>
 
         <!-- 右侧文献列表 -->
@@ -928,25 +928,26 @@ onMounted(async () => {
     responsePapers.forEach( async resp => {
       try {
         const respaper = await libraryAPI.getByID(resp.paperId)
+        const re = respaper.data.publication
         let paper = {
-          type: respaper.data.type,
+          type: re.type,
           id: resp.paperId,
-          title: respaper.data.title,
+          title: re.title,
           authors: '',
           venue: '',
           readCount: 0,
           keywords: '',
           folderId: resp.categoryId,
-          pdfUrl: respaper.data.pdfUrl,
+          pdfUrl: re.pdfUrl,
           status: '',
-          isPublic: respaper.data.isPublic,
+          isPublic: re.isPublic,
           year: '',
         }
-        if (respaper.data.authors) { paper.authors = respaper.data.authors }
-        if (respaper.data.year) { paper.year = respaper.data.year.toString() }
-        if (respaper.data.keywords) { paper.keywords = respaper.data.keywords }
-        if (respaper.data.venue) { paper.venue = respaper.data.venue }
-        if (respaper.data.status) { paper.status = respaper.data.status }
+        if (re.authors) { paper.authors = re.authors }
+        if (re.year) { paper.year = re.year.toString() }
+        if (re.keywords) { paper.keywords = re.keywords }
+        if (re.venue) { paper.venue = re.venue }
+        if (re.status) { paper.status = re.status }
         papers.value.push(paper)
       } catch (error) {
         ElMessage.error("有一篇文献出现了读取问题")
@@ -1535,7 +1536,7 @@ const cancelRenameFolder = () => {
 <style scoped>
 .line-clamp-2 {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  /* -webkit-line-clamp: 2; */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
