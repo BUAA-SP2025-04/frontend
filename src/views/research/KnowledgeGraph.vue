@@ -14,34 +14,26 @@
           </div>
 
           <div class="flex items-center gap-4">
-            <!-- 视图切换 -->
-            <div
-              class="flex items-center bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700"
-            >
-              <button
-                v-for="view in viewOptions"
-                :key="view.value"
-                @click="currentView = view.value"
-                :class="[
-                  'px-4 py-2 text-sm font-medium transition-colors',
-                  currentView === view.value
-                    ? 'bg-blue-500 text-white rounded-lg shadow-md'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400',
-                ]"
-              >
-                <i :class="view.icon" class="mr-2"></i>
-                {{ view.label }}
-              </button>
-            </div>
-
             <!-- 展示模式切换 -->
             <button
               @click="toggleDarkMode"
-              class="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+              :class="[
+                'flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm border transition-colors',
+                isDarkMode
+                  ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-blue-400 hover:border-blue-700'
+                  : 'bg-white border-slate-200 text-slate-600 hover:text-blue-500 hover:border-blue-300',
+              ]"
               title="切换显示模式"
             >
-              <i class="fas fa-moon dark:hidden"></i>
-              <i class="fas fa-sun hidden dark:inline"></i>
+              <el-icon v-if="!isDarkMode" class="text-lg">
+                <Moon />
+              </el-icon>
+              <el-icon v-else class="text-lg">
+                <Sunny />
+              </el-icon>
+              <span class="text-sm font-medium">
+                {{ isDarkMode ? '浅色模式' : '深色模式' }}
+              </span>
             </button>
           </div>
         </div>
@@ -107,66 +99,6 @@
                   </select>
                 </div>
 
-                <!-- 筛选器 -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >按编程语言筛选</label
-                  >
-                  <select
-                    v-model="selectedInstitution"
-                    class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600"
-                  >
-                    <option value="">全部语言</option>
-                    <option
-                      v-for="institution in institutionOptions"
-                      :key="institution.id"
-                      :value="institution.id"
-                    >
-                      {{ institution.name }}
-                    </option>
-                  </select>
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >按研究领域筛选</label
-                  >
-                  <div class="relative">
-                    <select
-                      v-model="selectedResearchField"
-                      class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600"
-                    >
-                      <option value="">全部研究领域</option>
-                      <option
-                        v-for="field in researchFieldOptions"
-                        :key="field.id"
-                        :value="field.id"
-                      >
-                        {{ field.name }}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- 搜索 -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >搜索节点</label
-                  >
-                  <div class="relative">
-                    <input
-                      v-model="searchQuery"
-                      type="text"
-                      placeholder="输入名称或关键词..."
-                      class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 pl-10 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600"
-                      @input="handleSearch"
-                    />
-                    <i
-                      class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
-                    ></i>
-                  </div>
-                </div>
-
                 <!-- 控制按钮 -->
                 <div class="flex flex-col gap-3 pt-2">
                   <button
@@ -175,6 +107,16 @@
                   >
                     <i class="fas fa-sync-alt mr-2"></i>
                     刷新图谱
+                  </button>
+
+                  <!-- 返回用户视图按钮 -->
+                  <button
+                    v-if="currentQueryInfo.type === 'node'"
+                    @click="returnToUserView"
+                    class="w-full flex items-center justify-center py-2.5 px-4 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-medium shadow-sm transition-all duration-200 hover:shadow focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50"
+                  >
+                    <i class="fas fa-user mr-2"></i>
+                    返回用户视图
                   </button>
 
                   <div class="grid grid-cols-2 gap-2">
@@ -212,17 +154,33 @@
               <div class="p-5 space-y-3">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
-                    <div class="w-4 h-4 rounded-full bg-blue-500 mr-3"></div>
-                    <span class="text-sm text-slate-700 dark:text-slate-300">编程语言</span>
+                    <div class="w-4 h-4 rounded-full bg-purple-500 mr-3"></div>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">用户</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="w-4 h-4 bg-blue-500 mr-3 transform rotate-45"></div>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">机构</span>
                   </div>
                 </div>
 
                 <div class="flex items-center">
-                  <div class="w-4 h-4 rounded-lg bg-emerald-500 mr-3"></div>
+                  <div class="w-4 h-4 rounded bg-emerald-500 mr-3"></div>
                   <span class="text-sm text-slate-700 dark:text-slate-300">研究领域</span>
                 </div>
 
                 <div class="pt-3 border-t border-slate-200 dark:border-slate-700">
+                  <div class="flex items-center mb-2">
+                    <div class="w-12 h-0.5 bg-purple-500 mr-3 relative">
+                      <div
+                        class="absolute right-0 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-purple-500 border-t-2 border-t-transparent border-b-2 border-b-transparent"
+                      ></div>
+                    </div>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">关注关系</span>
+                  </div>
+
                   <div class="flex items-center mb-2">
                     <div class="w-12 h-0.5 bg-blue-500 mr-3"></div>
                     <span class="text-sm text-slate-700 dark:text-slate-300">属于关系</span>
@@ -230,7 +188,7 @@
 
                   <div class="flex items-center mb-2">
                     <div class="w-12 h-0.5 bg-emerald-500 mr-3"></div>
-                    <span class="text-sm text-slate-700 dark:text-slate-300">应用于关系</span>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">专业关系</span>
                   </div>
                 </div>
               </div>
@@ -249,6 +207,20 @@
             >
               <div class="flex items-center space-x-4">
                 <h3 class="font-bold text-slate-800 dark:text-white">{{ graphTitle }}</h3>
+
+                <!-- 查询状态指示器 -->
+                <div class="flex items-center space-x-2">
+                  <div class="flex items-center text-sm">
+                    <div
+                      class="w-2 h-2 rounded-full mr-2"
+                      :class="currentQueryInfo.type === 'user' ? 'bg-blue-500' : 'bg-emerald-500'"
+                    ></div>
+                    <span class="text-slate-600 dark:text-slate-400">
+                      {{ currentQueryInfo.type === 'user' ? '用户视图' : '节点视图' }}
+                    </span>
+                  </div>
+                </div>
+
                 <div class="hidden md:flex items-center space-x-4">
                   <span class="flex items-center text-sm text-slate-600 dark:text-slate-400">
                     <div class="w-2.5 h-2.5 rounded-full bg-blue-500 mr-2"></div>
@@ -311,13 +283,6 @@
                         <i class="fas fa-file-export mr-2"></i>
                         导出数据
                       </button>
-                      <button
-                        @click="toggleLabels"
-                        class="flex items-center w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                      >
-                        <i class="fas fa-tag mr-2"></i>
-                        {{ showLabels ? '隐藏标签' : '显示标签' }}
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -326,102 +291,38 @@
 
             <!-- 图谱主体 -->
             <div class="graph-container relative flex-1 min-h-[600px]">
-              <div id="knowledge-graph" class="w-full h-full" ref="graphContainer"></div>
+              <!-- 关注网络组件 -->
+              <FollowNetwork
+                v-if="graphType === 'follow'"
+                :layout-type="layoutType"
+                :is-dark-mode="isDarkMode"
+                @node-click="handleNodeClick"
+                @node-count-change="handleNodeCountChange"
+                @link-count-change="handleLinkCountChange"
+                ref="followNetworkRef"
+              />
 
-              <!-- 加载状态 -->
-              <div
-                v-if="loading"
-                class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center"
-              >
-                <div class="text-center">
-                  <div class="w-16 h-16 mx-auto relative">
-                    <div
-                      class="absolute inset-0 rounded-full border-4 border-blue-100 dark:border-blue-900"
-                    ></div>
-                    <div
-                      class="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"
-                    ></div>
-                  </div>
-                  <p class="mt-4 text-slate-600 dark:text-slate-400 font-medium">
-                    正在构建知识网络...
-                  </p>
-                </div>
-              </div>
+              <!-- 机构网络组件 -->
+              <InstitutionNetwork
+                v-else-if="graphType === 'institution'"
+                :layout-type="layoutType"
+                :is-dark-mode="isDarkMode"
+                @node-click="handleNodeClick"
+                @node-count-change="handleNodeCountChange"
+                @link-count-change="handleLinkCountChange"
+                ref="institutionNetworkRef"
+              />
 
-              <!-- 空状态 -->
-              <div
-                v-if="!loading && nodeCount === 0"
-                class="absolute inset-0 flex items-center justify-center"
-              >
-                <div class="text-center max-w-sm">
-                  <div class="mb-4 text-slate-400 dark:text-slate-500">
-                    <i class="fas fa-project-diagram text-6xl"></i>
-                  </div>
-                  <h3 class="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">
-                    暂无图谱数据
-                  </h3>
-                  <p class="text-slate-500 dark:text-slate-400 mb-6">
-                    请尝试调整筛选条件或搜索关键词，也可能是当前数据尚未加载完成
-                  </p>
-                  <button
-                    @click="refreshGraph"
-                    class="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors"
-                  >
-                    <i class="fas fa-sync-alt mr-2"></i>
-                    重新加载
-                  </button>
-                </div>
-              </div>
-
-              <!-- 节点关系提示 -->
-              <transition
-                enter-active-class="transition duration-200 ease-out"
-                enter-from-class="opacity-0 translate-y-1"
-                enter-to-class="opacity-100 translate-y-0"
-                leave-active-class="transition duration-150 ease-in"
-                leave-from-class="opacity-100 translate-y-0"
-                leave-to-class="opacity-0 translate-y-1"
-              >
-                <div
-                  v-if="hoveredEdge && showLabels"
-                  class="absolute bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 p-2 text-xs text-slate-600 dark:text-slate-400 transform -translate-x-1/2 pointer-events-none"
-                  :style="{ left: hoveredEdgePosition.x + 'px', top: hoveredEdgePosition.y + 'px' }"
-                >
-                  {{ hoveredEdge.relationshipType }}
-                </div>
-              </transition>
-            </div>
-
-            <!-- 图谱工具栏 -->
-            <div
-              class="p-2 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between"
-            >
-              <!-- 过滤控制 -->
-              <div class="flex items-center gap-2">
-                <button
-                  v-for="filter in visibilityFilters"
-                  :key="filter.id"
-                  @click="toggleFilter(filter.id)"
-                  :class="[
-                    'px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1',
-                    filter.active
-                      ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400'
-                      : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400',
-                  ]"
-                >
-                  <i :class="[filter.icon, filter.active ? 'text-blue-500' : 'text-slate-400']"></i>
-                  {{ filter.label }}
-                </button>
-              </div>
-
-              <!-- 状态信息 -->
-              <div class="text-xs text-slate-500 dark:text-slate-400">
-                <span v-if="selectedNode"> 已选中: {{ selectedNode.name }} </span>
-                <span v-else-if="loadingMessage">
-                  {{ loadingMessage }}
-                </span>
-                <span v-else> 点击节点或拖动查看更多 </span>
-              </div>
+              <!-- 领域网络组件 -->
+              <AreaNetwork
+                v-else-if="graphType === 'area'"
+                :layout-type="layoutType"
+                :is-dark-mode="isDarkMode"
+                @node-click="handleNodeClick"
+                @node-count-change="handleNodeCountChange"
+                @link-count-change="handleLinkCountChange"
+                ref="areaNetworkRef"
+              />
             </div>
           </div>
         </div>
@@ -440,31 +341,75 @@
                 </h3>
               </div>
 
-              <div v-if="selectedNode" class="p-5 space-y-5">
+              <div v-if="selectedNode" class="p-5 space-y-5 relative">
+                <!-- 加载状态覆盖层 -->
+                <transition
+                  name="loading-overlay"
+                  enter-active-class="loading-overlay-enter-active"
+                  leave-active-class="loading-overlay-leave-active"
+                  enter-from-class="loading-overlay-enter-from"
+                  leave-to-class="loading-overlay-leave-to"
+                >
+                  <div
+                    v-if="loadingUserDetail"
+                    class="absolute inset-0 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg"
+                  >
+                    <div class="text-center">
+                      <div class="w-16 h-16 mx-auto relative mb-4">
+                        <div
+                          class="absolute inset-0 rounded-full border-4 border-blue-100 dark:border-blue-900"
+                        ></div>
+                        <div
+                          class="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"
+                        ></div>
+                      </div>
+                      <p class="text-slate-600 dark:text-slate-400 font-medium">
+                        正在加载用户详细信息...
+                      </p>
+                      <p class="text-sm text-slate-500 dark:text-slate-500 mt-1">请稍候</p>
+                    </div>
+                  </div>
+                </transition>
+
                 <!-- 节点基本信息 -->
-                <div class="flex items-center space-x-4">
+                <div class="flex items-start space-x-4">
                   <div class="relative">
                     <div
-                      class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center overflow-hidden"
+                      class="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden"
+                      :class="
+                        selectedNode.type === 'user'
+                          ? 'bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800'
+                          : 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800'
+                      "
                     >
                       <img
-                        v-if="selectedNode.avatar"
-                        :src="selectedNode.avatar"
+                        v-if="selectedNode.imgUrl"
+                        :src="'/api' + selectedNode.imgUrl"
                         :alt="selectedNode.name"
                         class="w-full h-full object-cover"
                         @error="handleImageError"
                       />
-                      <span v-else class="text-2xl font-bold text-blue-500">{{
-                        selectedNode.initials
-                      }}</span>
+                      <span
+                        v-else
+                        class="text-2xl font-bold"
+                        :class="selectedNode.type === 'user' ? 'text-purple-500' : 'text-blue-500'"
+                        >{{ selectedNode.initials }}</span
+                      >
                     </div>
 
                     <div
-                      v-if="selectedNode.type"
+                      v-if="selectedNode.gender"
                       class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center"
-                      :class="getNodeTypeClass(selectedNode.type).bg"
+                      :class="
+                        selectedNode.gender === 'male'
+                          ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+                          : 'bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400'
+                      "
                     >
-                      <i :class="[getNodeTypeClass(selectedNode.type).icon, 'text-xs']"></i>
+                      <el-icon class="text-sm font-bold">
+                        <Male v-if="selectedNode.gender === 'male'" />
+                        <Female v-else />
+                      </el-icon>
                     </div>
                   </div>
 
@@ -472,85 +417,136 @@
                     <h4 class="font-bold text-slate-800 dark:text-white text-lg">
                       {{ selectedNode.name }}
                     </h4>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">
-                      {{ selectedNode.title || selectedNode.type }}
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                      {{ selectedNode.title || '未知职位' }}
                     </p>
                     <p
                       v-if="selectedNode.institution"
-                      class="text-sm text-slate-500 dark:text-slate-400"
+                      class="text-sm text-slate-500 dark:text-slate-400 flex items-center mt-1"
                     >
+                      <i class="fas fa-university text-blue-500"></i>
                       {{ selectedNode.institution }}
+                    </p>
+                    <p
+                      v-if="selectedNode.createdAt"
+                      class="text-sm text-slate-500 dark:text-slate-400 flex items-center mt-1"
+                    >
+                      <i class="fas fa-calendar-alt text-blue-500"></i>
+                      {{
+                        new Date(selectedNode.createdAt).toLocaleDateString('zh-CN', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })
+                      }}
+                    </p>
+                  </div>
+
+                  <!-- 研究领域标签 -->
+                  <div v-if="selectedNode.researchArea" class="flex-shrink-0">
+                    <div class="flex flex-col gap-2 items-end">
+                      <span
+                        v-for="(area, index) in selectedNode.researchArea
+                          .split(',')
+                          .map(area => area.trim())
+                          .filter(area => area)"
+                        :key="index"
+                        class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/80 text-center"
+                        :style="{ width: 'fit-content', minWidth: 'max-content' }"
+                      >
+                        <i class="fas fa-microscope text-blue-500"></i>
+                        <span>{{ area }}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 统计信息卡片 -->
+                <div class="grid grid-cols-3 gap-3">
+                  <div
+                    class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/40 dark:to-cyan-900/40 rounded-xl p-3 flex flex-col items-center justify-center border border-blue-100 dark:border-blue-800/50"
+                  >
+                    <span
+                      class="text-xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent"
+                    >
+                      {{ formatNumber(selectedNode.publishNum || 0) }}
+                    </span>
+                    <span class="text-xs text-slate-600 dark:text-slate-400">论文</span>
+                  </div>
+
+                  <div
+                    class="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/40 dark:to-teal-900/40 rounded-xl p-3 flex flex-col items-center justify-center border border-emerald-100 dark:border-emerald-800/50"
+                  >
+                    <span
+                      class="text-xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent"
+                    >
+                      {{ formatNumber(selectedNode.followerNum || 0) }}
+                    </span>
+                    <span class="text-xs text-slate-600 dark:text-slate-400">关注者</span>
+                  </div>
+
+                  <div
+                    class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/40 dark:to-pink-900/40 rounded-xl p-3 flex flex-col items-center justify-center border border-purple-100 dark:border-purple-800/50"
+                  >
+                    <span
+                      class="text-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent"
+                    >
+                      {{ formatNumber(selectedNode.subjectNum || 0) }}
+                    </span>
+                    <span class="text-xs text-slate-600 dark:text-slate-400">项目</span>
+                  </div>
+                </div>
+
+                <!-- 个人简介 -->
+                <div
+                  v-if="selectedNode.bio"
+                  class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3"
+                >
+                  <h5
+                    class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center"
+                  >
+                    <i class="fas fa-user-edit text-blue-500"></i>
+                    个人简介
+                  </h5>
+                  <div class="max-h-24 overflow-y-auto custom-scrollbar pr-2">
+                    <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                      {{ selectedNode.bio }}
                     </p>
                   </div>
                 </div>
 
-                <!-- 影响力指标 -->
-                <div class="grid grid-cols-2 gap-3">
-                  <div
-                    class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/40 dark:to-cyan-900/40 rounded-xl p-4 flex flex-col items-center justify-center border border-blue-100 dark:border-blue-800/50"
+                <!-- 联系信息 -->
+                <div
+                  v-if="selectedNode.email"
+                  class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3"
+                >
+                  <h5
+                    class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center"
                   >
-                    <span
-                      class="text-2xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent"
-                    >
-                      {{ formatNumber(selectedNode.metrics?.publications || 0) }}
-                    </span>
-                    <span class="text-xs text-slate-600 dark:text-slate-400">发表论文</span>
-                  </div>
-
-                  <div
-                    class="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/40 dark:to-teal-900/40 rounded-xl p-4 flex flex-col items-center justify-center border border-emerald-100 dark:border-emerald-800/50"
-                  >
-                    <span
-                      class="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent"
-                    >
-                      {{ formatNumber(selectedNode.metrics?.followers || 0) }}
-                    </span>
-                    <span class="text-xs text-slate-600 dark:text-slate-400">关注者</span>
-                  </div>
-                </div>
-
-                <!-- 研究领域 -->
-                <div v-if="selectedNode.researchFields && selectedNode.researchFields.length">
-                  <h5 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    研究领域
+                    <i class="fas fa-envelope text-blue-500"></i>
+                    联系信息
                   </h5>
-                  <div class="flex flex-wrap gap-2">
-                    <span
-                      v-for="field in selectedNode.researchFields"
-                      :key="field"
-                      class="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/80"
-                    >
-                      {{ field }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- 简介 -->
-                <div v-if="selectedNode.bio">
-                  <h5 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    简介
-                  </h5>
-                  <p class="text-sm text-slate-600 dark:text-slate-400">
-                    {{ selectedNode.bio }}
+                  <p class="text-sm text-slate-600 dark:text-slate-400 break-all">
+                    {{ selectedNode.email }}
                   </p>
                 </div>
 
                 <!-- 操作按钮 -->
-                <div class="pt-4 grid grid-cols-2 gap-3">
+                <div class="pt-4 grid grid-cols-2 gap-2">
                   <button
-                    @click="viewProfileDetail(selectedNode.id)"
-                    class="flex items-center justify-center px-4 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-sm transition-all duration-200"
+                    @click="loadUserGraph(selectedNode.id)"
+                    class="flex items-center justify-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-sm transition-all duration-200 text-sm"
                   >
-                    <i class="fas fa-user mr-2"></i>
+                    <i class="fas fa-refresh mr-1"></i>
                     查看详情
                   </button>
 
                   <button
-                    @click="focusOnNode(selectedNode.id)"
-                    class="flex items-center justify-center px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition-all"
+                    @click="goToUserProfile(selectedNode.id)"
+                    class="flex items-center justify-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-medium shadow-sm transition-all duration-200 text-sm"
                   >
-                    <i class="fas fa-search mr-2"></i>
-                    聚焦节点
+                    <i class="fas fa-home mr-1"></i>
+                    前往主页
                   </button>
                 </div>
 
@@ -559,7 +555,10 @@
                   v-if="relatedNodes.length"
                   class="pt-4 border-t border-slate-200 dark:border-slate-700"
                 >
-                  <h5 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                  <h5
+                    class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center"
+                  >
+                    <i class="fas fa-users text-blue-500 mr-2"></i>
                     关联节点
                   </h5>
                   <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
@@ -583,7 +582,8 @@
                           {{ node.name }}
                         </p>
                         <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                          {{ node.relationshipType }} · {{ node.type }}
+                          {{ node.relationshipType === 'FOLLOW' ? '关注' : node.relationshipType }}
+                          · {{ node.type === 'user' ? '用户' : node.type }}
                         </p>
                       </div>
 
@@ -619,8 +619,15 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import * as echarts from 'echarts'
 import { onClickOutside } from '@vueuse/core'
+import { Moon, Sunny, Male, Female } from '@element-plus/icons-vue'
+import { getUserDetail } from '../../api/modules/user'
+import { getResearcherByInstitution, getResearcherByArea } from '../../api/modules/graph'
+import type { UserDetail } from '../../api/types/user'
+import { useUserStore } from '@/stores/user'
+import FollowNetwork from '@/components/graph/FollowNetwork.vue'
+import InstitutionNetwork from '@/components/graph/InstitutionNetwork.vue'
+import AreaNetwork from '@/components/graph/AreaNetwork.vue'
 
 // 路由
 const router = useRouter()
@@ -628,52 +635,40 @@ const router = useRouter()
 // DOM引用
 const graphContainer = ref<HTMLElement | null>(null)
 const optionsDropdown = ref<HTMLElement | null>(null)
-
-// 图表实例
-let chart: echarts.ECharts | null = null
+const followNetworkRef = ref<any>(null)
+const institutionNetworkRef = ref<any>(null)
+const areaNetworkRef = ref<any>(null)
 
 // 基础状态
 const loading = ref(false)
 const loadingMessage = ref('')
 const isDarkMode = ref(false)
-const currentView = ref('graph')
 const showOptionsMenu = ref(false)
-const showLabels = ref(true)
 const zoomLevel = ref(1)
+const loadingUserDetail = ref(false)
 
 // 图谱配置
 const graphType = ref('follow') // follow, institution, research
 const layoutType = ref('force')
-const selectedInstitution = ref('')
-const selectedResearchField = ref('')
-const searchQuery = ref('')
 
 // 数据状态
 const nodeCount = ref(0)
 const linkCount = ref(0)
 const selectedNode = ref<any>(null)
-const hoveredEdge = ref<any>(null)
-const hoveredEdgePosition = ref({ x: 0, y: 0 })
 const relatedNodes = ref<any[]>([])
 
 // 界面选项
-const viewOptions = [
-  { label: '图谱视图', value: 'graph', icon: 'fas fa-project-diagram' },
-  { label: '详情视图', value: 'detail', icon: 'fas fa-info-circle' },
-  { label: '统计视图', value: 'stats', icon: 'fas fa-chart-bar' },
-]
-
 const graphTypes = [
   { label: '知识图谱', value: 'follow', icon: 'fas fa-project-diagram' },
-  { label: '语言网络', value: 'institution', icon: 'fas fa-code' },
-  { label: '领域网络', value: 'research', icon: 'fas fa-book' },
+  { label: '机构网络', value: 'institution', icon: 'fas fa-code' },
+  { label: '领域网络', value: 'area', icon: 'fas fa-book' },
 ]
 
 const layoutOptions = [
   { label: '力导向布局', value: 'force' },
   { label: '圆形布局', value: 'circular' },
-  { label: '同心圆布局', value: 'concentric' },
-  { label: '网格布局', value: 'grid' },
+  // { label: '同心圆布局', value: 'concentric' },
+  // { label: '网格布局', value: 'grid' },
 ]
 
 const visibilityFilters = ref([
@@ -682,82 +677,15 @@ const visibilityFilters = ref([
   { id: 'fields', label: '研究领域', icon: 'fas fa-book', active: true },
 ])
 
-// 示例数据 - 实际应用中应该从API获取
-const mockNodes = [
-  // 编程语言节点
-  { id: 'Java', name: 'Java', category: 0, type: 'language' },
-  { id: 'Python', name: 'Python', category: 0, type: 'language' },
-  { id: 'C++', name: 'C++', category: 0, type: 'language' },
-
-  // 研究领域节点
-  { id: '编程', name: '编程', category: 1, type: 'field' },
-  { id: '机器学习', name: '机器学习', category: 1, type: 'field' },
-  { id: '深度学习', name: '深度学习', category: 1, type: 'field' },
-]
-
-const mockLinks = [
-  { source: 'Java', target: '编程', label: { show: true, formatter: '属于' } },
-  { source: 'Python', target: '编程', label: { show: true, formatter: '属于' } },
-  { source: 'C++', target: '编程', label: { show: true, formatter: '属于' } },
-  { source: 'Python', target: '机器学习', label: { show: true, formatter: '应用于' } },
-  { source: 'Python', target: '深度学习', label: { show: true, formatter: '应用于' } },
-]
-
-// 机构选项
-const institutionOptions = computed(() => {
-  const languages = mockNodes
-    .filter(node => node.type === 'language')
-    .map(lang => ({
-      id: lang.id,
-      name: lang.name,
-      count: 1,
-    }))
-
-  return languages
-})
-
-// 研究领域选项
-const researchFieldOptions = computed(() => {
-  const fields = mockNodes
-    .filter(node => node.type === 'field')
-    .map(field => ({
-      id: field.id,
-      name: field.name,
-      count: 1,
-    }))
-
-  return fields
-})
-
-// 图谱标题
-const graphTitle = computed(() => {
-  switch (graphType.value) {
-    case 'follow':
-      return '知识图谱'
-    case 'institution':
-      return '编程语言网络'
-    case 'research':
-      return '研究领域网络'
-    default:
-      return '知识网络'
-  }
-})
+// 响应式数据
+const userStore = useUserStore()
+const currentQueryInfo = ref<{ type: 'user' | 'node'; data: any }>({ type: 'user', data: null })
 
 // 生命周期钩子
 onMounted(async () => {
   // 默认深色模式跟随系统
   isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches
   document.documentElement.classList.toggle('dark', isDarkMode.value)
-
-  // 初始化图表
-  await nextTick()
-  initializeChart()
-
-  // 窗口大小改变时调整图表大小
-  window.addEventListener('resize', handleResize)
-
-  // 加载图谱数据
-  loadGraphData()
 
   // 点击其他区域关闭下拉菜单
   onClickOutside(optionsDropdown, () => {
@@ -766,395 +694,97 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize)
-
-  // 销毁图表实例
-  if (chart) {
-    chart.dispose()
-    chart = null
-  }
+  // 清理工作
 })
 
-// 初始化图表
-const initializeChart = () => {
-  if (!graphContainer.value) return
-
-  // 使用高性能渲染器
-  const rendererType = 'canvas'
-
-  // 创建图表实例
-  chart = echarts.init(graphContainer.value, isDarkMode.value ? 'dark' : undefined, {
-    renderer: rendererType,
-    useDirtyRect: true,
-  })
-
-  // 注册图表事件
-  chart.on('click', (params: any) => {
-    if (params.dataType === 'node') {
-      handleNodeClick(params.data)
-    }
-  })
-
-  chart.on('mouseover', (params: any) => {
-    if (params.dataType === 'edge') {
-      hoveredEdge.value = params.data
-      hoveredEdgePosition.value = {
-        x: params.event.offsetX,
-        y: params.event.offsetY - 20,
-      }
-    }
-  })
-
-  chart.on('mouseout', (params: any) => {
-    if (params.dataType === 'edge') {
-      hoveredEdge.value = null
-    }
-  })
-}
-
-// 加载图谱数据
-const loadGraphData = async () => {
-  if (!chart) return
-
-  loading.value = true
-  loadingMessage.value = '正在加载知识图谱数据...'
-
-  try {
-    // 模拟API请求延迟
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // 根据图谱类型和筛选条件过滤数据
-    let filteredNodes = [...mockNodes]
-    let filteredLinks = [...mockLinks]
-
-    // 应用机构筛选
-    if (selectedInstitution.value) {
-      const relatedNodeIds = new Set<string>()
-
-      // 找出与所选机构相关的节点
-      filteredLinks
-        .filter(
-          link =>
-            link.source === selectedInstitution.value || link.target === selectedInstitution.value
-        )
-        .forEach(link => {
-          relatedNodeIds.add(link.source)
-          relatedNodeIds.add(link.target)
-        })
-
-      filteredNodes = filteredNodes.filter(node => relatedNodeIds.has(node.id))
-      filteredLinks = filteredLinks.filter(
-        link => relatedNodeIds.has(link.source) && relatedNodeIds.has(link.target)
-      )
-    }
-
-    // 应用研究领域筛选
-    if (selectedResearchField.value) {
-      const relatedNodeIds = new Set<string>()
-
-      // 找出与所选研究领域相关的节点
-      filteredLinks
-        .filter(
-          link =>
-            link.source === selectedResearchField.value ||
-            link.target === selectedResearchField.value
-        )
-        .forEach(link => {
-          relatedNodeIds.add(link.source)
-          relatedNodeIds.add(link.target)
-        })
-
-      filteredNodes = filteredNodes.filter(node => relatedNodeIds.has(node.id))
-      filteredLinks = filteredLinks.filter(
-        link => relatedNodeIds.has(link.source) && relatedNodeIds.has(link.target)
-      )
-    }
-
-    // 根据图谱类型过滤
-    if (graphType.value === 'follow') {
-      // 对于关注网络，显示所有连接
-      // 这里可以根据实际需求调整筛选逻辑
-    } else if (graphType.value === 'institution') {
-      // 对于机构网络，可以筛选特定类型的节点
-      filteredNodes = filteredNodes.filter(
-        node => node.type === 'language' || node.type === 'field'
-      )
-    } else if (graphType.value === 'research') {
-      // 对于研究领域网络，显示所有连接
-      // 这里可以根据实际需求调整筛选逻辑
-    }
-
-    // 应用搜索筛选
-    if (searchQuery.value.trim()) {
-      const query = searchQuery.value.toLowerCase()
-      filteredNodes = filteredNodes.filter(
-        node =>
-          node.name.toLowerCase().includes(query) ||
-          (node.type === 'person' && (node as any).title?.toLowerCase().includes(query)) ||
-          (node.type === 'person' && (node as any).institution?.toLowerCase().includes(query)) ||
-          (node.type === 'person' &&
-            (node as any).researchFields?.some((field: string) =>
-              field.toLowerCase().includes(query)
-            ))
-      )
-
-      // 重新过滤连接
-      const nodeIds = new Set(filteredNodes.map(node => node.id))
-      filteredLinks = filteredLinks.filter(
-        link => nodeIds.has(link.source) && nodeIds.has(link.target)
-      )
-    }
-
-    // 应用可见性过滤器
-    const activeFilters = visibilityFilters.value.filter(f => f.active).map(f => f.id)
-    if (activeFilters.length < visibilityFilters.value.length) {
-      const typeMap: Record<string, string> = {
-        users: 'person',
-        institutions: 'institution',
-        fields: 'field',
-      }
-
-      const allowedTypes = activeFilters.map(filterId => typeMap[filterId]).filter(Boolean)
-      filteredNodes = filteredNodes.filter(node => allowedTypes.includes(node.type))
-
-      const nodeIds = new Set(filteredNodes.map(node => node.id))
-      filteredLinks = filteredLinks.filter(
-        link => nodeIds.has(link.source) && nodeIds.has(link.target)
-      )
-    }
-
-    // 更新统计数据
-    nodeCount.value = filteredNodes.length
-    linkCount.value = filteredLinks.length
-
-    // 准备图表数据
-    const chartData = prepareChartData(filteredNodes, filteredLinks)
-
-    // 更新图表
-    loadingMessage.value = '正在渲染图谱...'
-    updateChart(chart, chartData)
-  } catch (error) {
-    console.error('加载图谱数据失败:', error)
-  } finally {
-    loading.value = false
-    loadingMessage.value = ''
-  }
-}
-
-// 准备图表数据
-const prepareChartData = (nodes: any[], links: any[]) => {
-  // 处理节点数据
-  const chartNodes = nodes.map(node => {
-    const size = getNodeSize(node)
-    const color = getNodeColor(node)
-    const symbol = getNodeSymbol(node)
-
-    return {
-      id: node.id,
-      name: node.name,
-      symbolSize: size,
-      itemStyle: {
-        color: color,
-      },
-      symbol: symbol,
-      category: node.category,
-      // 保留原始数据
-      ...node,
-    }
-  })
-
-  // 处理连接数据
-  const chartLinks = links.map(link => ({
-    source: link.source,
-    target: link.target,
-    value: 1, // 默认关系强度
-    lineStyle: {
-      color: getLinkColor(link),
-      width: getLinkWidth(link),
-      type: getLinkType(link),
-    },
-    label: link.label,
-    relationshipType: link.label?.formatter || '关联',
-    ...link,
-  }))
-
-  return { nodes: chartNodes, links: chartLinks }
-}
-
-// 获取节点大小
-const getNodeSize = (node: any) => {
-  if (node.type === 'language') {
-    return 30
-  } else if (node.type === 'field') {
-    return 40
-  }
-  return 30
-}
-
-// 获取节点颜色
-const getNodeColor = (node: any) => {
-  const colors = {
-    language: '#3b82f6', // 蓝色
-    field: '#10b981', // 绿色
-  }
-  return colors[node.type as keyof typeof colors] || '#6b7280'
-}
-
-// 获取节点形状
-const getNodeSymbol = (node: any) => {
-  const symbols = {
-    language: 'circle',
-    field: 'rect',
-  }
-  return symbols[node.type as keyof typeof symbols] || 'circle'
-}
-
-// 获取连接颜色
-const getLinkColor = (link: any) => {
-  const relationshipType = link.label?.formatter || link.relationshipType || '关联'
-  const colors = {
-    属于: '#3b82f6',
-    应用于: '#10b981',
-    关联: '#8b5cf6',
-  }
-  return colors[relationshipType as keyof typeof colors] || '#94a3b8'
-}
-
-// 获取连接宽度
-const getLinkWidth = (link: any) => {
-  return Math.max(1, Math.min(3, 2))
-}
-
-// 获取连接类型
-const getLinkType = (link: any) => {
-  const relationshipType = link.label?.formatter || link.relationshipType || '关联'
-  const types = {
-    属于: 'solid',
-    应用于: 'solid',
-    关联: 'solid',
-  }
-  return types[relationshipType as keyof typeof types] || 'solid'
-}
-
-// 更新图表
-const updateChart = (chartInstance: echarts.ECharts, data: any) => {
-  const option = {
-    animationDuration: 1500,
-    series: [
-      {
-        type: 'graph',
-        layout: layoutType.value,
-        data: data.nodes,
-        links: data.links,
-        categories: [
-          { name: 0, itemStyle: { color: '#3b82f6' } },
-          { name: 1, itemStyle: { color: '#10b981' } },
-        ],
-        roam: true,
-        label: {
-          show: showLabels.value,
-          position: 'bottom',
-          formatter: '{b}',
-          fontSize: 11,
-          color: isDarkMode.value ? '#e2e8f0' : '#334155',
-        },
-        labelLayout: {
-          hideOverlap: true,
-        },
-        lineStyle: {
-          color: 'source',
-          curveness: 0.1,
-        },
-        emphasis: {
-          focus: 'adjacency',
-          lineStyle: {
-            width: 3,
-          },
-        },
-        force:
-          layoutType.value === 'force'
-            ? {
-                repulsion: [100, 200],
-                gravity: 0.1,
-                edgeLength: [80, 150],
-                layoutAnimation: true,
-              }
-            : undefined,
-        circular:
-          layoutType.value === 'circular'
-            ? {
-                rotateLabel: true,
-              }
-            : undefined,
-      },
-    ],
-    tooltip: {
-      trigger: 'item',
-      formatter: (params: any) => {
-        if (params.dataType === 'node') {
-          return formatNodeTooltip(params.data)
-        } else if (params.dataType === 'edge') {
-          return formatEdgeTooltip(params.data)
-        }
-        return ''
-      },
-      backgroundColor: isDarkMode.value ? '#1e293b' : '#ffffff',
-      borderColor: isDarkMode.value ? '#475569' : '#e2e8f0',
-      textStyle: {
-        color: isDarkMode.value ? '#e2e8f0' : '#334155',
-      },
-    },
-  }
-
-  chartInstance.setOption(option, true)
-}
-
-// 格式化节点提示信息
-const formatNodeTooltip = (node: any) => {
-  if (node.type === 'language') {
-    return `
-      <div class="font-bold text-lg">${node.name}</div>
-      <div class="text-sm opacity-75">编程语言</div>
-    `
-  } else if (node.type === 'field') {
-    return `
-      <div class="font-bold text-lg">${node.name}</div>
-      <div class="text-sm opacity-75">研究领域</div>
-    `
-  }
-  return node.name
-}
-
-// 格式化连接提示信息
-const formatEdgeTooltip = (edge: any) => {
-  const relationshipType = edge.label?.formatter || edge.relationshipType || '关联'
-  return `
-    <div class="font-bold">${relationshipType}</div>
-  `
-}
-
 // 事件处理函数
-const handleNodeClick = (nodeData: any) => {
+const handleNodeClick = async (nodeData: any) => {
+  // 立即设置选中的节点，显示基本信息
   selectedNode.value = nodeData
+  // 立即显示加载状态
+  loadingUserDetail.value = true
 
-  // 查找关联节点
-  const related = mockLinks
-    .filter(link => link.source === nodeData.id || link.target === nodeData.id)
-    .map(link => {
-      const targetId = link.source === nodeData.id ? link.target : link.source
-      const targetNode = mockNodes.find(node => node.id === targetId)
+  // 更新查询信息为节点信息
+  currentQueryInfo.value = { type: 'node', data: nodeData }
 
-      return targetNode
-        ? {
-            ...targetNode,
-            relationshipType: link.label?.formatter || '关联',
-          }
-        : null
-    })
-    .filter(Boolean)
-    .slice(0, 10) // 限制显示数量
+  // 根据节点类型处理
+  if (nodeData.type === 'user') {
+    // 用户节点：获取详细信息
+    console.log('开始获取用户详细信息...')
+    try {
+      const response = await getUserDetail(nodeData.id)
+      if (response.data) {
+        // 合并原始节点数据和详细信息
+        selectedNode.value = {
+          ...nodeData,
+          ...response.data,
+          // 确保头像URL正确
+          imgUrl: response.data.imgUrl || nodeData.imgUrl,
+          // 确保初始字母正确
+          initials: response.data.name ? response.data.name.charAt(0) : nodeData.initials,
+        }
+        console.log('用户详细信息获取成功')
+      }
+    } catch (error) {
+      console.error('获取用户详细信息失败:', error)
+      console.warn('用户详细信息获取失败，显示基础信息')
+    } finally {
+      loadingUserDetail.value = false
+      console.log('加载状态已隐藏')
+    }
+  } else if (nodeData.type === 'language' || nodeData.type === 'institution') {
+    // 机构节点：获取该机构的科研人员
+    console.log('开始获取机构科研人员:', nodeData.name)
+    try {
+      const response = await getResearcherByInstitution(nodeData.name)
+      if (response.data) {
+        console.log('机构科研人员获取成功，更新图谱')
+        // 更新图谱显示该机构的科研人员
+        if (graphType.value === 'institution' && institutionNetworkRef.value) {
+          institutionNetworkRef.value.loadInstitutionResearchers(nodeData.name, response.data)
+        }
+      }
+    } catch (error) {
+      console.error('获取机构科研人员失败:', error)
+    } finally {
+      loadingUserDetail.value = false
+    }
+  } else if (nodeData.type === 'field' || nodeData.type === 'area') {
+    // 领域节点：获取该领域的科研人员
+    console.log('开始获取领域科研人员:', nodeData.name)
+    try {
+      const response = await getResearcherByArea(nodeData.name)
+      if (response.data) {
+        console.log('领域科研人员获取成功，更新图谱')
+        // 更新图谱显示该领域的科研人员
+        if (graphType.value === 'area' && areaNetworkRef.value) {
+          areaNetworkRef.value.loadAreaResearchers(nodeData.name, response.data)
+        }
+      }
+    } catch (error) {
+      console.error('获取领域科研人员失败:', error)
+    } finally {
+      loadingUserDetail.value = false
+    }
+  } else {
+    // 其他类型节点，立即隐藏加载状态
+    loadingUserDetail.value = false
+    console.log('其他类型节点，立即隐藏加载状态')
+  }
 
-  relatedNodes.value = related
+  // 查找关联节点 - 这个功能应该由子组件提供
+  // 暂时清空，等待子组件提供相关数据
+  relatedNodes.value = []
+}
+
+// 处理节点数量变化
+const handleNodeCountChange = (count: number) => {
+  nodeCount.value = count
+}
+
+// 处理连接数量变化
+const handleLinkCountChange = (count: number) => {
+  linkCount.value = count
 }
 
 // 工具函数
@@ -1170,34 +800,45 @@ const debounce = (func: Function, wait: number) => {
   }
 }
 
-const handleSearch = debounce(() => {
-  loadGraphData()
-}, 300)
-
 const handleResize = debounce(() => {
-  if (chart) {
-    chart.resize()
-  }
+  // 图表resize由子组件处理
 }, 100)
 
 // 控制函数
 const updateLayout = () => {
-  loadGraphData()
+  // 布局更新会通过props自动传递给子组件
 }
 
 const refreshGraph = () => {
-  loadGraphData()
+  // 重置为使用用户信息查询
+  currentQueryInfo.value = { type: 'user', data: null }
+
+  // 根据当前图谱类型调用对应组件的刷新方法
+  if (graphType.value === 'follow' && followNetworkRef.value) {
+    followNetworkRef.value.refreshGraph()
+  } else if (graphType.value === 'institution' && institutionNetworkRef.value) {
+    institutionNetworkRef.value.refreshGraph()
+  } else if (graphType.value === 'area' && areaNetworkRef.value) {
+    areaNetworkRef.value.refreshGraph()
+  }
 }
 
 const resetGraph = () => {
-  if (chart) {
-    chart.dispatchAction({
-      type: 'restore',
-    })
-  }
   selectedNode.value = null
   relatedNodes.value = []
   zoomLevel.value = 1
+
+  // 重置为使用用户信息查询
+  currentQueryInfo.value = { type: 'user', data: null }
+
+  // 根据当前图谱类型调用对应组件的刷新方法
+  if (graphType.value === 'follow' && followNetworkRef.value) {
+    followNetworkRef.value.refreshGraph()
+  } else if (graphType.value === 'institution' && institutionNetworkRef.value) {
+    institutionNetworkRef.value.refreshGraph()
+  } else if (graphType.value === 'area' && areaNetworkRef.value) {
+    areaNetworkRef.value.refreshGraph()
+  }
 }
 
 const toggleFullscreen = () => {
@@ -1211,135 +852,100 @@ const toggleFullscreen = () => {
 const toggleDarkMode = () => {
   isDarkMode.value = !isDarkMode.value
   document.documentElement.classList.toggle('dark', isDarkMode.value)
-
-  if (chart) {
-    chart.dispose()
-    initializeChart()
-    loadGraphData()
-  }
 }
 
 const toggleOptionsMenu = () => {
   showOptionsMenu.value = !showOptionsMenu.value
 }
 
-const toggleLabels = () => {
-  showLabels.value = !showLabels.value
-  if (chart) {
-    chart.setOption({
-      series: [
-        {
-          label: {
-            show: showLabels.value,
-          },
-        },
-      ],
-    })
-  }
-}
-
 const toggleFilter = (filterId: string) => {
   const filter = visibilityFilters.value.find(f => f.id === filterId)
   if (filter) {
     filter.active = !filter.active
-    loadGraphData()
+    // 过滤功能由子组件处理
   }
 }
 
 const zoomIn = () => {
-  if (chart) {
-    chart.dispatchAction({
-      type: 'graphRoam',
-      zoom: 1.2,
-    })
-    zoomLevel.value = Math.min(3, zoomLevel.value * 1.2)
-  }
+  // 缩放功能由子组件处理
+  zoomLevel.value = Math.min(3, zoomLevel.value * 1.2)
 }
 
 const zoomOut = () => {
-  if (chart) {
-    chart.dispatchAction({
-      type: 'graphRoam',
-      zoom: 0.8,
-    })
-    zoomLevel.value = Math.max(0.2, zoomLevel.value * 0.8)
-  }
+  // 缩放功能由子组件处理
+  zoomLevel.value = Math.max(0.2, zoomLevel.value * 0.8)
 }
 
 const exportAsImage = () => {
-  if (chart) {
-    const url = chart.getDataURL({
-      type: 'png',
-      backgroundColor: isDarkMode.value ? '#0f172a' : '#ffffff',
-      pixelRatio: 2,
-    })
-
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `knowledge-graph-${Date.now()}.png`
-    link.click()
-  }
+  // 导出功能由子组件处理
+  console.log('导出图片功能需要由子组件实现')
 }
 
 const exportData = () => {
-  const data = {
-    nodes: mockNodes,
-    links: mockLinks,
-    timestamp: new Date().toISOString(),
-  }
-
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `knowledge-graph-data-${Date.now()}.json`
-  link.click()
-
-  URL.revokeObjectURL(url)
+  // 导出功能由子组件处理
+  console.log('导出数据功能需要由子组件实现')
 }
 
 const selectNode = (nodeId: string) => {
-  const node = mockNodes.find(n => n.id === nodeId)
-  if (node) {
-    handleNodeClick(node)
-
-    // 在图表中高亮节点
-    if (chart) {
-      chart.dispatchAction({
-        type: 'highlight',
-        dataType: 'node',
-        name: node.name,
-      })
-    }
-  }
-}
-
-const focusOnNode = (nodeId: string) => {
-  if (chart) {
-    chart.dispatchAction({
-      type: 'focusNodeAdjacency',
-      dataType: 'node',
-      seriesIndex: 0,
-      dataIndex: mockNodes.findIndex(n => n.id === nodeId),
-    })
-  }
+  // 节点选择功能由子组件处理
+  console.log('选择节点功能需要由子组件实现')
 }
 
 const viewProfileDetail = (nodeId: string) => {
-  // 跳转到详情页
-  router.push(`/research/profile/${nodeId}`)
+  // 跳转到用户详情页面
+  router.push(`/user/${nodeId}`)
 }
 
+const returnToUserView = () => {
+  // 重置为使用用户信息查询
+  currentQueryInfo.value = { type: 'user', data: null }
+  // 刷新当前图谱
+  refreshGraph()
+}
+
+const loadUserGraph = (userId: string) => {
+  console.log('加载用户图谱，用户ID:', userId)
+
+  // 更新查询信息为节点信息
+  currentQueryInfo.value = { type: 'node', data: { id: userId } }
+
+  // 根据当前图谱类型调用对应组件的加载方法
+  if (graphType.value === 'follow' && followNetworkRef.value) {
+    followNetworkRef.value.loadUserGraph(userId)
+  } else if (graphType.value === 'institution' && institutionNetworkRef.value) {
+    institutionNetworkRef.value.loadInstitutionResearchers(userId)
+  } else if (graphType.value === 'area' && areaNetworkRef.value) {
+    areaNetworkRef.value.loadAreaResearchers(userId)
+  }
+}
+
+const goToUserProfile = (nodeId: string) => {
+  // 跳转到用户详情页面
+  router.push(`/user/${nodeId}`)
+}
+
+// 计算属性
+const graphTitle = computed(() => {
+  switch (graphType.value) {
+    case 'follow':
+      return '知识图谱'
+    case 'institution':
+      return '机构网络'
+    case 'area':
+      return '领域网络'
+    default:
+      return '知识网络'
+  }
+})
+
 // 监听器
-watch([graphType, selectedInstitution, selectedResearchField], () => {
-  loadGraphData()
+watch([graphType], () => {
+  // 切换图谱类型时，重置为使用用户信息查询
+  currentQueryInfo.value = { type: 'user', data: null }
 })
 
 watch(layoutType, () => {
-  if (chart) {
-    updateLayout()
-  }
+  // 布局类型变化会通过props自动传递给子组件
 })
 
 // 工具函数
@@ -1352,6 +958,10 @@ const formatNumber = (num: number) => {
 
 const getNodeTypeClass = (type: string) => {
   const classes = {
+    user: {
+      bg: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400',
+      icon: 'fas fa-user',
+    },
     language: {
       bg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
       icon: 'fas fa-code',
@@ -1361,7 +971,7 @@ const getNodeTypeClass = (type: string) => {
       icon: 'fas fa-book',
     },
   }
-  return classes[type as keyof typeof classes] || classes.language
+  return classes[type as keyof typeof classes] || classes.user
 }
 
 const handleImageError = (event: Event) => {
@@ -1417,6 +1027,22 @@ const handleImageError = (event: Event) => {
   opacity: 0;
 }
 
+/* 加载动画过渡效果 */
+.loading-overlay-enter-active,
+.loading-overlay-leave-active {
+  transition: all 0.3s ease;
+}
+
+.loading-overlay-enter-from {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+}
+
+.loading-overlay-leave-to {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+}
+
 /* 响应式调整 */
 @media (max-width: 1024px) {
   .max-w-8xl {
@@ -1440,3 +1066,4 @@ const handleImageError = (event: Event) => {
   }
 }
 </style>
+
