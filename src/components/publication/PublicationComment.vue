@@ -123,6 +123,7 @@
             @reply="$emit('reply', $event)"
             @delete="handleReplyDelete"
             @set-active-reply="handleSetActiveReply"
+            @like="handleReplyLike"
           />
         </div>
       </div>
@@ -232,7 +233,7 @@ const props = defineProps<{
   replies?: Comment[]
 }>()
 
-const emit = defineEmits(['reply', 'delete', 'reply-submitted', 'set-active-reply'])
+const emit = defineEmits(['reply', 'delete', 'reply-submitted', 'set-active-reply', 'like'])
 
 const userStore = useUserStore()
 const userCacheStore = useUserCacheStore()
@@ -288,10 +289,10 @@ const displayedReplies = computed(() => {
   // 将所有二级评论放在同一层级，保持原有顺序
   const allReplies: ExtendedComment[] = []
 
-  // 收集所有评论
+  // 收集所有评论 - 直接使用原始引用，不创建新对象
   ;(props.replies || []).forEach(reply => {
-    // 添加二级评论
-    allReplies.push({ ...reply, isParent: true })
+    // 直接使用原始回复对象，保持引用关系
+    allReplies.push(reply as ExtendedComment)
   })
 
   // 保持原有顺序，不进行排序
@@ -355,6 +356,8 @@ async function handleLike() {
       props.comment.isLiked = true
       props.comment.likes++
     }
+    // 将事件传递给父组件
+    emit('like', props.comment)
   } catch (error) {
     console.error('点赞操作失败:', error)
   } finally {
@@ -477,6 +480,20 @@ onMounted(async () => {
 // 处理用户点击
 function handleUserClick() {
   router.push(`/user/${props.comment.userId}`)
+}
+
+// 处理二级评论点赞
+function handleReplyLike(likeData: { id: number; isLiked: boolean; likes: number }) {
+  // 找到对应的回复并更新状态
+  if (props.replies) {
+    const reply = props.replies.find(r => r.id === likeData.id)
+    if (reply) {
+      reply.isLiked = likeData.isLiked
+      reply.likes = likeData.likes
+    }
+  }
+  // 将事件传递给父组件
+  emit('like', likeData)
 }
 </script>
 

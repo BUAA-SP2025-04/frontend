@@ -7,9 +7,14 @@ export interface Author {
   publicationId: number
 }
 
-export interface Publication {
+export interface likeResponse {
+  message: string
+  data: boolean | undefined
+  code: string
+}
+
+export interface publicationInfo {
   abstracts: string | null
-  authors: Author[]
   conference: null
   createdAt: string
   doi: string | null
@@ -26,6 +31,34 @@ export interface Publication {
   uploaderId: number
   venue: string | null
   year: number | null
+}
+
+export interface Publication {
+  authors: Author[]
+  publication: publicationInfo
+}
+
+// 用于详情页面的合并后的Publication类型
+export interface PublicationDetail {
+  id: number
+  title: string
+  authors: Author[]
+  conference: string | null
+  venue: string | null
+  year: number | null
+  status: PublicationStatus
+  keywords: string | null
+  doi: string | null
+  pdfUrl: string | null
+  abstracts: string | null
+  readerNum: number
+  likeNum: number
+  isLiked?: boolean
+  institutionId: number
+  isPublic: number
+  type: PublicationType
+  uploaderId: number
+  createdAt: string
 }
 
 export interface PublicationProfile {
@@ -73,7 +106,7 @@ export interface PublicationListResponse {
   message: string
   data: {
     authors: Author[]
-    publication: Publication
+    publication: publicationInfo
   }[]
 }
 
