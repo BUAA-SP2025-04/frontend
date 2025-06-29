@@ -40,7 +40,9 @@ const goRegister = () => {
 <style>
 /*
 字体选择列表
-font-family: 'Inter', system-ui, sans-serif;
+font-family: 'Inter', system-ui, sans-serif; 系统黑体
+font-family: 'ZCOOL KuaiLe', cursive; 像小学生写字
+font-family: 'HarmonyOS Sans SC', sans-serif; 遥遥领先黑体
 */
 #app {
     font-family: "LXGW WenKai", sans-serif;

@@ -16,7 +16,6 @@ export async function uploadFile(file: File): Promise<UploadResponse> {
     const response = await fetch(UPLOAD_URL, {
       method: 'POST',
       body: formData,
-      // 添加错误处理和超时设置
     })
 
     if (!response.ok) {
@@ -25,7 +24,8 @@ export async function uploadFile(file: File): Promise<UploadResponse> {
 
     const result = await response.json()
     console.log('文件上传成功:', result)
-    return result
+    // 只返回 data 字段
+    return result.data
   } catch (error) {
     console.error('文件上传失败:', error)
     throw new Error(`文件上传失败: ${error instanceof Error ? error.message : '未知错误'}`)
