@@ -61,16 +61,3 @@ export function getPublicationInformById(id: number | string): Promise<Publicati
 export function readPublication(id: number | string): Promise<EmptyResponse> {
   return request.post('/publication/read', { id })
 }
-
-export function likePublication(id: number | string): Promise<EmptyResponse> {
-  return request.post('/publication/like', { id })
-}
-
-export function unlikePublication(id: number | string): Promise<EmptyResponse> {
-  return request.post('/publication/unlike', { id })
-}
-
-export function checkPublicationLike(id: number | string): Promise<{ isLiked: boolean }> {
-  return request.get('/publication/checkLike', { params: { id } })
-}
-

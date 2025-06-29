@@ -40,7 +40,6 @@ export class WebSocketService {
       this.ws.onmessage = event => {
         try {
           const message = JSON.parse(event.data)
-          console.log('WebSocket 收到原始消息:', message)
 
           // 处理心跳响应
           if (message.type === 'pong') {
@@ -48,7 +47,6 @@ export class WebSocketService {
           }
 
           // 触发对应的监听器
-          console.log('触发事件:', message.notification.type, message.senderId)
           this.emit('notification', message)
         } catch (error) {
           console.error('解析消息失败:', error)

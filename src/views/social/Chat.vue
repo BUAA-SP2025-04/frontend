@@ -652,9 +652,9 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import { chatAPI } from '@/api/modules/chat'
 import { wsService } from '@/utils/websocketChat'
 import { uploadFile } from '@/utils/fileUpload'
+import { chatAPI } from '@/api/modules/chat'
 
 const router = useRouter()
 const route = useRoute()

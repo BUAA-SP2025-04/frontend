@@ -4,7 +4,7 @@ import type { UserDetail } from '@/api/types/user'
 
 export const useUserCacheStore = defineStore('userCache', {
   state: () => ({
-    userInfoCache: new Map<number, UserDetail | null>(),
+    userInfoCache: new Map<number, UserDetail | null>()
   }),
 
   actions: {
@@ -40,6 +40,6 @@ export const useUserCacheStore = defineStore('userCache', {
     // 检查用户是否在缓存中
     isUserCached(userId: number): boolean {
       return this.userInfoCache.has(userId)
-    },
-  },
-})
+    }
+  }
+}) 

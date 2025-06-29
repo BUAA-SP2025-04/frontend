@@ -177,7 +177,7 @@
                       formatNumber(publication.readerNum || 0)
                     }}</span>
                   </div>
-                  <div class="flex items-center gap-2">
+                  <!-- <div class="flex items-center gap-2">
                     <svg
                       class="w-5 h-5 text-red-500"
                       fill="none"
@@ -195,7 +195,7 @@
                     <span class="text-red-600 font-semibold">{{
                       formatNumber(publication.likeNum || 0)
                     }}</span>
-                  </div>
+                  </div> -->
                 </div>
               </div>
 
@@ -274,62 +274,13 @@
 
             <!-- 操作按钮 -->
             <div class="flex items-center gap-4 mt-6">
-              <!-- 点赞按钮 -->
-              <button
-                @click="handleLike"
-                :disabled="isLikeLoading"
-                class="group relative flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 text-sm font-medium"
-                :class="[
-                  isLiked
-                    ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-red-400 shadow-lg hover:shadow-xl hover:from-red-600 hover:to-pink-600'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-red-300 hover:text-red-600 shadow-md hover:shadow-lg hover:bg-red-50',
-                ]"
-              >
-                <svg
-                  class="w-4 h-4 transition-all duration-300"
-                  :class="isLiked ? 'animate-bounce' : 'group-hover:scale-110'"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    v-if="isLiked"
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                  />
-                  <path
-                    v-else
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                <span>{{ isLiked ? '已点赞' : '点赞' }}</span>
-
-                <!-- 加载动画 -->
-                <div
-                  v-if="isLikeLoading"
-                  class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 rounded-lg"
-                >
-                  <div
-                    class="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"
-                  ></div>
-                </div>
-              </button>
-
-              <!-- 查看PDF按钮 -->
-              <button
+              <el-button
                 v-if="publication.pdfUrl && publication.pdfUrl.trim()"
+                type="primary"
                 @click="openPdf"
-                class="group flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 text-sm font-medium bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-blue-400 shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-indigo-600"
+                class="flex items-center gap-2"
               >
-                <svg
-                  class="w-4 h-4 transition-all duration-300 group-hover:scale-110"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -338,20 +289,14 @@
                   />
                 </svg>
                 查看PDF
-              </button>
-
-              <!-- 下载PDF按钮 -->
-              <button
+              </el-button>
+              <el-button
                 v-if="publication.pdfUrl && publication.pdfUrl.trim()"
+                type="success"
                 @click="downloadPdf"
-                class="group flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-400 shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-teal-600"
+                class="flex items-center gap-2"
               >
-                <svg
-                  class="w-4 h-4 transition-all duration-300 group-hover:scale-110"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -360,20 +305,9 @@
                   />
                 </svg>
                 下载PDF
-              </button>
-
-              <!-- 申请PDF按钮 -->
-              <button
-                v-if="!publication.pdfUrl || !publication.pdfUrl.trim()"
-                @click="applyPdf"
-                class="group flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 text-sm font-medium bg-gradient-to-r from-orange-500 to-amber-500 text-white border-orange-400 shadow-lg hover:shadow-xl hover:from-orange-600 hover:to-amber-600"
-              >
-                <svg
-                  class="w-4 h-4 transition-all duration-300 group-hover:scale-110"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+              </el-button>
+              <el-button v-else type="warning" @click="applyPdf" class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -382,28 +316,7 @@
                   />
                 </svg>
                 申请PDF
-              </button>
-
-              <!-- 添加至文献库按钮 -->
-              <button
-                @click="addToLibrary"
-                class="group flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 text-sm font-medium bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-400 shadow-lg hover:shadow-xl hover:from-green-600 hover:to-emerald-600"
-              >
-                <svg
-                  class="w-4 h-4 transition-all duration-300 group-hover:scale-110"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                  />
-                </svg>
-                添加至文献库
-              </button>
+              </el-button>
             </div>
           </div>
         </div>
@@ -439,7 +352,7 @@
             <div class="mb-8">
               <CommentForm
                 :publication-id="publication.id"
-                :parent-id="activeReplyId || undefined"
+                :parent-id="activeReplyId"
                 :reply-to-user-name="getReplyToUserName()"
                 :replied-user-id="getrepliedUserIdString()"
                 @submitted="loadComments"
@@ -501,149 +414,6 @@
         />
       </svg>
     </div>
-
-    <!-- 收藏夹选择对话框 -->
-    <el-dialog
-      v-model="showFolderDialog"
-      title="选择收藏夹"
-      width="400px"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-    >
-      <div class="space-y-4" v-loading="isLoadingFolders" element-loading-text="正在加载收藏夹...">
-        <p class="text-gray-600 text-sm">请选择要将文献添加至的收藏夹：</p>
-
-        <!-- 新建收藏夹按钮 -->
-        <button
-          @click="showCreateFolderDialog = true"
-          class="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-          <span class="font-medium">新建收藏夹</span>
-        </button>
-
-        <div class="space-y-2 max-h-60 overflow-y-auto">
-          <div
-            v-for="folder in folders"
-            :key="folder.id"
-            @click="selectedFolderId = folder.id"
-            class="flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:bg-gray-50"
-            :class="[
-              selectedFolderId === folder.id
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 hover:border-gray-300',
-            ]"
-          >
-            <div class="flex items-center gap-3">
-              <svg
-                class="w-5 h-5 text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
-                />
-              </svg>
-              <span class="font-medium text-gray-900">{{ folder.name }}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <!-- <span class="text-sm text-gray-500">{{ folder.count || 0 }} 篇</span> -->
-              <div
-                v-if="selectedFolderId === folder.id"
-                class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center"
-              >
-                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fill-rule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <button
-            @click="cancelAddToLibrary"
-            :disabled="isLoadingFolders"
-            class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            取消
-          </button>
-          <button
-            @click="confirmAddToLibrary"
-            :disabled="!selectedFolderId || isAddingToLibrary || isLoadingFolders"
-            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            <div
-              v-if="isAddingToLibrary"
-              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-            ></div>
-            {{ isAddingToLibrary ? '添加中...' : '确认添加' }}
-          </button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <!-- 新建收藏夹对话框 -->
-    <el-dialog
-      v-model="showCreateFolderDialog"
-      title="新建收藏夹"
-      width="400px"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-    >
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">收藏夹名称</label>
-          <input
-            v-model="newFolderName"
-            type="text"
-            placeholder="请输入收藏夹名称"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            @keyup.enter="createFolder"
-          />
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <button
-            @click="showCreateFolderDialog = false"
-            :disabled="isCreatingFolder"
-            class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            取消
-          </button>
-          <button
-            @click="createFolder"
-            :disabled="!newFolderName.trim() || isCreatingFolder"
-            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            <div
-              v-if="isCreatingFolder"
-              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-            ></div>
-            {{ isCreatingFolder ? '创建中...' : '创建' }}
-          </button>
-        </div>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -651,15 +421,7 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/stores/user'
-import {
-  getPublicationInformById,
-  readPublication,
-  likePublication,
-  unlikePublication,
-  checkPublicationLike,
-} from '@/api/modules/publication'
-import { libraryAPI } from '@/api/modules/library'
+import { getPublicationInformById, readPublication } from '@/api/modules/publication'
 import {
   getPublicationComments,
   likeComment,
@@ -674,7 +436,6 @@ import CommentForm from '@/components/publication/CommentForm.vue'
 
 const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
 
 const publication = ref<Publication | null>(null)
 const comments = ref<Comment[]>([])
@@ -683,20 +444,6 @@ const isAbstractExpanded = ref(false)
 const sortType = ref('hot')
 const activeReplyId = ref<number | null>(null)
 const showBackToTop = ref(false)
-const isLiked = ref(false)
-const isLikeLoading = ref(false)
-
-// 收藏夹相关状态
-const showFolderDialog = ref(false)
-const folders = ref<Array<{ id: number; name: string; count?: number }>>([])
-const selectedFolderId = ref<number | null>(null)
-const isAddingToLibrary = ref(false)
-const isLoadingFolders = ref(false)
-
-// 新建收藏夹相关状态
-const showCreateFolderDialog = ref(false)
-const newFolderName = ref('')
-const isCreatingFolder = ref(false)
 
 // 回复目标信息
 const replyTarget = ref<{
@@ -707,15 +454,6 @@ const replyTarget = ref<{
 
 // 初始加载状态
 const isInitialLoad = ref(true)
-
-// 获取用户ID
-const getUserId = () => {
-  if (!userStore.user || !userStore.isAuthenticated) {
-    ElMessage.error('请先登录')
-    return null
-  }
-  return userStore.user.id.toString()
-}
 
 onMounted(async () => {
   const publicationId = route.params.id
@@ -731,15 +469,6 @@ onMounted(async () => {
     if (response.data) {
       console.log(response.data)
       publication.value = processPublicationData(response.data)
-
-      // 检查用户是否已点赞
-      try {
-        const likeResponse = await checkPublicationLike(String(publicationId))
-        isLiked.value = likeResponse.isLiked
-      } catch (error) {
-        console.error('检查点赞状态失败:', error)
-        isLiked.value = false
-      }
     }
 
     // 获取评论列表（异步加载，不影响页面显示）
@@ -797,14 +526,15 @@ const loadComments = async () => {
           }
         })
       )
-      console.log(commentsWithReplies)
+
       // 过滤掉没有二级评论且内容为"该评论已删除"的一级评论
       const filteredComments = commentsWithReplies.filter(comment => {
         // 如果评论内容为"该评论已删除"且没有二级评论，则过滤掉
-        // 如果有二级评论，则保留该一级评论（即使已被删除）
-        if (comment.content === '该评论已删除') {
-          // 只有当没有二级评论时才过滤掉
-          return comment.replies && comment.replies.length > 0
+        if (
+          comment.content === '该评论已删除' &&
+          (!comment.replies || comment.replies.length === 0)
+        ) {
+          return false
         }
         return true
       })
@@ -895,30 +625,6 @@ const downloadPdf = () => {
 
 const applyPdf = () => {
   ElMessage.info('请联系作者或管理员申请PDF全文。')
-}
-
-const handleLike = async () => {
-  if (!publication.value || isLikeLoading.value) return
-
-  isLikeLoading.value = true
-  try {
-    if (isLiked.value) {
-      await unlikePublication(publication.value.id)
-      publication.value.likeNum--
-      isLiked.value = false
-      ElMessage.success('取消点赞成功')
-    } else {
-      await likePublication(publication.value.id)
-      publication.value.likeNum++
-      isLiked.value = true
-      ElMessage.success('点赞成功')
-    }
-  } catch (error) {
-    console.error('点赞操作失败:', error)
-    ElMessage.error('操作失败，请稍后重试')
-  } finally {
-    isLikeLoading.value = false
-  }
 }
 
 const getStatusType = (status: string) => {
@@ -1042,127 +748,6 @@ const getrepliedUserIdString = () => {
   if (!replyTarget.value) return ''
   // 格式: "id,name"
   return `${replyTarget.value.id},${replyTarget.value.name}`
-}
-
-const addToLibrary = async () => {
-  if (!publication.value) return
-
-  const userId = getUserId()
-  if (!userId) return
-
-  showFolderDialog.value = true
-
-  try {
-    // 获取用户的收藏夹列表
-    await fetchFolders()
-
-    if (folders.value.length === 0) {
-      // 没有收藏夹时，自动创建默认收藏夹
-      try {
-        const createResponse = await libraryAPI.createFolder(parseInt(userId), '默认收藏夹')
-        const newFolderId = createResponse.data
-
-        // 将新创建的收藏夹添加到列表中
-        folders.value = [
-          {
-            id: newFolderId,
-            name: '默认收藏夹',
-            count: 0,
-          },
-        ]
-
-        ElMessage.success('已为您创建默认收藏夹')
-      } catch (createError) {
-        console.error('创建默认收藏夹失败:', createError)
-        ElMessage.error('创建默认收藏夹失败，请稍后重试')
-        showFolderDialog.value = false
-        return
-      }
-    }
-
-    // 默认选择第一个收藏夹
-    selectedFolderId.value = folders.value[0]?.id || null
-  } catch (error) {
-    console.error('获取收藏夹失败:', error)
-    ElMessage.error('获取收藏夹失败，请稍后重试')
-    showFolderDialog.value = false
-  }
-}
-
-const confirmAddToLibrary = async () => {
-  if (!publication.value || !selectedFolderId.value) return
-
-  const userId = getUserId()
-  if (!userId) return
-
-  isAddingToLibrary.value = true
-  try {
-    await libraryAPI.favoritePaper(parseInt(userId), publication.value.id, selectedFolderId.value)
-    ElMessage.success('添加至文献库成功')
-    showFolderDialog.value = false
-  } catch (error) {
-    console.error('添加至文献库失败:', error)
-    ElMessage.error('添加至文献库失败，请稍后重试')
-  } finally {
-    isAddingToLibrary.value = false
-  }
-}
-
-const cancelAddToLibrary = () => {
-  showFolderDialog.value = false
-  selectedFolderId.value = null
-}
-
-// 获取收藏夹列表
-const fetchFolders = async () => {
-  isLoadingFolders.value = true
-  try {
-    const userId = userStore.user?.id
-    if (!userId) {
-      ElMessage.error('用户未登录')
-      return
-    }
-    const response = await libraryAPI.getCategoryList(userId.toString())
-    folders.value = response.data || []
-  } catch (error) {
-    console.error('获取收藏夹失败:', error)
-    ElMessage.error('获取收藏夹失败')
-  } finally {
-    isLoadingFolders.value = false
-  }
-}
-
-// 新建收藏夹
-const createFolder = async () => {
-  if (!newFolderName.value.trim()) {
-    ElMessage.warning('请输入收藏夹名称')
-    return
-  }
-
-  const userId = userStore.user?.id
-  if (!userId) {
-    ElMessage.error('用户未登录')
-    return
-  }
-
-  isCreatingFolder.value = true
-  try {
-    const response = await libraryAPI.createFolder(Number(userId), newFolderName.value.trim())
-    ElMessage.success('收藏夹创建成功')
-    newFolderName.value = ''
-    showCreateFolderDialog.value = false
-    // 重新获取收藏夹列表
-    await fetchFolders()
-    // 自动选择新创建的收藏夹
-    if (folders.value.length > 0) {
-      selectedFolderId.value = folders.value[folders.value.length - 1].id
-    }
-  } catch (error) {
-    console.error('创建收藏夹失败:', error)
-    ElMessage.error('创建收藏夹失败')
-  } finally {
-    isCreatingFolder.value = false
-  }
 }
 </script>
 
