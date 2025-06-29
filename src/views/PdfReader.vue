@@ -147,11 +147,13 @@ import VuePdfEmbed from 'vue-pdf-embed'
 import type { UploadFile } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getPublicationFile } from '@/api/modules/publication'
+import { annotationAPI } from '@/api/modules/annotation'
 import type { 
   Annotation,
   HighlightPreview,
   PopupPosition,
 } from '@/api/types/annotation'
+import { useUserStore } from '@/stores/user'
 
 
 const selectedFile = ref<File | null>(null)
@@ -187,6 +189,14 @@ const highlightPreview = ref<HighlightPreview>({
 });
 const activePopup = ref<Annotation | null>(null);
 const popupPosition = ref<PopupPosition>({ x: 0, y: 0 });
+
+const userStore = useUserStore()
+let userId = ''
+const initUserInfo = () => {
+  if (userStore.user) {
+    userId = String(userStore.user.id)
+  }
+}
 
 const handleFileChange = (file: UploadFile) => {
   if (file.raw) {
@@ -242,6 +252,7 @@ const resetZoom = () => {
 
 // 支持通过参数传递url并请求pdf
 onMounted(async () => {
+  initUserInfo()
   if(route.query.paperId) paperId.value = parseInt(route.query.paperId as string)
   if(route.query.allowEdit) allowEdit.value = parseInt(route.query.allowEdit as string)
   const urlParam = route.query.url as string | undefined
@@ -254,7 +265,9 @@ onMounted(async () => {
       pdfUrl.value = URL.createObjectURL(blob)
       currentPage.value = 1
       selectedFile.value = null
-      if (pdfContainer.value) {
+      if (pdfContainer.value && allowEdit.value == 1) {
+        const res = await annotationAPI.getAnnotationList(userId, paperId.value.toString())
+        annotations.value = res.data
         resizeObserver.value = new ResizeObserver(() => {
           initAnnotationCanvas()
           redrawAnnotations()
@@ -380,7 +393,7 @@ const redrawAnnotations = () => {
 };
 
 // 显示批注弹窗
-const showAnnotationPopup = (annotation: Annotation|{ id: string; type: string; page: number; x: number; y: number; 
+const showAnnotationPopup = (annotation: Annotation|{ id: string; page: number; x: number; y: number; 
     width: number; height: number; comment: string; markerX: number; markerY: number }|null, 
     event: { clientX: number; clientY: number }) => {
   activePopup.value = annotation;
@@ -451,7 +464,7 @@ const handleMouseMove = (e: MouseEvent) => {
   }
 }
 
-const handleMouseUp = () => {
+const handleMouseUp = async () => {
   if (!isDrawing.value) return;
   
   isDrawing.value = false;
@@ -472,11 +485,10 @@ const handleMouseUp = () => {
       comment: commentText || '',
       markerX: highlightPreview.value.x + highlightPreview.value.width,
       markerY: highlightPreview.value.y,
-      paperId: paperId
+      // paperId: paperId
     };
-
     const newAnnotation = {
-      id: Date.now().toString(),  // 后面再改
+      id: '0',
       // type: 'highlight',
       page: currentPage.value,
       x: highlightPreview.value.x,
@@ -488,6 +500,13 @@ const handleMouseUp = () => {
       markerY: highlightPreview.value.y,
       paperId: paperId.value
     };
+
+    try {
+      const res = await annotationAPI.uploadAnnotation(userId, paperId.value.toString(), newAnnotationUpload)
+      newAnnotation.id = res.data.toString()
+    } catch (error) {
+      console.log("云端批注添加失败")
+    }
     
     annotations.value.push(newAnnotation);
     redrawAnnotations();

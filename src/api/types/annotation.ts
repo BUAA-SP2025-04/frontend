@@ -25,7 +25,7 @@ export interface AnnotationUpload {
     comment: string;
     markerX: number;
     markerY: number;
-    paperId: number;    // 论文信息
+    // paperId: number;    // 论文信息
 }
 
 // 高亮类型
@@ -42,3 +42,6 @@ export interface PopupPosition {
     x: number;
     y: number;
 }
+
+export type GetAnnotationListResponse = { data: Annotation[] }
+export type UploadAnnotationResponse = { data: number };
