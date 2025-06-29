@@ -193,7 +193,6 @@
 
             <!-- 回答列表 -->
             <div>
-            <div>
               <template v-for="(answer, idx) in sortedAnswers" :key="answer.id">
                 <div
                   class="p-8 hover:bg-gradient-to-r hover:from-cyan-25/20 hover:to-blue-25/20 transition-all duration-300"
@@ -714,7 +713,6 @@ import { ElMessage } from 'element-plus'
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
-import Markdown from '@/components/Markdown.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -1379,9 +1377,7 @@ onMounted(() => {
   overflow-x: auto;
   margin: 1.5rem 0;
   border: 1px solid #475569;
-  box-shadow:
-    0 10px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .prose pre code {

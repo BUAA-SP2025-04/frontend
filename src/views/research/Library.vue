@@ -624,11 +624,7 @@
         <div class="form-section">
           <el-form ref="paperForm" :model="newPaper" label-width="120px">
             <el-form-item label="类型" required>
-              <el-select
-                v-model="newPaper.type"
-                placeholder="请选择类型"
-                style="width: 100%"
-              >
+              <el-select v-model="newPaper.type" placeholder="请选择类型" style="width: 100%">
                 <el-option label="期刊论文" value="journal" />
                 <el-option label="会议论文" value="conference" />
                 <el-option label="专利" value="patent" />
@@ -923,7 +919,7 @@ const newPaper = reactive({
   // citations: 0,
   tags: [] as string[],
   folderName: '',
-  // publishDate: new Date(),
+  publishDate: new Date(),
   pdfUrl: '',
   isPublic: false,
   doi: '',
@@ -1205,14 +1201,14 @@ const handlePaperAction = async (command: string) => {
     case 'read':
       try {
         let paper = papers.value.find(p => p.id === paperId)
-        if(paper) {
+        if (paper) {
           if (paper.readCount != undefined) paper.readCount = paper.readCount + 1
-          console.log('开始记录'+paperId+'的阅读记录')
-          let res = await libraryAPI.createRecord(userId, paperId.toString())       // 暂时去除全局文献阅读记录的功能
-          records.value.push({userId: userId, paperId: paperId.toString(), id: res.data.id})
+          console.log('开始记录' + paperId + '的阅读记录')
+          let res = await libraryAPI.createRecord(userId, paperId.toString()) // 暂时去除全局文献阅读记录的功能
+          records.value.push({ userId: userId, paperId: paperId.toString(), id: res.data.id })
         } else {
           paper = updatePapers.value.find(p => p.id === paperId)
-          if(paper && paper.readCount != undefined) paper.readCount = paper.readCount + 1
+          if (paper && paper.readCount != undefined) paper.readCount = paper.readCount + 1
         }
       } catch (error) {
         ElMessage.error('创建历史记录失败')

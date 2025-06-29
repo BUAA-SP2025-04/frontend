@@ -336,7 +336,15 @@ export const useChatStore = defineStore('chat', () => {
   const loadConversations = async () => {
     try {
       const response = await chatAPI.getConversations()
-      conversations.value = response.conversations
+      // 转换API返回的Conversation格式为store期望的格式
+      conversations.value = response.conversations.map(conv => ({
+        id: conv.id,
+        participants: [conv.userA, conv.userB],
+        lastMessage: conv.lastMessage,
+        unreadCount: conv.unreadCount,
+        createdAt: conv.createdAt,
+        updatedAt: conv.updatedAt,
+      }))
     } catch (error) {
       console.error('加载会话列表失败:', error)
     }

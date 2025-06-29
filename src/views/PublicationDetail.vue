@@ -669,8 +669,8 @@ import {
 import type { Publication } from '@/api/types/publication'
 import type { Comment } from '@/api/types/comment'
 import type { UserDetail } from '@/api/types/user'
-import PublicationCommentComp from '@/components/PublicationComment.vue'
-import CommentForm from '@/components/CommentForm.vue'
+import PublicationCommentComp from '@/components/publication/PublicationComment.vue'
+import CommentForm from '@/components/publication/CommentForm.vue'
 
 const route = useRoute()
 const router = useRouter()
