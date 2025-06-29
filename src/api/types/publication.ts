@@ -1,10 +1,16 @@
 export type PublicationType = 'journal' | 'conference' | 'patent'
 export type PublicationStatus = 'published' | 'accepted' | 'under-review' | 'draft'
 
+export interface Author {
+  authorId: number
+  authorName: string
+  publicationId: number
+}
+
 export interface Publication {
   abstracts: string | null
-  authors: string | null
-  conference: string
+  authors: Author[]
+  conference: null
   createdAt: string
   doi: string | null
   id: number
@@ -66,8 +72,9 @@ export interface PublicationStatsResponse {
 export interface PublicationListResponse {
   message: string
   data: {
-    publications: Publication[]
-  }
+    authors: Author[]
+    publication: Publication
+  }[]
 }
 
 export interface PublicationInformResponse {
