@@ -121,7 +121,7 @@
           <el-table-column prop="authors" label="作者" min-width="180">
             <template #default="{ row }">
               <span>{{
-                row.authors.map((a: Author) => a.authorName).join(', ') || '暂无数据'
+                row.authors.map((a: any) => a.authorName).join(', ') || '暂无数据'
               }}</span>
             </template>
           </el-table-column>
@@ -334,7 +334,7 @@
             <p>1. 您上传的文件仅用于本系统的学术出版物管理，不会用于其他用途。</p>
             <p>2. 您有权随时删除您上传的文件及相关数据。</p>
             <p>3. 我们承诺保护您的数据安全，不会将您的数据泄露给第三方。</p>
-            <p>如您同意以上条款，请点击“同意”继续上传，否则请取消操作。</p>
+            <p>如您同意以上条款，请点击"同意"继续上传，否则请取消操作。</p>
           </div>
           <template #footer>
             <el-button @click="onCancelPrivacy">取消</el-button>
@@ -491,6 +491,8 @@ const isEditing = ref(false)
 const searchQuery = ref('')
 const filterType = ref('')
 const filterYear = ref('')
+const showClaimDialog = ref(false)
+const showClaimDetailDialog = ref(false)
 
 // 成果认领相关变量
 const claimLoading = ref(false)
@@ -947,7 +949,9 @@ const loadClaimResults = async () => {
     const response = await getProbablePublicationsByName(userStore.user.name)
     if (response.data && Array.isArray(response.data)) {
       console.log(response.data)
-      claimResults.value = response.data.filter(pub => pub.uploaderId !== userStore.user?.id)
+      claimResults.value = response.data
+        .map(item => ({ ...item.publication, authors: item.authors }))
+        .filter(pub => pub.uploaderId !== userStore.user?.id)
     } else {
       claimResults.value = []
     }

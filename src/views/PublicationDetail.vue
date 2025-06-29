@@ -352,7 +352,7 @@
             <div class="mb-8">
               <CommentForm
                 :publication-id="publication.id"
-                :parent-id="activeReplyId"
+                :parent-id="activeReplyId || undefined"
                 :reply-to-user-name="getReplyToUserName()"
                 :replied-user-id="getrepliedUserIdString()"
                 @submitted="loadComments"
@@ -675,8 +675,13 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-const getAuthorsList = (authors: string | null) => {
+const getAuthorsList = (authors: string | null | any[]) => {
   if (!authors) return []
+  if (Array.isArray(authors)) {
+    return authors
+      .map(author => author.authorName || author.name || '')
+      .filter(name => name.length > 0)
+  }
   return authors
     .split(',')
     .map(author => author.trim())

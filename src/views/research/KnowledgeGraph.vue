@@ -448,8 +448,8 @@
                       <span
                         v-for="(area, index) in selectedNode.researchArea
                           .split(',')
-                          .map(area => area.trim())
-                          .filter(area => area)"
+                          .map((area: string) => area.trim())
+                          .filter((area: string) => area)"
                         :key="index"
                         class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/80 text-center"
                         :style="{ width: 'fit-content', minWidth: 'max-content' }"
