@@ -89,7 +89,12 @@ function submitData() {
     const urlValid = !profile.pdfUrl || urlPattern.test(profile.pdfUrl)
     const yearValid = !profile.year || !isNaN(Number(profile.year))
     const titleValid = profile.title && !props.existingTitles.includes(profile.title)
-    const authorsValid = profile.authors && profile.authors.includes(props.currentUsername || '')
+    const authorsValid =
+      profile.authors &&
+      String(profile.authors)
+        .split(',')
+        .map(a => a.trim())
+        .includes(props.currentUsername || '')
 
     return !doiValid || !urlValid || !yearValid || !titleValid || !authorsValid
   })
@@ -261,9 +266,10 @@ function downloadTemplate() {
                 <span v-if="!row[key]" style="color: red">未检测到作者</span>
                 <span
                   v-else-if="
-                    Array.isArray(row[key])
-                      ? !row[key].includes(props.currentUsername)
-                      : !(row[key] || '').includes(props.currentUsername)
+                    !String(row[key])
+                      .split(',')
+                      .map(a => a.trim())
+                      .includes(props.currentUsername ?? '')
                   "
                   style="color: red"
                   >未包含当前用户({{ props.currentUsername }}): {{ row[key] }}</span
@@ -286,7 +292,7 @@ function downloadTemplate() {
                 <span v-if="!row[key] || !isNaN(Number(row[key]))" style="color: green">{{
                   row[key]
                 }}</span>
-                <span v-else style="color: red">格式错误：{{ row[key] }}}</span>
+                <span v-else style="color: red">格式错误：{{ row[key] }}</span>
               </template>
               <template v-else-if="key === 'type'">
                 <span
