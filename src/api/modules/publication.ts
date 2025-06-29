@@ -63,3 +63,14 @@ export function getPublicationInformById(id: number | string): Promise<Publicati
 export function readPublication(id: number | string): Promise<EmptyResponse> {
   return request.post('/publication/read', { id })
 }
+
+export function getProbablePublicationsByName(name: string): Promise<PublicationListResponse> {
+  return request.get('https://m1.apifoxmock.com/m2/6625065-6332383-default/315127343', {
+    params: { name },
+  })
+}
+
+// 认领成果：id对应被认领的成果id
+export function claimPublication(id: number | string): Promise<EmptyResponse> {
+  return request.post('/publication/claim', { id })
+}

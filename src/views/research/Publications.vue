@@ -17,7 +17,35 @@
           </h1>
           <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>
         </div>
-        <div class="flex gap-2">
+        <div class="relative group">
+          <!-- 悬停时展开的按钮组 -->
+          <div
+            class="absolute right-full mr-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0 flex -gap-0.5"
+          >
+            <el-button type="success" size="large" @click="showExcelImporter = true">
+              <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v16h16V4H4zm4 4h8v8H8V8z"
+                />
+              </svg>
+              批量导入
+            </el-button>
+            <el-button type="warning" size="large" @click="showClaimDialog = true">
+              <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              成果认领
+            </el-button>
+          </div>
+          <!-- 主按钮 -->
           <el-button type="primary" size="large" @click="showAddDialog = true">
             <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -28,17 +56,6 @@
               />
             </svg>
             添加成果
-          </el-button>
-          <el-button type="success" size="large" @click="showExcelImporter = true">
-            <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 4v16h16V4H4zm4 4h8v8H8V8z"
-              />
-            </svg>
-            批量导入
           </el-button>
         </div>
       </div>
@@ -300,16 +317,107 @@
           </span>
         </template>
       </el-dialog>
-      <PublicationInfo
-        v-if="shownPublication"
+      <PublicationDetailDialog
         v-model:visible="showInfo"
         :publication="shownPublication"
-      ></PublicationInfo>
+        :show-claim-button="false"
+      />
       <ExcelImporter
         v-model:show-excel-importer="showExcelImporter"
         :existing-titles="publications.map(p => p.title)"
         :current-username="userStore.user?.name"
         @close="showExcelImporter = false"
+      />
+
+      <!-- 成果认领对话框 -->
+      <el-dialog
+        v-model="showClaimDialog"
+        title="成果认领"
+        width="60%"
+        destroy-on-close
+        v-loading="claimLoading"
+      >
+        <div class="space-y-4">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 class="text-blue-800 font-medium mb-2">认领说明</h4>
+            <p class="text-blue-700 text-sm">
+              以下是系统中存在您可能参与但未关联到您账户的科研成果，说明如下：
+            </p>
+            <ul class="text-blue-700 text-sm mt-2 space-y-1">
+              <li>• 推荐成果列表通过您的姓名进行匹配，请仔细核对</li>
+              <li>
+                • 如果成果中不存在属于您的成果，但您在其他科研人员详情页中发现了，请联系相应科研人员
+              </li>
+              <!-- <li>• 等待管理员审核确认</li> -->
+            </ul>
+          </div>
+
+          <div v-if="claimResults.length > 0" class="mt-6">
+            <h4 class="font-medium mb-3">推荐成果列表</h4>
+            <div class="space-y-3">
+              <div
+                v-for="result in claimResults"
+                :key="result.id"
+                class="border rounded-lg p-4 hover:bg-gray-50"
+              >
+                <div class="flex justify-between items-start">
+                  <div class="flex-1">
+                    <h5 class="font-medium text-gray-900">{{ result.title }}</h5>
+                    <p class="text-sm text-gray-600 mt-1">{{ formatAuthors(result.authors) }}</p>
+                    <p class="text-sm text-gray-500">{{ result.venue }} ({{ result.year }})</p>
+                    <div class="flex items-center mt-2 space-x-4 text-xs text-gray-400">
+                      <span>阅读量: {{ result.readerNum || 0 }}</span>
+                      <span>点赞数: {{ result.likeNum || 0 }}</span>
+                      <el-tag :type="getTypeColor(result.type)" size="small">
+                        {{ getTypeLabel(result.type) }}
+                      </el-tag>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <el-button size="small" @click="viewClaimDetail(result)"> 查看详情 </el-button>
+                    <el-button size="small" type="primary" @click="claimPublication(result)">
+                      认领此成果
+                    </el-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="text-center py-8 text-gray-500">
+            <svg
+              class="w-16 h-16 mx-auto text-gray-300 mb-4"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            <p>暂未找到推荐给您的成果</p>
+            <p class="text-sm mt-1">如果您认为有遗漏，请联系管理员</p>
+          </div>
+        </div>
+
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="showClaimDialog = false">关闭</el-button>
+            <el-button type="primary" @click="refreshClaimResults" :loading="claimLoading">
+              刷新列表
+            </el-button>
+          </span>
+        </template>
+      </el-dialog>
+
+      <!-- 成果详情弹窗 -->
+      <PublicationDetailDialog
+        v-model:visible="showClaimDetailDialog"
+        :publication="selectedClaimPublication"
+        :show-claim-button="true"
+        @claim="claimPublication"
       />
     </div>
   </div>
@@ -334,11 +442,13 @@ import {
   savePublication,
   updatePublicationFile,
   uploadPublicationFile,
+  getProbablePublicationsByName,
+  claimPublication as claimPublicationApi,
 } from '@/api/modules/publication'
 import { useUserStore } from '@/stores/user'
 import PublicationStatsCardGroup from '@/components/publication/PublicationStatsCardGroup.vue'
-import PublicationInfo from '@/components/publication/PublicationInfo.vue'
 import ExcelImporter from '@/components/publication/ExcelImporter.vue'
+import PublicationDetailDialog from '@/components/publication/PublicationDetailDialog.vue'
 import type { UploadResponse } from '@/api/types/utils'
 import { doiPattern, urlPattern } from '@/utils/publications'
 
@@ -347,10 +457,17 @@ const saving = ref(false)
 const showAddDialog = ref(false)
 const showInfo = ref(false)
 const showExcelImporter = ref(false)
+const showClaimDialog = ref(false)
+const showClaimDetailDialog = ref(false)
 const isEditing = ref(false)
 const searchQuery = ref('')
 const filterType = ref('')
 const filterYear = ref('')
+
+// 成果认领相关变量
+const claimLoading = ref(false)
+const claimResults = ref<Publication[]>([])
+const selectedClaimPublication = ref<Publication | null>(null)
 
 const stats = reactive<PublicationStats>({
   totalPublicationNum: 0,
@@ -747,10 +864,115 @@ function onShowInfo(row: Publication) {
   shownPublication.value = row
   showInfo.value = true
 }
+
+// 成果认领相关方法
+const loadClaimResults = async () => {
+  if (!userStore.user?.name) {
+    ElMessage.warning('用户信息获取失败')
+    return
+  }
+
+  claimLoading.value = true
+  try {
+    const response = await getProbablePublicationsByName(userStore.user.name)
+    if (response.data && Array.isArray(response.data)) {
+      console.log(response.data)
+      claimResults.value = response.data.filter(pub => pub.uploaderId !== userStore.user?.id)
+    } else {
+      claimResults.value = []
+    }
+  } catch (error) {
+    ElMessage.error('获取推荐成果失败')
+    claimResults.value = []
+  } finally {
+    claimLoading.value = false
+  }
+}
+
+const refreshClaimResults = () => {
+  loadClaimResults()
+}
+
+const claimPublication = (publication: Publication) => {
+  ElMessageBox.confirm(
+    `确定要认领成果"${publication.title}"吗？认领后需要等待管理员审核。`,
+    '确认认领',
+    {
+      confirmButtonText: '确定认领',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  )
+    .then(async () => {
+      try {
+        await claimPublicationApi(publication.id)
+        ElMessage.success('认领申请已提交，请等待管理员审核')
+        showClaimDialog.value = false
+        // 从列表中移除已认领的成果
+        claimResults.value = claimResults.value.filter(pub => pub.id !== publication.id)
+      } catch (error) {
+        ElMessage.error('认领失败，请稍后重试')
+      }
+    })
+    .catch(() => {
+      // 用户取消
+    })
+}
+
+// 监听认领对话框打开，自动加载数据
+watch(showClaimDialog, newVal => {
+  if (newVal) {
+    loadClaimResults()
+  }
+})
+
+const viewClaimDetail = (publication: Publication) => {
+  selectedClaimPublication.value = publication
+  showClaimDetailDialog.value = true
+}
+
+const formatAuthors = (authors: any): string => {
+  if (!authors) {
+    return '暂无数据'
+  }
+
+  // 如果authors是字符串，直接返回
+  if (typeof authors === 'string') {
+    return authors
+  }
+
+  // 如果authors是数组，提取name字段
+  if (Array.isArray(authors)) {
+    return authors
+      .map((author: any) => author.name)
+      .filter(Boolean)
+      .join(', ')
+  }
+
+  return '暂无数据'
+}
 </script>
 
 <style scoped>
 svg path {
   fill: none;
+}
+
+/* 悬停按钮组样式 */
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1;
+}
+
+.group:hover .group-hover\:translate-x-0 {
+  transform: translateX(0);
+}
+
+/* 确保按钮组在悬停时有正确的层级 */
+.relative.group {
+  z-index: 10;
+}
+
+.absolute.right-full {
+  z-index: 20;
 }
 </style>

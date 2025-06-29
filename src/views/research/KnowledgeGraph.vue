@@ -620,107 +620,6 @@
                 </p>
               </div>
             </div>
-
-            <!-- 网络分析 -->
-            <div
-              class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
-            >
-              <div
-                class="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between"
-              >
-                <h3 class="font-bold text-slate-800 dark:text-white flex items-center">
-                  <i class="fas fa-chart-network text-blue-500 mr-3"></i>
-                  网络分析
-                </h3>
-
-                <button
-                  class="text-slate-400 hover:text-blue-500 dark:text-slate-500 dark:hover:text-blue-400 transition-colors"
-                >
-                  <i class="fas fa-info-circle"></i>
-                </button>
-              </div>
-
-              <div class="p-5 space-y-4">
-                <!-- 影响力排行 -->
-                <div>
-                  <h5
-                    class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center"
-                  >
-                    <i class="fas fa-star text-amber-500 mr-2"></i>
-                    影响力排行
-                  </h5>
-
-                  <div class="space-y-2">
-                    <div
-                      v-for="(user, index) in influentialUsers"
-                      :key="user.id"
-                      @click="selectNode(user.id)"
-                      class="flex items-center p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer group"
-                    >
-                      <div
-                        class="mr-3 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs"
-                        :class="getInfluenceRankClass(index)"
-                      >
-                        {{ index + 1 }}
-                      </div>
-
-                      <div class="flex-1 flex items-center min-w-0">
-                        <span
-                          class="text-sm font-medium text-slate-700 dark:text-slate-300 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
-                        >
-                          {{ user.name }}
-                        </span>
-                        <div
-                          class="ml-2 px-1.5 py-0.5 rounded text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400"
-                        >
-                          {{ user.score }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 中心度分析 -->
-                <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <h5
-                    class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center"
-                  >
-                    <i class="fas fa-sitemap text-emerald-500 mr-2"></i>
-                    中心度分析
-                  </h5>
-
-                  <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-center">
-                      <div class="text-lg font-semibold text-slate-700 dark:text-slate-200">
-                        {{ networkMetrics.avgDegree }}
-                      </div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">平均连接度</div>
-                    </div>
-
-                    <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-center">
-                      <div class="text-lg font-semibold text-slate-700 dark:text-slate-200">
-                        {{ networkMetrics.clusterCoef }}
-                      </div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">聚类系数</div>
-                    </div>
-
-                    <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-center">
-                      <div class="text-lg font-semibold text-slate-700 dark:text-slate-200">
-                        {{ networkMetrics.communities }}
-                      </div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">社区数量</div>
-                    </div>
-
-                    <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-center">
-                      <div class="text-lg font-semibold text-slate-700 dark:text-slate-200">
-                        {{ networkMetrics.diameter }}
-                      </div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">网络直径</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -796,220 +695,24 @@ const visibilityFilters = ref([
 
 // 示例数据 - 实际应用中应该从API获取
 const mockNodes = [
-  // 研究人员节点
-  {
-    id: 'p1',
-    name: '张教授',
-    type: 'person',
-    institution: '清华大学',
-    title: '教授',
-    researchFields: ['人工智能', '机器学习', '深度学习'],
-    metrics: { publications: 156, followers: 2340 },
-    bio: '人工智能领域专家，专注于深度学习算法优化和应用研究。',
-    avatar: '',
-  },
-  {
-    id: 'p2',
-    name: '李研究员',
-    type: 'person',
-    institution: '北京大学',
-    title: '副教授',
-    researchFields: ['自然语言处理', '机器学习'],
-    metrics: { publications: 89, followers: 1580 },
-    bio: '计算语言学专家，研究方向为自然语言处理与知识图谱构建。',
-    avatar: '',
-  },
-  {
-    id: 'p3',
-    name: '王博士',
-    type: 'person',
-    institution: '中国科学院',
-    title: '研究员',
-    researchFields: ['计算机视觉', '图像处理'],
-    metrics: { publications: 67, followers: 890 },
-    bio: '计算机视觉与图像处理专家，专注于智能医疗影像分析。',
-    avatar: '',
-  },
-  {
-    id: 'p4',
-    name: '陈教授',
-    type: 'person',
-    institution: '复旦大学',
-    title: '教授',
-    researchFields: ['数据挖掘', '大数据分析'],
-    metrics: { publications: 203, followers: 3450 },
-    bio: '数据科学领军人物，在大数据挖掘与分析领域有深入研究。',
-    avatar: '',
-  },
-  {
-    id: 'p5',
-    name: '刘博士',
-    type: 'person',
-    institution: '浙江大学',
-    title: '副教授',
-    researchFields: ['人工智能', '强化学习'],
-    metrics: { publications: 78, followers: 1200 },
-    bio: '强化学习与决策智能领域研究者，关注AI在复杂系统中的应用。',
-    avatar: '',
-  },
-  {
-    id: 'p6',
-    name: '赵研究员',
-    type: 'person',
-    institution: '中国科学院',
-    title: '助理研究员',
-    researchFields: ['机器学习', '图神经网络'],
-    metrics: { publications: 45, followers: 620 },
-    bio: '图神经网络与知识表示学习研究者。',
-    avatar: '',
-  },
-  {
-    id: 'p7',
-    name: '孙教授',
-    type: 'person',
-    institution: '清华大学',
-    title: '教授',
-    researchFields: ['人机交互', '认知计算'],
-    metrics: { publications: 112, followers: 1850 },
-    bio: '人机交互专家，研究智能系统与人类认知的交互模式。',
-    avatar: '',
-  },
-  {
-    id: 'p8',
-    name: '钱副教授',
-    type: 'person',
-    institution: '北京大学',
-    title: '副教授',
-    researchFields: ['计算语言学', '自然语言处理'],
-    metrics: { publications: 67, followers: 930 },
-    bio: '计算语言学专家，专注于多语言自然语言理解。',
-    avatar: '',
-  },
-  {
-    id: 'p9',
-    name: '周研究员',
-    type: 'person',
-    institution: '中国科学院',
-    title: '研究员',
-    researchFields: ['生物信息学', '机器学习'],
-    metrics: { publications: 89, followers: 1240 },
-    bio: '生物信息学与机器学习交叉领域的研究者，研究计算生物学模型。',
-    avatar: '',
-  },
-  {
-    id: 'p10',
-    name: '吴教授',
-    type: 'person',
-    institution: '浙江大学',
-    title: '教授',
-    researchFields: ['人工智能', '计算机视觉'],
-    metrics: { publications: 132, followers: 2150 },
-    bio: '视觉计算与图像理解专家，计算机视觉领域国际知名学者。',
-    avatar: '',
-  },
-
-  // 机构节点
-  { id: 'i1', name: '清华大学', type: 'institution', membersCount: 350, foundedYear: 1911 },
-  { id: 'i2', name: '北京大学', type: 'institution', membersCount: 320, foundedYear: 1898 },
-  { id: 'i3', name: '中国科学院', type: 'institution', membersCount: 500, foundedYear: 1949 },
-  { id: 'i4', name: '浙江大学', type: 'institution', membersCount: 280, foundedYear: 1897 },
-  { id: 'i5', name: '复旦大学', type: 'institution', membersCount: 260, foundedYear: 1905 },
+  // 编程语言节点
+  { id: 'Java', name: 'Java', category: 0, type: 'language' },
+  { id: 'Python', name: 'Python', category: 0, type: 'language' },
+  { id: 'C++', name: 'C++', category: 0, type: 'language' },
 
   // 研究领域节点
-  { id: 'f1', name: '人工智能', type: 'field', paperCount: 15600 },
-  { id: 'f2', name: '机器学习', type: 'field', paperCount: 12400 },
-  { id: 'f3', name: '深度学习', type: 'field', paperCount: 8900 },
-  { id: 'f4', name: '自然语言处理', type: 'field', paperCount: 7800 },
-  { id: 'f5', name: '计算机视觉', type: 'field', paperCount: 9600 },
-  { id: 'f6', name: '数据挖掘', type: 'field', paperCount: 6500 },
-  { id: 'f7', name: '强化学习', type: 'field', paperCount: 4200 },
-  { id: 'f8', name: '图神经网络', type: 'field', paperCount: 3100 },
-  { id: 'f9', name: '生物信息学', type: 'field', paperCount: 5400 },
-  { id: 'f10', name: '人机交互', type: 'field', paperCount: 4800 },
+  { id: '编程', name: '编程', category: 1, type: 'field' },
+  { id: '机器学习', name: '机器学习', category: 1, type: 'field' },
+  { id: '深度学习', name: '深度学习', category: 1, type: 'field' },
 ]
 
 const mockLinks = [
-  // 人员间关注关系
-  { source: 'p1', target: 'p2', relationshipType: '关注', value: 5 },
-  { source: 'p2', target: 'p3', relationshipType: '关注', value: 3 },
-  { source: 'p1', target: 'p3', relationshipType: '关注', value: 4 },
-  { source: 'p4', target: 'p1', relationshipType: '关注', value: 5 },
-  { source: 'p5', target: 'p2', relationshipType: '关注', value: 3 },
-  { source: 'p3', target: 'p4', relationshipType: '关注', value: 2 },
-  { source: 'p5', target: 'p4', relationshipType: '关注', value: 4 },
-  { source: 'p2', target: 'p5', relationshipType: '关注', value: 3 },
-  { source: 'p6', target: 'p3', relationshipType: '关注', value: 2 },
-  { source: 'p7', target: 'p1', relationshipType: '关注', value: 5 },
-  { source: 'p8', target: 'p2', relationshipType: '关注', value: 4 },
-  { source: 'p9', target: 'p6', relationshipType: '关注', value: 3 },
-  { source: 'p10', target: 'p5', relationshipType: '关注', value: 4 },
-  { source: 'p7', target: 'p10', relationshipType: '关注', value: 3 },
-  { source: 'p8', target: 'p9', relationshipType: '关注', value: 2 },
-
-  // 人员与机构关系
-  { source: 'p1', target: 'i1', relationshipType: '就职于', value: 8 },
-  { source: 'p2', target: 'i2', relationshipType: '就职于', value: 8 },
-  { source: 'p3', target: 'i3', relationshipType: '就职于', value: 8 },
-  { source: 'p4', target: 'i5', relationshipType: '就职于', value: 8 },
-  { source: 'p5', target: 'i4', relationshipType: '就职于', value: 8 },
-  { source: 'p6', target: 'i3', relationshipType: '就职于', value: 8 },
-  { source: 'p7', target: 'i1', relationshipType: '就职于', value: 8 },
-  { source: 'p8', target: 'i2', relationshipType: '就职于', value: 8 },
-  { source: 'p9', target: 'i3', relationshipType: '就职于', value: 8 },
-  { source: 'p10', target: 'i4', relationshipType: '就职于', value: 8 },
-
-  // 人员与研究领域关系
-  { source: 'p1', target: 'f1', relationshipType: '研究', value: 6 },
-  { source: 'p1', target: 'f2', relationshipType: '研究', value: 6 },
-  { source: 'p1', target: 'f3', relationshipType: '研究', value: 6 },
-  { source: 'p2', target: 'f4', relationshipType: '研究', value: 6 },
-  { source: 'p2', target: 'f2', relationshipType: '研究', value: 6 },
-  { source: 'p3', target: 'f5', relationshipType: '研究', value: 6 },
-  { source: 'p4', target: 'f6', relationshipType: '研究', value: 6 },
-  { source: 'p5', target: 'f1', relationshipType: '研究', value: 6 },
-  { source: 'p5', target: 'f7', relationshipType: '研究', value: 6 },
-  { source: 'p6', target: 'f2', relationshipType: '研究', value: 6 },
-  { source: 'p6', target: 'f8', relationshipType: '研究', value: 6 },
-  { source: 'p7', target: 'f10', relationshipType: '研究', value: 6 },
-  { source: 'p8', target: 'f4', relationshipType: '研究', value: 6 },
-  { source: 'p9', target: 'f9', relationshipType: '研究', value: 6 },
-  { source: 'p9', target: 'f2', relationshipType: '研究', value: 6 },
-  { source: 'p10', target: 'f1', relationshipType: '研究', value: 6 },
-  { source: 'p10', target: 'f5', relationshipType: '研究', value: 6 },
-
-  // 机构间合作关系
-  { source: 'i1', target: 'i2', relationshipType: '合作研究', value: 10 },
-  { source: 'i1', target: 'i3', relationshipType: '合作研究', value: 8 },
-  { source: 'i2', target: 'i5', relationshipType: '合作研究', value: 6 },
-  { source: 'i3', target: 'i4', relationshipType: '合作研究', value: 7 },
-  { source: 'i4', target: 'i5', relationshipType: '合作研究', value: 5 },
-
-  // 研究领域关系
-  { source: 'f1', target: 'f2', relationshipType: '相关领域', value: 9 },
-  { source: 'f2', target: 'f3', relationshipType: '相关领域', value: 8 },
-  { source: 'f2', target: 'f4', relationshipType: '相关领域', value: 6 },
-  { source: 'f2', target: 'f5', relationshipType: '相关领域', value: 7 },
-  { source: 'f2', target: 'f6', relationshipType: '相关领域', value: 6 },
-  { source: 'f2', target: 'f7', relationshipType: '相关领域', value: 5 },
-  { source: 'f1', target: 'f5', relationshipType: '相关领域', value: 7 },
+  { source: 'Java', target: '编程', label: { show: true, formatter: '属于' } },
+  { source: 'Python', target: '编程', label: { show: true, formatter: '属于' } },
+  { source: 'C++', target: '编程', label: { show: true, formatter: '属于' } },
+  { source: 'Python', target: '机器学习', label: { show: true, formatter: '应用于' } },
+  { source: 'Python', target: '深度学习', label: { show: true, formatter: '应用于' } },
 ]
-
-// 计算网络指标
-const networkMetrics = ref({
-  avgDegree: '4.2',
-  clusterCoef: '0.68',
-  communities: '3',
-  diameter: '5',
-})
-
-// 影响力排行
-const influentialUsers = ref([
-  { id: 'p4', name: '陈教授', score: '95' },
-  { id: 'p1', name: '张教授', score: '87' },
-  { id: 'p10', name: '吴教授', score: '82' },
-  { id: 'p7', name: '孙教授', score: '79' },
-  { id: 'p2', name: '李研究员', score: '73' },
-])
 
 // 机构选项
 const institutionOptions = computed(() => {
@@ -1311,7 +1014,7 @@ const prepareChartData = (nodes: any[], links: any[]) => {
         color: color,
       },
       symbol: symbol,
-      category: node.type,
+      category: node.category,
       // 保留原始数据
       ...node,
     }
@@ -1321,12 +1024,14 @@ const prepareChartData = (nodes: any[], links: any[]) => {
   const chartLinks = links.map(link => ({
     source: link.source,
     target: link.target,
-    value: link.value,
+    value: 1, // 默认关系强度
     lineStyle: {
       color: getLinkColor(link),
       width: getLinkWidth(link),
       type: getLinkType(link),
     },
+    label: link.label,
+    relationshipType: link.label?.formatter || '关联',
     ...link,
   }))
 
@@ -1370,31 +1075,29 @@ const getNodeSymbol = (node: any) => {
 
 // 获取连接颜色
 const getLinkColor = (link: any) => {
+  const relationshipType = link.label?.formatter || link.relationshipType || '关联'
   const colors = {
-    关注: '#3b82f6',
-    就职于: '#10b981',
-    研究: '#8b5cf6',
-    合作研究: '#f59e0b',
-    相关领域: '#ef4444',
+    属于: '#3b82f6',
+    应用于: '#10b981',
+    关联: '#8b5cf6',
   }
-  return colors[link.relationshipType as keyof typeof colors] || '#94a3b8'
+  return colors[relationshipType as keyof typeof colors] || '#94a3b8'
 }
 
 // 获取连接宽度
 const getLinkWidth = (link: any) => {
-  return Math.max(1, Math.min(5, link.value / 2))
+  return Math.max(1, Math.min(3, 2))
 }
 
 // 获取连接类型
 const getLinkType = (link: any) => {
+  const relationshipType = link.label?.formatter || link.relationshipType || '关联'
   const types = {
-    关注: 'solid',
-    就职于: 'solid',
-    研究: 'solid',
-    合作研究: 'dashed',
-    相关领域: 'dotted',
+    属于: 'solid',
+    应用于: 'solid',
+    关联: 'solid',
   }
-  return types[link.relationshipType as keyof typeof types] || 'solid'
+  return types[relationshipType as keyof typeof types] || 'solid'
 }
 
 // 更新图表
@@ -1476,12 +1179,18 @@ const formatNodeTooltip = (node: any) => {
   if (node.type === 'person') {
     return `
       <div class="font-bold text-lg">${node.name}</div>
-      <div class="text-sm opacity-75">${node.title || '研究员'} · ${node.institution || '未知机构'}</div>
+      <div class="text-sm opacity-75">${node.title || '研究员'} · ${
+      node.institution || '未知机构'
+    }</div>
       <div class="mt-2">
         <div>发表论文: ${node.metrics?.publications || 0}</div>
         <div>关注者: ${node.metrics?.followers || 0}</div>
       </div>
-      ${node.researchFields ? `<div class="mt-2">研究领域: ${node.researchFields.slice(0, 2).join(', ')}</div>` : ''}
+      ${
+        node.researchFields
+          ? `<div class="mt-2">研究领域: ${node.researchFields.slice(0, 2).join(', ')}</div>`
+          : ''
+      }
     `
   } else if (node.type === 'institution') {
     return `
@@ -1710,8 +1419,18 @@ const viewProfileDetail = (nodeId: string) => {
   router.push(`/research/profile/${nodeId}`)
 }
 
-// 工具函数
+// 监听器
+watch([graphType, selectedInstitution, selectedResearchField], () => {
+  loadGraphData()
+})
 
+watch(layoutType, () => {
+  if (chart) {
+    updateLayout()
+  }
+})
+
+// 工具函数
 const formatNumber = (num: number) => {
   if (num >= 1000) {
     return (num / 1000).toFixed(1) + 'k'
@@ -1737,40 +1456,15 @@ const getNodeTypeClass = (type: string) => {
   return classes[type as keyof typeof classes] || classes.person
 }
 
-const getInfluenceRankClass = (index: number) => {
-  const classes = [
-    'bg-gradient-to-r from-yellow-400 to-orange-500 text-white',
-    'bg-gradient-to-r from-gray-300 to-gray-400 text-white',
-    'bg-gradient-to-r from-orange-400 to-yellow-600 text-white',
-  ]
-  return classes[index] || 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
-}
-
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement
   img.style.display = 'none'
 }
-
-// 监听器
-watch([graphType, selectedInstitution, selectedResearchField], () => {
-  loadGraphData()
-})
-
-watch(layoutType, () => {
-  if (chart) {
-    updateLayout()
-  }
-})
 </script>
 
 <style scoped>
 .research-graph-container {
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .graph-container {
