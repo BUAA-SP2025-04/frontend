@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- @ts-nocheck -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 页面标题和操作按钮 -->
       <div class="flex justify-between items-center mb-8">
@@ -120,7 +121,7 @@
 
           <el-table-column prop="authors" label="作者" min-width="180">
             <template #default="{ row }">
-              <span>{{ row.authors.map(a => a.authorName).join(', ') || '暂无数据' }}</span>
+              <span>{{ formatAuthors(row.authors) }}</span>
             </template>
           </el-table-column>
 
@@ -525,7 +526,7 @@ const stats = reactive<PublicationStats>({
   totalProjectNum: 0,
 })
 
-const publications = reactive<Publication[]>([])
+const publications = reactive<PublicationDetail[]>([])
 
 const emptyPublication: PublicationProfile = {
   type: 'journal',
@@ -572,9 +573,9 @@ const getPublicationData = async () => {
       if (Array.isArray(pubRes.data)) {
         publications.splice(0, publications.length)
         pubRes.data.forEach(item => {
-          // 将 authors array 赋值到 publication.authors
-          const publication = { ...item.publication, authors: item.authors }
-          publications.push(publication)
+          // 将 Publication 转换为 PublicationDetail
+          const publicationDetail = convertToPublicationDetail(item)
+          publications.push(publicationDetail)
         })
       }
       if (statsRes.data) {
@@ -652,25 +653,26 @@ const rules: FormRules = {
 
 // 作者字符串拼接工具
 const filteredPublications = computed(() => {
-  let result = publications as Publication[]
+  let result = publications as PublicationDetail[]
 
   if (searchQuery.value) {
     result = result.filter(
-      (item: Publication) =>
+      (item: PublicationDetail) =>
         item.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         item.authors.some(
-          a => a.authorName && a.authorName.toLowerCase().includes(searchQuery.value.toLowerCase())
+          (a: any) =>
+            a.authorName && a.authorName.toLowerCase().includes(searchQuery.value.toLowerCase())
         ) ||
         item.keywords?.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
 
   if (filterType.value) {
-    result = result.filter((item: Publication) => item.type === filterType.value)
+    result = result.filter((item: PublicationDetail) => item.type === filterType.value)
   }
 
   if (filterYear.value) {
-    result = result.filter((item: Publication) => item.year?.toString() === filterYear.value)
+    result = result.filter((item: PublicationDetail) => item.year?.toString() === filterYear.value)
   }
 
   return result
@@ -714,7 +716,7 @@ const getStatusLabel = (status: PublicationStatus) => {
   return labels[status]
 }
 
-const editPublication = (publication: Publication) => {
+const editPublication = (publication: PublicationDetail) => {
   isEditing.value = true
   oldFilePath.value = '' // 编辑时不保留旧路径
   Object.assign(currentPublication, publication)
@@ -808,8 +810,8 @@ const submitSuccess = () => {
         if (Array.isArray(res.data)) {
           publications.splice(0, publications.length)
           res.data.forEach(item => {
-            const publication = { ...item.publication, authors: item.authors }
-            publications.push(publication)
+            const publicationDetail = convertToPublicationDetail(item)
+            publications.push(publicationDetail)
           })
         }
       })
@@ -959,8 +961,8 @@ const handleSave = async () => {
     })
 }
 
-function onShowInfo(row: Publication) {
-  shownPublication.value = convertToPublicationDetail(row)
+function onShowInfo(row: PublicationDetail) {
+  shownPublication.value = row
   showInfo.value = true
 }
 
@@ -1040,10 +1042,10 @@ const formatAuthors = (authors: any): string => {
     return authors
   }
 
-  // 如果authors是数组，提取authorName或name字段
+  // 如果authors是数组，提取authorName字段
   if (Array.isArray(authors)) {
     return authors
-      .map((author: any) => author.authorName || author.name)
+      .map((author: any) => author.authorName)
       .filter(Boolean)
       .join(', ')
   }

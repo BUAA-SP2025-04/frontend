@@ -62,7 +62,7 @@
                         class="text-blue-600 bg-blue-50 border-blue-200 text-base font-medium hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition-all duration-200"
                         @click="navigateToUser(author.id)"
                       >
-                        {{ author.name || author.authorName }}
+                        {{ author.name }}
                       </el-tag>
                       <!-- 没有ID的作者 - 不可点击 -->
                       <el-tag
@@ -72,7 +72,7 @@
                         size="default"
                         class="text-gray-700 bg-gray-100 border-gray-200 text-base font-medium"
                       >
-                        {{ author.name || author.authorName }}
+                        {{ author.name }}
                       </el-tag>
                     </template>
                   </div>

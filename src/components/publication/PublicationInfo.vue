@@ -24,14 +24,18 @@
           <span class="pub-value">
             <template
               v-if="
-                publication.authors && Array.isArray(publication.authors) 
-                  ? publication.authors.map(a => a.authorName || a.name).join(',').split(',').filter((a: string) => a.trim()).length
+                publication.authors && Array.isArray(publication.authors)
+                  ? publication.authors
+                      .map(a => a.authorName)
+                      .join(',')
+                      .split(',')
+                      .filter(a => a.trim()).length
                   : 0
               "
             >
               <el-tag
                 v-for="author in Array.isArray(publication.authors)
-                  ? publication.authors.map(a => a.authorName || a.name)
+                  ? publication.authors.map(a => a.authorName)
                   : []"
                 :key="author"
                 class="pub-keyword"
@@ -147,12 +151,12 @@
 import { defineProps, ref, watch } from 'vue'
 import { ElButton, ElDialog, ElIcon, ElLink, ElTag } from 'element-plus'
 import { Star, View } from '@element-plus/icons-vue'
-import type { Publication, PublicationStatus, PublicationType } from '@/api/types/publication'
+import type { PublicationDetail, PublicationStatus, PublicationType } from '@/api/types/publication'
 import { useRouter } from 'vue-router'
 
 const props = defineProps<{
   visible: boolean
-  publication: Publication
+  publication: PublicationDetail
 }>()
 
 const emit = defineEmits(['update:visible'])

@@ -54,36 +54,36 @@
               zIndex: 100,
             }"
           ></div>
-            
-          <div 
+
+          <div
             v-if="highlightPreview.visible"
             class="highlight-preview"
             :style="{
               left: highlightPreview.x + 'px',
               top: highlightPreview.y + 'px',
               width: highlightPreview.width + 'px',
-              height: highlightPreview.height + 'px'
+              height: highlightPreview.height + 'px',
             }"
           ></div>
-          
-          <div 
-            v-for="(annotation) in visibleAnnotations"
+
+          <div
+            v-for="annotation in visibleAnnotations"
             :key="annotation.id"
             class="annotation-marker"
             :style="{
               left: annotation.markerX + 'px',
-              top: annotation.markerY + 'px'
+              top: annotation.markerY + 'px',
             }"
-            @mouseenter="showAnnotationPopup(annotation, $event);"
+            @mouseenter="showAnnotationPopup(annotation, $event)"
             @mouseleave="activePopup = null"
             @click="deleteAnnotation(annotation.id)"
           >
-            <div style="color: white;" v-if="activePopup">×</div>
+            <div style="color: white" v-if="activePopup">×</div>
             <i class="fas fa-comment"></i>
           </div>
         </div>
 
-        <div 
+        <div
           v-if="activePopup"
           class="annotation-popup"
           :style="{
@@ -179,7 +179,7 @@ const showDownload = ref(false)
 const pdfBlob = ref<Blob | null>(null)
 const pdfContainer = ref<HTMLElement | null>(null)
 const pdfLoaded = ref(false)
-const pdfViewer = ref<HTMLElement | null>(null);
+const pdfViewer = ref<HTMLElement | null>(null)
 const isPdfRendered = ref(false)
 const resizeObserver = ref<ResizeObserver | null>(null)
 
@@ -284,9 +284,9 @@ onMounted(async () => {
       if (pdfContainer.value && allowEdit.value == 1) {
         try {
           const res = await annotationAPI.getAnnotationList(userId, paperId.value.toString())
-          annotations.value = res.data
+          annotations.value = res.data.map((a: any) => ({ type: 'highlight', ...a }))
         } catch (error) {
-          ElMessage.error("读取文献高亮批注失败")
+          ElMessage.error('读取文献高亮批注失败')
         }
         resizeObserver.value = new ResizeObserver(() => {
           initAnnotationCanvas()
@@ -401,10 +401,10 @@ const redrawAnnotations = () => {
     .filter(anno => anno.page === currentPage.value)
     .forEach(anno => {
       // 绘制高亮区域
-      ctx.fillStyle = 'rgba(255, 255, 0, 0.25)';
+      ctx.fillStyle = 'rgba(255, 255, 0, 0.25)'
       // console.log(anno.x, anno.y, anno.width, anno.height)
-      ctx.fillRect(anno.x, anno.y, anno.width, anno.height);
-      
+      ctx.fillRect(anno.x, anno.y, anno.width, anno.height)
+
       // // 绘制高亮边框
       // ctx.strokeStyle = 'rgba(255, 193, 7, 0.8)';
       // ctx.lineWidth = 1;
@@ -414,15 +414,13 @@ const redrawAnnotations = () => {
 }
 
 // 显示批注弹窗
-const showAnnotationPopup = (annotation: Annotation|{ id: string; page: number; x: number; y: number; 
-    width: number; height: number; comment: string; markerX: number; markerY: number }, 
-    event: MouseEvent) => {
-  activePopup.value = annotation;
+const showAnnotationPopup = (annotation: Annotation, event: MouseEvent) => {
+  activePopup.value = annotation
   popupPosition.value = {
     x: event.pageX + 300 < window.innerWidth ? event.pageX + 20 : event.pageX - 300,
-    y: event.pageY + 10
-  };
-};
+    y: event.pageY + 10,
+  }
+}
 
 // 切换高亮模式
 const toggleHighlightMode = () => {
@@ -557,15 +555,13 @@ const clearAnnotations = async () => {
         try {
           await annotationAPI.deleteAnnotation(userId, anno.id)
         } catch (error) {
-          ElMessage.error("有一个批注云端删除失败了")
+          ElMessage.error('有一个批注云端删除失败了')
         }
       }
     })
-    annotations.value = annotations.value.filter(
-      anno => anno.page !== currentPage.value
-    );
-    redrawAnnotations();
-    ElMessage.success('已清除当前页所有批注');
+    annotations.value = annotations.value.filter(anno => anno.page !== currentPage.value)
+    redrawAnnotations()
+    ElMessage.success('已清除当前页所有批注')
   } catch (error) {
     // 用户取消
   }
@@ -577,18 +573,18 @@ const deleteAnnotation = async (id: string) => {
     await ElMessageBox.confirm('确定要删除这个批注吗？', '确认删除', {
       type: 'warning',
     })
-    try{
+    try {
       await annotationAPI.deleteAnnotation(userId, id)
-      annotations.value = annotations.value.filter(anno => anno.id !== id);
-      redrawAnnotations();
-      ElMessage.success('批注已删除');
-    } catch(error) {
-      ElMessage.error('删除失败');
+      annotations.value = annotations.value.filter(anno => anno.id !== id)
+      redrawAnnotations()
+      ElMessage.success('批注已删除')
+    } catch (error) {
+      ElMessage.error('删除失败')
     }
   } catch (error) {
     // 用户取消
   }
-};
+}
 
 // 导出批注
 const downloadAnnotations = () => {
@@ -743,187 +739,187 @@ onMounted(() => {
 }
 
 .annotation-layer {
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-pointer-events: auto;
-z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  z-index: 10;
 }
 
 .pagination {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 15px 0;
-border-top: 1px solid #eee;
-margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-top: 1px solid #eee;
+  margin-top: 20px;
 }
 
 .page-info {
-font-size: 1rem;
-color: #7f8c8d;
+  font-size: 1rem;
+  color: #7f8c8d;
 }
 
 .annotation-list {
-margin-top: 20px;
-padding: 20px;
-background: #f8f9fa;
-border-radius: 8px;
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
 }
 
 .annotation-list h4 {
-margin-bottom: 15px;
-color: #2c3e50;
-font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  font-size: 1.2rem;
 }
 
 .annotation-item {
-padding: 15px;
-background: white;
-border-radius: 8px;
-margin-bottom: 15px;
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-border-left: 4px solid #3498db;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #3498db;
 }
 
 .annotation-content {
-display: flex;
-justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 }
 
 .annotation-text {
-flex: 1;
+  flex: 1;
 }
 
 .annotation-page {
-color: #7f8c8d;
-font-size: 0.9rem;
-}
-
-.annotation-actions {
-display: flex;
-gap: 10px;
-}
-
-.annotation-actions button {
-background: none;
-border: none;
-color: #7f8c8d;
-cursor: pointer;
-transition: color 0.3s;
-}
-
-.annotation-actions button:hover {
-color: yellow;
-}
-
-.highlight-preview {
-position: absolute;
-border: 2px dashed yellow;
-background: rgba(255, 255, 0, 0.25);
-z-index: 70;
-}
-
-.annotation-marker {
-position: absolute;
-width: 24px;
-height: 24px;
-background: blue;
-border-radius: 50%;
-display: flex;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-z-index: 100;
-transform: translate(-50%, -50%);
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-.annotation-marker:hover {
-background: red;
-}
-
-.annotation-marker i {
-color: white;
-font-size: 12px;
-}
-
-.annotation-popup {
-position: absolute;
-background: white;
-border-radius: 8px;
-padding: 15px;
-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-z-index: 120;
-width: 280px;
-max-width: 90vw;
-}
-
-.annotation-popup h4 {
-margin-bottom: 10px;
-color: #2c3e50;
-}
-
-.annotation-popup p {
-color: #555;
-line-height: 1.5;
-}
-
-.annotation-popup .close-btn {
-position: absolute;
-top: 10px;
-right: 10px;
-background: none;
-border: none;
-color: #7f8c8d;
-cursor: pointer;
-font-size: 16px;
-}
-
-footer {
-text-align: center;
-margin-top: 40px;
-padding: 20px;
-color: #7f8c8d;
-border-top: 1px solid #eee;
-}
-
-.instructions {
-background: #e3f2fd;
-padding: 20px;
-border-radius: 8px;
-margin-bottom: 25px;
-border-left: 4px solid #3498db;
-}
-
-.instructions h3 {
-color: #2c3e50;
-margin-bottom: 15px;
-}
-
-.instructions ol {
-padding-left: 20px;
-}
-
-.instructions li {
-margin-bottom: 10px;
-line-height: 1.6;
-}
-
-@media (max-width: 768px) {
-.tools {
-  flex-wrap: wrap;
-}
-
-.tool-btn {
-  padding: 8px 12px;
+  color: #7f8c8d;
   font-size: 0.9rem;
 }
 
-.pdf-container {
-  min-height: 400px;
+.annotation-actions {
+  display: flex;
+  gap: 10px;
 }
+
+.annotation-actions button {
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.annotation-actions button:hover {
+  color: yellow;
+}
+
+.highlight-preview {
+  position: absolute;
+  border: 2px dashed yellow;
+  background: rgba(255, 255, 0, 0.25);
+  z-index: 70;
+}
+
+.annotation-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: blue;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.annotation-marker:hover {
+  background: red;
+}
+
+.annotation-marker i {
+  color: white;
+  font-size: 12px;
+}
+
+.annotation-popup {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 120;
+  width: 280px;
+  max-width: 90vw;
+}
+
+.annotation-popup h4 {
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.annotation-popup p {
+  color: #555;
+  line-height: 1.5;
+}
+
+.annotation-popup .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  padding: 20px;
+  color: #7f8c8d;
+  border-top: 1px solid #eee;
+}
+
+.instructions {
+  background: #e3f2fd;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border-left: 4px solid #3498db;
+}
+
+.instructions h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.instructions ol {
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .tools {
+    flex-wrap: wrap;
+  }
+
+  .tool-btn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .pdf-container {
+    min-height: 400px;
+  }
 }
 
 /* 确保 PDF 容器有相对定位 */
@@ -1129,5 +1125,4 @@ footer {
 .annotation-layer.active {
   pointer-events: auto; /* 批注模式时捕获事件 */
 }
-
 </style>
