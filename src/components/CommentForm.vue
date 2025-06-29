@@ -34,16 +34,16 @@
         maxlength="500"
         show-word-limit
         resize="none"
-        @keydown.ctrl.enter="submitComment"
         class="comment-input"
+        @keydown.ctrl.enter="submitComment"
       />
       <div class="flex justify-end mt-2">
         <el-button
           v-show="commentContent.trim()"
           type="primary"
           :loading="submitting"
-          @click="submitComment"
           class="px-6 py-1.5 rounded font-semibold"
+          @click="submitComment"
         >
           发表评论
         </el-button>
@@ -104,6 +104,12 @@ const submitComment = async () => {
 }
 </script>
 
+<script lang="ts">
+export default {
+  name: 'CommentForm',
+}
+</script>
+
 <style scoped>
 .comment-input .el-textarea__inner {
   border-radius: 0.75rem;
@@ -126,9 +132,3 @@ const submitComment = async () => {
   opacity: 1;
 }
 </style>
-
-<script lang="ts">
-export default {
-  name: 'CommentForm',
-}
-</script>

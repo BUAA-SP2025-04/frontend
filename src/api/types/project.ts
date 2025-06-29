@@ -13,7 +13,7 @@ export interface ProjectUser {
 
 // 项目类型
 export interface Project {
-  id: string
+  id: number
   title: string
   description: string
   owner: ProjectUser
@@ -32,7 +32,7 @@ export interface Project {
 
 // 申请类型
 export interface Application {
-  id: string
+  id: number
   applicant: ProjectUser
   createdAt: string
   status: string
@@ -51,10 +51,10 @@ export interface ProjectWithApplications extends Project {
 
 // 申请详情类型
 export interface ApplicationDetail {
-  id: string
+  id: number
   createdAt: string
   project: {
-    id: string
+    id: number
     title: string
     description: string
     collaborationCondition: string
@@ -89,7 +89,7 @@ export interface AddProjectRequest {
 
 // 更新项目请求体
 export interface UpdateProjectRequest {
-  id: string
+  id: number
   title: string
   description: string
   collaborationCondition: string
@@ -108,7 +108,7 @@ export interface DeleteProjectRequest {
 
 // 申请加入项目请求体
 export interface ApplyProjectRequest {
-  projectId: string
+  projectId: number
   reason: string
   experience: string
   contact: string
@@ -117,12 +117,12 @@ export interface ApplyProjectRequest {
 
 // 取消申请请求体
 export interface CancelApplicationRequest {
-  applicationId: string
+  applicationId: number
 }
 
 // 处理申请请求体
 export interface HandleApplicationRequest {
-  applicationId: string
+  applicationId: number
   accept: boolean
 }
 
