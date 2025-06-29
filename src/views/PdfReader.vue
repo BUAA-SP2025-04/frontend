@@ -13,18 +13,18 @@
       <div v-if="pdfUrl" class="card">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">PDF预览</h3>
-            <!-- <div class="flex space-x-2">
+          <!-- <div class="flex space-x-2">
               <el-button size="small" @click="zoomIn">放大</el-button>
               <el-button size="small" @click="zoomOut">缩小</el-button>
               <el-button size="small" @click="resetZoom">重置</el-button>
             </div> -->
           <div class="tools">
-            <button 
-              class="tool-btn" 
+            <button
+              class="tool-btn"
               :class="{ active: activeTool === 'highlight' }"
               @click="toggleHighlightMode"
             >
-              <i class="fas fa-highlighter"></i> 
+              <i class="fas fa-highlighter"></i>
               {{ activeTool === 'highlight' ? '批注模式中...' : '高亮批注' }}
             </button>
             <button class="tool-btn" @click="clearAnnotations">
@@ -44,46 +44,48 @@
             @loaded="onPdfLoaded"
             @page-loaded="onPageLoaded"
           />
-          <div 
-            ref="annotationLayer" 
+          <div
+            ref="annotationLayer"
             class="annotation-layer"
-            :style="{ cursor: activeTool === 'highlight' ? 'crosshair' : 'default',
+            :style="{
+              cursor: activeTool === 'highlight' ? 'crosshair' : 'default',
               pointerEvents: activeTool === 'highlight' ? 'auto' : 'none',
-              zIndex: 100 }"
+              zIndex: 100,
+            }"
           ></div>
         </div>
-        
-        <div 
+
+        <div
           v-if="highlightPreview.visible"
           class="highlight-preview"
           :style="{
             left: highlightPreview.x + 'px',
             top: highlightPreview.y + 'px',
             width: highlightPreview.width + 'px',
-            height: highlightPreview.height + 'px'
+            height: highlightPreview.height + 'px',
           }"
         ></div>
-        
-        <div 
-          v-for="(annotation) in visibleAnnotations"
+
+        <div
+          v-for="annotation in visibleAnnotations"
           :key="annotation.id"
           class="annotation-marker"
           :style="{
             left: annotation.markerX + 'px',
-            top: annotation.markerY + 'px'
+            top: annotation.markerY + 'px',
           }"
           @mouseenter="showAnnotationPopup(annotation, $event)"
           @mouseleave="activePopup = null"
         >
           <i class="fas fa-comment"></i>
         </div>
-        
-        <div 
+
+        <div
           v-if="activePopup"
           class="annotation-popup"
           :style="{
             left: popupPosition.x + 'px',
-            top: popupPosition.y + 'px'
+            top: popupPosition.y + 'px',
           }"
         >
           <button class="close-btn" @click="activePopup = null">
@@ -141,11 +143,26 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch, nextTick, computed, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import VuePdfEmbed from 'vue-pdf-embed'
 import type { UploadFile } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { getPublicationFile } from '@/api/modules/publication'
+
+// 定义批注类型
+interface Annotation {
+  id: string
+  type: string
+  page: number
+  x: number
+  y: number
+  width: number
+  height: number
+  comment: string
+  markerX: number
+  markerY: number
+}
 
 const selectedFile = ref<File | null>(null)
 const pdfUrl = ref<string>('')
@@ -158,6 +175,23 @@ const pdfContainer = ref<HTMLElement | null>(null)
 const pdfLoaded = ref(false)
 const isPdfRendered = ref(false)
 const resizeObserver = ref<ResizeObserver | null>(null)
+
+// 批注相关变量
+const annotationLayer = ref<HTMLElement | null>(null)
+const canvasContext = ref<CanvasRenderingContext2D | null>(null)
+const activeTool = ref<string | null>(null)
+const isDrawing = ref(false)
+const startPos = ref({ x: 0, y: 0 })
+const annotations = ref<Annotation[]>([])
+const activePopup = ref<Annotation | null>(null)
+const popupPosition = ref({ x: 0, y: 0 })
+const highlightPreview = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+})
 
 const route = useRoute()
 
@@ -181,7 +215,7 @@ const onPageLoaded = (page: any) => {
       console.warn('PDF 容器未找到')
       pdfContainer.value = document.querySelector('.pdf-container') as HTMLElement
     }
-    
+
     // 初始化批注层
     initAnnotationCanvas()
     attachEventListeners()
@@ -257,7 +291,7 @@ const ensureAnnotationLayer = () => {
     console.error('PDF容器未初始化')
     return false
   }
-  
+
   // 不再动态创建，直接使用模板中的ref
   if (annotationLayer.value) {
     // 设置必要的样式
@@ -270,7 +304,7 @@ const ensureAnnotationLayer = () => {
       z-index: 100;
       pointer-events: ${activeTool.value === 'highlight' ? 'auto' : 'none'};
     `
-    console.log("创建了批注层")
+    console.log('创建了批注层')
     return true
   }
   return false
@@ -283,94 +317,109 @@ const initAnnotationCanvas = () => {
     console.error('批注层元素创建失败')
     return
   }
-  
+
   console.log('开始初始化画布了！')
   annotationLayer.value.innerHTML = ''
-  const canvas = document.createElement('canvas');
-  canvas.className = 'annotation-canvas';
-  canvas.style.position = 'absolute';
-  canvas.style.top = '0';
-  canvas.style.left = '0';
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  
+  const canvas = document.createElement('canvas')
+  canvas.className = 'annotation-canvas'
+  canvas.style.position = 'absolute'
+  canvas.style.top = '0'
+  canvas.style.left = '0'
+  canvas.style.width = '100%'
+  canvas.style.height = '100%'
+
   // 设置画布尺寸匹配元素
-  const rect = annotationLayer.value.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
-  
+  const rect = annotationLayer.value.getBoundingClientRect()
+  canvas.width = rect.width
+  canvas.height = rect.height
+
   // 清除旧画布
   while (annotationLayer.value.firstChild) {
-    annotationLayer.value.removeChild(annotationLayer.value.firstChild);
+    annotationLayer.value.removeChild(annotationLayer.value.firstChild)
   }
-  
-  annotationLayer.value.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
+
+  annotationLayer.value.appendChild(canvas)
+  const ctx = canvas.getContext('2d')
   if (ctx) {
-    canvasContext.value = ctx;
-    redrawAnnotations();
+    canvasContext.value = ctx
+    redrawAnnotations()
   } else {
-    console.error('无法获取Canvas上下文');
+    console.error('无法获取Canvas上下文')
   }
-};
+}
 
 const retryAnnotationInit = () => {
   console.log('重试批注层设置')
   initAnnotationCanvas()
   attachEventListeners()
-};
+}
 
 watch(currentPage, () => {
   nextTick(() => {
-    setTimeout(retryAnnotationInit, 300);
-  });
-});
+    setTimeout(retryAnnotationInit, 300)
+  })
+})
 
 // 重绘所有批注
 const redrawAnnotations = () => {
-  const ctx = canvasContext.value;
-  if (!ctx) return;
-  
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  
+  const ctx = canvasContext.value
+  if (!ctx) return
+
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
   annotations.value
     .filter(anno => anno.page === currentPage.value)
     .forEach(anno => {
       // 绘制高亮区域
-      ctx.fillStyle = 'rgba(255, 235, 59, 0.3)';
-      ctx.fillRect(anno.x, anno.y, anno.width, anno.height);
-      
+      ctx.fillStyle = 'rgba(255, 235, 59, 0.3)'
+      ctx.fillRect(anno.x, anno.y, anno.width, anno.height)
+
       // // 绘制高亮边框
       // ctx.strokeStyle = 'rgba(255, 193, 7, 0.8)';
       // ctx.lineWidth = 1;
       // ctx.strokeRect(anno.x, anno.y, anno.width, anno.height);
-    });
+    })
   console.log('初始化画布完成了！')
-};
+}
 
 // 显示批注弹窗
-const showAnnotationPopup = (annotation: Annotation|{ id: string; type: string; page: number; x: number; y: number; 
-    width: number; height: number; comment: string; markerX: number; markerY: number }|null, 
-    event: { clientX: number; clientY: number }) => {
-  activePopup.value = annotation;
+const showAnnotationPopup = (
+  annotation:
+    | Annotation
+    | {
+        id: string
+        type: string
+        page: number
+        x: number
+        y: number
+        width: number
+        height: number
+        comment: string
+        markerX: number
+        markerY: number
+      }
+    | null,
+  event: { clientX: number; clientY: number }
+) => {
+  activePopup.value = annotation
   popupPosition.value = {
     x: event.clientX + 10,
-    y: event.clientY + 10
-  };
-};
+    y: event.clientY + 10,
+  }
+}
 
 // 切换高亮模式
 const toggleHighlightMode = () => {
-  activeTool.value = activeTool.value === 'highlight' ? null : 'highlight';
-  
+  activeTool.value = activeTool.value === 'highlight' ? null : 'highlight'
+
   if (activeTool.value === 'highlight') {
     initAnnotationCanvas()
     attachEventListeners()
-    ElMessage.success('已进入高亮批注模式，请拖动鼠标选择区域');
+    ElMessage.success('已进入高亮批注模式，请拖动鼠标选择区域')
   } else {
-    ElMessage.info('已退出高亮批注模式');
+    ElMessage.info('已退出高亮批注模式')
   }
-};
+}
 
 // 鼠标事件处理
 const getRelativeCoordinates = (e: MouseEvent) => {
@@ -383,53 +432,53 @@ const getRelativeCoordinates = (e: MouseEvent) => {
   // 计算相对于PDF容器的坐标
   const x = e.clientX - rect.left
   const y = e.clientY - rect.top
-  
+
   // 确保坐标在PDF容器范围内
   return {
     x: Math.max(0, Math.min(x, rect.width)),
-    y: Math.max(0, Math.min(y, rect.height))
+    y: Math.max(0, Math.min(y, rect.height)),
   }
 }
 
 const handleMouseDown = (e: MouseEvent) => {
   if (activeTool.value !== 'highlight') return
-  
+
   isDrawing.value = true
   const { x, y } = getRelativeCoordinates(e)
   startPos.value = { x, y }
-  
+
   highlightPreview.value = {
     visible: true,
     x,
     y,
     width: 0,
-    height: 0
+    height: 0,
   }
 }
 
 const handleMouseMove = (e: MouseEvent) => {
   if (!isDrawing.value) return
-  
+
   const { x, y } = getRelativeCoordinates(e)
   highlightPreview.value = {
     visible: true,
     x: Math.min(startPos.value.x, x),
     y: Math.min(startPos.value.y, y),
     width: Math.abs(x - startPos.value.x),
-    height: Math.abs(y - startPos.value.y)
+    height: Math.abs(y - startPos.value.y),
   }
 }
 
 const handleMouseUp = () => {
-  if (!isDrawing.value) return;
-  
-  isDrawing.value = false;
+  if (!isDrawing.value) return
+
+  isDrawing.value = false
   console.log('绘制结束了！')
-  
+
   // 添加有效区域判断
   if (highlightPreview.value.width > 5 && highlightPreview.value.height > 5) {
-    const commentText = prompt('请输入批注内容（可选）：', '');
-    
+    const commentText = prompt('请输入批注内容（可选）：', '')
+
     const newAnnotation = {
       id: Date.now().toString(),
       type: 'highlight',
@@ -440,96 +489,94 @@ const handleMouseUp = () => {
       height: highlightPreview.value.height,
       comment: commentText || '',
       markerX: highlightPreview.value.x + highlightPreview.value.width,
-      markerY: highlightPreview.value.y
-    };
-    
-    annotations.value.push(newAnnotation);
-    redrawAnnotations();
-    ElMessage.success('批注添加成功');
+      markerY: highlightPreview.value.y,
+    }
+
+    annotations.value.push(newAnnotation)
+    redrawAnnotations()
+    ElMessage.success('批注添加成功')
   }
-  
-  highlightPreview.value.visible = false;
-};
+
+  highlightPreview.value.visible = false
+}
 
 // 清除当前页批注
 const clearAnnotations = () => {
   if (annotations.value.length === 0) {
-    ElMessage.warning('当前没有可清除的批注');
-    return;
+    ElMessage.warning('当前没有可清除的批注')
+    return
   }
-  
-  annotations.value = annotations.value.filter(
-    anno => anno.page !== currentPage.value
-  );
-  redrawAnnotations();
-  ElMessage.success('已清除当前页所有批注');
-};
+
+  annotations.value = annotations.value.filter(anno => anno.page !== currentPage.value)
+  redrawAnnotations()
+  ElMessage.success('已清除当前页所有批注')
+}
 
 // 删除单个批注
 const deleteAnnotation = (id: string) => {
-  annotations.value = annotations.value.filter(anno => anno.id !== id);
-  redrawAnnotations();
-  ElMessage.success('批注已删除');
-};
+  annotations.value = annotations.value.filter(anno => anno.id !== id)
+  redrawAnnotations()
+  ElMessage.success('批注已删除')
+}
 
 // 导出批注
 const downloadAnnotations = () => {
   if (annotations.value.length === 0) {
-    ElMessage.warning('没有批注可导出');
-    return;
+    ElMessage.warning('没有批注可导出')
+    return
   }
-  
-  const dataStr = JSON.stringify(annotations.value, null, 2);
-  const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-  
-  const exportFileDefaultName = `pdf-annotations-${new Date().toISOString().slice(0, 10)}.json`;
-  
-  const linkElement = document.createElement('a');
-  linkElement.setAttribute('href', dataUri);
-  linkElement.setAttribute('download', exportFileDefaultName);
-  linkElement.click();
-  
-  ElMessage.success('批注导出成功');
-};
+
+  const dataStr = JSON.stringify(annotations.value, null, 2)
+  const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`
+
+  const exportFileDefaultName = `pdf-annotations-${new Date().toISOString().slice(0, 10)}.json`
+
+  const linkElement = document.createElement('a')
+  linkElement.setAttribute('href', dataUri)
+  linkElement.setAttribute('download', exportFileDefaultName)
+  linkElement.click()
+
+  ElMessage.success('批注导出成功')
+}
 
 // 跳转到指定页
 const goToPage = (page: number) => {
-  currentPage.value = page;
-};
+  currentPage.value = page
+}
 
 // 添加事件监听
 const attachEventListeners = () => {
   // 先移除旧的事件监听器
-  detachEventListeners();
+  detachEventListeners()
 
   if (!annotationLayer.value) {
     console.error('无法附加事件监听器：批注层不存在')
-    return;
+    return
   }
-  
-  annotationLayer.value.addEventListener('mousedown', handleMouseDown);
-  annotationLayer.value.addEventListener('mousemove', handleMouseMove);
-  annotationLayer.value.addEventListener('mouseup', handleMouseUp);
-};
+
+  annotationLayer.value.addEventListener('mousedown', handleMouseDown)
+  annotationLayer.value.addEventListener('mousemove', handleMouseMove)
+  annotationLayer.value.addEventListener('mouseup', handleMouseUp)
+}
 
 // 添加移除事件监听的方法
 const detachEventListeners = () => {
-  if (!annotationLayer.value) return;
-  
-  annotationLayer.value.removeEventListener('mousedown', handleMouseDown);
-  annotationLayer.value.removeEventListener('mousemove', handleMouseMove);
-  annotationLayer.value.removeEventListener('mouseup', handleMouseUp);
-};
+  if (!annotationLayer.value) return
+
+  annotationLayer.value.removeEventListener('mousedown', handleMouseDown)
+  annotationLayer.value.removeEventListener('mousemove', handleMouseMove)
+  annotationLayer.value.removeEventListener('mouseup', handleMouseUp)
+}
 
 onUnmounted(() => {
-  detachEventListeners();
+  detachEventListeners()
   resizeObserver.value?.disconnect()
-});
+})
 
 // 计算当前页可见批注
 const visibleAnnotations = computed<Annotation[]>(() => {
-  return annotations.value.filter(anno => anno.page === currentPage.value);
-});
+  return annotations.value.filter(anno => anno.page === currentPage.value)
+})
 
 // 监听当前页变化
 watch(currentPage, () => {
@@ -544,11 +591,10 @@ watch(currentPage, () => {
 onMounted(() => {
   // 初始加载完成后设置批注层
   setTimeout(() => {
-    initAnnotationCanvas();
-    attachEventListeners();
-  }, 2000);
-});
-
+    initAnnotationCanvas()
+    attachEventListeners()
+  }, 2000)
+})
 </script>
 
 <style>
@@ -569,240 +615,240 @@ onMounted(() => {
 }
 
 .card {
-background: white;
-border-radius: 12px;
-box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-padding: 25px;
-margin-bottom: 30px;
-transition: transform 0.3s ease;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  padding: 25px;
+  margin-bottom: 30px;
+  transition: transform 0.3s ease;
 }
 
 .toolbar {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 15px 0;
-border-bottom: 1px solid #eee;
-margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
 }
 
 .toolbar h3 {
-font-size: 1.4rem;
-color: #3498db;
+  font-size: 1.4rem;
+  color: #3498db;
 }
 
 .tools {
-display: flex;
-gap: 12px;
+  display: flex;
+  gap: 12px;
 }
 
 .tool-btn {
-padding: 10px 18px;
-border: none;
-border-radius: 8px;
-background: #3498db;
-color: white;
-font-weight: 500;
-cursor: pointer;
-display: flex;
-align-items: center;
-gap: 8px;
-transition: all 0.3s ease;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #3498db;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
 }
 
 .tool-btn:hover {
-background: #2980b9;
-transform: scale(1.05);
+  background: #2980b9;
+  transform: scale(1.05);
 }
 
 .tool-btn i {
-font-size: 16px;
+  font-size: 16px;
 }
 
 .tool-btn.active {
-background: green;
-box-shadow: 0 4px 12px rgba(green, 0.3);
+  background: green;
+  box-shadow: 0 4px 12px rgba(green, 0.3);
 }
 
 .annotation-layer {
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-pointer-events: auto;
-z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  z-index: 10;
 }
 
 .pagination {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 15px 0;
-border-top: 1px solid #eee;
-margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-top: 1px solid #eee;
+  margin-top: 20px;
 }
 
 .page-info {
-font-size: 1rem;
-color: #7f8c8d;
+  font-size: 1rem;
+  color: #7f8c8d;
 }
 
 .annotation-list {
-margin-top: 20px;
-padding: 20px;
-background: #f8f9fa;
-border-radius: 8px;
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
 }
 
 .annotation-list h4 {
-margin-bottom: 15px;
-color: #2c3e50;
-font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  font-size: 1.2rem;
 }
 
 .annotation-item {
-padding: 15px;
-background: white;
-border-radius: 8px;
-margin-bottom: 15px;
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-border-left: 4px solid #3498db;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #3498db;
 }
 
 .annotation-content {
-display: flex;
-justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 }
 
 .annotation-text {
-flex: 1;
+  flex: 1;
 }
 
 .annotation-page {
-color: #7f8c8d;
-font-size: 0.9rem;
-}
-
-.annotation-actions {
-display: flex;
-gap: 10px;
-}
-
-.annotation-actions button {
-background: none;
-border: none;
-color: #7f8c8d;
-cursor: pointer;
-transition: color 0.3s;
-}
-
-.annotation-actions button:hover {
-color: yellow;
-}
-
-.highlight-preview {
-position: absolute;
-border: 2px dashed yellow;
-background: rgba(yellow, 0.2);
-z-index: 100;
-}
-
-.annotation-marker {
-position: absolute;
-width: 24px;
-height: 24px;
-background: blue;
-border-radius: 50%;
-display: flex;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-z-index: 20;
-transform: translate(-50%, -50%);
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.annotation-marker i {
-color: white;
-font-size: 12px;
-}
-
-.annotation-popup {
-position: absolute;
-background: white;
-border-radius: 8px;
-padding: 15px;
-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-z-index: 100;
-width: 280px;
-max-width: 90vw;
-}
-
-.annotation-popup h4 {
-margin-bottom: 10px;
-color: #2c3e50;
-}
-
-.annotation-popup p {
-color: #555;
-line-height: 1.5;
-}
-
-.annotation-popup .close-btn {
-position: absolute;
-top: 10px;
-right: 10px;
-background: none;
-border: none;
-color: #7f8c8d;
-cursor: pointer;
-font-size: 16px;
-}
-
-footer {
-text-align: center;
-margin-top: 40px;
-padding: 20px;
-color: #7f8c8d;
-border-top: 1px solid #eee;
-}
-
-.instructions {
-background: #e3f2fd;
-padding: 20px;
-border-radius: 8px;
-margin-bottom: 25px;
-border-left: 4px solid #3498db;
-}
-
-.instructions h3 {
-color: #2c3e50;
-margin-bottom: 15px;
-}
-
-.instructions ol {
-padding-left: 20px;
-}
-
-.instructions li {
-margin-bottom: 10px;
-line-height: 1.6;
-}
-
-@media (max-width: 768px) {
-.tools {
-  flex-wrap: wrap;
-}
-
-.tool-btn {
-  padding: 8px 12px;
+  color: #7f8c8d;
   font-size: 0.9rem;
 }
 
-.pdf-container {
-  min-height: 400px;
+.annotation-actions {
+  display: flex;
+  gap: 10px;
 }
+
+.annotation-actions button {
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.annotation-actions button:hover {
+  color: yellow;
+}
+
+.highlight-preview {
+  position: absolute;
+  border: 2px dashed yellow;
+  background: rgba(yellow, 0.2);
+  z-index: 100;
+}
+
+.annotation-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: blue;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.annotation-marker i {
+  color: white;
+  font-size: 12px;
+}
+
+.annotation-popup {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  width: 280px;
+  max-width: 90vw;
+}
+
+.annotation-popup h4 {
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.annotation-popup p {
+  color: #555;
+  line-height: 1.5;
+}
+
+.annotation-popup .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  padding: 20px;
+  color: #7f8c8d;
+  border-top: 1px solid #eee;
+}
+
+.instructions {
+  background: #e3f2fd;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border-left: 4px solid #3498db;
+}
+
+.instructions h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.instructions ol {
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .tools {
+    flex-wrap: wrap;
+  }
+
+  .tool-btn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .pdf-container {
+    min-height: 400px;
+  }
 }
 
 /* 确保 PDF 容器有相对定位 */
@@ -856,5 +902,4 @@ line-height: 1.6;
 .annotation-popup {
   z-index: 50;
 }
-
 </style>
