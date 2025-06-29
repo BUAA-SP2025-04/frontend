@@ -5,6 +5,7 @@ import type { PublicationProfile } from '@/api/types/publication'
 import { doiPattern, urlPattern } from '@/utils/publications'
 import { batchAddPublications } from '@/api/modules/publication'
 import { ElMessage } from 'element-plus'
+import { saveAs } from 'file-saver'
 
 const props = defineProps<{
   showExcelImporter: boolean
@@ -16,6 +17,7 @@ const emit = defineEmits(['update:showExcelImporter', 'upload-success'])
 const publicationProfiles = ref<PublicationProfile[]>([])
 const fileInput = ref<HTMLInputElement | null>(null)
 const showDialog = ref(props.showExcelImporter)
+const showTip = ref(false)
 
 watch(
   () => props.showExcelImporter,
@@ -112,6 +114,45 @@ function submitData() {
 function closeDialog() {
   showDialog.value = false
 }
+
+function downloadTemplate() {
+  // 定义模板表头
+  const header = [
+    [
+      'type',
+      'title',
+      'authors',
+      'venue',
+      'year',
+      'status',
+      'abstracts',
+      'keywords',
+      'doi',
+      'pdfUrl',
+    ],
+  ]
+  // 示例数据
+  const example = [
+    [
+      'journal',
+      'Example Title',
+      '张三,李四',
+      'Nature',
+      '2023',
+      'published',
+      '这是一篇摘要',
+      'AI,机器学习',
+      '10.1234/example.doi',
+      'https://example.com/example.pdf',
+    ],
+  ]
+  const ws = XLSX.utils.aoa_to_sheet(header.concat(example))
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+  const blob = new Blob([wbout], { type: 'application/octet-stream' })
+  saveAs(blob, 'publication_template.xlsx')
+}
 </script>
 
 <template>
@@ -145,6 +186,58 @@ function closeDialog() {
         <div class="el-upload__tip">仅支持 .xlsx, .xls 文件</div>
       </template>
     </el-upload>
+    <!-- 按钮hover显示说明，点击下载模板 -->
+    <div style="margin-bottom: 10px; position: relative; display: inline-block">
+      <span style="display: flex; align-items: center">
+        <el-button
+          type="info"
+          size="small"
+          plain
+          style="margin-right: 8px"
+          @click="downloadTemplate"
+          @mouseenter="showTip = true"
+          @mouseleave="showTip = false"
+        >
+          Excel格式要求
+        </el-button>
+        <span v-show="showTip" style="color: #888">点击可下载模板，模板字段要求见下方</span>
+      </span>
+      <!-- 悬浮格式要求浮层 -->
+      <div
+        v-show="showTip"
+        style="
+          position: absolute;
+          left: 0;
+          top: 38px;
+          z-index: 1000;
+          background: #fff;
+          border: 1px solid #dcdfe6;
+          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+          padding: 18px 24px 12px 24px;
+          border-radius: 6px;
+          max-width: 700px;
+          min-width: 420px;
+          margin-top: 4px;
+        "
+        @mouseenter="showTip = true"
+        @mouseleave="showTip = false"
+      >
+        <strong>格式要求：</strong>
+        <div>请确保表格包含以下列（可缺省，系统会自动补全）：</div>
+        <ul style="margin: 4px 0 8px 18px; padding: 0">
+          <li>type（成果类型）：必填，要求为 journal/ conference/ patent</li>
+          <li>title（成果标题）：必填，不能与已有的重复</li>
+          <li>authors（作者）：必填，多个作者用英文逗号分开</li>
+          <li>venue（期刊/会议名称）</li>
+          <li>year（年份）</li>
+          <li>status（成果状态）：必填，要求为 published/draft/under-review/archived</li>
+          <li>abstracts（摘要）</li>
+          <li>keywords（关键词）</li>
+          <li>doi</li>
+          <li>pdfUrl（PDF链接）：若要上传PDF可不填</li>
+        </ul>
+      </div>
+    </div>
     <div v-if="publicationProfiles.length">
       <el-table :data="publicationProfiles" style="width: 100%" size="small" border>
         <el-table-column
