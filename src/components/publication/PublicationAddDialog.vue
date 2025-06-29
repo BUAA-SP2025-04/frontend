@@ -12,12 +12,12 @@ const saving = ref(false)
 const emit = defineEmits(['update:showAddDialog'])
 
 const publicationProfile = reactive<PublicationProfile>({
-  type: '',
+  type: 'journal',
   title: '',
   authors: '',
   venue: '',
   year: null,
-  status: '',
+  status: 'draft',
   abstracts: '',
   keywords: '',
   doi: '',
@@ -115,6 +115,12 @@ const handlePdfExceed = (files: File[]) => {
 const closeDialog = () => {
   // 通过emit通知父组件关闭弹窗
   emit('update:showAddDialog', false)
+}
+
+const handleSave = () => {
+  // 这里应该实现保存逻辑
+  console.log('保存逻辑需要实现')
+  closeDialog()
 }
 </script>
 
