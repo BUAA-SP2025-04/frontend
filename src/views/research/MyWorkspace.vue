@@ -178,16 +178,14 @@
                               project.applications &&
                               Array.isArray(project.applications) &&
                               project.applications.filter(
-                                app =>
-                                  app && app.application && app.application.status === 'unhandled'
+                                app => app && app.applicant && app.status === 'unhandled'
                               ).length > 0
                             "
                             class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-red-500 text-white rounded-full"
                           >
                             {{
                               project.applications.filter(
-                                app =>
-                                  app && app.application && app.application.status === 'unhandled'
+                                app => app && app.applicant && app.status === 'unhandled'
                               ).length
                             }}
                           </span>
