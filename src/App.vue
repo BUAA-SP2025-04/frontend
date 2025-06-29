@@ -45,7 +45,7 @@ font-family: 'ZCOOL KuaiLe', cursive; 像小学生写字
 font-family: 'HarmonyOS Sans SC', sans-serif; 遥遥领先黑体
 */
 #app {
-    font-family: "LXGW WenKai", sans-serif;
+  font-family: 'LXGW WenKai', sans-serif;
 }
 
 /* 全局样式重置 */
@@ -58,7 +58,6 @@ font-family: 'HarmonyOS Sans SC', sans-serif; 遥遥领先黑体
 html,
 body {
   height: 100%;
-
 }
 
 /* 自定义滚动条全局样式 */

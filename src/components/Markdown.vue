@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
+import { computed, defineProps } from 'vue'
 import MarkdownIt from 'markdown-it'
 import katex from 'markdown-it-katex'
 import taskLists from 'markdown-it-task-lists'
@@ -14,7 +14,7 @@ import hljs from 'highlight.js'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github.css'
 
-const props = defineProps<{ 
+const props = defineProps<{
   source: string
   enableToc?: boolean
 }>()
@@ -42,7 +42,7 @@ const md: MarkdownIt = new MarkdownIt({
 })
   .use(katex, {
     throwOnError: false,
-    errorColor: '#cc0000'
+    errorColor: '#cc0000',
   })
   .use(taskLists, { enabled: true })
   .use(container, 'info')
@@ -51,9 +51,9 @@ const md: MarkdownIt = new MarkdownIt({
 
 if (props.enableToc) {
   md.use(anchor, {
-    permalink: anchor.permalink.headerLink()
+    permalink: anchor.permalink.headerLink(),
   }).use(toc, {
-    includeLevel: [1, 2, 3]
+    includeLevel: [1, 2, 3],
   })
 }
 

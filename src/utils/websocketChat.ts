@@ -1,5 +1,3 @@
-import type { WSSendMessage } from '@/api/types/chat'
-
 export interface ChatMessage {
   type: 'send_message' | 'typing' | 'read' | 'ping'
   data: {

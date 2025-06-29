@@ -4,8 +4,8 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-0">
       <el-button
         type="text"
-        @click="$router.go(-1)"
         class="flex items-center text-gray-600 hover:text-blue-600 p-0"
+        @click="$router.go(-1)"
       >
         <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -263,8 +263,8 @@
                   <el-button
                     type="text"
                     size="small"
-                    @click="toggleAbstract"
                     class="text-blue-600 hover:text-blue-800 p-0"
+                    @click="toggleAbstract"
                   >
                     {{ isAbstractExpanded ? '收起' : '展开' }}
                   </el-button>
@@ -277,8 +277,8 @@
               <el-button
                 v-if="publication.pdfUrl && publication.pdfUrl.trim()"
                 type="primary"
-                @click="openPdf"
                 class="flex items-center gap-2"
+                @click="openPdf"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -293,8 +293,8 @@
               <el-button
                 v-if="publication.pdfUrl && publication.pdfUrl.trim()"
                 type="success"
-                @click="downloadPdf"
                 class="flex items-center gap-2"
+                @click="downloadPdf"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -306,7 +306,7 @@
                 </svg>
                 下载PDF
               </el-button>
-              <el-button v-else type="warning" @click="applyPdf" class="flex items-center gap-2">
+              <el-button v-else type="warning" class="flex items-center gap-2" @click="applyPdf">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
@@ -324,8 +324,8 @@
         <!-- 评论区 -->
         <div
           id="comments"
-          class="bg-white rounded-xl shadow-lg overflow-hidden mt-8"
           v-loading="commentsLoading"
+          class="bg-white rounded-xl shadow-lg overflow-hidden mt-8"
           element-loading-text="精彩评论马上到来..."
         >
           <div class="p-8">
@@ -402,8 +402,8 @@
     <!-- 浮动回到顶部按钮 -->
     <div
       v-show="showBackToTop"
-      @click="scrollToTop"
       class="fixed bottom-8 right-8 w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 z-50"
+      @click="scrollToTop"
     >
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -418,19 +418,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getPublicationInformById, readPublication } from '@/api/modules/publication'
 import {
-  getPublicationComments,
-  likeComment,
   disLikeComment,
+  getPublicationComments,
   getReplyComments,
+  likeComment,
 } from '@/api/modules/comment'
 import type { Publication } from '@/api/types/publication'
 import type { Comment } from '@/api/types/comment'
-import type { UserDetail } from '@/api/types/user'
 import PublicationCommentComp from '@/components/PublicationComment.vue'
 import CommentForm from '@/components/CommentForm.vue'
 
