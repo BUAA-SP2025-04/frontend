@@ -11,29 +11,10 @@
         </div>
         <div class="flex space-x-4">
           <button
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
             @click="router.push('/research/my-projects')"
           >
             我的项目
-          </button>
-          <button
-            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
-            @click="showPublishDialog = true"
-          >
-            <svg
-              class="w-5 h-5 inline-block mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              ></path>
-            </svg>
-            发布项目
           </button>
         </div>
       </div>
@@ -124,6 +105,18 @@
                 <option value="ongoing">进行中</option>
                 <option value="completed">已完成</option>
                 <option value="pending">待开始</option>
+              </select>
+
+              <!-- 项目归属 -->
+              <select
+                v-model="selectedBelonging"
+                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">全部项目</option>
+                <option value="0">未加入</option>
+                <option value="1">申请中</option>
+                <option value="2">已加入</option>
+                <option value="3">我创建的</option>
               </select>
 
               <!-- 排序方式 -->
@@ -226,7 +219,7 @@
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center">
                     <img
-                      :src="project.owner.imgUrl"
+                      :src="getAvatarUrl(project.owner.imgUrl)"
                       :alt="project.owner.name"
                       class="w-8 h-8 rounded-full mr-3"
                     />
@@ -235,7 +228,9 @@
                       <p class="text-xs text-gray-500">{{ project.owner.institution }}</p>
                     </div>
                   </div>
-                  <div class="text-sm text-gray-500">发布于 {{ formatTime(project.createAt) }}</div>
+                  <div class="text-sm text-gray-500">
+                    发布于 {{ formatTime(project.createdAt) }}
+                  </div>
                 </div>
 
                 <!-- 项目统计和操作 -->
@@ -296,8 +291,35 @@
                       分享
                     </button>
 
+                    <!-- 根据projBelongings显示不同按钮 -->
                     <button
-                      v-if="getProjectStatus(project) === 'recruiting'"
+                      v-if="project.projBelongings === 3"
+                      class="px-4 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                      @click="manageProject"
+                    >
+                      管理项目
+                    </button>
+
+                    <button
+                      v-else-if="project.projBelongings === 1"
+                      class="px-4 py-1.5 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium"
+                      @click="cancelProjectApplication(project)"
+                    >
+                      取消申请
+                    </button>
+
+                    <button
+                      v-else-if="project.projBelongings === 2"
+                      class="px-4 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                      @click="quitProject(project)"
+                    >
+                      退出项目
+                    </button>
+
+                    <button
+                      v-else-if="
+                        project.projBelongings === 0 && getProjectStatus(project) === 'recruiting'
+                      "
                       class="px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                       @click="applyToProject(project)"
                     >
@@ -414,14 +436,6 @@
         </div>
       </div>
     </div>
-
-    <!-- 发布项目对话框 -->
-    <PublishProjectDialog
-      :visible="showPublishDialog"
-      @close="showPublishDialog = false"
-      @success="handlePublishSuccess"
-    />
-
     <!-- 申请加入对话框 -->
     <ApplyProjectDialog
       :visible="showApplicationDialog"
@@ -434,6 +448,7 @@
     <ProjectDetailCard
       v-if="showProjectDetail && selectedProjectForDetail"
       :project="selectedProjectForDetail"
+      :is-my-project="selectedProjectForDetail && selectedProjectForDetail.projBelongings === 3"
       @close="showProjectDetail = false"
     />
   </div>
@@ -442,12 +457,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { getAllProjects } from '@/api/modules/project'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getAllProjects, cancelApplication } from '@/api/modules/project'
 import type { Project } from '@/api/types/project'
 import ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
-import PublishProjectDialog from '@/components/project/PublishProjectDialog.vue'
 import ApplyProjectDialog from '@/components/project/ApplyProjectDialog.vue'
+
 // 为ProjectDetailCard组件定义项目类型
 interface DetailProject {
   id: number
@@ -459,13 +474,25 @@ interface DetailProject {
   maxMembers: number
   memberCount: number
   applicationCount: number
-  viewCount: number
-  isUrgent?: boolean
   createdAt: string
-  updatedAt: string
   startDate?: string
   endDate?: string
   contactInfo?: string
+  projBelongings?: number
+  owner: {
+    id: number
+    name: string
+    institution: string
+    title: string
+    imgUrl: string
+  }
+  collaborators: {
+    id: number
+    name: string
+    institution: string
+    title: string
+    imgUrl: string
+  }[]
 }
 
 const router = useRouter()
@@ -474,12 +501,12 @@ const router = useRouter()
 const searchQuery = ref('')
 const selectedCategory = ref('')
 const selectedStatus = ref('')
+const selectedBelonging = ref('')
 const sortBy = ref('latest')
 const currentPage = ref(1)
 const itemsPerPage = 10
 
 // 对话框控制
-const showPublishDialog = ref(false)
 const showApplicationDialog = ref(false)
 const showProjectDetail = ref(false)
 const selectedProjectForApplication = ref<Project | null>(null)
@@ -607,12 +634,18 @@ const filteredProjects = computed(() => {
     filtered = filtered.filter(p => getProjectStatus(p) === selectedStatus.value)
   }
 
+  // 项目归属过滤
+  if (selectedBelonging.value) {
+    const belongingValue = parseInt(selectedBelonging.value)
+    filtered = filtered.filter(p => p.projBelongings === belongingValue)
+  }
+
   // 排序
   switch (sortBy.value) {
     case 'latest':
       filtered.sort((a, b) => {
-        const dateA = new Date(a.createAt)
-        const dateB = new Date(b.createAt)
+        const dateA = new Date(a.createdAt)
+        const dateB = new Date(b.createdAt)
 
         // 如果时间无效，将其排在最后
         if (isNaN(dateA.getTime())) return 1
@@ -639,6 +672,17 @@ const totalPages = computed(() => {
   return Math.ceil(filteredProjects.value.length / itemsPerPage)
 })
 
+// 获取头像URL
+const getAvatarUrl = (imgUrl: string) => {
+  if (!imgUrl || imgUrl === '') {
+    return '/default-avatar.png'
+  }
+  if (imgUrl.startsWith('http')) {
+    return imgUrl
+  }
+  return import.meta.env.VITE_API_BASE_URL + imgUrl
+}
+
 // 方法
 const formatTime = (dateString: string) => {
   if (!dateString) {
@@ -654,15 +698,20 @@ const formatTime = (dateString: string) => {
 
   const now = new Date()
   const diff = now.getTime() - date.getTime()
+  const minutes = Math.floor(diff / (1000 * 60))
+  const hours = Math.floor(diff / (1000 * 60 * 60))
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
 
-  if (days === 0) return '今天'
-  if (days === 1) return '昨天'
+  if (minutes < 1) return '刚刚'
+  if (minutes < 60) return `${minutes}分钟前`
+  if (hours < 24) return `${hours}小时前`
   if (days < 7) return `${days}天前`
 
   return new Intl.DateTimeFormat('zh-CN', {
     month: 'short',
     day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   }).format(date)
 }
 
@@ -677,11 +726,6 @@ const getProjectStatus = (project: Project): 'recruiting' | 'ongoing' | 'complet
     return 'recruiting' // 如果时间无效，默认为招募中
   }
 
-  // 如果还没开始
-  if (now < startTime) {
-    return 'pending'
-  }
-
   // 如果已经结束
   if (now > endTime) {
     return 'completed'
@@ -689,12 +733,15 @@ const getProjectStatus = (project: Project): 'recruiting' | 'ongoing' | 'complet
 
   // 如果正在进行中
   if (now >= startTime && now <= endTime) {
+    return 'ongoing'
+  }
+
+  // 如果还没开始
+  if (now < startTime) {
     // 如果招募人数已满，则为进行中
     if (project.recruitedNum >= project.recruitNum) {
-      return 'ongoing'
+      return 'pending'
     }
-    // 否则仍在招募中
-    return 'recruiting'
   }
 
   return 'recruiting'
@@ -746,6 +793,53 @@ const applyToProject = (project: Project) => {
   showApplicationDialog.value = true
 }
 
+const cancelProjectApplication = (project: Project) => {
+  ElMessageBox.confirm('确定要取消申请吗？', '确认取消', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(async () => {
+      try {
+        // TODO: 这里需要获取正确的申请ID，暂时使用项目ID
+        // 实际应该从项目数据中获取对应的申请ID
+        await cancelApplication({ applicationId: project.id })
+        ElMessage.success('申请已取消')
+        // 重新加载项目列表
+        loadProjects()
+      } catch (error) {
+        console.error('取消申请失败:', error)
+        ElMessage.error('取消申请失败，请稍后重试')
+      }
+    })
+    .catch(() => {
+      ElMessage.info('已取消操作')
+    })
+}
+
+const quitProject = (project: Project) => {
+  ElMessageBox.confirm('确定要退出项目吗？此操作不可撤销。', '确认退出', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(async () => {
+      try {
+        // 这里需要调用退出项目的API
+        // await quitProjectAPI(project.id)
+        ElMessage.success('已退出项目')
+        // 重新加载项目列表
+        loadProjects()
+      } catch (error) {
+        console.error('退出项目失败:', error)
+        ElMessage.error('退出项目失败，请稍后重试')
+      }
+    })
+    .catch(() => {
+      ElMessage.info('已取消操作')
+    })
+}
+
 const shareProject = (project: Project) => {
   // 复制项目链接到剪贴板
   const projectUrl = `${window.location.origin}/research/projects/${project.id}`
@@ -768,19 +862,38 @@ const viewProjectDetail = (project: Project) => {
   const adaptedProject: DetailProject = {
     id: parseInt(project.id),
     title: project.title,
-    description: project.description,
-    fields: (project.researchArea || '').split(',').map(field => field.trim()),
-    requirements: (project.collaborationCondition || '').split(',').map(req => req.trim()),
+    description: project.description || '无',
+    fields: (project.researchArea || '')
+      .split(',')
+      .filter(field => field.trim())
+      .map(field => field.trim()),
+    requirements: (project.collaborationCondition || '')
+      .split(',')
+      .filter(req => req.trim())
+      .map(req => req.trim()),
     status: getProjectStatus(project),
     maxMembers: project.recruitNum,
     memberCount: project.recruitedNum,
     applicationCount: parseInt(project.applyNum),
-    viewCount: 0, // API中没有这个字段，设为0
-    createdAt: project.createAt || '',
-    updatedAt: project.createAt || '', // API中没有updatedAt，使用createAt
+    createdAt: project.createdAt || '',
     startDate: project.startTime || '',
     endDate: project.endTime || '',
-    contactInfo: project.contact || '',
+    contactInfo: project.contact || '无',
+    projBelongings: project.projBelongings,
+    owner: {
+      id: project.owner.id,
+      name: project.owner.name,
+      institution: project.owner.institution,
+      title: project.owner.title || '未知职位',
+      imgUrl: project.owner.imgUrl,
+    },
+    collaborators: (project.cooperators || []).map(cooperator => ({
+      id: cooperator.id,
+      name: cooperator.name,
+      institution: cooperator.institution,
+      title: cooperator.title || '未知职位',
+      imgUrl: cooperator.imgUrl,
+    })),
   }
 
   selectedProjectForDetail.value = adaptedProject
@@ -788,19 +901,16 @@ const viewProjectDetail = (project: Project) => {
 }
 
 // 监听筛选条件变化，重置分页
-watch([searchQuery, selectedCategory, selectedStatus, sortBy], () => {
+watch([searchQuery, selectedCategory, selectedStatus, selectedBelonging, sortBy], () => {
   currentPage.value = 1
 })
 
-// 发布成功后刷新项目列表
-const handlePublishSuccess = () => {
-  showPublishDialog.value = false
-  loadProjects()
-}
-
 const handleApplicationSuccess = () => {
   showApplicationDialog.value = false
-  ElMessage.success('申请提交成功！项目负责人将会尽快回复。')
+}
+
+const manageProject = () => {
+  router.push('/research/my-projects')
 }
 
 onMounted(() => {

@@ -19,21 +19,22 @@ export interface Project {
   owner: ProjectUser
   cooperators: ProjectUser[]
   collaborationCondition: string
-  createAt: string
   researchArea: string
   startTime: string
   endTime: string
   recruitNum: number
+  createdAt: string
   recruitedNum: number
   applyNum: string
   contact: string
+  projBelongings: number
 }
 
 // 申请类型
 export interface Application {
   id: string
   applicant: ProjectUser
-  createAt: string
+  createdAt: string
   status: string
   reason: string
   experience: string
@@ -51,7 +52,7 @@ export interface ProjectWithApplications extends Project {
 // 申请详情类型
 export interface ApplicationDetail {
   id: string
-  createAt: string
+  createdAt: string
   project: {
     id: string
     title: string
@@ -96,14 +97,13 @@ export interface UpdateProjectRequest {
   startTime: string
   endTime: string
   recruitNum: number
-  urgent: boolean
   status: string
   contact: string
 }
 
 // 删除项目请求体
 export interface DeleteProjectRequest {
-  projectId: string
+  projectId: number
 }
 
 // 申请加入项目请求体

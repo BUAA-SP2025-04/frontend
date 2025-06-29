@@ -582,8 +582,6 @@ const publishProject = async () => {
     // 清除错误信息
     clearErrors()
 
-    ElMessage.success('项目发布成功！')
-
     // 触发成功事件
     emit('success')
   } catch (error) {

@@ -24,7 +24,7 @@
       <!-- 项目信息 -->
       <div v-if="props.project" class="px-6 py-4 bg-gray-50 border-b border-gray-200">
         <h4 class="font-medium text-gray-900 mb-2">{{ props.project.title }}</h4>
-        <p class="text-sm text-gray-600 line-clamp-2">
+        <p class="text-sm text-gray-600">
           {{ props.project.description }}
         </p>
       </div>

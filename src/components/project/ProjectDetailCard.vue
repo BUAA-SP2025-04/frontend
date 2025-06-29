@@ -14,19 +14,6 @@
             >
               {{ getStatusText(project.status) }}
             </span>
-            <span
-              v-if="project.isUrgent"
-              class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700 border border-red-200"
-            >
-              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fill-rule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-              紧急
-            </span>
           </div>
           <button
             class="text-slate-400 hover:text-slate-600 transition-colors"
@@ -48,121 +35,7 @@
       <div class="p-6">
         <!-- 项目基本信息 -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <!-- 左侧：项目详情 -->
-          <div class="lg:col-span-2 space-y-6">
-            <!-- 项目描述 -->
-            <div class="bg-slate-50 rounded-xl p-6">
-              <h4 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                <svg
-                  class="w-5 h-5 mr-2 text-cyan-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  ></path>
-                </svg>
-                项目描述
-              </h4>
-              <p class="text-slate-700 leading-relaxed">{{ project.description }}</p>
-            </div>
-
-            <!-- 研究领域 -->
-            <div class="bg-blue-50 rounded-xl p-6">
-              <h4 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                <svg
-                  class="w-5 h-5 mr-2 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                  ></path>
-                </svg>
-                研究领域
-              </h4>
-              <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="field in project.fields"
-                  :key="field"
-                  class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
-                >
-                  {{ field }}
-                </span>
-              </div>
-            </div>
-
-            <!-- 合作需求 -->
-            <div class="bg-emerald-50 rounded-xl p-6">
-              <h4 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                <svg
-                  class="w-5 h-5 mr-2 text-emerald-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  ></path>
-                </svg>
-                合作需求
-              </h4>
-              <div class="space-y-2">
-                <span
-                  v-for="requirement in project.requirements"
-                  :key="requirement"
-                  class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 mr-2 mb-2"
-                >
-                  <svg class="w-3 h-3 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                  {{ requirement }}
-                </span>
-              </div>
-            </div>
-
-            <!-- 联系方式 -->
-            <div class="bg-amber-50 rounded-xl p-6">
-              <h4 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                <svg
-                  class="w-5 h-5 mr-2 text-amber-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  ></path>
-                </svg>
-                联系方式
-              </h4>
-              <div class="bg-white rounded-lg p-4 border border-amber-200">
-                <pre class="text-slate-700 whitespace-pre-wrap font-mono text-sm">{{
-                  project.contactInfo
-                }}</pre>
-              </div>
-            </div>
-          </div>
-
-          <!-- 右侧：项目统计 -->
+          <!-- 左侧：团队信息 -->
           <div class="space-y-6">
             <!-- 团队信息 -->
             <div class="bg-white rounded-xl border border-slate-200 p-6">
@@ -183,22 +56,98 @@
                 团队信息
               </h4>
               <div class="space-y-4">
-                <div class="flex justify-between items-center">
-                  <span class="text-slate-600">当前成员</span>
-                  <span class="font-semibold text-slate-900">{{ project.memberCount }} 人</span>
+                <!-- 项目负责人 -->
+                <div class="border-b border-slate-100 pb-3">
+                  <h5 class="text-sm font-medium text-slate-700 mb-2">项目负责人</h5>
+                  <div class="flex items-center space-x-3">
+                    <img
+                      :src="getAvatarUrl(project.owner?.imgUrl || '')"
+                      :alt="project.owner?.name || '负责人'"
+                      class="w-10 h-10 rounded-full object-cover border-2 border-slate-200"
+                    />
+                    <div>
+                      <p class="font-medium text-slate-900">{{ project.owner?.name || '未知' }}</p>
+                      <p class="text-sm text-slate-500">
+                        {{ project.owner?.institution || '未知机构' }}
+                      </p>
+                      <p class="text-xs text-slate-400">{{ project.owner?.title || '未知职位' }}</p>
+                    </div>
+                  </div>
                 </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-slate-600">最大规模</span>
-                  <span class="font-semibold text-slate-900">{{ project.maxMembers }} 人</span>
+
+                <!-- 合作者列表 -->
+                <div v-if="project.collaborators && project.collaborators.length > 0">
+                  <h5 class="text-sm font-medium text-slate-700 mb-2">
+                    合作者 ({{ project.collaborators.length }})
+                  </h5>
+                  <div class="space-y-3 max-h-48 overflow-y-auto">
+                    <div
+                      v-for="collaborator in project.collaborators"
+                      :key="collaborator.id"
+                      class="flex items-center space-x-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200"
+                    >
+                      <img
+                        :src="getAvatarUrl(collaborator.imgUrl || '')"
+                        :alt="collaborator.name"
+                        class="w-10 h-10 rounded-full object-cover border-2 border-slate-200 flex-shrink-0"
+                      />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-slate-900 truncate">
+                          {{ collaborator.name }}
+                        </p>
+                        <p class="text-xs text-slate-500 truncate">
+                          {{ collaborator.institution || '未知机构' }}
+                        </p>
+                        <p class="text-xs text-slate-400 truncate">
+                          {{ collaborator.title || '未知职位' }}
+                        </p>
+                      </div>
+                      <div class="flex-shrink-0">
+                        <span
+                          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                        >
+                          合作者
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="w-full bg-slate-200 rounded-full h-2">
-                  <div
-                    class="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-300"
-                    :style="{ width: `${(project.memberCount / project.maxMembers) * 100}%` }"
-                  ></div>
+                <div v-else class="text-center py-4 text-slate-500">
+                  <svg
+                    class="w-8 h-8 mx-auto mb-2 text-slate-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                    ></path>
+                  </svg>
+                  <p class="text-sm">暂无合作者</p>
                 </div>
-                <div class="text-center text-sm text-slate-500">
-                  还需 {{ project.maxMembers - project.memberCount }} 人
+
+                <!-- 团队规模信息 -->
+                <div class="border-t border-slate-100 pt-3">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-slate-600">当前成员</span>
+                    <span class="font-semibold text-slate-900">{{ project.memberCount }} 人</span>
+                  </div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-slate-600">最大规模</span>
+                    <span class="font-semibold text-slate-900">{{ project.maxMembers }} 人</span>
+                  </div>
+                  <div class="w-full bg-slate-200 rounded-full h-2 mb-2">
+                    <div
+                      class="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+                      :style="{ width: `${(project.memberCount / project.maxMembers) * 100}%` }"
+                    ></div>
+                  </div>
+                  <div class="text-center text-sm text-slate-500">
+                    还需 {{ project.maxMembers - project.memberCount }} 人
+                  </div>
                 </div>
               </div>
             </div>
@@ -227,19 +176,9 @@
                   <span class="font-semibold text-slate-900">{{ project.applicationCount }}</span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <span class="text-slate-600">浏览次数</span>
-                  <span class="font-semibold text-slate-900">{{ project.viewCount }}</span>
-                </div>
-                <div class="flex justify-between items-center">
                   <span class="text-slate-600">发布时间</span>
                   <span class="font-semibold text-slate-900">{{
-                    formatDate(project.createdAt)
-                  }}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-slate-600">更新时间</span>
-                  <span class="font-semibold text-slate-900">{{
-                    formatTime(project.updatedAt)
+                    formatTime(project.createdAt)
                   }}</span>
                 </div>
               </div>
@@ -279,6 +218,124 @@
               </div>
             </div>
           </div>
+
+          <!-- 右侧：项目详情 -->
+          <div class="lg:col-span-2 space-y-6">
+            <!-- 项目描述 -->
+            <div class="bg-slate-50 rounded-xl p-6">
+              <h4 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 text-cyan-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  ></path>
+                </svg>
+                项目描述
+              </h4>
+              <p class="text-slate-700 leading-relaxed">{{ project.description || '无' }}</p>
+            </div>
+
+            <!-- 研究领域 -->
+            <div class="bg-blue-50 rounded-xl p-6">
+              <h4 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                  ></path>
+                </svg>
+                研究领域
+              </h4>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  v-for="field in project.fields"
+                  :key="field"
+                  class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                >
+                  {{ field }}
+                </span>
+                <span v-if="project.fields.length === 0" class="text-slate-500 italic">无</span>
+              </div>
+            </div>
+
+            <!-- 合作需求 -->
+            <div class="bg-emerald-50 rounded-xl p-6">
+              <h4 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 text-emerald-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  ></path>
+                </svg>
+                合作需求
+              </h4>
+              <div class="space-y-2">
+                <template v-if="project.requirements.length > 0">
+                  <span
+                    v-for="requirement in project.requirements"
+                    :key="requirement"
+                    class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 mr-2 mb-2"
+                  >
+                    <svg class="w-3 h-3 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                    {{ requirement }}
+                  </span>
+                </template>
+                <p v-else class="text-slate-700 leading-relaxed">无</p>
+              </div>
+            </div>
+
+            <!-- 联系方式 -->
+            <div class="bg-amber-50 rounded-xl p-6">
+              <h4 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 text-amber-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  ></path>
+                </svg>
+                联系方式
+              </h4>
+              <div class="bg-white rounded-lg p-4 border border-amber-200">
+                <pre class="text-slate-700 whitespace-pre-wrap font-mono text-sm">{{
+                  project.contactInfo || '无'
+                }}</pre>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 底部操作按钮 -->
@@ -314,13 +371,23 @@ interface Project {
   maxMembers: number
   memberCount: number
   applicationCount: number
-  viewCount: number
-  isUrgent?: boolean
   createdAt: string
-  updatedAt: string
   startDate?: string
   endDate?: string
   contactInfo?: string
+  owner?: {
+    name: string
+    institution: string
+    title: string
+    imgUrl: string
+  }
+  collaborators?: {
+    id: number
+    name: string
+    institution: string
+    title: string
+    imgUrl: string
+  }[]
 }
 
 defineProps<{
@@ -347,6 +414,7 @@ const getStatusText = (status: string) => {
     recruiting: '招募中',
     ongoing: '进行中',
     completed: '已完成',
+    pending: '待开始',
   }
   return texts[status as keyof typeof texts] || texts.recruiting
 }
@@ -394,5 +462,15 @@ const formatDate = (dateString: string) => {
     month: 'long',
     day: 'numeric',
   }).format(date)
+}
+
+const getAvatarUrl = (imgUrl: string) => {
+  if (!imgUrl || imgUrl === '') {
+    return '/default-avatar.png'
+  }
+  if (imgUrl.startsWith('http')) {
+    return imgUrl
+  }
+  return import.meta.env.VITE_API_BASE_URL + imgUrl
 }
 </script>
