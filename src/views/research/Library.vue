@@ -1180,7 +1180,10 @@ const handlePaperAction = async (command: string) => {
       }
       let paper = papers.value.find(p => p.id === paperId)
       if(paper) {
-        router.push({ path: '/pdf-reader', query: { url: paper.pdfUrl } })
+        router.push({ path: '/pdf-reader', query: { 
+          url: paper.pdfUrl, 
+          paperId: paperId, 
+          allowEdit: 1 } })
         // window.open(`/pdf-readerpdfUrl=${paper.pdfUrl}`, '_blank')
       }else{
         paper = updatePapers.value.find(p => p.id === paperId)

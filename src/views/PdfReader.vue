@@ -18,7 +18,7 @@
               <el-button size="small" @click="zoomOut">缩小</el-button>
               <el-button size="small" @click="resetZoom">重置</el-button>
             </div> -->
-          <div class="tools">
+          <div class="tools" v-if="allowEdit">
             <button 
               class="tool-btn" 
               :class="{ active: activeTool === 'highlight' }"
@@ -166,6 +166,9 @@ const pdfLoaded = ref(false)
 const isPdfRendered = ref(false)
 const resizeObserver = ref<ResizeObserver | null>(null)
 
+const paperId = ref(0)
+const allowEdit = ref(0)
+
 const route = useRoute()
 
 // 批注相关状态
@@ -239,6 +242,8 @@ const resetZoom = () => {
 
 // 支持通过参数传递url并请求pdf
 onMounted(async () => {
+  if(route.query.paperId) paperId.value = parseInt(route.query.paperId as string)
+  if(route.query.allowEdit) allowEdit.value = parseInt(route.query.allowEdit as string)
   const urlParam = route.query.url as string | undefined
   if (urlParam) {
     showDownload.value = true
@@ -456,9 +461,9 @@ const handleMouseUp = () => {
   if (highlightPreview.value.width > 5 && highlightPreview.value.height > 5) {
     const commentText = prompt('请输入批注内容（可选）：', '');
     
-    const newAnnotation = {
-      id: Date.now().toString(),
-      type: 'highlight',
+    const newAnnotationUpload = {
+      // id: Date.now().toString(),
+      // type: 'highlight',
       page: currentPage.value,
       x: highlightPreview.value.x,
       y: highlightPreview.value.y,
@@ -466,7 +471,22 @@ const handleMouseUp = () => {
       height: highlightPreview.value.height,
       comment: commentText || '',
       markerX: highlightPreview.value.x + highlightPreview.value.width,
-      markerY: highlightPreview.value.y
+      markerY: highlightPreview.value.y,
+      paperId: paperId
+    };
+
+    const newAnnotation = {
+      id: Date.now().toString(),  // 后面再改
+      // type: 'highlight',
+      page: currentPage.value,
+      x: highlightPreview.value.x,
+      y: highlightPreview.value.y,
+      width: highlightPreview.value.width,
+      height: highlightPreview.value.height,
+      comment: commentText || '',
+      markerX: highlightPreview.value.x + highlightPreview.value.width,
+      markerY: highlightPreview.value.y,
+      paperId: paperId
     };
     
     annotations.value.push(newAnnotation);
@@ -478,17 +498,23 @@ const handleMouseUp = () => {
 };
 
 // 清除当前页批注
-const clearAnnotations = () => {
+const clearAnnotations = async () => {
   if (annotations.value.length === 0) {
     ElMessage.warning('当前没有可清除的批注');
     return;
   }
-  
-  annotations.value = annotations.value.filter(
-    anno => anno.page !== currentPage.value
-  );
-  redrawAnnotations();
-  ElMessage.success('已清除当前页所有批注');
+  try {
+    await ElMessageBox.confirm('确定清除当页所有批注吗？', '确认删除', {
+      type: 'warning',
+    })
+    annotations.value = annotations.value.filter(
+      anno => anno.page !== currentPage.value
+    );
+    redrawAnnotations();
+    ElMessage.success('已清除当前页所有批注');
+  } catch (error) {
+    // 用户取消
+  }
 };
 
 // 删除单个批注
