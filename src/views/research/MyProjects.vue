@@ -97,19 +97,6 @@
                   >
                     {{ getStatusText(project.status) }}
                   </span>
-                  <span
-                    v-if="project.isUrgent"
-                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700 border border-red-200"
-                  >
-                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fill-rule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clip-rule="evenodd"
-                      ></path>
-                    </svg>
-                    紧急
-                  </span>
                 </div>
                 <div class="flex flex-wrap gap-2 mb-3">
                   <span
@@ -126,17 +113,6 @@
                   @click="editProject"
                 >
                   编辑
-                </button>
-                <button
-                  :class="[
-                    'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                    project.status === 'recruiting'
-                      ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200',
-                  ]"
-                  @click="toggleProjectStatus(project)"
-                >
-                  {{ project.status === 'recruiting' ? '暂停招募' : '重新招募' }}
                 </button>
                 <button
                   class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
@@ -173,32 +149,6 @@
                   >{{ project.pendingApplications }}</span
                 ></span
               >
-              <span class="flex items-center"
-                ><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  ></path>
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  ></path></svg
-                >{{ project.viewCount }} 浏览</span
-              >
-              <span class="flex items-center"
-                ><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  ></path></svg
-                >{{ formatDate(project.createdAt) }}</span
-              >
             </div>
             <div class="flex items-center justify-between pt-4 border-t border-gray-200">
               <div class="flex space-x-3">
@@ -217,7 +167,7 @@
                   管理申请 ({{ project.applicationCount }})
                 </button>
               </div>
-              <div class="text-sm text-gray-500">更新于 {{ formatTime(project.updatedAt) }}</div>
+              <div class="text-sm text-gray-500">发布于 {{ formatTime(project.createdAt) }}</div>
             </div>
           </div>
         </div>
@@ -511,13 +461,68 @@
       @close="showPublishDialog = false"
       @success="handlePublishSuccess"
     />
+
+    <!-- 删除确认弹窗 -->
+    <div
+      v-if="showDeleteDialog"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
+      <div class="bg-white rounded-lg max-w-md w-full shadow-xl">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg
+                class="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                ></path>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-lg font-semibold text-gray-900">确认删除</h3>
+              <p class="text-sm text-gray-500 mt-1">此操作不可撤销</p>
+            </div>
+          </div>
+        </div>
+        <div class="px-6 py-4">
+          <p class="text-gray-700">
+            确定要删除项目
+            <span class="font-semibold text-gray-900">{{ projectToDelete?.title }}</span> 吗？
+          </p>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+          <button
+            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+            @click="showDeleteDialog = false"
+          >
+            取消
+          </button>
+          <button
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+            @click="confirmDelete"
+          >
+            删除
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMyProjectsWithApplications } from '@/api/modules/project'
+import { ElMessage } from 'element-plus'
+import {
+  getMyProjectsWithApplications,
+  deleteProject as deleteProjectApi,
+} from '@/api/modules/project'
 import type { ProjectWithApplications } from '@/api/types/project'
 import PublishProjectDialog from '@/components/project/PublishProjectDialog.vue'
 
@@ -533,10 +538,7 @@ interface MyProject {
   memberCount: number
   applicationCount: number
   pendingApplications: number
-  viewCount: number
-  isUrgent: boolean
   createdAt: string
-  updatedAt: string
 }
 interface Application {
   id: number
@@ -557,7 +559,9 @@ const projectStatusFilter = ref('')
 const applicationStatusFilter = ref('')
 const showPublishDialog = ref(false)
 const showApplicationsDialog = ref(false)
+const showDeleteDialog = ref(false)
 const selectedProjectForApplications = ref<MyProject | null>(null)
+const projectToDelete = ref<MyProject | null>(null)
 const loading = ref(false)
 
 // 项目数据
@@ -572,7 +576,7 @@ const loadMyProjects = async () => {
     const res = await getMyProjectsWithApplications()
     if (res && res.data) {
       myProjects.value = res.data.map((project: ProjectWithApplications) => ({
-        id: parseInt(project.id),
+        id: project.id,
         title: project.title,
         description: project.description || '无',
         fields: (project.researchArea || '')
@@ -588,10 +592,7 @@ const loadMyProjects = async () => {
         memberCount: project.recruitedNum,
         applicationCount: parseInt(project.applyNum),
         pendingApplications: project.applications?.length || 0, // 从申请列表获取待处理申请数
-        viewCount: 0, // 暂时设为0，后续可以从API获取
-        isUrgent: false, // 暂时设为false，后续可以从API获取
         createdAt: project.createdAt || '',
-        updatedAt: project.createdAt || '',
       }))
     }
   } catch (error) {
@@ -720,12 +721,6 @@ function formatTime(dateString: string) {
     minute: '2-digit',
   }).format(date)
 }
-function formatDate(dateString: string) {
-  if (!dateString) return '未知日期'
-  const date = new Date(dateString)
-  if (isNaN(date.getTime())) return '无效日期'
-  return new Intl.DateTimeFormat('zh-CN', { month: 'short', day: 'numeric' }).format(date)
-}
 function getAvatarUrl(imgUrl: string) {
   if (!imgUrl || imgUrl === '') return '/default-avatar.png'
   if (imgUrl.startsWith('http')) return imgUrl
@@ -764,38 +759,36 @@ function contactApplicant(application: Application) {
 function editProject() {
   ElMessage.info('编辑功能开发中...')
 }
-function toggleProjectStatus(project: MyProject) {
-  if (project.status === 'recruiting') {
-    project.status = 'ongoing'
-    ElMessage.success('已暂停招募')
-  } else {
-    project.status = 'recruiting'
-    ElMessage.success('已重新开始招募')
-  }
-  project.updatedAt = new Date().toISOString()
-}
 function deleteProject(projectId: number) {
-  ElMessageBox.confirm('确定要删除这个项目吗？此操作不可撤销。', '确认删除', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-    .then(() => {
-      const index = myProjects.value.findIndex(p => p.id === projectId)
-      if (index > -1) {
-        myProjects.value.splice(index, 1)
-        ElMessage.success('项目删除成功')
-      }
-    })
-    .catch(() => {
-      ElMessage.info('已取消删除')
-    })
+  const project = myProjects.value.find(p => p.id === projectId)
+  if (project) {
+    showDeleteDialog.value = true
+    projectToDelete.value = project
+  }
 }
 function handlePublishSuccess() {
   showPublishDialog.value = false
   ElMessage.success('项目发布成功！')
   // 重新加载项目列表
   loadMyProjects()
+}
+function confirmDelete() {
+  if (projectToDelete.value) {
+    deleteProjectApi({ projectId: projectToDelete.value.id })
+      .then(() => {
+        const index = myProjects.value.findIndex(p => p.id === projectToDelete.value!.id)
+        if (index > -1) {
+          myProjects.value.splice(index, 1)
+        }
+        ElMessage.success('项目删除成功')
+        showDeleteDialog.value = false
+        projectToDelete.value = null
+      })
+      .catch(error => {
+        console.error('删除项目失败:', error)
+        ElMessage.error('删除项目失败，请稍后重试')
+      })
+  }
 }
 
 // 页面初始化时加载数据
