@@ -68,11 +68,16 @@ export interface RPaper{
   abstracts?: string | null,
   uploaderId: number,
   institution?: string | null,
-  institutionId?: number | null,
   createdAt?: string,
   readerNum?: number,
   likeNum?: number,
   isPublic: string
+}
+
+export interface Author{
+  publicationId: number,
+  authorId: number,
+  authorName: string
 }
 
 // 响应类型
@@ -88,7 +93,10 @@ export type GetRecordListResponse = {
   data: Record[]
 };
 export type CreateRecordResponse = {data: Record};
-export type GetByIDResponse = {data: RPaper};
+export type GetByIDResponse = {data: {
+  publication: RPaper,
+  authors: Author[]
+}};
 export type GetFileUrlResponse = {data: string}
 export type GetUpdateResponse = {
   data: RPaper[]
