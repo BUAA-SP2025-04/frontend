@@ -63,8 +63,8 @@ export function getMyApplications(): Promise<ApplicationsResponse> {
 }
 
 // 检索项目
-export function searchProjects(title: string): Promise<ProjectsResponse> {
-  return request.get(`/project/getByTitle/${title}`)
+export function searchProjects(data: { title: string }): Promise<ProjectsResponse> {
+  return request.post('/project/getByTitle', data)
 }
 
 // 退出项目

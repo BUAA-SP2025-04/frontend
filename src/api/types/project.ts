@@ -112,9 +112,7 @@ export interface Application {
 
 // 带申请信息的项目类型
 export interface ProjectWithApplications extends Project {
-  applications: {
-    application: Application
-  }[]
+  applications: Application[]
 }
 
 // 申请详情类型

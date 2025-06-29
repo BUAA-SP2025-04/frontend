@@ -178,16 +178,14 @@
                               project.applications &&
                               Array.isArray(project.applications) &&
                               project.applications.filter(
-                                app =>
-                                  app && app.application && app.application.status === 'unhandled'
+                                app => app && app.applicant && app.status === 'unhandled'
                               ).length > 0
                             "
                             class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-red-500 text-white rounded-full"
                           >
                             {{
                               project.applications.filter(
-                                app =>
-                                  app && app.application && app.application.status === 'unhandled'
+                                app => app && app.applicant && app.status === 'unhandled'
                               ).length
                             }}
                           </span>
@@ -243,8 +241,8 @@
                       class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">全部状态</option>
-                      <option value="pending">待处理</option>
-                      <option value="approved">已通过</option>
+                      <option value="unhandled">待处理</option>
+                      <option value="accepted">已通过</option>
                       <option value="rejected">已拒绝</option>
                     </select>
                   </div>
@@ -333,17 +331,11 @@
                         </div>
                         <div class="flex space-x-2">
                           <button
-                            v-if="application.status === 'pending'"
+                            v-if="application.status === 'unhandled'"
                             class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
                             @click="cancelApplication(application.id)"
                           >
                             取消申请
-                          </button>
-                          <button
-                            class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                            @click="viewProjectDetail(application.project.id)"
-                          >
-                            查看项目详情
                           </button>
                         </div>
                       </div>
@@ -865,20 +857,20 @@ const getStatusText = (status: string) => {
 
 const getApplicationStatusColor = (status: string) => {
   const colors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    approved: 'bg-green-100 text-green-800',
+    unhandled: 'bg-yellow-100 text-yellow-800',
+    accepted: 'bg-green-100 text-green-800',
     rejected: 'bg-red-100 text-red-800',
   }
-  return colors[status as keyof typeof colors] || colors.pending
+  return colors[status as keyof typeof colors] || colors.unhandled
 }
 
 const getApplicationStatusText = (status: string) => {
   const texts = {
-    pending: '待处理',
-    approved: '已通过',
+    unhandled: '待处理',
+    accepted: '已通过',
     rejected: '已拒绝',
   }
-  return texts[status as keyof typeof texts] || texts.pending
+  return texts[status as keyof typeof texts] || texts.unhandled
 }
 
 const formatTime = (dateString: string) => {
