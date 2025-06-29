@@ -4,7 +4,7 @@
       <!-- 页面标题和操作按钮 -->
       <div class="flex justify-between items-center mb-8">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">我的工作台</h1>
+          <h1 class="text-3xl font-bold text-gray-900">项目管理</h1>
           <p class="mt-2 text-gray-600">管理你的项目、申请和参与情况</p>
         </div>
         <button
@@ -18,7 +18,7 @@
       <!-- 标签页 -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <el-tabs v-model="activeTab" class="project-tabs" @tab-click="handleTabClick">
-          <el-tab-pane label="我创建的" name="created">
+          <el-tab-pane label="我创建的项目" name="created">
             <div class="p-6">
               <!-- 我创建的项目内容 -->
               <div class="mb-6">
@@ -47,7 +47,7 @@
                   <!-- 加载状态 -->
                   <div v-if="loading" class="flex justify-center items-center py-12">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <span class="ml-3 text-gray-600">正在加载我的项目...</span>
+                    <span class="ml-3 text-gray-600">正在加载项目数据...</span>
                   </div>
 
                   <!-- 空状态 -->
@@ -105,15 +105,18 @@
                             <span
                               :class="[
                                 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
-                                getStatusColor(project.status),
+                                getStatusColor(getProjectStatus(project)),
                               ]"
                             >
-                              {{ getStatusText(project.status) }}
+                              {{ getStatusText(getProjectStatus(project)) }}
                             </span>
                           </div>
                           <div class="flex flex-wrap gap-2 mb-3">
                             <span
-                              v-for="field in project.fields"
+                              v-for="field in (project.researchArea || '')
+                                .split(',')
+                                .map(f => f.trim())
+                                .filter(f => f)"
                               :key="field"
                               class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
                             >
@@ -152,7 +155,7 @@
                               d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                             ></path>
                           </svg>
-                          {{ project.memberCount }}/{{ project.maxMembers }} 成员
+                          {{ project.recruitedNum }}/{{ project.recruitNum }} 成员
                         </span>
                         <span class="flex items-center">
                           <svg
@@ -168,12 +171,25 @@
                               d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
                             ></path>
                           </svg>
-                          {{ project.applicationCount }} 申请
+                          {{ project.applyNum }} 申请
                           <span
-                            v-if="project.pendingApplications > 0"
+                            v-if="
+                              !loading &&
+                              project.applications &&
+                              Array.isArray(project.applications) &&
+                              project.applications.filter(
+                                app =>
+                                  app && app.application && app.application.status === 'unhandled'
+                              ).length > 0
+                            "
                             class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-red-500 text-white rounded-full"
                           >
-                            {{ project.pendingApplications }}
+                            {{
+                              project.applications.filter(
+                                app =>
+                                  app && app.application && app.application.status === 'unhandled'
+                              ).length
+                            }}
                           </span>
                         </span>
                       </div>
@@ -181,7 +197,7 @@
                         <div class="flex space-x-3">
                           <button
                             class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                            @click="openApplicationsDialog()"
+                            @click="openApplicationsDialog(project)"
                           >
                             <svg
                               class="w-4 h-4 mr-2"
@@ -196,7 +212,7 @@
                                 d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
                               ></path>
                             </svg>
-                            管理申请 ({{ project.applicationCount }})
+                            管理申请 ({{ project.applyNum }})
                           </button>
                         </div>
                         <div class="text-sm text-gray-500">
@@ -210,7 +226,7 @@
             </div>
           </el-tab-pane>
 
-          <el-tab-pane label="我申请的" name="applied">
+          <el-tab-pane label="我的申请" name="applied">
             <div class="p-6">
               <!-- 我申请的项目内容 -->
               <div class="mb-6">
@@ -239,7 +255,7 @@
                   <!-- 加载状态 -->
                   <div v-if="loading" class="flex justify-center items-center py-12">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <span class="ml-3 text-gray-600">正在加载我的申请...</span>
+                    <span class="ml-3 text-gray-600">正在加载申请数据...</span>
                   </div>
 
                   <!-- 空状态 -->
@@ -323,6 +339,12 @@
                           >
                             取消申请
                           </button>
+                          <button
+                            class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                            @click="viewProjectDetail(application.project.id)"
+                          >
+                            查看项目详情
+                          </button>
                         </div>
                       </div>
                       <p class="text-gray-600 mb-4 line-clamp-2">
@@ -372,7 +394,7 @@
                         <div class="flex space-x-3">
                           <button
                             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                            @click="viewProjectDetail()"
+                            @click="viewProjectDetail(application.project.id)"
                           >
                             查看项目详情
                           </button>
@@ -385,7 +407,7 @@
             </div>
           </el-tab-pane>
 
-          <el-tab-pane label="我加入的" name="joined">
+          <el-tab-pane label="我加入的项目" name="joined">
             <div class="p-6">
               <!-- 我加入的项目内容 -->
               <div class="mb-6">
@@ -480,11 +502,14 @@
                           </div>
                           <div class="flex flex-wrap gap-2 mb-3">
                             <span
-                              v-for="field in (project.researchArea || '').split(',')"
+                              v-for="field in (project.researchArea || '')
+                                .split(',')
+                                .map(f => f.trim())
+                                .filter(f => f)"
                               :key="field"
                               class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
                             >
-                              {{ field.trim() }}
+                              {{ field }}
                             </span>
                           </div>
                         </div>
@@ -539,7 +564,7 @@
                         <div class="flex space-x-3">
                           <button
                             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                            @click="viewProjectDetail()"
+                            @click="viewProjectDetail(project.id)"
                           >
                             查看项目详情
                           </button>
@@ -613,6 +638,22 @@
         </div>
       </div>
     </div>
+
+    <!-- 项目详情弹窗 -->
+    <ProjectDetailCard
+      v-if="showProjectDetail && selectedProjectForDetail"
+      :project="selectedProjectForDetail"
+      :is-my-project="false"
+      @close="showProjectDetail = false"
+    />
+
+    <!-- 申请管理弹窗 -->
+    <ApplicationsDialog
+      v-if="showApplicationsDialog && selectedProjectForApplications"
+      :project="selectedProjectForApplications"
+      @close="showApplicationsDialog = false"
+      @refresh="handleApplicationsRefresh"
+    />
   </div>
 </template>
 
@@ -621,7 +662,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
-  getMyProjectsWithApplications,
+  getMyProjects,
   getMyApplications,
   getMyJoinedProjects,
   deleteProject as deleteProjectApi,
@@ -630,9 +671,41 @@ import {
 } from '@/api/modules/project'
 import type { ProjectWithApplications, ApplicationDetail, Project } from '@/api/types/project'
 import PublishProjectDialog from '@/components/project/PublishProjectDialog.vue'
+import ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
+import ApplicationsDialog from '@/components/project/ApplicationsDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
+
+// 为ProjectDetailCard组件定义项目类型
+interface DetailProject {
+  id: number
+  title: string
+  description: string
+  fields: string[]
+  requirements: string[]
+  status: string
+  maxMembers: number
+  memberCount: number
+  applicationCount: number
+  createdAt: string
+  startDate?: string
+  endDate?: string
+  contactInfo?: string
+  owner?: {
+    name: string
+    institution: string
+    title: string
+    imgUrl: string
+  }
+  collaborators?: {
+    id: number
+    name: string
+    institution: string
+    title: string
+    imgUrl: string
+  }[]
+}
 
 // 标签页控制
 const activeTab = ref('created')
@@ -641,7 +714,11 @@ const activeTab = ref('created')
 const loading = ref(false)
 const showPublishDialog = ref(false)
 const showDeleteDialog = ref(false)
-const projectToDelete = ref<unknown>(null)
+const projectToDelete = ref<ProjectWithApplications | null>(null)
+const showProjectDetail = ref(false)
+const selectedProjectForDetail = ref<DetailProject | null>(null)
+const showApplicationsDialog = ref(false)
+const selectedProjectForApplications = ref<ProjectWithApplications | null>(null)
 
 // 筛选器
 const projectStatusFilter = ref('')
@@ -649,7 +726,7 @@ const applicationStatusFilter = ref('')
 const joinedProjectStatusFilter = ref('')
 
 // 数据
-const myProjects = ref<any[]>([])
+const myProjects = ref<ProjectWithApplications[]>([])
 const myApplications = ref<ApplicationDetail[]>([])
 const myJoinedProjects = ref<Project[]>([])
 
@@ -657,7 +734,7 @@ const myJoinedProjects = ref<Project[]>([])
 const filteredMyProjects = computed(() => {
   let filtered = myProjects.value
   if (projectStatusFilter.value) {
-    filtered = filtered.filter(p => p.status === projectStatusFilter.value)
+    filtered = filtered.filter(p => getProjectStatus(p) === projectStatusFilter.value)
   }
   return filtered
 })
@@ -679,7 +756,7 @@ const filteredMyJoinedProjects = computed(() => {
 })
 
 // 方法
-const handleTabClick = (tab: any) => {
+const handleTabClick = (tab: { name: string }) => {
   // 更新URL query参数
   router.push({
     path: route.path,
@@ -690,30 +767,14 @@ const handleTabClick = (tab: any) => {
 const loadMyProjects = async () => {
   loading.value = true
   try {
-    const res = await getMyProjectsWithApplications()
+    const res = await getMyProjects()
     if (res && res.data) {
-      myProjects.value = res.data.map((project: ProjectWithApplications) => ({
-        id: project.id,
-        title: project.title,
-        description: project.description || '无',
-        fields: (project.researchArea || '')
-          .split(',')
-          .filter(field => field.trim())
-          .map(field => field.trim()),
-        requirements: (project.collaborationCondition || '')
-          .split(',')
-          .filter(req => req.trim())
-          .map(req => req.trim()),
-        status: getProjectStatus(project),
-        maxMembers: project.recruitNum,
-        memberCount: project.recruitedNum,
-        applicationCount: parseInt(project.applyNum),
-        pendingApplications: project.applications?.length || 0,
-        createdAt: project.createdAt || '',
-      }))
+      myProjects.value = res.data
+    } else {
+      console.warn('API响应中没有data字段:', res)
     }
   } catch (error) {
-    console.error('获取我的项目失败:', error)
+    console.error('获取项目数据失败:', error)
     ElMessage.error('获取项目列表失败，请稍后重试')
   } finally {
     loading.value = false
@@ -726,6 +787,8 @@ const loadMyApplications = async () => {
     const res = await getMyApplications()
     if (res && res.data) {
       myApplications.value = res.data
+    } else {
+      console.warn('API响应中没有data字段:', res)
     }
   } catch (error) {
     console.error('获取我的申请失败:', error)
@@ -741,6 +804,8 @@ const loadMyJoinedProjects = async () => {
     const res = await getMyJoinedProjects()
     if (res && res.data) {
       myJoinedProjects.value = res.data
+    } else {
+      console.warn('API响应中没有data字段:', res)
     }
   } catch (error) {
     console.error('获取我加入的项目失败:', error)
@@ -750,7 +815,9 @@ const loadMyJoinedProjects = async () => {
   }
 }
 
-const getProjectStatus = (project: any): 'recruiting' | 'ongoing' | 'completed' | 'pending' => {
+const getProjectStatus = (
+  project: ProjectWithApplications | Project
+): 'recruiting' | 'ongoing' | 'completed' | 'pending' => {
   const now = new Date()
   const startTime = new Date(project.startTime)
   const endTime = new Date(project.endTime)
@@ -835,8 +902,13 @@ const formatTime = (dateString: string) => {
   }).format(date)
 }
 
-const openApplicationsDialog = () => {
-  ElMessage.info('申请管理功能开发中...')
+const openApplicationsDialog = (project: ProjectWithApplications) => {
+  selectedProjectForApplications.value = project
+  showApplicationsDialog.value = true
+}
+
+const handleApplicationsRefresh = () => {
+  loadMyProjects()
 }
 
 const editProject = () => {
@@ -898,8 +970,115 @@ const quitProject = async (projectId: number) => {
   }
 }
 
-const viewProjectDetail = () => {
-  ElMessage.info('项目详情功能开发中...')
+const viewProjectDetail = (projectId: number) => {
+  // 根据当前标签页找到对应的项目
+
+  if (activeTab.value === 'created') {
+    // 从我创建的项目中查找
+    const myProject = myProjects.value.find(p => p.id === projectId)
+    if (myProject) {
+      // 需要从原始数据中获取完整的项目信息
+      // 这里暂时使用简化版本
+      const adaptedProject: DetailProject = {
+        id: myProject.id,
+        title: myProject.title,
+        description: myProject.description,
+        fields: (myProject.researchArea || '')
+          .split(',')
+          .map(f => f.trim())
+          .filter(f => f),
+        requirements: (myProject.collaborationCondition || '')
+          .split(',')
+          .map(r => r.trim())
+          .filter(r => r),
+        status: getProjectStatus(myProject),
+        maxMembers: myProject.recruitNum,
+        memberCount: myProject.recruitedNum,
+        applicationCount: parseInt(myProject.applyNum),
+        createdAt: myProject.createdAt,
+        owner: {
+          name: '我',
+          imgUrl: '',
+          institution: '',
+          title: '',
+        },
+        collaborators: [],
+      }
+      selectedProjectForDetail.value = adaptedProject
+      showProjectDetail.value = true
+    }
+  } else if (activeTab.value === 'applied') {
+    // 从我的申请中查找
+    const application = myApplications.value.find(app => app.project.id === projectId)
+    if (application) {
+      const adaptedProject: DetailProject = {
+        id: application.project.id,
+        title: application.project.title,
+        description: application.project.description,
+        fields: (application.project.researchArea || '')
+          .split(',')
+          .map(f => f.trim())
+          .filter(f => f),
+        requirements: (application.project.collaborationCondition || '')
+          .split(',')
+          .map(r => r.trim())
+          .filter(r => r),
+        status: 'recruiting', // 申请详情中没有status字段，使用默认值
+        maxMembers: application.project.recruitNum,
+        memberCount: application.project.recruitedNum,
+        applicationCount: parseInt(application.project.applyNum),
+        createdAt: application.project.createAt, // 使用正确的字段名
+        owner: {
+          name: application.project.owner.name,
+          imgUrl: application.project.owner.imgUrl,
+          institution: application.project.owner.institution,
+          title: application.project.owner.title,
+        },
+        collaborators: [],
+      }
+      selectedProjectForDetail.value = adaptedProject
+      showProjectDetail.value = true
+    }
+  } else if (activeTab.value === 'joined') {
+    // 从我加入的项目中查找
+    const joinedProject = myJoinedProjects.value.find(p => p.id === projectId)
+    if (joinedProject) {
+      const adaptedProject: DetailProject = {
+        id: joinedProject.id,
+        title: joinedProject.title,
+        description: joinedProject.description,
+        fields: (joinedProject.researchArea || '')
+          .split(',')
+          .map(f => f.trim())
+          .filter(f => f),
+        requirements: (joinedProject.collaborationCondition || '')
+          .split(',')
+          .map(r => r.trim())
+          .filter(r => r),
+        status: 'recruiting', // 使用默认状态
+        maxMembers: joinedProject.recruitNum,
+        memberCount: joinedProject.recruitedNum,
+        applicationCount: parseInt(joinedProject.applyNum),
+        createdAt: joinedProject.createdAt,
+        owner: {
+          name: joinedProject.owner.name,
+          imgUrl: joinedProject.owner.imgUrl,
+          institution: joinedProject.owner.institution,
+          title: joinedProject.owner.title,
+        },
+        collaborators:
+          joinedProject.cooperators?.map(c => ({
+            id: c.id,
+            name: c.name,
+            imgUrl: c.imgUrl,
+            institution: c.institution,
+            title: c.title,
+          })) || [],
+      }
+      selectedProjectForDetail.value = adaptedProject
+      showProjectDetail.value = true
+    }
+  }
 }
 
 const handlePublishSuccess = () => {
@@ -914,6 +1093,18 @@ watch(
   newTab => {
     if (newTab && ['created', 'applied', 'joined'].includes(newTab as string)) {
       activeTab.value = newTab as string
+      // 立即加载对应标签页的数据
+      switch (newTab) {
+        case 'created':
+          loadMyProjects()
+          break
+        case 'applied':
+          loadMyApplications()
+          break
+        case 'joined':
+          loadMyJoinedProjects()
+          break
+      }
     }
   },
   { immediate: true }
@@ -939,6 +1130,18 @@ onMounted(() => {
   const tab = route.query.tab as string
   if (tab && ['created', 'applied', 'joined'].includes(tab)) {
     activeTab.value = tab
+    // 立即加载对应标签页的数据
+    switch (tab) {
+      case 'created':
+        loadMyProjects()
+        break
+      case 'applied':
+        loadMyApplications()
+        break
+      case 'joined':
+        loadMyJoinedProjects()
+        break
+    }
   } else {
     // 默认加载我创建的项目
     loadMyProjects()

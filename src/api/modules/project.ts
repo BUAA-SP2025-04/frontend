@@ -76,3 +76,8 @@ export function cancelJoinProject(data: { projectId: number }): Promise<EmptyRes
 export function getMyJoinedProjects(): Promise<ProjectsResponse> {
   return request.get('/project/getMyJoined')
 }
+
+// 获取我的项目（包含申请信息）
+export function getMyProjects(): Promise<ProjectWithApplicationsResponse> {
+  return request.get('/project/myProject')
+}
