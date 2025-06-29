@@ -144,26 +144,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/research/my-projects',
     name: 'MyProjects',
-    component: () => import('@/views/research/MyProjects.vue'),
-    meta: { title: '我的项目管理' },
+    redirect: '/research/my-workspace',
   },
   {
     path: '/research/my-workspace',
     name: 'MyWorkspace',
     component: () => import('@/views/research/MyWorkspace.vue'),
-    meta: { title: '我的工作台' },
-  },
-  {
-    path: '/research/my-applications',
-    name: 'MyApplications',
-    component: () => import('@/views/research/MyApplications.vue'),
-    meta: { title: '我的申请' },
-  },
-  {
-    path: '/research/my-joined-projects',
-    name: 'MyJoinedProjects',
-    component: () => import('@/views/research/MyJoinedProjects.vue'),
-    meta: { title: '我加入的项目' },
+    meta: { title: '项目管理' },
   },
   {
     path: '/research/my-questions',

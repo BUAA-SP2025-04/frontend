@@ -346,14 +346,6 @@
           >
             关闭
           </button>
-          <button
-            v-if="!isMyProject"
-            :disabled="project.status !== 'recruiting'"
-            class="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-            @click="$emit('apply', project.id)"
-          >
-            申请加入
-          </button>
         </div>
       </div>
     </div>
@@ -397,7 +389,6 @@ defineProps<{
 
 defineEmits<{
   close: []
-  apply: [projectId: number]
 }>()
 
 const getStatusColor = (status: string) => {

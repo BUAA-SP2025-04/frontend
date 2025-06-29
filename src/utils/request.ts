@@ -1,6 +1,7 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 
 // 响应数据接口
 interface ApiResponse<T = unknown> {
@@ -28,11 +29,12 @@ const request: AxiosInstance = axios.create({
 request.interceptors.request.use(
   config => {
     // 添加token认证
-    const token = localStorage.getItem('token')?.trim().replace(/\s/g, '') || 'mock-token-123456' // 开发时使用固定token
+    const userStore = useUserStore()
+    const token = userStore.token || localStorage.getItem('token') || 'mock-token-123456'
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    //console.log(token)
+    console.log('请求token:', token)
 
     // 添加时间戳防止缓存
     if (config.method === 'get') {
@@ -42,7 +44,7 @@ request.interceptors.request.use(
       }
     }
 
-    //console.log('请求配置:', config) // 调试日志
+    console.log('请求配置:', config) // 调试日志
     return config
   },
   error => {

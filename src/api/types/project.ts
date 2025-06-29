@@ -11,6 +11,74 @@ export interface ProjectUser {
   createdAt: string
 }
 
+// 申请者类型（实际后端返回）
+export interface Applicant {
+  id: number
+  name: string
+  gender: string
+  bio: string | null
+  researchArea: string | null
+  institution: string
+  title: string | null
+  imgUrl: string
+  email: string
+  createdAt: number
+  followerNum: number
+  subjectNum: number
+  publishNum: number
+}
+
+// 合作者类型
+export interface Cooperator {
+  id: number
+  name: string
+  imgUrl: string
+  institution: string
+  researchArea: string
+  title: string
+  createdAt: string
+}
+
+// 申请应用类型
+export interface ApplicationApplication {
+  id: string
+  applicant: Applicant
+  contact: string
+  createAt: string
+  experience: string
+  reason: string
+  status: string
+  workTime: string
+}
+
+// 申请元素类型
+export interface ApplicationElement {
+  application: ApplicationApplication
+}
+
+// 项目类型（我的项目接口返回 - 实际数据结构）
+export interface MyProject {
+  id: number
+  title: string
+  description: string
+  cooperators: Cooperator[]
+  collaborationCondition: string
+  createdAt: string
+  researchArea: string
+  startTime: string
+  endTime: string
+  recruitNum: number
+  recruitedNum: number
+  applyNum: string
+  contact: string
+  applications: Application[]
+}
+
+// 我的项目响应类型
+export interface MyProjectsResponse {
+  projects: MyProject[]
+}
+
 // 项目类型
 export interface Project {
   id: number
@@ -30,16 +98,16 @@ export interface Project {
   projBelongings: number
 }
 
-// 申请类型
+// 申请类型（实际后端返回）
 export interface Application {
   id: number
-  applicant: ProjectUser
+  applicant: Applicant
   createdAt: string
   status: string
   reason: string
   experience: string
   contact: string
-  time: string
+  workTime: string
 }
 
 // 带申请信息的项目类型

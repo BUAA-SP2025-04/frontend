@@ -14,7 +14,7 @@
             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
             @click="router.push('/research/my-workspace')"
           >
-            我的工作台
+            项目管理
           </button>
         </div>
       </div>
@@ -450,7 +450,6 @@
       :project="selectedProjectForDetail"
       :is-my-project="selectedProjectForDetail && selectedProjectForDetail.projBelongings === 3"
       @close="showProjectDetail = false"
-      @apply="handleProjectDetailApply"
     />
   </div>
 </template>
@@ -883,16 +882,6 @@ const handleApplicationSuccess = () => {
 
 const manageProject = () => {
   router.push('/research/my-workspace')
-}
-
-const handleProjectDetailApply = (projectId: number) => {
-  // 根据projectId找到对应的项目
-  const project = projects.value.find(p => p.id === projectId)
-  if (project) {
-    selectedProjectForApplication.value = project
-    showApplicationDialog.value = true
-    showProjectDetail.value = false // 关闭项目详情弹窗
-  }
 }
 
 onMounted(() => {
