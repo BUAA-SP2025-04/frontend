@@ -498,14 +498,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import {
-  getResearcherCount,
-  getPaperCount,
-  getMessageCount,
   getHotFields,
+  getMessageCount,
+  getPaperCount,
+  getResearcherCount,
 } from '@/api/modules/statistics'
 
 const router = useRouter()

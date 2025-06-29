@@ -418,19 +418,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getPublicationInformById, readPublication } from '@/api/modules/publication'
 import {
-  getPublicationComments,
-  likeComment,
   disLikeComment,
+  getPublicationComments,
   getReplyComments,
+  likeComment,
 } from '@/api/modules/comment'
 import type { Publication } from '@/api/types/publication'
 import type { Comment } from '@/api/types/comment'
-import type { UserDetail } from '@/api/types/user'
 import PublicationCommentComp from '@/components/PublicationComment.vue'
 import CommentForm from '@/components/CommentForm.vue'
 

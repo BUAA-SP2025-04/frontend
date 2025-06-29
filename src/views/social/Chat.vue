@@ -648,8 +648,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { wsService } from '@/utils/websocketChat'
@@ -685,7 +685,7 @@ const isConnected = ref(false)
 // 获取当前用户ID - 确保类型一致
 const currentUserId = computed(() => {
   const userId = userStore.user?.id
-  return typeof userId === 'string' ? parseInt(userId) : (userId || 1)
+  return typeof userId === 'string' ? parseInt(userId) : userId || 1
 })
 const currentUser = computed(() => userStore.user)
 const chatUserId = computed(() => parseInt(route.params.userId as string))
@@ -700,10 +700,46 @@ const conversationId = computed(() => {
 
 // 常用表情和快捷短语
 const commonEmojis = [
-  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
-  '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
-  '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩',
-  '🥳', '👍', '👎', '👌', '✌️', '🤞', '🤝', '👏', '🙌', '💪',
+  '😀',
+  '😃',
+  '😄',
+  '😁',
+  '😆',
+  '😅',
+  '😂',
+  '🤣',
+  '😊',
+  '😇',
+  '🙂',
+  '🙃',
+  '😉',
+  '😌',
+  '😍',
+  '🥰',
+  '😘',
+  '😗',
+  '😙',
+  '😚',
+  '😋',
+  '😛',
+  '😝',
+  '😜',
+  '🤪',
+  '🤨',
+  '🧐',
+  '🤓',
+  '😎',
+  '🤩',
+  '🥳',
+  '👍',
+  '👎',
+  '👌',
+  '✌️',
+  '🤞',
+  '🤝',
+  '👏',
+  '🙌',
+  '💪',
 ]
 
 const quickPhrases = [
@@ -797,10 +833,10 @@ const loadChatUser = async () => {
 // 初始化 WebSocket 连接
 const initializeWebSocket = () => {
   console.log('初始化 WebSocket 连接...')
-  
+
   // 先断开现有连接
   wsService.disconnect()
-  
+
   // 清除之前的监听器
   wsService.off('connected', handleConnected)
   wsService.off('disconnected', handleDisconnected)
@@ -853,10 +889,9 @@ const handleNewMessage = (data: any) => {
     if (!existingMessage) {
       messages.value.push(data.message)
       scrollToBottom()
-      
+
       // 如果消息不是自己发送的，播放提示音
       if (data.message.senderId !== currentUserId.value) {
-        
       }
     }
   }
@@ -988,7 +1023,7 @@ const sendFileMessage = async (file: File) => {
 
   try {
     console.log('开始上传文件:', file.name, file.size, file.type)
-    
+
     // 上传文件
     const uploadResponse = await uploadFile(file)
     console.log('文件上传响应:', uploadResponse)
@@ -1085,7 +1120,8 @@ const loadMessages = async (loadMore = false) => {
 const playNotificationSound = () => {
   try {
     const audio = new Audio()
-    audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjeN1O/MeiMGI3vD8OGOQQIUXrTp66hVFApGn+DyvmwhBjeN1O/MeiMGI3vD8OGOQQIUXrTp66hVFApGn+DyvmwhBjaLy/DJciMFImY=' 
+    audio.src =
+      'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjeN1O/MeiMGI3vD8OGOQQIUXrTp66hVFApGn+DyvmwhBjeN1O/MeiMGI3vD8OGOQQIUXrTp66hVFApGn+DyvmwhBjaLy/DJciMFImY='
     audio.play().catch(() => {
       // 静默处理，某些浏览器不允许自动播放
     })
@@ -1120,7 +1156,7 @@ onUnmounted(() => {
 // 监听路由变化，重新初始化聊天
 watch(
   () => route.params.userId,
-  (newUserId) => {
+  newUserId => {
     if (newUserId) {
       console.log('路由变化，重新初始化聊天:', newUserId)
       initializeChat()

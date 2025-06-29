@@ -455,10 +455,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getAllProjects, cancelApplication } from '@/api/modules/project'
+import { cancelApplication, getAllProjects } from '@/api/modules/project'
 import type { Project } from '@/api/types/project'
 import ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
 import ApplyProjectDialog from '@/components/project/ApplyProjectDialog.vue'

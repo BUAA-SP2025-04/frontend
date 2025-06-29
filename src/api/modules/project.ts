@@ -1,15 +1,15 @@
 import request from '@/utils/request'
 import type {
   AddProjectRequest,
-  UpdateProjectRequest,
-  DeleteProjectRequest,
+  ApplicationsResponse,
   ApplyProjectRequest,
   CancelApplicationRequest,
+  DeleteProjectRequest,
+  EmptyResponse,
   HandleApplicationRequest,
   ProjectsResponse,
   ProjectWithApplicationsResponse,
-  ApplicationsResponse,
-  EmptyResponse,
+  UpdateProjectRequest,
 } from '../types/project'
 
 // 添加项目
