@@ -321,7 +321,7 @@ const prepareChartData = (nodes: any[], links: any[]) => {
   const chartNodes = nodes.map(node => ({
     id: node.id,
     name: node.name,
-    symbolSize: 35,
+    symbolSize: 45,
     itemStyle: {
       color: '#8b5cf6',
     },
@@ -400,9 +400,9 @@ const updateChart = (chartInstance: echarts.ECharts, data: any) => {
         force:
           props.layoutType === 'force'
             ? {
-                repulsion: [100, 200],
-                gravity: 0.1,
-                edgeLength: [80, 150],
+                repulsion: [200, 400],
+                gravity: 0.05,
+                edgeLength: [120, 200],
                 layoutAnimation: true,
               }
             : undefined,

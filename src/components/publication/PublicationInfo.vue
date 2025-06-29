@@ -25,13 +25,13 @@
             <template
               v-if="
                 publication.authors && Array.isArray(publication.authors) 
-                  ? publication.authors.map(a => a.authorName).join(',').split(',').filter((a: string) => a.trim()).length
+                  ? publication.authors.map(a => a.authorName || a.name).join(',').split(',').filter((a: string) => a.trim()).length
                   : 0
               "
             >
               <el-tag
                 v-for="author in Array.isArray(publication.authors)
-                  ? publication.authors.map(a => a.authorName)
+                  ? publication.authors.map(a => a.authorName || a.name)
                   : []"
                 :key="author"
                 class="pub-keyword"

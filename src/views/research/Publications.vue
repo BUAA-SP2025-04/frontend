@@ -120,9 +120,7 @@
 
           <el-table-column prop="authors" label="作者" min-width="180">
             <template #default="{ row }">
-              <span>{{
-                row.authors.map((a: any) => a.authorName).join(', ') || '暂无数据'
-              }}</span>
+              <span>{{ row.authors.map(a => a.authorName).join(', ') || '暂无数据' }}</span>
             </template>
           </el-table-column>
 
@@ -385,20 +383,40 @@
             <div class="space-y-3">
               <div
                 v-for="result in claimResults"
-                :key="result.id"
+                :key="result.publication.id"
                 class="border rounded-lg p-4 hover:bg-gray-50"
               >
                 <div class="flex justify-between items-start">
                   <div class="flex-1">
-                    <h5 class="font-medium text-gray-900">{{ result.title }}</h5>
-                    <p class="text-sm text-gray-600 mt-1">{{ formatAuthors(result.authors) }}</p>
-                    <p class="text-sm text-gray-500">{{ result.venue }} ({{ result.year }})</p>
-                    <div class="flex items-center mt-2 space-x-4 text-xs text-gray-400">
-                      <span>阅读量: {{ result.readerNum || 0 }}</span>
-                      <span>点赞数: {{ result.likeNum || 0 }}</span>
-                      <el-tag :type="getTypeColor(result.type)" size="small">
-                        {{ getTypeLabel(result.type) }}
+                    <div class="flex items-center gap-2 mb-2">
+                      <h5 class="text-xl font-semibold text-gray-900">
+                        {{ result.publication.title || '暂无标题' }}
+                      </h5>
+                      <el-tag :type="getTypeColor(result.publication.type)" size="small">
+                        {{ getTypeLabel(result.publication.type) || '未知类型' }}
                       </el-tag>
+                    </div>
+                    <div class="space-y-1.5">
+                      <p class="text-sm text-gray-600">
+                        <span class="text-gray-500 font-medium">作者：</span>
+                        {{ formatAuthors(result.authors) }}
+                      </p>
+                      <p class="text-sm text-gray-600">
+                        <span class="text-gray-500 font-medium">发表于：</span>
+                        {{ result.publication.venue || '未知机构' }} ({{
+                          result.publication.year || '未知年份'
+                        }})
+                      </p>
+                      <div class="flex items-center space-x-4 text-xs text-gray-600 mt-8">
+                        <span
+                          ><span class="text-gray-500 font-medium">阅读量：</span
+                          >{{ result.publication.readerNum || 0 }}</span
+                        >
+                        <span
+                          ><span class="text-gray-500 font-medium">点赞数：</span
+                          >{{ result.publication.likeNum || 0 }}</span
+                        >
+                      </div>
                     </div>
                   </div>
                   <div class="flex gap-2">
@@ -458,6 +476,7 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import type {
   Author,
   Publication,
+  PublicationDetail,
   PublicationProfile,
   PublicationStats,
   PublicationStatus,
@@ -497,7 +516,7 @@ const showClaimDetailDialog = ref(false)
 // 成果认领相关变量
 const claimLoading = ref(false)
 const claimResults = ref<Publication[]>([])
-const selectedClaimPublication = ref<Publication | null>(null)
+const selectedClaimPublication = ref<PublicationDetail | null>(null)
 
 const stats = reactive<PublicationStats>({
   totalPublicationNum: 0,
@@ -524,7 +543,7 @@ const emptyPublication: PublicationProfile = {
 const currentPublication = reactive<PublicationProfile>(
   JSON.parse(JSON.stringify(emptyPublication))
 )
-const shownPublication = ref<Publication | null>(null)
+const shownPublication = ref<PublicationDetail | null>(null)
 
 const pdfInputType = ref<'url' | 'upload'>('url')
 const pdfFile = ref<File | null>(null)
@@ -533,6 +552,14 @@ const formRef = ref<FormInstance>()
 
 const userStore = useUserStore()
 const userName = computed(() => userStore.user?.name || '')
+
+// 转换函数：将Publication转换为PublicationDetail
+const convertToPublicationDetail = (pub: Publication): PublicationDetail => {
+  return {
+    ...pub.publication,
+    authors: pub.authors,
+  }
+}
 
 const getPublicationData = async () => {
   if (userStore.user?.id) {
@@ -933,7 +960,7 @@ const handleSave = async () => {
 }
 
 function onShowInfo(row: Publication) {
-  shownPublication.value = row
+  shownPublication.value = convertToPublicationDetail(row)
   showInfo.value = true
 }
 
@@ -948,10 +975,9 @@ const loadClaimResults = async () => {
   try {
     const response = await getProbablePublicationsByName(userStore.user.name)
     if (response.data && Array.isArray(response.data)) {
-      console.log(response.data)
-      claimResults.value = response.data
-        .map(item => ({ ...item.publication, authors: item.authors }))
-        .filter(pub => pub.uploaderId !== userStore.user?.id)
+      claimResults.value = response.data.filter(
+        item => item.publication.uploaderId !== userStore.user?.id
+      )
     } else {
       claimResults.value = []
     }
@@ -967,23 +993,22 @@ const refreshClaimResults = () => {
   loadClaimResults()
 }
 
-const claimPublication = (publication: Publication) => {
-  ElMessageBox.confirm(
-    `确定要认领成果"${publication.title}"吗？认领后需要等待管理员审核。`,
-    '确认认领',
-    {
-      confirmButtonText: '确定认领',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  )
+const claimPublication = (publication: Publication | PublicationDetail) => {
+  const title = 'publication' in publication ? publication.publication.title : publication.title
+  const id = 'publication' in publication ? publication.publication.id : publication.id
+
+  ElMessageBox.confirm(`确定要认领成果"${title}"吗？`, '确认认领', {
+    confirmButtonText: '确定认领',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
     .then(async () => {
       try {
-        await claimPublicationApi(publication.id)
-        ElMessage.success('认领申请已提交，请等待管理员审核')
+        await claimPublicationApi(id)
+        ElMessage.success('认领申请已提交')
         showClaimDialog.value = false
         // 从列表中移除已认领的成果
-        claimResults.value = claimResults.value.filter(pub => pub.id !== publication.id)
+        claimResults.value = claimResults.value.filter(pub => pub.publication.id !== id)
       } catch (error) {
         ElMessage.error('认领失败，请稍后重试')
       }
@@ -1001,7 +1026,7 @@ watch(showClaimDialog, newVal => {
 })
 
 const viewClaimDetail = (publication: Publication) => {
-  selectedClaimPublication.value = publication
+  selectedClaimPublication.value = convertToPublicationDetail(publication)
   showClaimDetailDialog.value = true
 }
 
@@ -1015,10 +1040,10 @@ const formatAuthors = (authors: any): string => {
     return authors
   }
 
-  // 如果authors是数组，提取name字段
+  // 如果authors是数组，提取authorName或name字段
   if (Array.isArray(authors)) {
     return authors
-      .map((author: any) => author.name)
+      .map((author: any) => author.authorName || author.name)
       .filter(Boolean)
       .join(', ')
   }

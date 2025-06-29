@@ -1,5 +1,7 @@
 import request from '@/utils/request'
 import type {
+  likeResponse,
+  Publication,
   PublicationInformResponse,
   PublicationListResponse,
   PublicationProfile,
@@ -65,7 +67,7 @@ export function readPublication(id: number | string): Promise<EmptyResponse> {
 }
 
 export function getProbablePublicationsByName(name: string): Promise<PublicationListResponse> {
-  return request.get('https://m1.apifoxmock.com/m2/6625065-6332383-default/315127343', {
+  return request.get('/publication/probableById', {
     params: { name },
   })
 }
@@ -73,4 +75,26 @@ export function getProbablePublicationsByName(name: string): Promise<Publication
 // 认领成果：id对应被认领的成果id
 export function claimPublication(id: number | string): Promise<EmptyResponse> {
   return request.post('/publication/claim', { id })
+}
+
+// 点赞成果
+export function likePublication(id: number | string): Promise<EmptyResponse> {
+  return request.post('/publication/like', { id })
+}
+
+// 取消点赞成果
+export function unlikePublication(id: number | string): Promise<EmptyResponse> {
+  return request.post('/publication/unlike', { id })
+}
+
+export function isLikePublication(id: number | string): Promise<likeResponse> {
+  return request.get('/publication/isLike', { params: {id: id} })
+}
+
+export function hasApplication(id: number | string): Promise<likeResponse> {
+  return request.get('/has_application', { params: { publicationId: id } })
+}
+
+export function apply(publicationId: number | string, receiverId: number | string) {
+  return request.post('/apply', {publicationId, receiverId})
 }

@@ -14,27 +14,7 @@
           </div>
 
           <div class="flex items-center gap-4">
-            <!-- 展示模式切换 -->
-            <button
-              @click="toggleDarkMode"
-              :class="[
-                'flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm border transition-colors',
-                isDarkMode
-                  ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-blue-400 hover:border-blue-700'
-                  : 'bg-white border-slate-200 text-slate-600 hover:text-blue-500 hover:border-blue-300',
-              ]"
-              title="切换显示模式"
-            >
-              <el-icon v-if="!isDarkMode" class="text-lg">
-                <Moon />
-              </el-icon>
-              <el-icon v-else class="text-lg">
-                <Sunny />
-              </el-icon>
-              <span class="text-sm font-medium">
-                {{ isDarkMode ? '浅色模式' : '深色模式' }}
-              </span>
-            </button>
+            <!-- 展示模式切换按钮已移动到图谱头部右侧 -->
           </div>
         </div>
       </header>
@@ -48,7 +28,7 @@
             <div
               class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
             >
-              <div class="p-5 border-b border-slate-200 dark:border-slate-700">
+              <div class="p-3 pl-1 border-b border-slate-200 dark:border-slate-700">
                 <h3 class="font-bold text-slate-800 dark:text-white flex items-center">
                   <i class="fas fa-sliders-h text-blue-500 mr-3"></i>
                   图谱控制
@@ -58,84 +38,110 @@
               <div class="p-5 space-y-5">
                 <!-- 图谱类型选择 -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3"
                     >图谱类型</label
                   >
-                  <div class="grid grid-cols-3 gap-2">
+                  <div class="grid grid-cols-3 gap-3">
                     <button
                       v-for="type in graphTypes"
                       :key="type.value"
                       @click="graphType = type.value"
                       :class="[
-                        'py-2 px-3 rounded-lg text-sm font-medium border transition-all duration-200 flex flex-col items-center justify-center',
+                        'relative h-12 px-2 rounded-xl text-sm font-medium transition-all duration-300 flex flex-col items-center justify-center overflow-hidden group',
                         graphType === type.value
-                          ? 'bg-blue-500 text-white border-blue-600 shadow-md transform scale-[1.02]'
-                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700',
+                          ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 transform scale-105 border-0'
+                          : 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600 hover:shadow-md hover:scale-102 hover:border-blue-300 dark:hover:border-blue-600',
                       ]"
                     >
-                      <i :class="[type.icon, 'text-lg mb-1']"></i>
-                      {{ type.label }}
+                      <!-- 选中状态的背景光效 -->
+                      <div
+                        v-if="graphType === type.value"
+                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"
+                      ></div>
+
+                      <!-- <i
+                        :class="[
+                          type.icon,
+                          'text-lg mb-1.5 transition-all duration-300',
+                          graphType === type.value
+                            ? 'text-white drop-shadow-sm'
+                            : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400',
+                        ]"
+                      ></i> -->
+                      <span class="font-semibold tracking-wider relative z-10 text-sm leading-tight">{{
+                        type.label
+                      }}</span>
+
+                      <!-- 悬停时的边框光效 -->
+                      <div
+                        v-if="graphType !== type.value"
+                        class="absolute inset-0 rounded-xl border-2 border-transparent bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"
+                      ></div>
                     </button>
                   </div>
                 </div>
 
                 <!-- 布局类型 -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >布局类型</label
-                  >
-                  <select
-                    v-model="layoutType"
-                    @change="updateLayout"
-                    class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600"
-                  >
-                    <option
+                  <div class="flex items-center justify-between mb-3">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                      >布局类型</label
+                    >
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <button
                       v-for="layout in layoutOptions"
                       :key="layout.value"
-                      :value="layout.value"
+                      @click="
+                        () => {
+                          layoutType = layout.value
+                          updateLayout()
+                        }
+                      "
+                      :class="[
+                        'relative h-12 px-2 rounded-xl text-sm font-medium transition-all duration-300 flex flex-col items-center justify-center overflow-hidden group',
+                        layoutType === layout.value
+                          ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 transform scale-105 border-0'
+                          : 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600 hover:shadow-md hover:scale-102 hover:border-emerald-300 dark:hover:border-emerald-600',
+                      ]"
                     >
-                      {{ layout.label }}
-                    </option>
-                  </select>
+                      <!-- 选中状态的背景光效 -->
+                      <div
+                        v-if="layoutType === layout.value"
+                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"
+                      ></div>
+
+                      <!-- <i
+                        :class="[
+                          layout.icon,
+                          'text-lg mb-1.5 transition-all duration-300',
+                          layoutType === layout.value
+                            ? 'text-white drop-shadow-sm'
+                            : 'text-slate-500 dark:text-slate-400 group-hover:text-emerald-500 dark:group-hover:text-emerald-400',
+                        ]"
+                      ></i> -->
+                      <span class="font-semibold tracking-wider relative z-10 text-sm leading-tight">{{
+                        layout.label
+                      }}</span>
+
+                      <!-- 悬停时的边框光效 -->
+                      <div
+                        v-if="layoutType !== layout.value"
+                        class="absolute inset-0 rounded-xl border-2 border-transparent bg-gradient-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"
+                      ></div>
+                    </button>
+                  </div>
                 </div>
 
                 <!-- 控制按钮 -->
                 <div class="flex flex-col gap-3 pt-2">
                   <button
-                    @click="refreshGraph"
-                    class="w-full flex items-center justify-center py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-sm transition-all duration-200 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                    @click="resetGraph"
+                    class="w-full flex items-center justify-center py-2.5 px-4 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition-all"
                   >
-                    <i class="fas fa-sync-alt mr-2"></i>
-                    刷新图谱
+                    <i class="fas fa-undo mr-2"></i>
+                    重置视图
                   </button>
-
-                  <!-- 返回用户视图按钮 -->
-                  <button
-                    v-if="currentQueryInfo.type === 'node'"
-                    @click="returnToUserView"
-                    class="w-full flex items-center justify-center py-2.5 px-4 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-medium shadow-sm transition-all duration-200 hover:shadow focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50"
-                  >
-                    <i class="fas fa-user mr-2"></i>
-                    返回用户视图
-                  </button>
-
-                  <div class="grid grid-cols-2 gap-2">
-                    <button
-                      @click="resetGraph"
-                      class="flex items-center justify-center py-2 px-3 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition-all"
-                    >
-                      <i class="fas fa-undo mr-2"></i>
-                      重置视图
-                    </button>
-
-                    <button
-                      @click="toggleFullscreen"
-                      class="flex items-center justify-center py-2 px-3 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition-all"
-                    >
-                      <i class="fas fa-expand-alt mr-2"></i>
-                      全屏
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -144,7 +150,7 @@
             <div
               class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
             >
-              <div class="p-5 border-b border-slate-200 dark:border-slate-700">
+              <div class="p-3 pl-1 border-b border-slate-200 dark:border-slate-700">
                 <h3 class="font-bold text-slate-800 dark:text-white flex items-center">
                   <i class="fas fa-info-circle text-blue-500 mr-3"></i>
                   图例说明
@@ -203,23 +209,18 @@
           >
             <!-- 图谱头部 -->
             <div
-              class="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between"
+              class="p-3 pl-5 pr-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between"
             >
               <div class="flex items-center space-x-4">
                 <h3 class="font-bold text-slate-800 dark:text-white">{{ graphTitle }}</h3>
 
                 <!-- 查询状态指示器 -->
-                <div class="flex items-center space-x-2">
+                <!-- <div class="flex items-center space-x-2">
                   <div class="flex items-center text-sm">
-                    <div
-                      class="w-2 h-2 rounded-full mr-2"
-                      :class="currentQueryInfo.type === 'user' ? 'bg-blue-500' : 'bg-emerald-500'"
-                    ></div>
-                    <span class="text-slate-600 dark:text-slate-400">
-                      {{ currentQueryInfo.type === 'user' ? '用户视图' : '节点视图' }}
-                    </span>
+                    <div class="w-2 h-2 rounded-full mr-2 bg-blue-500"></div>
+                    <span class="text-slate-600 dark:text-slate-400">知识图谱</span>
                   </div>
-                </div>
+                </div> -->
 
                 <div class="hidden md:flex items-center space-x-4">
                   <span class="flex items-center text-sm text-slate-600 dark:text-slate-400">
@@ -233,59 +234,27 @@
                 </div>
               </div>
 
-              <div class="flex items-center space-x-2">
-                <!-- 缩放控制 -->
-                <div class="hidden md:flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg">
-                  <button
-                    @click="zoomOut"
-                    class="p-1.5 text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400"
-                  >
-                    <i class="fas fa-search-minus"></i>
-                  </button>
-
-                  <div class="px-2 text-xs text-slate-600 dark:text-slate-400">
-                    {{ Math.round(zoomLevel * 100) }}%
-                  </div>
-
-                  <button
-                    @click="zoomIn"
-                    class="p-1.5 text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                </div>
-
-                <!-- 更多选项 -->
-                <div class="relative" ref="optionsDropdown">
-                  <button
-                    @click="toggleOptionsMenu"
-                    class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400"
-                  >
-                    <i class="fas fa-ellipsis-v"></i>
-                  </button>
-
-                  <div
-                    v-if="showOptionsMenu"
-                    class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 z-10"
-                  >
-                    <div class="py-1">
-                      <button
-                        @click="exportAsImage"
-                        class="flex items-center w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                      >
-                        <i class="fas fa-download mr-2"></i>
-                        导出为图片
-                      </button>
-                      <button
-                        @click="exportData"
-                        class="flex items-center w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                      >
-                        <i class="fas fa-file-export mr-2"></i>
-                        导出数据
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              <!-- 深色模式切换按钮 -->
+              <div class="flex items-center">
+                <button
+                  @click="toggleDarkMode"
+                  :class="[
+                    'flex items-center gap-2 px-3 py-2 rounded-lg shadow-sm border transition-colors',
+                    isDarkMode
+                      ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-blue-400 hover:border-blue-700'
+                      : 'bg-white border-slate-200 text-slate-600 hover:text-blue-500 hover:border-blue-300',
+                  ]"
+                  title="切换显示模式"
+                >
+                  <el-icon v-if="!isDarkMode" class="text-base">
+                    <Moon />
+                  </el-icon>
+                  <el-icon v-else class="text-base">
+                    <Sunny />
+                  </el-icon>
+                  <!-- <span class="text-sm font-medium">
+                  </span> -->
+                </button>
               </div>
             </div>
 
@@ -334,7 +303,7 @@
             <div
               class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
             >
-              <div class="p-5 border-b border-slate-200 dark:border-slate-700">
+              <div class="p-3 pl-1 border-b border-slate-200 dark:border-slate-700">
                 <h3 class="font-bold text-slate-800 dark:text-white flex items-center">
                   <i class="fas fa-user-circle text-blue-500 mr-3"></i>
                   节点详情
@@ -446,10 +415,7 @@
                   <div v-if="selectedNode.researchArea" class="flex-shrink-0">
                     <div class="flex flex-col gap-2 items-end">
                       <span
-                        v-for="(area, index) in selectedNode.researchArea
-                          .split(',')
-                          .map((area: string) => area.trim())
-                          .filter((area: string) => area)"
+                        v-for="(area, index) in processedResearchAreas"
                         :key="index"
                         class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/80 text-center"
                         :style="{ width: 'fit-content', minWidth: 'max-content' }"
@@ -532,9 +498,14 @@
                 </div>
 
                 <!-- 操作按钮 -->
-                <div class="pt-4 grid grid-cols-2 gap-2">
+                <div
+                  class="pt-4 grid grid-cols-2 gap-2"
+                  :class="{ 'justify-center': graphType !== 'follow' }"
+                >
                   <button
+                    v-if="!(graphType === 'institution' && selectedNode?.type === 'user')"
                     @click="loadUserGraph(selectedNode.id)"
+                    :class="{ 'col-span-2': selectedNode?.type !== 'user' }"
                     class="flex items-center justify-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-sm transition-all duration-200 text-sm"
                   >
                     <i class="fas fa-refresh mr-1"></i>
@@ -542,6 +513,10 @@
                   </button>
 
                   <button
+                    v-if="selectedNode?.type === 'user'"
+                    :class="{
+                      'col-span-2': graphType === 'institution' && selectedNode?.type === 'user',
+                    }"
                     @click="goToUserProfile(selectedNode.id)"
                     class="flex items-center justify-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-medium shadow-sm transition-all duration-200 text-sm"
                   >
@@ -665,8 +640,8 @@ const graphTypes = [
 ]
 
 const layoutOptions = [
-  { label: '力导向布局', value: 'force' },
-  { label: '圆形布局', value: 'circular' },
+  { label: '力导向布局', value: 'force', icon: 'fas fa-sliders-h' },
+  { label: '圆形布局', value: 'circular', icon: 'fas fa-circle' },
   // { label: '同心圆布局', value: 'concentric' },
   // { label: '网格布局', value: 'grid' },
 ]
@@ -679,7 +654,6 @@ const visibilityFilters = ref([
 
 // 响应式数据
 const userStore = useUserStore()
-const currentQueryInfo = ref<{ type: 'user' | 'node'; data: any }>({ type: 'user', data: null })
 
 // 生命周期钩子
 onMounted(async () => {
@@ -701,16 +675,14 @@ onBeforeUnmount(() => {
 const handleNodeClick = async (nodeData: any) => {
   // 立即设置选中的节点，显示基本信息
   selectedNode.value = nodeData
-  // 立即显示加载状态
-  loadingUserDetail.value = true
-
-  // 更新查询信息为节点信息
-  currentQueryInfo.value = { type: 'node', data: nodeData }
 
   // 根据节点类型处理
   if (nodeData.type === 'user') {
     // 用户节点：获取详细信息
     console.log('开始获取用户详细信息...')
+    // 立即显示加载状态
+    loadingUserDetail.value = true
+
     try {
       const response = await getUserDetail(nodeData.id)
       if (response.data) {
@@ -733,43 +705,14 @@ const handleNodeClick = async (nodeData: any) => {
       console.log('加载状态已隐藏')
     }
   } else if (nodeData.type === 'language' || nodeData.type === 'institution') {
-    // 机构节点：获取该机构的科研人员
-    console.log('开始获取机构科研人员:', nodeData.name)
-    try {
-      const response = await getResearcherByInstitution(nodeData.name)
-      if (response.data) {
-        console.log('机构科研人员获取成功，更新图谱')
-        // 更新图谱显示该机构的科研人员
-        if (graphType.value === 'institution' && institutionNetworkRef.value) {
-          institutionNetworkRef.value.loadInstitutionResearchers(nodeData.name, response.data)
-        }
-      }
-    } catch (error) {
-      console.error('获取机构科研人员失败:', error)
-    } finally {
-      loadingUserDetail.value = false
-    }
+    // 机构节点：只更新右侧详情界面，不更新图谱
+    console.log('机构节点点击，更新右侧详情界面')
   } else if (nodeData.type === 'field' || nodeData.type === 'area') {
-    // 领域节点：获取该领域的科研人员
-    console.log('开始获取领域科研人员:', nodeData.name)
-    try {
-      const response = await getResearcherByArea(nodeData.name)
-      if (response.data) {
-        console.log('领域科研人员获取成功，更新图谱')
-        // 更新图谱显示该领域的科研人员
-        if (graphType.value === 'area' && areaNetworkRef.value) {
-          areaNetworkRef.value.loadAreaResearchers(nodeData.name, response.data)
-        }
-      }
-    } catch (error) {
-      console.error('获取领域科研人员失败:', error)
-    } finally {
-      loadingUserDetail.value = false
-    }
+    // 领域节点：只更新右侧详情界面，不更新图谱
+    console.log('领域节点点击，更新右侧详情界面')
   } else {
-    // 其他类型节点，立即隐藏加载状态
-    loadingUserDetail.value = false
-    console.log('其他类型节点，立即隐藏加载状态')
+    // 其他类型节点，不进行任何搜索，保持默认样式
+    console.log('其他类型节点，保持默认样式')
   }
 
   // 查找关联节点 - 这个功能应该由子组件提供
@@ -810,8 +753,8 @@ const updateLayout = () => {
 }
 
 const refreshGraph = () => {
-  // 重置为使用用户信息查询
-  currentQueryInfo.value = { type: 'user', data: null }
+  // 重置选中节点
+  selectedNode.value = null
 
   // 根据当前图谱类型调用对应组件的刷新方法
   if (graphType.value === 'follow' && followNetworkRef.value) {
@@ -828,8 +771,8 @@ const resetGraph = () => {
   relatedNodes.value = []
   zoomLevel.value = 1
 
-  // 重置为使用用户信息查询
-  currentQueryInfo.value = { type: 'user', data: null }
+  // 重置选中节点
+  selectedNode.value = null
 
   // 根据当前图谱类型调用对应组件的刷新方法
   if (graphType.value === 'follow' && followNetworkRef.value) {
@@ -896,26 +839,50 @@ const viewProfileDetail = (nodeId: string) => {
   router.push(`/user/${nodeId}`)
 }
 
-const returnToUserView = () => {
-  // 重置为使用用户信息查询
-  currentQueryInfo.value = { type: 'user', data: null }
-  // 刷新当前图谱
-  refreshGraph()
-}
-
-const loadUserGraph = (userId: string) => {
-  console.log('加载用户图谱，用户ID:', userId)
-
-  // 更新查询信息为节点信息
-  currentQueryInfo.value = { type: 'node', data: { id: userId } }
-
-  // 根据当前图谱类型调用对应组件的加载方法
-  if (graphType.value === 'follow' && followNetworkRef.value) {
-    followNetworkRef.value.loadUserGraph(userId)
-  } else if (graphType.value === 'institution' && institutionNetworkRef.value) {
-    institutionNetworkRef.value.loadInstitutionResearchers(userId)
-  } else if (graphType.value === 'area' && areaNetworkRef.value) {
-    areaNetworkRef.value.loadAreaResearchers(userId)
+const loadUserGraph = async (nodeId: string) => {
+  // 根据选中节点的类型处理
+  if (selectedNode.value?.type === 'user') {
+    // 用户节点：加载用户图谱
+    if (graphType.value === 'follow' && followNetworkRef.value) {
+      followNetworkRef.value.loadUserGraph(nodeId)
+    } else if (graphType.value === 'area' && areaNetworkRef.value) {
+      areaNetworkRef.value.loadUserGraph(nodeId)
+    }
+  } else if (
+    selectedNode.value?.type === 'language' ||
+    selectedNode.value?.type === 'institution'
+  ) {
+    // 机构节点：获取该机构的科研人员并更新图谱
+    console.log('开始获取机构科研人员:', selectedNode.value.name)
+    try {
+      const response = await getResearcherByInstitution(selectedNode.value.name)
+      if (response.data) {
+        console.log('机构科研人员获取成功，更新图谱')
+        // 更新图谱显示该机构的科研人员
+        if (graphType.value === 'institution' && institutionNetworkRef.value) {
+          institutionNetworkRef.value.loadInstitutionResearchers(
+            selectedNode.value.name,
+            response.data
+          )
+        }
+      }
+    } catch (error) {
+      console.error('获取机构科研人员失败:', error)
+    }
+  } else if (selectedNode.value?.type === 'field' || selectedNode.value?.type === 'area') {
+    // 领域节点：获取该领域的科研人员并更新图谱
+    try {
+      const response = await getResearcherByArea(selectedNode.value.name)
+      if (response.data) {
+        console.log('领域科研人员获取成功，更新图谱')
+        // 更新图谱显示该领域的科研人员
+        if (graphType.value === 'area' && areaNetworkRef.value) {
+          areaNetworkRef.value.loadAreaResearchers(selectedNode.value.name, response.data)
+        }
+      }
+    } catch (error) {
+      console.error('获取领域科研人员失败:', error)
+    }
   }
 }
 
@@ -938,10 +905,23 @@ const graphTitle = computed(() => {
   }
 })
 
+const processedResearchAreas = computed(() => {
+  if (!selectedNode.value?.researchArea) return []
+  return selectedNode.value.researchArea
+    .split(',')
+    .map((area: string) => area.trim())
+    .filter((area: string) => area)
+})
+
+const currentLayoutLabel = computed(() => {
+  const layout = layoutOptions.find(option => option.value === layoutType.value)
+  return layout ? layout.label : '力导向布局'
+})
+
 // 监听器
 watch([graphType], () => {
-  // 切换图谱类型时，重置为使用用户信息查询
-  currentQueryInfo.value = { type: 'user', data: null }
+  // 切换图谱类型时，重置选中节点
+  selectedNode.value = null
 })
 
 watch(layoutType, () => {
@@ -1064,6 +1044,59 @@ const handleImageError = (event: Event) => {
   .graph-container {
     min-height: 400px;
   }
+}
+
+/* 自定义按钮样式 */
+.scale-102 {
+  transform: scale(1.02);
+}
+
+.scale-105 {
+  transform: scale(1.05);
+}
+
+/* 按钮悬停效果 */
+.group:hover .group-hover\:scale-102 {
+  transform: scale(1.02);
+}
+
+/* 渐变背景动画 */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* 按钮点击效果 */
+button:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* 选中状态的脉冲动画 */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulse {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 </style>
 

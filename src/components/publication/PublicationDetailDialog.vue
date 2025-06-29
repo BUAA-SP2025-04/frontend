@@ -61,7 +61,11 @@
           <p class="text-blue-600 font-mono">{{ publication.doi }}</p>
         </div>
       </div>
-
+      <!-- 摘要信息 -->
+      <div class="p-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-3">摘要</h3>
+        <p class="text-gray-700 leading-relaxed">{{ publication.abstracts || "暂无摘要信息" }}</p>
+      </div>
       <!-- 统计信息 -->
       <div class="bg-blue-50 rounded-lg p-4">
         <h3 class="text-lg font-semibold text-gray-900 mb-3">统计信息</h3>
@@ -77,12 +81,6 @@
         </div>
       </div>
 
-      <!-- 摘要信息 -->
-      <div v-if="publication.abstracts" class="bg-yellow-50 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-3">摘要</h3>
-        <p class="text-gray-700 leading-relaxed">{{ publication.abstracts }}</p>
-      </div>
-
       <!-- 操作按钮 -->
       <div class="flex justify-end space-x-3 pt-4 border-t">
         <el-button @click="closeDialog">关闭</el-button>
@@ -96,17 +94,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Publication, PublicationStatus } from '@/api/types/publication'
+import type { PublicationDetail, PublicationStatus } from '@/api/types/publication'
 
 interface Props {
   visible: boolean
-  publication: Publication | null
+  publication: PublicationDetail | null
   showClaimButton?: boolean
 }
 
 interface Emits {
   (e: 'update:visible', value: boolean): void
-  (e: 'claim', publication: Publication): void
+  (e: 'claim', publication: PublicationDetail): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -178,10 +176,10 @@ const displayAuthors = computed(() => {
     return props.publication.authors
   }
 
-  // 如果authors是数组，提取name字段
+  // 如果authors是数组，提取authorName字段
   if (Array.isArray(props.publication.authors)) {
-    return (props.publication.authors as any[])
-      .map((author: any) => author.name)
+    return props.publication.authors
+      .map(author => author.authorName)
       .filter(Boolean)
       .join(', ')
   }
