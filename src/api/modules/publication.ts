@@ -2,6 +2,7 @@ import request from '@/utils/request'
 import type {
   PublicationInformResponse,
   PublicationListResponse,
+  PublicationProfile,
   PublicationStatsResponse,
   SavePublicationRequest,
 } from '@/api/types/publication'
@@ -47,6 +48,10 @@ export function deletePublicationFile(oldFilePath: string): Promise<EmptyRespons
 
 export function getPublicationFile(pdfUrl: string): Promise<Blob> {
   return request.get(pdfUrl, { responseType: 'blob' })
+}
+
+export function batchAddPublications(data: PublicationProfile[]): Promise<EmptyResponse> {
+  return request.post('/publication/batchAdd', data)
 }
 
 export function getPublicationInformById(id: number | string): Promise<PublicationInformResponse> {

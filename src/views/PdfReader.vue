@@ -7,7 +7,7 @@
       </div> -->
 
       <div class="flex items-center space-x-4 mb-4">
-        <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf"> 下载当前PDF </el-button>
+        <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf"> 下载当前PDF</el-button>
       </div>
 
       <div v-if="pdfUrl" class="card">
@@ -43,11 +43,16 @@
             </el-button>
           </div>
 
-          <!--          <div class="flex items-center space-x-2">-->
-          <!--            <span class="text-sm text-gray-600">缩放:</span>-->
-          <!--            <el-slider v-model="scale" :min="0.5" :max="2" :step="0.1" style="width: 100px" />-->
-          <!--            <span class="text-sm text-gray-600">{{ Math.round(scale * 100) }}%</span>-->
-          <!--          </div>-->
+          <div class="flex items-center space-x-2">
+            <el-button size="small" @click="toggleAISummary"> AI总结</el-button>
+          </div>
+
+          <!-- AI总结侧边栏 -->
+          <el-drawer v-model:visible="isAISummaryVisible" title="AI总结" direction="rtl">
+            <div class="p-4">
+              <p>这里是AI总结内容。</p>
+            </div>
+          </el-drawer>
         </div>
       </div>
 
@@ -80,26 +85,17 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import VuePdfEmbed from 'vue-pdf-embed'
-import type { UploadFile } from 'element-plus'
 import { getPublicationFile } from '@/api/modules/publication'
 
 const selectedFile = ref<File | null>(null)
 const pdfUrl = ref<string>('')
 const currentPage = ref(1)
 const totalPages = ref(1)
-const scale = ref(1)
 const showDownload = ref(false)
 const pdfBlob = ref<Blob | null>(null)
+const isAISummaryVisible = ref(false)
 
 const route = useRoute()
-
-const handleFileChange = (file: UploadFile) => {
-  if (file.raw) {
-    selectedFile.value = file.raw
-    pdfUrl.value = URL.createObjectURL(file.raw)
-    currentPage.value = 1
-  }
-}
 
 const onPdfLoaded = (pdf: any) => {
   totalPages.value = pdf.numPages
@@ -119,18 +115,6 @@ const nextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
   }
-}
-
-const zoomIn = () => {
-  scale.value = Math.min(scale.value + 0.1, 2)
-}
-
-const zoomOut = () => {
-  scale.value = Math.max(scale.value - 0.1, 0.5)
-}
-
-const resetZoom = () => {
-  scale.value = 1
 }
 
 // 支持通过参数传递url并请求pdf
@@ -162,6 +146,10 @@ const downloadPdf = () => {
     // 可选：释放URL对象
     setTimeout(() => URL.revokeObjectURL(link.href), 100)
   }
+}
+
+const toggleAISummary = () => {
+  isAISummaryVisible.value = !isAISummaryVisible.value
 }
 </script>
 

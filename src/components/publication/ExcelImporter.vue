@@ -3,6 +3,8 @@ import { defineEmits, defineProps, ref, watch } from 'vue'
 import * as XLSX from 'xlsx'
 import type { PublicationProfile } from '@/api/types/publication'
 import { doiPattern, urlPattern } from '@/utils/publications'
+import { batchAddPublications } from '@/api/modules/publication'
+import { ElMessage } from 'element-plus'
 
 const props = defineProps<{
   showExcelImporter: boolean
@@ -36,6 +38,45 @@ function handleFileChange(file: File) {
   }
   reader.readAsArrayBuffer(file)
 }
+
+function submitData() {
+  console.log('提交数据:', publicationProfiles.value)
+  if (publicationProfiles.value.length === 0) {
+    ElMessage.error('无法提交空数据')
+    return
+  }
+
+  const invalidEntries = publicationProfiles.value.filter(profile => {
+    const doiValid = !profile.doi || doiPattern.test(profile.doi)
+    const urlValid = !profile.pdfUrl || urlPattern.test(profile.pdfUrl)
+    const yearValid = profile.year === null || !isNaN(Number(profile.year))
+    const titleValid = profile.title && !props.existingTitles.includes(profile.title)
+    const authorsValid = profile.authors && profile.authors.includes(props.currentUsername || '')
+
+    return !doiValid || !urlValid || !yearValid || !titleValid || !authorsValid
+  })
+
+  if (invalidEntries.length > 0) {
+    console.log('数据校验不通过:', invalidEntries)
+    ElMessage.error('数据格式错误')
+    return
+  }
+
+  batchAddPublications(publicationProfiles.value)
+    .then(() => {
+      publicationProfiles.value = [] // 清空表格数据
+      showDialog.value = false // 关闭对话框
+    })
+    .catch(err => {
+      console.error(err.message)
+      ElMessage.error(`上传失败：${err.message}`)
+    })
+}
+
+function closeDialog() {
+  showDialog.value = false
+  publicationProfiles.value = [] // 清空表格数据
+}
 </script>
 
 <template>
@@ -48,7 +89,9 @@ function handleFileChange(file: File) {
       accept=".xlsx,.xls"
       :before-upload="handleFileChange"
     >
-      <div style="display: flex; justify-content: center; align-items: center">
+      <div
+        style="display: flex; justify-content: center; align-items: flex-start; margin-top: -10px"
+      >
         <svg
           class="icon"
           viewBox="0 0 1024 1024"
@@ -79,26 +122,25 @@ function handleFileChange(file: File) {
         >
           <template #default="{ row }">
             <div style="word-break: break-word; white-space: normal">
-              <!-- 确保内容换行 -->
               <template v-if="key === 'title'">
                 <span v-if="!row[key]" style="color: red">未检测到标题</span>
                 <span v-else-if="props.existingTitles.includes(row[key])" style="color: red"
                   >标题重复: {{ row[key] }}</span
                 >
-                <span v-else>{{ row[key] }}</span>
+                <span v-else style="color: green">{{ row[key] }}</span>
               </template>
               <template v-else-if="key === 'authors'">
-                <span v-if="!row[key]">未检测到作者</span>
+                <span v-if="!row[key]" style="color: red">未检测到作者</span>
                 <span
                   v-else-if="
-                    !(Array.isArray(row[key]) ? row[key].join(',') : row[key]).includes(
-                      props.currentUsername
-                    )
+                    Array.isArray(row[key])
+                      ? !row[key].includes(props.currentUsername)
+                      : !(row[key] || '').includes(props.currentUsername)
                   "
-                  style="color: orange"
+                  style="color: red"
                   >未包含当前用户({{ props.currentUsername }}): {{ row[key] }}</span
                 >
-                <span v-else>{{ row[key] }}</span>
+                <span v-else style="color: green">{{ row[key] }}</span>
               </template>
               <template v-else-if="key === 'doi'">
                 <span v-if="!row[key] || doiPattern.test(row[key])" style="color: green">{{
@@ -112,6 +154,30 @@ function handleFileChange(file: File) {
                 }}</span>
                 <span v-else style="color: red">格式错误: {{ row[key] }}</span>
               </template>
+              <template v-else-if="key === 'year'">
+                <span v-if="row[key] === null || !isNaN(Number(row[key]))" style="color: green">{{
+                  row[key]
+                }}</span>
+                <span v-else style="color: red">年份格式错误</span>
+              </template>
+              <template v-else-if="key === 'type'">
+                <span
+                  v-if="['journal', 'conference', 'patent'].includes(row[key])"
+                  style="color: green"
+                  >{{ row[key] }}</span
+                >
+                <span v-else style="color: red">类型必须为 journal, conference 或 patent</span>
+              </template>
+              <template v-else-if="key === 'status'">
+                <span
+                  v-if="['published', 'draft', 'under-review', 'archived'].includes(row[key])"
+                  style="color: green"
+                  >{{ row[key] }}</span
+                >
+                <span v-else style="color: red"
+                  >状态必须为 published, draft, under-review 或 archived</span
+                >
+              </template>
               <template v-else>
                 {{ row[key] }}
               </template>
@@ -121,7 +187,8 @@ function handleFileChange(file: File) {
       </el-table>
     </div>
     <template #footer>
-      <el-button @click="showDialog = false">关闭</el-button>
+      <el-button @click="closeDialog">关闭</el-button>
+      <el-button type="primary" @click="submitData">提交</el-button>
     </template>
   </el-dialog>
 </template>

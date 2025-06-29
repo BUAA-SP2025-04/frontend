@@ -323,6 +323,7 @@ import type {
   Publication,
   PublicationProfile,
   PublicationStats,
+  PublicationStatus,
   SavePublicationRequest,
 } from '@/api/types/publication'
 import {
@@ -398,8 +399,12 @@ onMounted(async () => {
       if (statsRes.data) {
         Object.assign(stats, statsRes.data)
       }
-    } catch (e) {
-      ElMessage.error('获取论文列表或统计数据失败')
+    } catch (err) {
+      if (err instanceof Error) {
+        ElMessage.error(`获取论文列表或统计数据失败：${err.message}`)
+      } else {
+        ElMessage.error('获取论文列表或统计数据失败：未知错误')
+      }
     } finally {
       loading.value = false
     }
@@ -513,7 +518,7 @@ const getStatusColor = (status: string) => {
   return colors[status] || 'default'
 }
 
-const getStatusLabel = (status: 'published' | 'accepted' | 'under-review' | 'draft') => {
+const getStatusLabel = (status: PublicationStatus) => {
   const labels: Record<'published' | 'accepted' | 'under-review' | 'draft', string> = {
     published: '已发表',
     accepted: '待发表',
@@ -655,7 +660,7 @@ const handleDelete = (id: number) => {
       }
     })
     .catch(err => {
-      ElMessage.error('删除失败', err)
+      ElMessage.error(`删除失败：${err.message}`)
     })
 }
 
@@ -730,8 +735,8 @@ const handleSave = async () => {
       else ElMessage.success('添加成功')
       submitSuccess()
     })
-    .catch(() => {
-      ElMessage.error('保存失败')
+    .catch(err => {
+      ElMessage.error(`保存失败：${err.message}`)
     })
     .finally(() => {
       saving.value = false
