@@ -515,7 +515,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getMyProjectsWithApplications } from '@/api/modules/project'
 import type { ProjectWithApplications } from '@/api/types/project'

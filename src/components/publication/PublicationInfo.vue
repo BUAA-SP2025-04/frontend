@@ -104,13 +104,13 @@
           <span class="pub-value pub-readerNum">
             {{ publication.readerNum }}
           </span>
-          <!--          <span class="pub-label pub-metric pub-like-label">-->
-          <!--            <el-icon class="pub-icon"><Star /></el-icon>-->
-          <!--            点赞数：-->
-          <!--          </span>-->
-          <!--          <span class="pub-value pub-likeNum">-->
-          <!--            {{ publication.likeNum }}-->
-          <!--          </span>-->
+          <span class="pub-label pub-metric pub-like-label">
+            <el-icon class="pub-icon"><Star /></el-icon>
+            点赞数：
+          </span>
+          <span class="pub-value pub-likeNum">
+            {{ publication.likeNum }}
+          </span>
         </div>
         <div v-if="publication.pdfUrl" class="pub-detail-section pub-pdf">
           <template v-if="isExternalPdf(publication.pdfUrl)">
@@ -142,8 +142,8 @@
 <script setup lang="ts">
 import { defineProps, ref, watch } from 'vue'
 import { ElButton, ElDialog, ElIcon, ElLink, ElTag } from 'element-plus'
-import { View } from '@element-plus/icons-vue'
-import type { Publication } from '@/api/types/publication'
+import { Star, View } from '@element-plus/icons-vue'
+import type { Publication, PublicationStatus, PublicationType } from '@/api/types/publication'
 import { useRouter } from 'vue-router'
 
 const props = defineProps<{
@@ -168,8 +168,8 @@ watch(dialogVisible, val => {
 })
 
 // 类型与状态颜色和标签
-const getTypeColor = (type: string): 'success' | 'primary' | 'warning' | 'danger' => {
-  const colors: Record<string, 'success' | 'primary' | 'warning' | 'danger'> = {
+const getTypeColor = (type: PublicationType): 'success' | 'primary' | 'warning' | 'danger' => {
+  const colors: Record<PublicationType, 'success' | 'primary' | 'warning' | 'danger'> = {
     journal: 'success',
     conference: 'primary',
     patent: 'warning',
@@ -177,8 +177,8 @@ const getTypeColor = (type: string): 'success' | 'primary' | 'warning' | 'danger
   return colors[type] || 'error'
 }
 
-const getTypeLabel = (type: string) => {
-  const labels: Record<string, string> = {
+const getTypeLabel = (type: PublicationType) => {
+  const labels: Record<PublicationType, string> = {
     journal: '期刊',
     conference: '会议',
     patent: '专利',
@@ -186,8 +186,10 @@ const getTypeLabel = (type: string) => {
   return labels[type] || type
 }
 
-const getStatusColor = (status: string): 'success' | 'primary' | 'warning' | 'info' | 'danger' => {
-  const colors: Record<string, 'success' | 'primary' | 'warning' | 'info' | 'danger'> = {
+const getStatusColor = (
+  status: PublicationStatus
+): 'success' | 'primary' | 'warning' | 'info' | 'danger' => {
+  const colors: Record<PublicationStatus, 'success' | 'primary' | 'warning' | 'info' | 'danger'> = {
     published: 'success',
     accepted: 'primary',
     'under-review': 'warning',
@@ -196,8 +198,8 @@ const getStatusColor = (status: string): 'success' | 'primary' | 'warning' | 'in
   return colors[status] || 'danger'
 }
 
-const getStatusLabel = (status: string) => {
-  const labels: Record<string, string> = {
+const getStatusLabel = (status: PublicationStatus) => {
+  const labels: Record<PublicationStatus, string> = {
     published: '已发表',
     accepted: '待发表',
     'under-review': '审核中',

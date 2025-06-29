@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
+import { computed, defineProps } from 'vue'
 import MarkdownIt from 'markdown-it'
 import katex from 'markdown-it-katex'
 import taskLists from 'markdown-it-task-lists'
@@ -14,7 +14,7 @@ import hljs from 'highlight.js'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github.css'
 
-const props = defineProps<{ 
+const props = defineProps<{
   source: string
   enableToc?: boolean
 }>()
@@ -33,11 +33,11 @@ const md: MarkdownIt = new MarkdownIt({
       } catch {}
     }
     return `<pre class="hljs"><code>${md.utils.escapeHtml(str)}</code></pre>`
-  }
+  },
 })
   .use(katex, {
     throwOnError: false,
-    errorColor: '#cc0000'
+    errorColor: '#cc0000',
   })
   .use(taskLists, { enabled: true })
   .use(container, 'info')
@@ -46,9 +46,9 @@ const md: MarkdownIt = new MarkdownIt({
 
 if (props.enableToc) {
   md.use(anchor, {
-    permalink: anchor.permalink.headerLink()
+    permalink: anchor.permalink.headerLink(),
   }).use(toc, {
-    includeLevel: [1, 2, 3]
+    includeLevel: [1, 2, 3],
   })
 }
 
@@ -102,9 +102,9 @@ const rendered = computed(() => md.render(props.source || ''))
   font-style: italic;
 }
 
-.markdown-content h1, 
-.markdown-content h2, 
-.markdown-content h3, 
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
 .markdown-content h4 {
   font-weight: 700;
   color: #1f2937;
@@ -127,7 +127,8 @@ const rendered = computed(() => md.render(props.source || ''))
   color: #374151;
 }
 
-.markdown-content ul, .markdown-content ol {
+.markdown-content ul,
+.markdown-content ol {
   margin-left: 1.5em;
   margin-bottom: 1em;
 }
@@ -145,7 +146,8 @@ const rendered = computed(() => md.render(props.source || ''))
   border: 1px solid #e5e7eb;
 }
 
-.markdown-content th, .markdown-content td {
+.markdown-content th,
+.markdown-content td {
   border: 1px solid #e5e7eb;
   padding: 0.75em 1em;
   text-align: left;

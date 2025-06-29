@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createComment } from '@/api/modules/comment'
 import { useUserStore } from '@/stores/user'
@@ -131,4 +131,4 @@ const submitComment = async () => {
 export default {
   name: 'CommentForm',
 }
-</script> 
+</script>

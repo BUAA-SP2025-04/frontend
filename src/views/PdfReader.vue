@@ -109,11 +109,16 @@
             </el-button>
           </div>
 
-          <!--          <div class="flex items-center space-x-2">-->
-          <!--            <span class="text-sm text-gray-600">缩放:</span>-->
-          <!--            <el-slider v-model="scale" :min="0.5" :max="2" :step="0.1" style="width: 100px" />-->
-          <!--            <span class="text-sm text-gray-600">{{ Math.round(scale * 100) }}%</span>-->
-          <!--          </div>-->
+          <div class="flex items-center space-x-2">
+            <el-button size="small" @click="toggleAISummary"> AI总结</el-button>
+          </div>
+
+          <!-- AI总结侧边栏 -->
+          <el-drawer v-model:visible="isAISummaryVisible" title="AI总结" direction="rtl">
+            <div class="p-4">
+              <p>这里是AI总结内容。</p>
+            </div>
+          </el-drawer>
         </div>
       </div>
 
@@ -168,9 +173,9 @@ const selectedFile = ref<File | null>(null)
 const pdfUrl = ref<string>('')
 const currentPage = ref(1)
 const totalPages = ref(1)
-const scale = ref(1)
 const showDownload = ref(false)
 const pdfBlob = ref<Blob | null>(null)
+const isAISummaryVisible = ref(false)
 const pdfContainer = ref<HTMLElement | null>(null)
 const pdfLoaded = ref(false)
 const isPdfRendered = ref(false)
@@ -194,14 +199,6 @@ const highlightPreview = ref({
 })
 
 const route = useRoute()
-
-const handleFileChange = (file: UploadFile) => {
-  if (file.raw) {
-    selectedFile.value = file.raw
-    pdfUrl.value = URL.createObjectURL(file.raw)
-    currentPage.value = 1
-  }
-}
 
 const onPdfLoaded = (pdf: any) => {
   totalPages.value = pdf.numPages
@@ -232,18 +229,6 @@ const nextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
   }
-}
-
-const zoomIn = () => {
-  scale.value = Math.min(scale.value + 0.1, 2)
-}
-
-const zoomOut = () => {
-  scale.value = Math.max(scale.value - 0.1, 0.5)
-}
-
-const resetZoom = () => {
-  scale.value = 1
 }
 
 // 支持通过参数传递url并请求pdf
@@ -595,6 +580,10 @@ onMounted(() => {
     attachEventListeners()
   }, 2000)
 })
+
+const toggleAISummary = () => {
+  isAISummaryVisible.value = !isAISummaryVisible.value
+}
 </script>
 
 <style>

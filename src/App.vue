@@ -43,7 +43,7 @@ const goRegister = () => {
 font-family: 'Inter', system-ui, sans-serif;
 */
 #app {
-    font-family: "LXGW WenKai", sans-serif;
+  font-family: 'LXGW WenKai', sans-serif;
 }
 
 /* 全局样式重置 */
@@ -56,7 +56,6 @@ font-family: 'Inter', system-ui, sans-serif;
 html,
 body {
   height: 100%;
-
 }
 
 /* 自定义滚动条全局样式 */
