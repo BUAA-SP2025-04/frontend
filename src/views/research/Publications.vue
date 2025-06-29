@@ -5,12 +5,7 @@
       <div class="flex justify-between items-center mb-8">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-            <svg
-              class="w-8 h-8 mr-3 text-indigo-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-8 h-8 mr-3 text-indigo-600" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -20,20 +15,32 @@
             </svg>
             科研成果管理
           </h1>
-          <!--          <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>-->
-          <p class="text-gray-600 mt-2">管理您的研究成果</p>
+          <p class="text-gray-600 mt-2">管理您的研究成果、发表论文和项目经历</p>
         </div>
-        <el-button type="primary" size="large" @click="showAddDialog = true">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-          添加成果
-        </el-button>
+        <div class="flex gap-2">
+          <el-button type="primary" size="large" @click="showAddDialog = true">
+            <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+            添加成果
+          </el-button>
+          <el-button type="success" size="large" @click="showExcelImporter = true">
+            <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v16h16V4H4zm4 4h8v8H8V8z"
+              />
+            </svg>
+            批量导入
+          </el-button>
+        </div>
       </div>
 
       <!-- 统计数据卡片组 -->
@@ -74,7 +81,7 @@
           style="width: 100%"
           :default-sort="{ prop: 'year', order: 'descending' }"
         >
-          <!-- <el-table-column type="selection" width="55" /> -->
+          <el-table-column type="selection" width="55" />
 
           <el-table-column label="类型" width="100">
             <template #default="{ row }">
@@ -118,12 +125,12 @@
             </template>
           </el-table-column>
 
-          <!--          <el-table-column prop="likeNum" label="点赞数" width="120" align="center">-->
-          <!--            <template #default="{ row }">-->
-          <!--              <div v-if="row.likeNum" class="font-semibold text-blue-600">{{ row.likeNum }}</div>-->
-          <!--              <div v-else class="text-gray-400">-</div>-->
-          <!--            </template>-->
-          <!--          </el-table-column>-->
+          <el-table-column prop="likeNum" label="点赞数" width="120" align="center">
+            <template #default="{ row }">
+              <div v-if="row.likeNum" class="font-semibold text-blue-600">{{ row.likeNum }}</div>
+              <div v-else class="text-gray-400">-</div>
+            </template>
+          </el-table-column>
 
           <el-table-column label="状态" width="100" align="center">
             <template #default="{ row }">
@@ -136,7 +143,7 @@
           <el-table-column label="操作" width="150" align="center">
             <template #default="{ row }">
               <el-button size="small" @click="editPublication(row)">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -146,7 +153,7 @@
                 </svg>
               </el-button>
               <el-button size="small" type="danger" @click="handleDelete(row.id)">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -197,7 +204,6 @@
               :disabled="true"
             />
             <el-input
-              v-if="allowAddAuthors"
               v-model="otherAuthors"
               placeholder="可添加其他作者，用英文逗号分隔"
               style="margin-top: 8px"
@@ -256,7 +262,6 @@
                 :limit="1"
                 :on-exceed="handlePdfExceed"
                 accept="application/pdf"
-                :before-upload="beforePdfUpload"
                 style="width: 100%; height: 40px; display: flex; align-items: center"
               >
                 <el-button type="primary">选择PDF文件</el-button>
@@ -300,6 +305,13 @@
         v-model:visible="showInfo"
         :publication="shownPublication"
       ></PublicationInfo>
+      <ExcelImporter
+        v-model:show-excel-importer="showExcelImporter"
+        :existing-titles="publications.map(p => p.title)"
+        :current-username="userStore.user?.name"
+        @close="showExcelImporter = false"
+        @upload-success="getPublicationData"
+      />
     </div>
   </div>
 </template>
@@ -312,6 +324,7 @@ import type {
   Publication,
   PublicationProfile,
   PublicationStats,
+  PublicationStatus,
   SavePublicationRequest,
 } from '@/api/types/publication'
 import {
@@ -326,12 +339,15 @@ import {
 import { useUserStore } from '@/stores/user'
 import PublicationStatsCardGroup from '@/components/publication/PublicationStatsCardGroup.vue'
 import PublicationInfo from '@/components/publication/PublicationInfo.vue'
+import ExcelImporter from '@/components/publication/ExcelImporter.vue'
 import type { UploadResponse } from '@/api/types/utils'
+import { doiPattern, urlPattern } from '@/utils/publications'
 
 const loading = ref(false)
 const saving = ref(false)
 const showAddDialog = ref(false)
 const showInfo = ref(false)
+const showExcelImporter = ref(false)
 const isEditing = ref(false)
 const searchQuery = ref('')
 const filterType = ref('')
@@ -367,11 +383,39 @@ const shownPublication = ref<Publication | null>(null)
 const pdfInputType = ref<'url' | 'upload'>('url')
 const pdfFile = ref<File | null>(null)
 const oldFilePath = ref<string>('')
-
 const formRef = ref<FormInstance>()
 
-const doiPattern = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i
-const urlPattern = /^(https?:\/\/)[^\s/$.?#].\S*$/i
+const userStore = useUserStore()
+const userName = computed(() => userStore.user?.name || '')
+
+const getPublicationData = async () => {
+  if (userStore.user?.id) {
+    loading.value = true
+    try {
+      const [pubRes, statsRes] = await Promise.all([
+        getPublicationsByUser(userStore.user.id),
+        getPublicationStatsByUser(userStore.user.id),
+      ])
+      if (Array.isArray(pubRes.data)) {
+        publications.splice(0, publications.length, ...pubRes.data)
+      }
+      if (statsRes.data) {
+        Object.assign(stats, statsRes.data)
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        ElMessage.error(`获取论文列表或统计数据失败：${err.message}`)
+      } else {
+        ElMessage.error('获取论文列表或统计数据失败：未知错误')
+      }
+    } finally {
+      loading.value = false
+    }
+  }
+}
+
+onMounted(getPublicationData)
+
 const rules: FormRules = {
   title: [
     { required: true, message: '请输入标题', trigger: 'blur' },
@@ -479,7 +523,7 @@ const getStatusColor = (status: string) => {
   return colors[status] || 'default'
 }
 
-const getStatusLabel = (status: 'published' | 'accepted' | 'under-review' | 'draft') => {
+const getStatusLabel = (status: PublicationStatus) => {
   const labels: Record<'published' | 'accepted' | 'under-review' | 'draft', string> = {
     published: '已发表',
     accepted: '待发表',
@@ -509,6 +553,15 @@ const editPublication = (publicationProfile: PublicationProfile) => {
   showAddDialog.value = true
 }
 
+const checkPdfSize = (file: File) => {
+  const maxSize = 80 * 1024 * 1024
+  if (file.size > maxSize) {
+    ElMessage.error('PDF文件大小不能超过80MB')
+    return false
+  }
+  return true
+}
+
 const handlePdfFileChange = (file: UploadFile) => {
   if (file.raw && file.raw.type !== 'application/pdf') {
     ElMessage.error('只能上传 PDF 文件')
@@ -516,12 +569,13 @@ const handlePdfFileChange = (file: UploadFile) => {
     return
   }
   // 手动调用大小校验
-  if (file.raw && !beforePdfUpload(file.raw)) {
+  if (file.raw && !checkPdfSize(file.raw)) {
     pdfFile.value = null
     return
   }
   pdfFile.value = file.raw ?? null
 }
+
 const handlePdfExceed = (files: File[]) => {
   if (files.length > 0) {
     pdfFile.value = files[files.length - 1]
@@ -596,24 +650,22 @@ const handleDelete = (id: number) => {
     cancelButtonText: '取消',
     type: 'warning',
   })
-    .then(async () => {
-      // 等待删除操作完成
-      await deletePublication(id)
-
+    .then(() => {
+      return deletePublication(id)
+    })
+    .then(() => {
       ElMessage.success('删除成功')
-      // 删除后从publications中移除
       const idx = publications.findIndex(item => item.id === id)
       if (idx !== -1) publications.splice(idx, 1)
       // 删除后刷新统计数据
       if (userStore.user?.id) {
-        const res = await getPublicationStatsByUser(userStore.user.id)
-        if (res.data) {
-          Object.assign(stats, res.data)
-        }
+        return getPublicationStatsByUser(userStore.user.id).then(res => {
+          if (res.data) Object.assign(stats, res.data)
+        })
       }
     })
     .catch(err => {
-      ElMessage.error(err)
+      ElMessage.error(`删除失败：${err.message}`)
     })
 }
 
@@ -627,13 +679,7 @@ const resetForm = () => {
 const closeDialog = () => {
   showAddDialog.value = false
 }
-
-const userStore = useUserStore()
-const userName = computed(() => userStore.user?.name || '')
 const otherAuthors = ref('')
-
-// 控制是否允许添加其他作者（可根据需求调整）
-const allowAddAuthors = true
 
 // 在打开添加对话框时，默认 authors 为当前用户 name，且不可删除
 watch(
@@ -665,7 +711,7 @@ const handleSave = async () => {
     userName.value + (otherAuthors.value ? `, ${otherAuthors.value}` : '')
   formRef.value
     .validate()
-    .then(() => {
+    .then(async () => {
       saving.value = true
       // 先处理PDF相关操作
       return handlePdfUrl().then(url => {
@@ -691,48 +737,22 @@ const handleSave = async () => {
       else ElMessage.success('添加成功')
       submitSuccess()
     })
-    .catch(() => {
-      ElMessage.error('保存失败')
+    .catch(err => {
+      ElMessage.error(`保存失败：${err.message}`)
     })
     .finally(() => {
       saving.value = false
     })
 }
 
-onMounted(async () => {
-  if (userStore.user?.id) {
-    loading.value = true
-    try {
-      const [pubRes, statsRes] = await Promise.all([
-        getPublicationsByUser(userStore.user.id),
-        getPublicationStatsByUser(userStore.user.id),
-      ])
-      if (Array.isArray(pubRes.data)) {
-        publications.splice(0, publications.length, ...pubRes.data)
-      }
-      if (statsRes.data) {
-        Object.assign(stats, statsRes.data)
-      }
-    } catch (e) {
-      ElMessage.error('获取论文列表或统计数据失败')
-    } finally {
-      loading.value = false
-    }
-  }
-})
-
 function onShowInfo(row: Publication) {
   shownPublication.value = row
   showInfo.value = true
 }
-
-// PDF大小限制：80MB
-const beforePdfUpload = (file: File) => {
-  const maxSize = 80 * 1024 * 1024
-  if (file.size > maxSize) {
-    ElMessage.error('PDF文件大小不能超过80MB')
-    return false
-  }
-  return true
-}
 </script>
+
+<style scoped>
+svg path {
+  fill: none;
+}
+</style>

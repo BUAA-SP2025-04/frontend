@@ -17,9 +17,9 @@ declare module 'markdown-it-task-lists';
 declare module 'markdown-it-katex';
 
 declare module 'markdown-it-table-of-contents' {
-  import { PluginSimple } from 'markdown-it';
-  const toc: PluginSimple;
-  export default toc;
+  import { PluginSimple } from 'markdown-it'
+  const toc: PluginSimple
+  export default toc
 }
 declare module 'markdown-it-container' {
   const plugin: any;
