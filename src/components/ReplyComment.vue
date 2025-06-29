@@ -134,11 +134,11 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, ref, onMounted, computed } from 'vue'
+import { computed, defineEmits, defineProps, onMounted, ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import type { Comment } from '@/api/types/comment'
 import type { UserDetail } from '@/api/types/user'
-import { likeComment, disLikeComment, deleteComment } from '@/api/modules/comment'
+import { deleteComment, disLikeComment, likeComment } from '@/api/modules/comment'
 import { useUserStore } from '@/stores/user'
 import { useUserCacheStore } from '@/stores/userCache'
 import { useRouter } from 'vue-router'
@@ -281,4 +281,4 @@ function handleUserClick() {
 export default {
   name: 'ReplyCommentComp',
 }
-</script> 
+</script>

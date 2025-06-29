@@ -57,9 +57,9 @@ export const useNotificationStore = defineStore(
         notifications.value.sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         )
-        console.log('添加新通知:', notification)
+        //console.log('添加新通知:', notification)
       } else {
-        console.log('通知已存在，跳过:', notification.id)
+        //console.log('通知已存在，跳过:', notification.id)
       }
     }
 

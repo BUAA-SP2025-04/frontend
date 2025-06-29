@@ -486,7 +486,7 @@ const handleMouseUp = () => {
       comment: commentText || '',
       markerX: highlightPreview.value.x + highlightPreview.value.width,
       markerY: highlightPreview.value.y,
-      paperId: paperId
+      paperId: paperId.value
     };
     
     annotations.value.push(newAnnotation);
