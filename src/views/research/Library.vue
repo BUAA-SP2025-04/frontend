@@ -1210,7 +1210,10 @@ const handlePaperAction = async (command: string) => {
         if (paper && paper.readCount) {
           paper.readCount = paper.readCount + 1
           let res = await libraryAPI.createRecord(userId, paperId.toString()) // 暂时去除全局文献阅读记录的功能
-          records.value.push({ userId: userId, paperId: paperId.toString(), id: res.data.id })
+          records.value
+            .reverse()
+            .push({ userId: userId, paperId: paperId.toString(), id: res.data.id })
+          records.value.reverse()
         } else {
           paper = updatePapers.value.find(p => p.id === paperId)
           if (paper && paper.readCount) paper.readCount = paper.readCount + 1

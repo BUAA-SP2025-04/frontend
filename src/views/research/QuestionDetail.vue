@@ -1,12 +1,11 @@
-<!-- filepath: c:\Users\Windows11\Desktop\小学期\frontend\src\views\research\QuestionDetail.vue -->
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50">
+  <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 返回按钮 -->
       <div class="mb-6">
         <button
           @click="goBack"
-          class="flex items-center text-slate-600 hover:text-cyan-600 transition-all duration-300 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-xl border border-cyan-100/50 hover:border-cyan-200/80"
+          class="flex items-center text-gray-600 hover:text-blue-600 transition-colors bg-white px-4 py-2 rounded-lg border border-gray-200 hover:border-blue-200"
         >
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -24,23 +23,19 @@
         <!-- 主内容区域 -->
         <div class="lg:col-span-3">
           <!-- 问题详情卡片 -->
-          <div
-            class="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-cyan-100/50 mb-6"
-          >
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
             <div class="p-8">
               <!-- 问题标题和操作 -->
               <div class="flex items-start justify-between mb-6">
                 <div class="flex-1">
-                  <h1
-                    class="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-4"
-                  >
+                  <h1 class="text-3xl font-bold text-gray-900 mb-4">
                     {{ question.title }}
                   </h1>
                   <div class="flex flex-wrap gap-2 mb-4">
                     <span
                       v-for="tag in question.tags"
                       :key="tag"
-                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-cyan-100/80 to-blue-100/80 text-cyan-700 border border-cyan-200/50"
+                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
                     >
                       {{ tag }}
                     </span>
@@ -52,10 +47,10 @@
                   <button
                     @click="toggleFollow"
                     :class="[
-                      'px-6 py-3 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm',
+                      'px-6 py-3 rounded-lg font-medium transition-colors',
                       question.isFollowed
-                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg hover:shadow-xl'
-                        : 'bg-white/60 text-slate-700 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 border border-cyan-200/50',
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200',
                     ]"
                   >
                     <svg
@@ -76,7 +71,7 @@
 
                   <button
                     @click="shareQuestion"
-                    class="px-6 py-3 bg-white/60 text-slate-700 rounded-xl hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 transition-all duration-300 border border-cyan-200/50"
+                    class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-200"
                   >
                     <svg
                       class="w-5 h-5 inline-block mr-2"
@@ -98,33 +93,33 @@
 
               <!-- 问题描述 -->
               <Markdown
-                class="prose prose-lg max-w-none mb-6 text-slate-700"
+                class="prose prose-lg max-w-none mb-6 text-gray-700"
                 :source="renderedDescription"
               />
 
               <!-- 问题元信息 -->
-              <div class="flex items-center justify-between pt-6 border-t border-cyan-100/50">
+              <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                 <div class="flex items-center space-x-6">
                   <div class="flex items-center">
                     <img
                       :src="question.author.avatar"
                       :alt="question.author.name"
-                      class="w-12 h-12 rounded-full mr-3 ring-2 ring-cyan-200/50"
+                      class="w-12 h-12 rounded-full mr-3 ring-2 ring-gray-200"
                     />
                     <div>
-                      <p class="font-medium text-slate-800">{{ question.author.name }}</p>
-                      <p class="text-sm text-slate-500">{{ question.author.institution }}</p>
+                      <p class="font-medium text-gray-800">{{ question.author.name }}</p>
+                      <p class="text-sm text-gray-500">{{ question.author.institution }}</p>
                     </div>
                   </div>
-                  <div class="text-sm text-slate-500">
+                  <div class="text-sm text-gray-500">
                     发布于 {{ formatTime(question.createdAt) }}
                   </div>
                 </div>
 
-                <div class="flex items-center space-x-4 text-sm text-slate-500">
-                  <span class="flex items-center px-3 py-1 bg-cyan-50/80 rounded-full">
+                <div class="flex items-center space-x-4 text-sm text-gray-500">
+                  <span class="flex items-center px-3 py-1 bg-gray-100 rounded-full">
                     <svg
-                      class="w-4 h-4 mr-1 text-cyan-500"
+                      class="w-4 h-4 mr-1 text-gray-500"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -144,9 +139,9 @@
                     </svg>
                     {{ question.viewCount }} 浏览
                   </span>
-                  <span class="flex items-center px-3 py-1 bg-blue-50/80 rounded-full">
+                  <span class="flex items-center px-3 py-1 bg-gray-100 rounded-full">
                     <svg
-                      class="w-4 h-4 mr-1 text-blue-500"
+                      class="w-4 h-4 mr-1 text-gray-500"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -166,23 +161,15 @@
           </div>
 
           <!-- 回答区域 -->
-          <div
-            class="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-cyan-100/50 mb-6"
-          >
-            <div
-              class="px-8 py-6 border-b border-cyan-100/50 bg-gradient-to-r from-cyan-50/30 to-blue-50/30"
-            >
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
               <div class="flex items-center justify-between">
-                <h2
-                  class="text-xl font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent"
-                >
-                  {{ answers.length }} 个回答
-                </h2>
+                <h2 class="text-xl font-semibold text-gray-900">{{ answers.length }} 个回答</h2>
                 <div class="flex items-center space-x-3">
-                  <label class="text-sm text-slate-600">排序方式：</label>
+                  <label class="text-sm text-gray-600">排序方式：</label>
                   <select
                     v-model="answerSortBy"
-                    class="px-3 py-2 bg-white/80 border border-cyan-200/50 rounded-lg text-sm focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400 transition-all duration-300"
+                    class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="helpful">最有帮助</option>
                     <option value="latest">最新回答</option>
@@ -195,20 +182,18 @@
             <!-- 回答列表 -->
             <div>
               <template v-for="(answer, idx) in sortedAnswers" :key="answer.id">
-                <div
-                  class="p-8 hover:bg-gradient-to-r hover:from-cyan-25/20 hover:to-blue-25/20 transition-all duration-300"
-                >
+                <div class="p-8 hover:bg-gray-50 transition-colors">
                   <!-- 回答者信息 -->
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
                       <img
                         :src="answer.author.avatar"
                         :alt="answer.author.name"
-                        class="w-12 h-12 rounded-full mr-3 ring-2 ring-cyan-200/50"
+                        class="w-12 h-12 rounded-full mr-3 ring-2 ring-gray-200"
                       />
                       <div>
-                        <p class="font-medium text-slate-800">{{ answer.author.name }}</p>
-                        <p class="text-sm text-slate-500">
+                        <p class="font-medium text-gray-800">{{ answer.author.name }}</p>
+                        <p class="text-sm text-gray-500">
                           {{ answer.author.institution }} · {{ formatTime(answer.createdAt) }}
                         </p>
                       </div>
@@ -217,7 +202,7 @@
                     <!-- 最佳答案标记 -->
                     <div v-if="answer.isBest" class="flex items-center">
                       <span
-                        class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-emerald-100/80 to-green-100/80 text-emerald-700 border border-emerald-200/50"
+                        class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800"
                       >
                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path
@@ -233,26 +218,26 @@
 
                   <!-- 回答内容 -->
                   <Markdown
-                    class="prose prose-lg max-w-none mb-6 text-slate-700"
+                    class="prose prose-lg max-w-none mb-6 text-gray-700"
                     :source="answer.content"
                   />
 
                   <!-- 回答操作 -->
-                  <div class="flex items-center justify-between pt-4 border-t border-cyan-100/30">
+                  <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                     <div class="flex items-center space-x-4">
                       <!-- 点赞 -->
                       <button
                         @click="toggleLike(answer.id)"
                         :class="[
-                          'flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300',
+                          'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                           answer.isLiked
-                            ? 'bg-gradient-to-r from-cyan-100/80 to-blue-100/80 text-cyan-700 border border-cyan-200/50'
-                            : 'bg-white/60 text-slate-600 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 border border-slate-200/50',
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
                         ]"
                       >
                         <svg
                           v-if="answer.isLiked"
-                          class="w-5 h-5 text-cyan-500"
+                          class="w-5 h-5 text-blue-500"
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -280,7 +265,7 @@
                       <!-- 评论 -->
                       <button
                         @click="toggleComments(answer.id)"
-                        class="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium bg-white/60 text-slate-600 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 transition-all duration-300 border border-slate-200/50"
+                        class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                       >
                         <svg
                           class="w-5 h-5"
@@ -301,7 +286,7 @@
                       <!-- 分享 -->
                       <button
                         @click="shareAnswer(answer.id)"
-                        class="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium bg-white/60 text-slate-600 hover:bg-gradient-to-r hover:from-cyan-50/80 hover:to-blue-50/80 transition-all duration-300 border border-slate-200/50"
+                        class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
@@ -319,7 +304,7 @@
                     <div v-if="isQuestionAuthor && !answer.isBest && !hasBestAnswer">
                       <button
                         @click="markAsBest(answer.id)"
-                        class="px-6 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-xl"
+                        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
                       >
                         采纳为最佳答案
                       </button>
@@ -327,8 +312,7 @@
                   </div>
 
                   <!-- 多级评论区域 -->
-                  <!-- 多级评论区域 -->
-                  <div v-if="answer.showComments" class="mt-6 pt-6 border-t border-cyan-100/30">
+                  <div v-if="answer.showComments" class="mt-6 pt-6 border-t border-gray-200">
                     <!-- 评论列表 -->
                     <div
                       v-if="answer.comments && answer.comments.length > 0"
@@ -340,29 +324,27 @@
                           <img
                             :src="comment.author.avatar || '/default-avatar.png'"
                             :alt="comment.author.name"
-                            class="w-8 h-8 rounded-full ring-2 ring-cyan-200/30"
+                            class="w-8 h-8 rounded-full ring-2 ring-gray-200"
                           />
                           <div class="flex-1">
-                            <div
-                              class="bg-gradient-to-r from-slate-50/80 to-cyan-50/60 backdrop-blur-sm rounded-xl p-4 border border-cyan-100/30"
-                            >
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                               <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-medium text-slate-800">{{
+                                <span class="text-sm font-medium text-gray-800">{{
                                   comment.author.name
                                 }}</span>
                                 <div class="flex items-center space-x-2">
-                                  <span class="text-xs text-slate-500">{{
+                                  <span class="text-xs text-gray-500">{{
                                     formatTime(comment.createdAt)
                                   }}</span>
                                   <button
                                     @click="replyToComment(answer.id, comment.id)"
-                                    class="text-xs text-cyan-600 hover:text-cyan-700 transition-colors opacity-0 group-hover:opacity-100"
+                                    class="text-xs text-blue-600 hover:text-blue-700 transition-colors opacity-0 group-hover:opacity-100"
                                   >
                                     回复
                                   </button>
                                 </div>
                               </div>
-                              <p class="text-sm text-slate-700">{{ comment.content }}</p>
+                              <p class="text-sm text-gray-700">{{ comment.content }}</p>
 
                               <!-- 评论操作 -->
                               <div class="flex items-center space-x-4 mt-2">
@@ -371,8 +353,8 @@
                                   :class="[
                                     'flex items-center space-x-1 text-xs transition-colors',
                                     comment.isLiked
-                                      ? 'text-cyan-600'
-                                      : 'text-slate-500 hover:text-cyan-600',
+                                      ? 'text-blue-600'
+                                      : 'text-gray-500 hover:text-blue-600',
                                   ]"
                                 >
                                   <svg
@@ -406,30 +388,28 @@
                                 <img
                                   :src="reply.author.avatar || '/default-avatar.png'"
                                   :alt="reply.author.name"
-                                  class="w-6 h-6 rounded-full ring-1 ring-cyan-200/30"
+                                  class="w-6 h-6 rounded-full ring-1 ring-gray-200"
                                 />
                                 <div class="flex-1">
-                                  <div
-                                    class="bg-gradient-to-r from-white/60 to-slate-50/60 backdrop-blur-sm rounded-lg p-3 border border-slate-200/30"
-                                  >
+                                  <div class="bg-white rounded-lg p-3 border border-gray-200">
                                     <div class="flex items-center justify-between mb-1">
-                                      <span class="text-xs font-medium text-slate-700">{{
+                                      <span class="text-xs font-medium text-gray-700">{{
                                         reply.author.name
                                       }}</span>
                                       <div class="flex items-center space-x-2">
-                                        <span class="text-xs text-slate-400">{{
+                                        <span class="text-xs text-gray-400">{{
                                           formatTime(reply.createdAt)
                                         }}</span>
                                         <button
                                           @click="replyToComment(answer.id, comment.id, reply.id)"
-                                          class="text-xs text-cyan-600 hover:text-cyan-700 transition-colors opacity-0 group-hover:opacity-100"
+                                          class="text-xs text-blue-600 hover:text-blue-700 transition-colors opacity-0 group-hover:opacity-100"
                                         >
                                           回复
                                         </button>
                                       </div>
                                     </div>
-                                    <p class="text-xs text-slate-600">
-                                      <span v-if="reply.replyTo" class="text-cyan-600 font-medium"
+                                    <p class="text-xs text-gray-600">
+                                      <span v-if="reply.replyTo" class="text-blue-600 font-medium"
                                         >@{{ reply.replyTo.name }}
                                       </span>
                                       {{ reply.content }}
@@ -442,8 +422,8 @@
                                         :class="[
                                           'flex items-center space-x-1 text-xs transition-colors',
                                           reply.isLiked
-                                            ? 'text-cyan-600'
-                                            : 'text-slate-400 hover:text-cyan-600',
+                                            ? 'text-blue-600'
+                                            : 'text-gray-400 hover:text-blue-600',
                                         ]"
                                       >
                                         <svg
@@ -480,19 +460,19 @@
                                     v-model="replyContents[comment.id]"
                                     :placeholder="getReplyPlaceholder(comment.id)"
                                     rows="2"
-                                    class="w-full px-3 py-2 bg-white/80 border border-cyan-200/50 rounded-lg focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400 text-sm transition-all duration-300"
+                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                                   ></textarea>
                                   <div class="flex justify-end space-x-2 mt-2">
                                     <button
                                       @click="cancelReply(comment.id)"
-                                      class="px-3 py-1 text-xs text-slate-600 hover:text-slate-800 transition-colors"
+                                      class="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 transition-colors"
                                     >
                                       取消
                                     </button>
                                     <button
                                       @click="submitReply(answer.id, comment.id)"
                                       :disabled="!replyContents[comment.id]?.trim()"
-                                      class="px-4 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-xs"
+                                      class="px-4 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs"
                                     >
                                       发布回复
                                     </button>
@@ -510,20 +490,20 @@
                       <img
                         src="/default-avatar.png"
                         alt="当前用户"
-                        class="w-8 h-8 rounded-full ring-2 ring-cyan-200/30"
+                        class="w-8 h-8 rounded-full ring-2 ring-gray-200"
                       />
                       <div class="flex-1">
                         <textarea
                           v-model="newComments[answer.id]"
                           placeholder="写下你的评论..."
                           rows="3"
-                          class="w-full px-4 py-3 bg-white/80 border border-cyan-200/50 rounded-xl focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400 text-sm transition-all duration-300"
+                          class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                         ></textarea>
                         <div class="flex justify-end mt-3">
                           <button
                             @click="addComment(answer.id)"
                             :disabled="!newComments[answer.id]?.trim()"
-                            class="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-xl"
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                           >
                             发布评论
                           </button>
@@ -534,26 +514,18 @@
                 </div>
                 <div
                   v-if="idx < sortedAnswers.length - 1"
-                  class="mx-8 my-4 border-t-2 border-dashed border-cyan-400"
-                  style="border-radius: 2px"
+                  class="mx-8 my-4 border-t border-gray-200"
                 ></div>
               </template>
             </div>
           </div>
 
           <!-- 写回答 -->
-          <!-- 写回答 -->
-          <div class="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-cyan-100/50">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <!-- Header -->
-            <div
-              class="px-8 py-6 border-b border-cyan-100/50 bg-gradient-to-r from-cyan-50/30 to-blue-50/30"
-            >
-              <h3
-                class="text-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent"
-              >
-                写回答
-              </h3>
-              <p class="text-sm text-slate-600 mt-1">分享你的见解，帮助解决这个问题</p>
+            <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
+              <h3 class="text-lg font-semibold text-gray-900">写回答</h3>
+              <p class="text-sm text-gray-600 mt-1">分享你的见解，帮助解决这个问题</p>
             </div>
 
             <!-- Body -->
@@ -562,23 +534,23 @@
               <div class="grid gap-6 lg:grid-cols-12">
                 <!-- 编辑区 -->
                 <div class="flex flex-col lg:col-span-7">
-                  <label class="block text-sm font-medium text-slate-700 mb-3"
+                  <label class="block text-sm font-medium text-gray-700 mb-3"
                     >编写回答（支持 Markdown）</label
                   >
                   <textarea
                     v-model="newAnswerContent"
                     rows="14"
-                    class="flex-1 w-full px-4 py-3 bg-white/80 border border-cyan-200/50 rounded-xl focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400 font-mono text-sm resize-none transition-all duration-300"
+                    class="flex-1 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm resize-none"
                     placeholder="你可以使用 Markdown 语法来格式化你的回答..."
                   ></textarea>
                 </div>
 
                 <!-- 预览区 -->
                 <div class="flex flex-col lg:col-span-5">
-                  <label class="block text-sm font-medium text-slate-700 mb-3">预览</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-3">预览</label>
                   <div class="flex-1 overflow-auto">
                     <Markdown
-                      class="h-full w-full p-4 bg-gradient-to-br from-slate-50/80 to-cyan-50/60 border border-cyan-200/50 rounded-xl prose prose-sm max-w-none"
+                      class="h-full w-full p-4 bg-gray-50 border border-gray-300 rounded-lg prose prose-sm max-w-none"
                       :source="previewContent"
                     />
                   </div>
@@ -586,11 +558,11 @@
               </div>
 
               <!-- 提交 -->
-              <div class="flex justify-end mt-6 pt-6 border-t border-cyan-100/50">
+              <div class="flex justify-end mt-6 pt-6 border-t border-gray-200">
                 <button
                   @click="submitAnswer"
                   :disabled="!newAnswerContent.trim()"
-                  class="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+                  class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                 >
                   发布回答
                 </button>
@@ -602,73 +574,52 @@
         <!-- 侧边栏 -->
         <div class="lg:col-span-1">
           <!-- 问题统计 -->
-          <div
-            class="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-cyan-100/50 p-6 mb-6"
-          >
-            <h3
-              class="text-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-4"
-            >
-              问题统计
-            </h3>
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">问题统计</h3>
             <div class="space-y-4">
-              <div
-                class="flex justify-between items-center p-3 bg-gradient-to-r from-cyan-50/40 to-blue-50/40 rounded-xl"
-              >
-                <span class="text-slate-600">回答数</span>
-                <span class="font-semibold text-slate-800 px-2 py-1 bg-white/60 rounded-lg">{{
+              <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">回答数</span>
+                <span class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg">{{
                   answers.length
                 }}</span>
               </div>
-              <div
-                class="flex justify-between items-center p-3 bg-gradient-to-r from-cyan-50/40 to-blue-50/40 rounded-xl"
-              >
-                <span class="text-slate-600">浏览数</span>
-                <span class="font-semibold text-slate-800 px-2 py-1 bg-white/60 rounded-lg">{{
+              <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">浏览数</span>
+                <span class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg">{{
                   question.viewCount
                 }}</span>
               </div>
-              <div
-                class="flex justify-between items-center p-3 bg-gradient-to-r from-cyan-50/40 to-blue-50/40 rounded-xl"
-              >
-                <span class="text-slate-600">关注数</span>
-                <span class="font-semibold text-slate-800 px-2 py-1 bg-white/60 rounded-lg">{{
+              <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">关注数</span>
+                <span class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg">{{
                   question.followCount
                 }}</span>
               </div>
-              <div
-                class="flex justify-between items-center p-3 bg-gradient-to-r from-cyan-50/40 to-blue-50/40 rounded-xl"
-              >
-                <span class="text-slate-600">发布时间</span>
-                <span
-                  class="font-semibold text-slate-800 px-2 py-1 bg-white/60 rounded-lg text-xs"
-                  >{{ formatDate(question.createdAt) }}</span
-                >
+              <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">发布时间</span>
+                <span class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg text-xs">{{
+                  formatDate(question.createdAt)
+                }}</span>
               </div>
             </div>
           </div>
 
           <!-- 相关问题 -->
-          <div
-            class="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-cyan-100/50 p-6"
-          >
-            <h3
-              class="text-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-4"
-            >
-              相关问题
-            </h3>
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">相关问题</h3>
             <div class="space-y-4">
               <div
                 v-for="relatedQ in relatedQuestions"
                 :key="relatedQ.id"
-                class="group cursor-pointer p-3 rounded-xl hover:bg-gradient-to-r hover:from-cyan-50/60 hover:to-blue-50/60 transition-all duration-300 border border-transparent hover:border-cyan-200/50"
+                class="group cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
                 @click="goToQuestion(relatedQ.id)"
               >
                 <h4
-                  class="text-sm font-medium text-slate-800 group-hover:text-cyan-600 line-clamp-2 mb-2 transition-colors"
+                  class="text-sm font-medium text-gray-800 group-hover:text-blue-600 line-clamp-2 mb-2 transition-colors"
                 >
                   {{ relatedQ.title }}
                 </h4>
-                <div class="flex items-center text-xs text-slate-500 space-x-3">
+                <div class="flex items-center text-xs text-gray-500 space-x-3">
                   <span class="flex items-center">
                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path

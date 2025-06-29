@@ -57,7 +57,7 @@ const rendered = computed(() => md.render(props.source || ''))
 
 <style>
 .markdown-content {
-  color: #334155;
+  color: #374151;
   font-size: 1rem;
   line-height: 1.8;
   word-break: break-word;
@@ -65,34 +65,23 @@ const rendered = computed(() => md.render(props.source || ''))
 }
 
 .markdown-content pre {
-  background: linear-gradient(135deg, #f1f5f9 60%, #e0f2fe 100%);
-  border: 1.5px solid #bae6fd;
-  border-radius: 0.75rem;
-  box-shadow:
-    0 4px 24px 0 rgba(56, 189, 248, 0.08),
-    0 1.5px 4px 0 rgba(30, 58, 138, 0.08);
-  padding: 1.25rem 1.5rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
   margin: 1.5rem 0;
   overflow-x: auto;
-  font-size: 0.98em;
-  transition: box-shadow 0.2s;
-  position: relative;
-}
-
-.markdown-content pre:hover {
-  box-shadow:
-    0 8px 32px 0 rgba(56, 189, 248, 0.16),
-    0 2px 8px 0 rgba(30, 58, 138, 0.12);
+  font-size: 0.875rem;
 }
 
 .markdown-content code {
-  background: linear-gradient(90deg, #f1f5f9 80%, #e0f2fe 100%);
-  color: #0c4a6e;
-  border-radius: 0.375rem;
-  padding: 0.15em 0.5em;
-  font-size: 0.97em;
-  border: 1px solid #bae6fd;
-  font-family: 'JetBrains Mono', 'Fira Mono', 'Menlo', 'Consolas', monospace;
+  background: #f1f5f9;
+  color: #1e40af;
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.875rem;
+  border: 1px solid #cbd5e1;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
 }
 
 .markdown-content pre code {
@@ -104,8 +93,8 @@ const rendered = computed(() => md.render(props.source || ''))
 }
 
 .markdown-content blockquote {
-  border-left: 4px solid #38bdf8;
-  background: linear-gradient(90deg, #f0f9ff 80%, #f8fafc 100%);
+  border-left: 4px solid #3b82f6;
+  background: #f8fafc;
   color: #64748b;
   padding: 1rem 1.5rem;
   margin: 1.5rem 0;
@@ -118,9 +107,24 @@ const rendered = computed(() => md.render(props.source || ''))
 .markdown-content h3,
 .markdown-content h4 {
   font-weight: 700;
-  background: linear-gradient(to right, #06b6d4, #3b82f6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #1f2937;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.markdown-content h1 {
+  font-size: 1.875rem;
+  color: #111827;
+}
+
+.markdown-content h2 {
+  font-size: 1.5rem;
+  color: #1f2937;
+}
+
+.markdown-content h3 {
+  font-size: 1.25rem;
+  color: #374151;
 }
 
 .markdown-content ul,
@@ -129,32 +133,69 @@ const rendered = computed(() => md.render(props.source || ''))
   margin-bottom: 1em;
 }
 
+.markdown-content li {
+  margin-bottom: 0.5rem;
+}
+
 .markdown-content table {
   border-collapse: collapse;
   width: 100%;
   margin: 1.5em 0;
-  border-radius: 0.5em;
+  border-radius: 0.5rem;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.08);
+  border: 1px solid #e5e7eb;
 }
 
 .markdown-content th,
 .markdown-content td {
-  border: 1px solid #e0e7ef;
+  border: 1px solid #e5e7eb;
   padding: 0.75em 1em;
+  text-align: left;
 }
 
 .markdown-content th {
-  background: linear-gradient(to right, #06b6d4, #3b82f6);
-  color: #fff;
+  background: #f9fafb;
+  color: #374151;
+  font-weight: 600;
+}
+
+.markdown-content td {
+  background: #ffffff;
+}
+
+.markdown-content strong {
+  font-weight: 600;
+  color: #111827;
+}
+
+.markdown-content em {
+  font-style: italic;
+  color: #4b5563;
 }
 
 .markdown-content a {
-  color: #06b6d4;
-  text-decoration: underline;
+  color: #3b82f6;
+  text-decoration: none;
   transition: color 0.2s;
 }
+
 .markdown-content a:hover {
-  color: #0ea5e9;
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.markdown-content p {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+/* 任务列表样式 */
+.markdown-content .task-list-item {
+  list-style: none;
+  margin-left: -1.5em;
+}
+
+.markdown-content .task-list-item input {
+  margin-right: 0.5em;
 }
 </style>
