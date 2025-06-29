@@ -110,19 +110,19 @@
                 <!-- 筛选器 -->
                 <div>
                   <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >按机构筛选</label
+                    >按编程语言筛选</label
                   >
                   <select
                     v-model="selectedInstitution"
                     class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600"
                   >
-                    <option value="">全部机构</option>
+                    <option value="">全部语言</option>
                     <option
                       v-for="institution in institutionOptions"
                       :key="institution.id"
                       :value="institution.id"
                     >
-                      {{ institution.name }} ({{ institution.count }}人)
+                      {{ institution.name }}
                     </option>
                   </select>
                 </div>
@@ -142,7 +142,7 @@
                         :key="field.id"
                         :value="field.id"
                       >
-                        {{ field.name }} ({{ field.count }})
+                        {{ field.name }}
                       </option>
                     </select>
                   </div>
@@ -151,13 +151,13 @@
                 <!-- 搜索 -->
                 <div>
                   <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >搜索研究人员</label
+                    >搜索节点</label
                   >
                   <div class="relative">
                     <input
                       v-model="searchQuery"
                       type="text"
-                      placeholder="输入姓名或关键词..."
+                      placeholder="输入名称或关键词..."
                       class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 pl-10 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600"
                       @input="handleSearch"
                     />
@@ -213,35 +213,24 @@
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <div class="w-4 h-4 rounded-full bg-blue-500 mr-3"></div>
-                    <span class="text-sm text-slate-700 dark:text-slate-300">研究人员</span>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">编程语言</span>
                   </div>
-                  <span class="text-xs text-slate-500">圆的大小代表影响力</span>
                 </div>
 
                 <div class="flex items-center">
                   <div class="w-4 h-4 rounded-lg bg-emerald-500 mr-3"></div>
-                  <span class="text-sm text-slate-700 dark:text-slate-300">研究机构</span>
-                </div>
-
-                <div class="flex items-center">
-                  <div class="w-4 h-4 rounded-md bg-purple-500 mr-3"></div>
                   <span class="text-sm text-slate-700 dark:text-slate-300">研究领域</span>
                 </div>
 
                 <div class="pt-3 border-t border-slate-200 dark:border-slate-700">
                   <div class="flex items-center mb-2">
                     <div class="w-12 h-0.5 bg-blue-500 mr-3"></div>
-                    <span class="text-sm text-slate-700 dark:text-slate-300">关注关系</span>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">属于关系</span>
                   </div>
 
                   <div class="flex items-center mb-2">
-                    <div class="w-12 h-0.5 bg-emerald-500 mr-3 border-dashed border-t-2"></div>
-                    <span class="text-sm text-slate-700 dark:text-slate-300">合作关系</span>
-                  </div>
-
-                  <div class="flex items-center">
-                    <div class="w-12 h-0.5 bg-purple-500 mr-3 border-dotted border-t-2"></div>
-                    <span class="text-sm text-slate-700 dark:text-slate-300">研究领域关系</span>
+                    <div class="w-12 h-0.5 bg-emerald-500 mr-3"></div>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">应用于关系</span>
                   </div>
                 </div>
               </div>
@@ -675,9 +664,9 @@ const viewOptions = [
 ]
 
 const graphTypes = [
-  { label: '关注网络', value: 'follow', icon: 'fas fa-user-friends' },
-  { label: '机构网络', value: 'institution', icon: 'fas fa-university' },
-  { label: '研究领域', value: 'research', icon: 'fas fa-book' },
+  { label: '知识图谱', value: 'follow', icon: 'fas fa-project-diagram' },
+  { label: '语言网络', value: 'institution', icon: 'fas fa-code' },
+  { label: '领域网络', value: 'research', icon: 'fas fa-book' },
 ]
 
 const layoutOptions = [
@@ -716,16 +705,15 @@ const mockLinks = [
 
 // 机构选项
 const institutionOptions = computed(() => {
-  const institutions = mockNodes
-    .filter(node => node.type === 'institution')
-    .map(inst => ({
-      id: inst.id,
-      name: inst.name,
-      count: (inst as any).membersCount || 0,
+  const languages = mockNodes
+    .filter(node => node.type === 'language')
+    .map(lang => ({
+      id: lang.id,
+      name: lang.name,
+      count: 1,
     }))
-    .sort((a, b) => b.count - a.count)
 
-  return institutions
+  return languages
 })
 
 // 研究领域选项
@@ -735,9 +723,8 @@ const researchFieldOptions = computed(() => {
     .map(field => ({
       id: field.id,
       name: field.name,
-      count: (field as any).paperCount || 0,
+      count: 1,
     }))
-    .sort((a, b) => b.count - a.count)
 
   return fields
 })
@@ -746,13 +733,13 @@ const researchFieldOptions = computed(() => {
 const graphTitle = computed(() => {
   switch (graphType.value) {
     case 'follow':
-      return '科研人员社交网络'
+      return '知识图谱'
     case 'institution':
-      return '科研机构合作网络'
+      return '编程语言网络'
     case 'research':
-      return '科研领域知识图谱'
+      return '研究领域网络'
     default:
-      return '科研知识网络'
+      return '知识网络'
   }
 })
 
@@ -885,60 +872,16 @@ const loadGraphData = async () => {
 
     // 根据图谱类型过滤
     if (graphType.value === 'follow') {
-      filteredLinks = filteredLinks.filter(link => link.relationshipType === '关注')
-
-      // 仅保留有连接的节点
-      const connectedNodeIds = new Set<string>()
-      filteredLinks.forEach(link => {
-        connectedNodeIds.add(link.source)
-        connectedNodeIds.add(link.target)
-      })
-
-      filteredNodes = filteredNodes.filter(node => connectedNodeIds.has(node.id))
+      // 对于关注网络，显示所有连接
+      // 这里可以根据实际需求调整筛选逻辑
     } else if (graphType.value === 'institution') {
-      // 保留机构节点和与机构直接相关的节点
-      const institutionIds = new Set(
-        filteredNodes.filter(node => node.type === 'institution').map(node => node.id)
+      // 对于机构网络，可以筛选特定类型的节点
+      filteredNodes = filteredNodes.filter(
+        node => node.type === 'language' || node.type === 'field'
       )
-
-      filteredLinks = filteredLinks.filter(
-        link =>
-          institutionIds.has(link.source) ||
-          institutionIds.has(link.target) ||
-          link.relationshipType === '合作研究'
-      )
-
-      // 仅保留有连接的节点
-      // ...existing code...
-
-      const connectedNodeIds = new Set<string>()
-      filteredLinks.forEach(link => {
-        connectedNodeIds.add(link.source)
-        connectedNodeIds.add(link.target)
-      })
-
-      filteredNodes = filteredNodes.filter(node => connectedNodeIds.has(node.id))
     } else if (graphType.value === 'research') {
-      // 保留研究领域节点和相关连接
-      const fieldIds = new Set(
-        filteredNodes.filter(node => node.type === 'field').map(node => node.id)
-      )
-
-      filteredLinks = filteredLinks.filter(
-        link =>
-          fieldIds.has(link.source) ||
-          fieldIds.has(link.target) ||
-          link.relationshipType === '相关领域' ||
-          link.relationshipType === '研究'
-      )
-
-      const connectedNodeIds = new Set<string>()
-      filteredLinks.forEach(link => {
-        connectedNodeIds.add(link.source)
-        connectedNodeIds.add(link.target)
-      })
-
-      filteredNodes = filteredNodes.filter(node => connectedNodeIds.has(node.id))
+      // 对于研究领域网络，显示所有连接
+      // 这里可以根据实际需求调整筛选逻辑
     }
 
     // 应用搜索筛选
@@ -1040,15 +983,10 @@ const prepareChartData = (nodes: any[], links: any[]) => {
 
 // 获取节点大小
 const getNodeSize = (node: any) => {
-  if (node.type === 'person') {
-    const influence = node.metrics?.publications || 0
-    return Math.max(20, Math.min(60, 20 + influence / 10))
-  } else if (node.type === 'institution') {
-    const members = node.membersCount || 0
-    return Math.max(30, Math.min(80, 30 + members / 20))
+  if (node.type === 'language') {
+    return 30
   } else if (node.type === 'field') {
-    const papers = node.paperCount || 0
-    return Math.max(25, Math.min(70, 25 + papers / 500))
+    return 40
   }
   return 30
 }
@@ -1056,9 +994,8 @@ const getNodeSize = (node: any) => {
 // 获取节点颜色
 const getNodeColor = (node: any) => {
   const colors = {
-    person: '#3b82f6', // 蓝色
-    institution: '#10b981', // 绿色
-    field: '#8b5cf6', // 紫色
+    language: '#3b82f6', // 蓝色
+    field: '#10b981', // 绿色
   }
   return colors[node.type as keyof typeof colors] || '#6b7280'
 }
@@ -1066,9 +1003,8 @@ const getNodeColor = (node: any) => {
 // 获取节点形状
 const getNodeSymbol = (node: any) => {
   const symbols = {
-    person: 'circle',
-    institution: 'rect',
-    field: 'diamond',
+    language: 'circle',
+    field: 'rect',
   }
   return symbols[node.type as keyof typeof symbols] || 'circle'
 }
@@ -1111,9 +1047,8 @@ const updateChart = (chartInstance: echarts.ECharts, data: any) => {
         data: data.nodes,
         links: data.links,
         categories: [
-          { name: 'person', itemStyle: { color: '#3b82f6' } },
-          { name: 'institution', itemStyle: { color: '#10b981' } },
-          { name: 'field', itemStyle: { color: '#8b5cf6' } },
+          { name: 0, itemStyle: { color: '#3b82f6' } },
+          { name: 1, itemStyle: { color: '#10b981' } },
         ],
         roam: true,
         label: {
@@ -1176,38 +1111,15 @@ const updateChart = (chartInstance: echarts.ECharts, data: any) => {
 
 // 格式化节点提示信息
 const formatNodeTooltip = (node: any) => {
-  if (node.type === 'person') {
+  if (node.type === 'language') {
     return `
       <div class="font-bold text-lg">${node.name}</div>
-      <div class="text-sm opacity-75">${node.title || '研究员'} · ${
-      node.institution || '未知机构'
-    }</div>
-      <div class="mt-2">
-        <div>发表论文: ${node.metrics?.publications || 0}</div>
-        <div>关注者: ${node.metrics?.followers || 0}</div>
-      </div>
-      ${
-        node.researchFields
-          ? `<div class="mt-2">研究领域: ${node.researchFields.slice(0, 2).join(', ')}</div>`
-          : ''
-      }
-    `
-  } else if (node.type === 'institution') {
-    return `
-      <div class="font-bold text-lg">${node.name}</div>
-      <div class="text-sm opacity-75">研究机构</div>
-      <div class="mt-2">
-        <div>成员数量: ${node.membersCount || 0}</div>
-        <div>成立年份: ${node.foundedYear || '未知'}</div>
-      </div>
+      <div class="text-sm opacity-75">编程语言</div>
     `
   } else if (node.type === 'field') {
     return `
       <div class="font-bold text-lg">${node.name}</div>
       <div class="text-sm opacity-75">研究领域</div>
-      <div class="mt-2">
-        <div>相关论文: ${node.paperCount || 0}</div>
-      </div>
     `
   }
   return node.name
@@ -1215,9 +1127,9 @@ const formatNodeTooltip = (node: any) => {
 
 // 格式化连接提示信息
 const formatEdgeTooltip = (edge: any) => {
+  const relationshipType = edge.label?.formatter || edge.relationshipType || '关联'
   return `
-    <div class="font-bold">${edge.relationshipType}</div>
-    <div class="text-sm opacity-75">关系强度: ${edge.value}</div>
+    <div class="font-bold">${relationshipType}</div>
   `
 }
 
@@ -1235,7 +1147,7 @@ const handleNodeClick = (nodeData: any) => {
       return targetNode
         ? {
             ...targetNode,
-            relationshipType: link.relationshipType,
+            relationshipType: link.label?.formatter || '关联',
           }
         : null
     })
@@ -1440,20 +1352,16 @@ const formatNumber = (num: number) => {
 
 const getNodeTypeClass = (type: string) => {
   const classes = {
-    person: {
+    language: {
       bg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
-      icon: 'fas fa-user',
-    },
-    institution: {
-      bg: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400',
-      icon: 'fas fa-university',
+      icon: 'fas fa-code',
     },
     field: {
-      bg: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400',
+      bg: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400',
       icon: 'fas fa-book',
     },
   }
-  return classes[type as keyof typeof classes] || classes.person
+  return classes[type as keyof typeof classes] || classes.language
 }
 
 const handleImageError = (event: Event) => {
