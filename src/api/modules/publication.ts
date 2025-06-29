@@ -51,7 +51,7 @@ export function getPublicationFile(pdfUrl: string): Promise<Blob> {
 }
 
 export function batchAddPublications(data: PublicationProfile[]): Promise<EmptyResponse> {
-  return request.post('/publication/batchAdd', data)
+  return request.post('/publication/batchAdd', { publicationsProfiles: data })
 }
 
 export function getPublicationInformById(id: number | string): Promise<PublicationInformResponse> {

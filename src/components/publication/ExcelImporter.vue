@@ -11,11 +11,11 @@ const props = defineProps<{
   existingTitles: string[]
   currentUsername: string | undefined
 }>()
-const emit = defineEmits(['update:showExcelImporter'])
+const emit = defineEmits(['update:showExcelImporter', 'upload-success'])
 
 const publicationProfiles = ref<PublicationProfile[]>([])
 const fileInput = ref<HTMLInputElement | null>(null)
-const showDialog = ref(props.showExcelImporter) // 新增：控制弹窗显示
+const showDialog = ref(props.showExcelImporter)
 
 watch(
   () => props.showExcelImporter,
@@ -25,7 +25,24 @@ watch(
 )
 watch(showDialog, val => {
   emit('update:showExcelImporter', val)
+  if (!val) {
+    publicationProfiles.value = [] // 清空表格数据
+  }
 })
+
+// 只保留PublicationProfile相关字段
+const profileFields = [
+  'type',
+  'title',
+  'authors',
+  'venue',
+  'year',
+  'status',
+  'abstracts',
+  'keywords',
+  'doi',
+  'pdfUrl',
+]
 
 function handleFileChange(file: File) {
   const reader = new FileReader()
@@ -34,13 +51,32 @@ function handleFileChange(file: File) {
     const workbook = XLSX.read(data, { type: 'array' })
     const firstSheetName = workbook.SheetNames[0]
     const worksheet = workbook.Sheets[firstSheetName]
-    publicationProfiles.value = XLSX.utils.sheet_to_json(worksheet, { defval: '' })
+    let rawProfiles = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, {
+      defval: '',
+      raw: false,
+      dateNF: 'yyyy',
+    })
+    publicationProfiles.value = rawProfiles.map((profile): PublicationProfile => {
+      const filtered: Partial<PublicationProfile> = {}
+      profileFields.forEach(field => {
+        const value = profile[field]
+        if (value !== undefined && value !== null && value !== '') {
+          ;(filtered as Record<string, unknown>)[field] = String(value)
+        } else {
+          ;(filtered as Record<string, unknown>)[field] = undefined
+        }
+      })
+      if (filtered.year !== undefined && filtered.year !== null) {
+        filtered.year = String(filtered.year)
+      }
+      return filtered as PublicationProfile
+    })
   }
   reader.readAsArrayBuffer(file)
+  return false // 阻止 el-upload 默认上传
 }
 
 function submitData() {
-  console.log('提交数据:', publicationProfiles.value)
   if (publicationProfiles.value.length === 0) {
     ElMessage.error('无法提交空数据')
     return
@@ -49,7 +85,7 @@ function submitData() {
   const invalidEntries = publicationProfiles.value.filter(profile => {
     const doiValid = !profile.doi || doiPattern.test(profile.doi)
     const urlValid = !profile.pdfUrl || urlPattern.test(profile.pdfUrl)
-    const yearValid = profile.year === null || !isNaN(Number(profile.year))
+    const yearValid = !profile.year || !isNaN(Number(profile.year))
     const titleValid = profile.title && !props.existingTitles.includes(profile.title)
     const authorsValid = profile.authors && profile.authors.includes(props.currentUsername || '')
 
@@ -64,8 +100,8 @@ function submitData() {
 
   batchAddPublications(publicationProfiles.value)
     .then(() => {
-      publicationProfiles.value = [] // 清空表格数据
-      showDialog.value = false // 关闭对话框
+      closeDialog()
+      emit('upload-success')
     })
     .catch(err => {
       console.error(err.message)
@@ -75,7 +111,6 @@ function submitData() {
 
 function closeDialog() {
   showDialog.value = false
-  publicationProfiles.value = [] // 清空表格数据
 }
 </script>
 
@@ -155,10 +190,10 @@ function closeDialog() {
                 <span v-else style="color: red">格式错误: {{ row[key] }}</span>
               </template>
               <template v-else-if="key === 'year'">
-                <span v-if="row[key] === null || !isNaN(Number(row[key]))" style="color: green">{{
+                <span v-if="!row[key] || !isNaN(Number(row[key]))" style="color: green">{{
                   row[key]
                 }}</span>
-                <span v-else style="color: red">年份格式错误</span>
+                <span v-else style="color: red">格式错误：{{ row[key] }}}</span>
               </template>
               <template v-else-if="key === 'type'">
                 <span
