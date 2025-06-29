@@ -144,8 +144,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/research/my-projects',
     name: 'MyProjects',
-    component: () => import('@/views/research/MyProjects.vue'),
-    meta: { title: '我的项目管理' },
+    redirect: '/research/my-workspace',
+  },
+  {
+    path: '/research/my-workspace',
+    name: 'MyWorkspace',
+    component: () => import('@/views/research/MyWorkspace.vue'),
+    meta: { title: '项目管理' },
   },
   {
     path: '/research/my-questions',
