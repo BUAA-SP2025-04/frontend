@@ -17,5 +17,11 @@ export const annotationAPI = {
     request.post('/annotation/list', newAnnotation, {
       params: { userId, paperId },
     }),
+
+  // 上传新高亮批注
+  deleteAnnotation: (userId: string, annotationId: string): Promise<UploadAnnotationResponse> =>
+    request.post('/annotation/list', null, {
+      params: { userId, annotationId },
+    }),
   
 }
