@@ -12,9 +12,9 @@
         <div class="flex space-x-4">
           <button
             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
-            @click="router.push('/research/my-projects')"
+            @click="router.push('/research/my-workspace')"
           >
-            我的项目
+            我的工作台
           </button>
         </div>
       </div>
@@ -303,7 +303,7 @@
                     <button
                       v-else-if="project.projBelongings === 1"
                       class="px-4 py-1.5 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium"
-                      @click="cancelProjectApplication(project)"
+                      @click="cancelProjectApplication()"
                     >
                       取消申请
                     </button>
@@ -311,7 +311,7 @@
                     <button
                       v-else-if="project.projBelongings === 2"
                       class="px-4 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-                      @click="quitProject(project)"
+                      @click="quitProject()"
                     >
                       退出项目
                     </button>
@@ -450,6 +450,7 @@
       :project="selectedProjectForDetail"
       :is-my-project="selectedProjectForDetail && selectedProjectForDetail.projBelongings === 3"
       @close="showProjectDetail = false"
+      @apply="handleProjectDetailApply"
     />
   </div>
 </template>
@@ -457,8 +458,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { cancelApplication, getAllProjects } from '@/api/modules/project'
+import { ElMessage } from 'element-plus'
+import { getAllProjects } from '@/api/modules/project'
 import type { Project } from '@/api/types/project'
 import ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
 import ApplyProjectDialog from '@/components/project/ApplyProjectDialog.vue'
@@ -793,51 +794,20 @@ const applyToProject = (project: Project) => {
   showApplicationDialog.value = true
 }
 
-const cancelProjectApplication = (project: Project) => {
-  ElMessageBox.confirm('确定要取消申请吗？', '确认取消', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
+const cancelProjectApplication = () => {
+  // 跳转到我的申请标签页
+  router.push({
+    path: '/research/my-workspace',
+    query: { tab: 'applied' },
   })
-    .then(async () => {
-      try {
-        // TODO: 这里需要获取正确的申请ID，暂时使用项目ID
-        // 实际应该从项目数据中获取对应的申请ID
-        await cancelApplication({ applicationId: project.id })
-        ElMessage.success('申请已取消')
-        // 重新加载项目列表
-        loadProjects()
-      } catch (error) {
-        console.error('取消申请失败:', error)
-        ElMessage.error('取消申请失败，请稍后重试')
-      }
-    })
-    .catch(() => {
-      ElMessage.info('已取消操作')
-    })
 }
 
-const quitProject = (project: Project) => {
-  ElMessageBox.confirm('确定要退出项目吗？此操作不可撤销。', '确认退出', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
+const quitProject = async () => {
+  // 跳转到我加入的项目标签页
+  router.push({
+    path: '/research/my-workspace',
+    query: { tab: 'joined' },
   })
-    .then(async () => {
-      try {
-        // 这里需要调用退出项目的API
-        // await quitProjectAPI(project.id)
-        ElMessage.success('已退出项目')
-        // 重新加载项目列表
-        loadProjects()
-      } catch (error) {
-        console.error('退出项目失败:', error)
-        ElMessage.error('退出项目失败，请稍后重试')
-      }
-    })
-    .catch(() => {
-      ElMessage.info('已取消操作')
-    })
 }
 
 const shareProject = (project: Project) => {
@@ -853,14 +823,14 @@ const shareProject = (project: Project) => {
     })
 }
 
-const viewProject = (projectId: string) => {
+const viewProject = (projectId: number) => {
   router.push(`/research/projects/${projectId}`)
 }
 
 const viewProjectDetail = (project: Project) => {
   // 转换API的Project类型为ProjectDetailCard组件期望的格式
   const adaptedProject: DetailProject = {
-    id: parseInt(project.id),
+    id: project.id,
     title: project.title,
     description: project.description || '无',
     fields: (project.researchArea || '')
@@ -907,10 +877,22 @@ watch([searchQuery, selectedCategory, selectedStatus, selectedBelonging, sortBy]
 
 const handleApplicationSuccess = () => {
   showApplicationDialog.value = false
+  // 重新加载项目列表以更新状态
+  loadProjects()
 }
 
 const manageProject = () => {
-  router.push('/research/my-projects')
+  router.push('/research/my-workspace')
+}
+
+const handleProjectDetailApply = (projectId: number) => {
+  // 根据projectId找到对应的项目
+  const project = projects.value.find(p => p.id === projectId)
+  if (project) {
+    selectedProjectForApplication.value = project
+    showApplicationDialog.value = true
+    showProjectDetail.value = false // 关闭项目详情弹窗
+  }
 }
 
 onMounted(() => {

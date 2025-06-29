@@ -116,6 +116,14 @@
             >
               数据可视化
             </router-link> -->
+
+            <router-link
+              to="/research/my-workspace"
+              class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+              active-class="bg-gray-900 text-white"
+            >
+              我的工作台
+            </router-link>
           </div>
         </div>
 

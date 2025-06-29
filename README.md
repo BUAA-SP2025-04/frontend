@@ -132,3 +132,133 @@ const createData = (data) => request.post('/api/data', data)
 注意：commit message 使用小写冒号
 
 #测试CI2
+
+## 新功能：我的工作台
+
+### 标签页切换功能
+
+项目新增了"我的工作台"页面，整合了项目管理功能，使用Element Plus的Tabs组件实现标签页切换：
+
+#### 功能特点
+
+1. **三个标签页**：
+   - **我创建的**：管理用户发布的项目
+   - **我申请的**：查看和管理项目申请
+   - **我加入的**：管理参与的项目
+
+2. **URL参数支持**：
+   - 支持通过URL query参数直接跳转到指定标签页
+   - 例如：`/research/my-workspace?tab=applied` 直接跳转到"我申请的"标签页
+
+3. **状态管理**：
+   - 每个标签页都有独立的数据加载和状态管理
+   - 支持筛选和搜索功能
+
+#### 使用方法
+
+1. **直接访问**：
+   ```javascript
+   // 跳转到工作台默认标签页（我创建的）
+   router.push('/research/my-workspace')
+   
+   // 跳转到指定标签页
+   router.push({
+     path: '/research/my-workspace',
+     query: { tab: 'applied' }  // applied, joined, created
+   })
+   ```
+
+2. **在项目列表页面**：
+   - "我的工作台"按钮：跳转到工作台页面
+   - "取消申请"按钮：跳转到"我申请的"标签页
+   - "退出项目"按钮：跳转到"我加入的"标签页
+   - "管理项目"按钮：跳转到"我创建的"标签页
+
+#### 技术实现
+
+1. **路由配置**：
+   ```typescript
+   {
+     path: '/research/my-workspace',
+     name: 'MyWorkspace',
+     component: () => import('@/views/research/MyWorkspace.vue'),
+     meta: { title: '我的工作台' },
+   }
+   ```
+
+2. **标签页组件**：
+   ```vue
+   <el-tabs v-model="activeTab" @tab-click="handleTabClick">
+     <el-tab-pane label="我创建的" name="created">
+       <!-- 我创建的项目内容 -->
+     </el-tab-pane>
+     <el-tab-pane label="我申请的" name="applied">
+       <!-- 我申请的项目内容 -->
+     </el-tab-pane>
+     <el-tab-pane label="我加入的" name="joined">
+       <!-- 我加入的项目内容 -->
+     </el-tab-pane>
+   </el-tabs>
+   ```
+
+3. **URL同步**：
+   ```typescript
+   // 监听路由变化
+   watch(() => route.query.tab, (newTab) => {
+     if (newTab && ['created', 'applied', 'joined'].includes(newTab as string)) {
+       activeTab.value = newTab as string
+     }
+   }, { immediate: true })
+   
+   // 标签页点击处理
+   const handleTabClick = (tab: any) => {
+     router.push({
+       path: route.path,
+       query: { tab: tab.name }
+     })
+   }
+   ```
+
+#### 样式定制
+
+工作台页面使用了自定义的Element Plus标签页样式：
+
+```css
+:deep(.project-tabs .el-tabs__header) {
+  margin-bottom: 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+:deep(.project-tabs .el-tabs__item) {
+  font-size: 16px;
+  font-weight: 500;
+  padding: 16px 24px;
+}
+
+:deep(.project-tabs .el-tabs__item.is-active) {
+  color: #3b82f6;
+  font-weight: 600;
+}
+```
+
+## 开发环境设置
+
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
+
+# 预览生产构建
+npm run preview
+
+# 代码检查
+npm run lint
+
+# 代码格式化
+npm run format
+```
