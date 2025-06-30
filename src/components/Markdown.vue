@@ -25,14 +25,19 @@ const md: MarkdownIt = new MarkdownIt({
   typographer: true,
   breaks: true,
   highlight: (str, lang) => {
+    let langLabel = ''
+    if (lang) {
+      langLabel = `<div class="code-lang-label">${lang}</div>`
+    }
+    let codeHtml = ''
     if (lang && hljs.getLanguage(lang)) {
       try {
-        return `<pre class="hljs"><code>${
-          hljs.highlight(str, { language: lang }).value
-        }</code></pre>`
+        codeHtml = hljs.highlight(str, { language: lang }).value
       } catch {}
+    } else {
+      codeHtml = md.utils.escapeHtml(str)
     }
-    return `<pre class="hljs"><code>${md.utils.escapeHtml(str)}</code></pre>`
+    return `<div class="code-block-wrapper">${langLabel}<pre class="hljs"><code>${codeHtml}</code></pre></div>`
   },
 })
   .use(katex, {
@@ -57,145 +62,284 @@ const rendered = computed(() => md.render(props.source || ''))
 
 <style>
 .markdown-content {
-  color: #374151;
-  font-size: 1rem;
-  line-height: 1.8;
-  word-break: break-word;
+  color: #333333;
+  font-size: 16px;
+  font-family:
+    'HarmonyOS Sans SC',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Helvetica,
+    Arial,
+    sans-serif;
+  line-height: 1.6;
+  word-wrap: break-word;
   max-width: 100%;
+  background: #ffffff;
 }
 
-.markdown-content pre {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  padding: 1.25rem;
-  margin: 1.5rem 0;
-  overflow-x: auto;
-  font-size: 0.875rem;
-}
-
-.markdown-content code {
-  background: #f1f5f9;
-  color: #1e40af;
-  border-radius: 0.25rem;
-  padding: 0.125rem 0.375rem;
-  font-size: 0.875rem;
-  border: 1px solid #cbd5e1;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-}
-
-.markdown-content pre code {
-  background: none;
-  color: inherit;
-  border: none;
-  padding: 0;
-  font-size: 1em;
-}
-
-.markdown-content blockquote {
-  border-left: 4px solid #3b82f6;
-  background: #f8fafc;
-  color: #64748b;
-  padding: 1rem 1.5rem;
-  margin: 1.5rem 0;
-  border-radius: 0 0.5rem 0.5rem 0;
-  font-style: italic;
-}
-
+/* 标题样式 - Typora 风格 */
 .markdown-content h1,
 .markdown-content h2,
 .markdown-content h3,
-.markdown-content h4 {
-  font-weight: 700;
-  color: #1f2937;
-  margin-top: 2rem;
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  margin-top: 1.5rem;
   margin-bottom: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #2c3e50;
 }
 
 .markdown-content h1 {
-  font-size: 1.875rem;
-  color: #111827;
+  font-size: 2rem;
+  border-bottom: 2px solid #eaecef;
+  padding-bottom: 0.3rem;
+  margin-bottom: 1.5rem;
 }
 
 .markdown-content h2 {
   font-size: 1.5rem;
-  color: #1f2937;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 0.3rem;
 }
 
 .markdown-content h3 {
   font-size: 1.25rem;
-  color: #374151;
 }
 
+.markdown-content h4 {
+  font-size: 1rem;
+}
+
+.markdown-content h5 {
+  font-size: 0.875rem;
+}
+
+.markdown-content h6 {
+  font-size: 0.85rem;
+  color: #6a737d;
+}
+
+/* 段落样式 */
+.markdown-content p {
+  margin-top: 0;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+/* 代码块样式 - Typora 风格 */
+.code-block-wrapper {
+  position: relative;
+  margin: 16px 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.code-lang-label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 12px;
+  color: #586069;
+  background: #f6f8fa;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.code-block-wrapper pre {
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 0;
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.45;
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+/* 行内代码 */
+.markdown-content code {
+  background: #f3f4f6;
+  color: #e83e8c;
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  border-radius: 3px;
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.markdown-content pre code {
+  background: transparent;
+  color: inherit;
+  font-size: 100%;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* 引用块样式 */
+.markdown-content blockquote {
+  margin: 0 0 16px 0;
+  padding: 0 1em;
+  color: #6a737d;
+  border-left: 0.25em solid #dfe2e5;
+  background: transparent;
+  border-radius: 0;
+  font-style: normal;
+}
+
+.markdown-content blockquote > :first-child {
+  margin-top: 0;
+}
+
+.markdown-content blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* 列表样式 */
 .markdown-content ul,
 .markdown-content ol {
-  margin-left: 1.5em;
-  margin-bottom: 1em;
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-left: 2em;
 }
 
 .markdown-content li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25em;
 }
 
-.markdown-content table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1.5em 0;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
+.markdown-content li > p {
+  margin-top: 16px;
 }
 
-.markdown-content th,
-.markdown-content td {
-  border: 1px solid #e5e7eb;
-  padding: 0.75em 1em;
-  text-align: left;
+.markdown-content li + li {
+  margin-top: 0.25em;
 }
 
-.markdown-content th {
-  background: #f9fafb;
-  color: #374151;
-  font-weight: 600;
-}
-
-.markdown-content td {
-  background: #ffffff;
-}
-
-.markdown-content strong {
-  font-weight: 600;
-  color: #111827;
-}
-
-.markdown-content em {
-  font-style: italic;
-  color: #4b5563;
-}
-
-.markdown-content a {
-  color: #3b82f6;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.markdown-content a:hover {
-  color: #1d4ed8;
-  text-decoration: underline;
-}
-
-.markdown-content p {
-  margin-bottom: 1rem;
-  line-height: 1.7;
-}
-
-/* 任务列表样式 */
+/* 任务列表 */
 .markdown-content .task-list-item {
-  list-style: none;
+  list-style-type: none;
   margin-left: -1.5em;
 }
 
 .markdown-content .task-list-item input {
-  margin-right: 0.5em;
+  margin: 0 0.2em 0.25em -1.6em;
+  vertical-align: middle;
+}
+
+/* 表格样式 */
+.markdown-content table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow: auto;
+  margin-top: 0;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  border: 1px solid #d1d9e0;
+}
+
+.markdown-content table th,
+.markdown-content table td {
+  padding: 6px 13px;
+  border: 1px solid #d1d9e0;
+}
+
+.markdown-content table th {
+  font-weight: 600;
+  background-color: #f6f8fa;
+}
+
+.markdown-content table tr {
+  background-color: #ffffff;
+  border-top: 1px solid #c6cbd1;
+}
+
+.markdown-content table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+/* 分割线 */
+.markdown-content hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: #e1e4e8;
+  border: 0;
+  border-radius: 2px;
+}
+
+/* 链接样式 */
+.markdown-content a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.markdown-content a:hover {
+  text-decoration: underline;
+}
+
+/* 强调样式 */
+.markdown-content strong {
+  font-weight: 600;
+}
+
+.markdown-content em {
+  font-style: italic;
+}
+
+/* 图片样式 */
+.markdown-content img {
+  max-width: 100%;
+  box-sizing: content-box;
+  background-color: #ffffff;
+  border-radius: 6px;
+  margin: 16px 0;
+}
+
+/* KaTeX 数学公式样式调整 */
+.markdown-content .katex {
+  font-size: 1.1em;
+}
+
+.markdown-content .katex-display {
+  margin: 16px 0;
+  text-align: center;
+}
+
+/* 容器样式 */
+.markdown-content .info,
+.markdown-content .warning,
+.markdown-content .danger {
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 6px;
+  border-left: 4px solid;
+}
+
+.markdown-content .info {
+  background-color: #f0f9ff;
+  border-left-color: #0ea5e9;
+  color: #0c4a6e;
+}
+
+.markdown-content .warning {
+  background-color: #fffbeb;
+  border-left-color: #f59e0b;
+  color: #92400e;
+}
+
+.markdown-content .danger {
+  background-color: #fef2f2;
+  border-left-color: #ef4444;
+  color: #991b1b;
 }
 </style>

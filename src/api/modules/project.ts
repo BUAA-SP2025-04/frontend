@@ -63,8 +63,8 @@ export function getMyApplications(): Promise<ApplicationsResponse> {
 }
 
 // 检索项目
-export function searchProjects(title: string): Promise<ProjectsResponse> {
-  return request.get(`/project/getByTitle/${title}`)
+export function searchProjects(data: { title: string }): Promise<ProjectsResponse> {
+  return request.post('/project/getByTitle', data)
 }
 
 // 退出项目
@@ -75,4 +75,9 @@ export function cancelJoinProject(data: { projectId: number }): Promise<EmptyRes
 // 获取我加入的项目
 export function getMyJoinedProjects(): Promise<ProjectsResponse> {
   return request.get('/project/getMyJoined')
+}
+
+// 获取我的项目（包含申请信息）
+export function getMyProjects(): Promise<ProjectWithApplicationsResponse> {
+  return request.get('/project/myProject')
 }

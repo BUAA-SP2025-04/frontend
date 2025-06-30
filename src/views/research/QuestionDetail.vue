@@ -182,7 +182,7 @@
             <!-- 回答列表 -->
             <div>
               <template v-for="(answer, idx) in sortedAnswers" :key="answer.id">
-                <div class="p-8 hover:bg-gray-50 transition-colors">
+                <div class="p-8 transition-colors">
                   <!-- 回答者信息 -->
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
@@ -523,7 +523,7 @@
           <!-- 写回答 -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <!-- Header -->
-            <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
+            <div class="px-8 py-6 bg-gray-50">
               <h3 class="text-lg font-semibold text-gray-900">写回答</h3>
               <p class="text-sm text-gray-600 mt-1">分享你的见解，帮助解决这个问题</p>
             </div>

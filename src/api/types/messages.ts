@@ -26,7 +26,8 @@ export interface Conversation {
     isRead: boolean
   }
   lastMessageTime?: string  
-  isRead?: boolean          
+  isRead?: boolean    
+  conversationId: string      
 }
 
 // 系统通知
