@@ -24,14 +24,13 @@
               :class="{ active: activeTool === 'highlight' }"
               @click="toggleHighlightMode"
             >
-              <i class="fas fa-highlighter"></i> 
-              {{ activeTool === 'highlight' ? '批注模式中...' : '高亮批注' }}
+              <i class="fas fa-highlighter">{{ activeTool === 'highlight' ? '批注模式中...' : '高亮批注' }}</i> 
             </button>
             <button class="tool-btn" @click="clearAnnotations">
-              <i class="fas fa-trash-alt"></i> 清除批注
+              <i class="fas fa-trash-alt">清除批注</i>
             </button>
             <!-- <button class="tool-btn" @click="downloadAnnotations">
-              <i class="fas fa-download"></i> 导出批注
+              <i class="fas fa-download"></i>导出批注
             </button> -->
           </div>
         </div>
@@ -418,8 +417,8 @@ const redrawAnnotations = () => {
   
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   
-  console.log(ctx.canvas.width, ctx.canvas.height)
-  console.log(annotationLayer.value?.getBoundingClientRect().height, innerHeight)
+  // console.log(ctx.canvas.width, ctx.canvas.height)
+  // console.log(annotationLayer.value?.getBoundingClientRect().height, innerHeight)
   annotations.value
     .filter(anno => anno.page === currentPage.value)
     .forEach(anno => {
@@ -793,7 +792,7 @@ font-size: 16px;
 
 .tool-btn.active {
 background: green;
-box-shadow: 0 4px 12px rgba(green, 0.3);
+box-shadow: 0 4px 12px rgba(0, 128, 0, 0.3);
 }
 
 .annotation-layer {
