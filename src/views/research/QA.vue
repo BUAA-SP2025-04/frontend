@@ -834,6 +834,7 @@ import {
   getQuestionList,
   getMyFollowedQuestions,
   getTopAnswerUsers,
+  getResearchAreaStats,
 } from '@/api/modules/question'
 import type { Question, CreateQuestionRequest, AnswerQuestionRequest, QuestionListItem } from '@/api/types/question'
 import { RESEARCH_CATEGORIES, getPopularCategories } from '../../utils/categories'
@@ -879,7 +880,7 @@ const questions = ref<Question[]>([])
 const myFollowedQuestions = ref<Question[]>([])
 const loadingFollowed = ref(false)
 
-const popularTags = ref(getPopularCategories())
+const popularTags = ref<{ name: string; count: number }[]>([])
 
 const activeUsers = ref<any[]>([])
 const loadingActiveUsers = ref(false)
@@ -955,6 +956,28 @@ const totalPages = computed(() => {
 })
 
 // 获取头像URL
+const API_BASE_URL = (window as any).VITE_API_BASE_URL || '/api'
+
+function getUserAvatar(user: any) {
+  if (!user) return '/default-avatar.png'
+  if (user.avatar) {
+    if (/^https?:\/\//.test(user.avatar)) {
+      return user.avatar
+    }
+    return API_BASE_URL + user.avatar
+  }
+  if (user.imgUrl) {
+    if (/^https?:\/\//.test(user.imgUrl)) {
+      return user.imgUrl
+    }
+    if (user.imgUrl.startsWith('/')) {
+      return user.imgUrl
+    }
+    return API_BASE_URL + user.imgUrl
+  }
+  return '/default-avatar.png'
+}
+
 const getAvatarUrl = (imgUrl: string) => {
   if (!imgUrl || imgUrl === '') {
     return '/default-avatar.png'
@@ -1399,9 +1422,29 @@ const loadActiveUsers = async () => {
   }
 }
 
+// 加载热门标签
+const loadPopularTags = async () => {
+  try {
+    const response = await getResearchAreaStats()
+    if (response && response.code === '200' && Array.isArray(response.data)) {
+      // 后端返回格式为 [{ "软件工程": 1 }, ...]
+      popularTags.value = response.data.map((item: any) => {
+        const key = Object.keys(item)[0]
+        return { name: key, count: item[key] }
+      })
+    } else {
+      popularTags.value = []
+    }
+  } catch (error) {
+    console.error('加载热门标签失败:', error)
+    popularTags.value = []
+  }
+}
+
 onMounted(() => {
   loadQuestions()
   loadActiveUsers()
+  loadPopularTags()
   // 确保页面加载时滚动到顶部
   scrollToTop()
 })
