@@ -376,19 +376,27 @@
         </router-link>
 
         <router-link
-          to="/pdf-reader"
+          to="/research/projects"
           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
           @click="showMobileMenu = false"
         >
-          PDF阅读器
+          科研项目
         </router-link>
 
         <router-link
-          to="/visualization"
+          to="/research/qa"
           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
           @click="showMobileMenu = false"
         >
-          数据可视化
+          科研问答
+        </router-link>
+
+        <router-link
+          to="/research/knowledge-graph"
+          class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+          @click="showMobileMenu = false"
+        >
+          知识图谱
         </router-link>
       </div>
     </div>
