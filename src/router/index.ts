@@ -124,43 +124,55 @@ const routes: RouteRecordRaw[] = [
     path: '/research',
     children: [
       {
+        path: '',
+        redirect: '/research/qa'
+      },
+      {
         path: 'qa',
+        name: 'QA',
         component: () => import('@/views/research/QA.vue'),
         meta: { title: '科研问答' },
       },
       {
         path: 'qa/:id',
+        name: 'QuestionDetail',
         component: () => import('@/views/research/QuestionDetail.vue'),
         meta: { title: '问题详情' },
       },
+      {
+        path: 'projects',
+        name: 'Projects',
+        component: () => import('@/views/research/Projects.vue'),
+        meta: { title: '科研项目' },
+      },
+      {
+        path: 'my-projects',
+        name: 'MyProjects',
+        component: () => import('@/views/research/MyProjects.vue'),
+        meta: { title: '我的项目管理' },
+      },
+      {
+        path: 'my-questions',
+        name: 'MyQuestions',
+        component: () => import('@/views/research/MyQuestions.vue'),
+        meta: { title: '我的提问' },
+      },
+      {
+        path: 'my-followed',
+        name: 'MyFollowed',
+        component: () => import('@/views/research/MyFollowedQuestions.vue'),
+        meta: { title: '我的关注' },
+      },
+      {
+        path: 'knowledge-graph',
+        name: 'KnowledgeGraph',
+        component: () => import('@/views/research/KnowledgeGraph.vue'),
+        meta: {
+          title: '知识图谱',
+          requiresAuth: true,
+        },
+      },
     ],
-  },
-  {
-    path: '/research/projects',
-    name: 'Projects',
-    component: () => import('@/views/research/Projects.vue'),
-    meta: { title: '科研项目' },
-  },
-  {
-    path: '/research/my-projects',
-    name: 'MyProjects',
-    component: () => import('@/views/research/MyProjects.vue'),
-    meta: { title: '我的项目管理' },
-  },
-  {
-    path: '/research/my-questions',
-    name: 'MyQuestions',
-    component: () => import('@/views/research/MyQuestions.vue'),
-    meta: { title: '我的提问' },
-  },
-  {
-    path: '/research/knowledge-graph',
-    name: 'KnowledgeGraph',
-    component: () => import('@/views/research/KnowledgeGraph.vue'),
-    meta: {
-      title: '知识图谱',
-      requiresAuth: true,
-    },
   },
 ]
 

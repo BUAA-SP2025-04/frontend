@@ -9,25 +9,27 @@
           <h1 class="text-3xl font-bold text-gray-900">科研问答</h1>
           <p class="mt-2 text-gray-600">分享知识，解决科研难题</p>
         </div>
-        <button
-          @click="showPublishDialog = true"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
-        >
-          <svg
-            class="w-5 h-5 inline-block mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div class="flex space-x-3">
+          <button
+            @click="showPublishDialog = true"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            ></path>
-          </svg>
-          发布问题
-        </button>
+            <svg
+              class="w-5 h-5 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              ></path>
+            </svg>
+            发布问题
+          </button>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -83,12 +85,19 @@
                 <option value="latest">最新发布</option>
                 <option value="hot">热门回答</option>
                 <option value="unanswered">未回答</option>
+                <option value="my-followed">我的关注</option>
               </select>
             </div>
           </div>
 
+          <!-- 加载状态 -->
+          <div v-if="loading" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-3 text-gray-600">加载中...</span>
+          </div>
+
           <!-- 问题列表 -->
-          <div class="space-y-6">
+          <div v-else class="space-y-6">
             <div
               v-for="question in filteredQuestions"
               :key="question.id"
@@ -100,16 +109,15 @@
                   <div class="flex-1">
                     <h3
                       class="text-xl font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors mb-3"
+                      @click="viewQuestion(question.id)"
                     >
                       {{ question.title }}
                     </h3>
                     <div class="flex flex-wrap gap-2 mb-3">
                       <span
-                        v-for="tag in question.tags"
-                        :key="tag"
                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
                       >
-                        {{ tag }}
+                        {{ question.researchArea }}
                       </span>
                     </div>
                   </div>
@@ -119,7 +127,7 @@
                     @click="toggleFollow(question.id)"
                     :class="[
                       'ml-4 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                      question.isFollowed
+                      question.followNum > 0
                         ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
                     ]"
@@ -137,13 +145,13 @@
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                       ></path>
                     </svg>
-                    {{ question.isFollowed ? '已关注' : '关注' }}
+                    {{ question.followNum > 0 ? '已关注' : '关注' }}
                   </button>
                 </div>
 
                 <!-- 问题描述 -->
                 <p class="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
-                  {{ question.description }}
+                  {{ question.content }}
                 </p>
 
                 <!-- 问题元信息 -->
@@ -151,13 +159,13 @@
                   <div class="flex items-center space-x-4">
                     <div class="flex items-center">
                       <img
-                        :src="question.author.avatar"
-                        :alt="question.author.name"
+                        :src="getAvatarUrl(question.user?.imgUrl)"
+                        :alt="question.user?.name || '未知用户'"
                         class="w-8 h-8 rounded-full mr-2"
                       />
-                      <span class="font-medium">{{ question.author.name }}</span>
+                      <span class="font-medium">{{ question.user?.name || '未知用户' }}</span>
                     </div>
-                    <span class="text-gray-400">{{ formatTime(question.createdAt) }}</span>
+                    <span class="text-gray-400">{{ formatTime(question.createAt) }}</span>
                   </div>
 
                   <div class="flex items-center space-x-4">
@@ -175,7 +183,7 @@
                           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"
                         ></path>
                       </svg>
-                      {{ question.answerCount }} 回答
+                      {{ question.answerNum }} 回答
                     </span>
                     <span class="flex items-center px-2 py-1 bg-gray-100 rounded-full">
                       <svg
@@ -197,27 +205,27 @@
                           d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                         ></path>
                       </svg>
-                      {{ question.viewCount }} 浏览
+                      {{ question.answerNum }} 浏览
                     </span>
                   </div>
                 </div>
 
                 <!-- 回答预览 -->
-                <div v-if="question.topAnswer" class="mt-4 pt-4 border-t border-gray-200">
+                <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-gray-200">
                   <div class="bg-gray-50 rounded-lg p-4">
                     <div class="flex items-center mb-2">
                       <img
-                        :src="question.topAnswer.author.avatar"
-                        :alt="question.topAnswer.author.name"
+                        :src="getAvatarUrl(question.bestAnswer.user?.imgUrl)"
+                        :alt="question.bestAnswer.user?.name || '未知用户'"
                         class="w-6 h-6 rounded-full mr-2"
                       />
                       <span class="text-sm font-medium text-gray-700">{{
-                        question.topAnswer.author.name
+                        question.bestAnswer.user?.name || '未知用户'
                       }}</span>
                       <span class="text-sm text-gray-500 ml-2">的回答</span>
                     </div>
                     <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-                      {{ question.topAnswer.content }}
+                      {{ question.bestAnswer.content }}
                     </p>
                   </div>
                 </div>
@@ -240,15 +248,43 @@
                   </div>
 
                   <div class="flex items-center space-x-1 text-sm text-gray-500">
-                    <span>{{ question.followCount }} 人关注</span>
+                    <span>{{ question.followNum }} 人关注</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- 空状态 -->
+          <div
+            v-if="!loading && filteredQuestions.length === 0"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"
+          >
+            <svg
+              class="w-16 h-16 text-gray-300 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">暂无问题</h3>
+            <p class="text-gray-500 mb-4">还没有人发布问题</p>
+            <button
+              @click="showPublishDialog = true"
+              class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              发布第一个问题
+            </button>
+          </div>
+
           <!-- 分页 -->
-          <div class="mt-8 flex justify-center">
+          <div v-if="!loading && filteredQuestions.length > 0" class="mt-8 flex justify-center">
             <nav class="flex items-center space-x-2">
               <button
                 v-for="page in totalPages"
@@ -296,7 +332,7 @@
                 :key="user.id"
                 class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                <img :src="user.avatar" :alt="user.name" class="w-10 h-10 rounded-full" />
+                <img :src="getAvatarUrl(user.avatar)" :alt="user.name" class="w-10 h-10 rounded-full" />
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-gray-800 truncate">{{ user.name }}</p>
                   <p class="text-xs text-blue-600">{{ user.answerCount }} 回答</p>
@@ -309,10 +345,7 @@
     </div>
 
     <!-- 发布问题对话框 -->
-    <div
-      v-if="showPublishDialog"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    >
+    <div v-if="showPublishDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div class="px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
@@ -350,7 +383,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">详细描述</label>
             <textarea
-              v-model="newQuestion.description"
+              v-model="newQuestion.content"
               rows="6"
               placeholder="详细描述你的问题，包括背景、遇到的困难、期望的解决方案等..."
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -362,7 +395,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">问题分类</label>
             <select
-              v-model="newQuestion.category"
+              v-model="newQuestion.researchArea"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
@@ -376,43 +409,6 @@
             </select>
           </div>
 
-          <!-- 标签 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">标签</label>
-            <div class="flex flex-wrap gap-2 mb-2">
-              <span
-                v-for="tag in newQuestion.tags"
-                :key="tag"
-                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-              >
-                {{ tag }}
-                <button
-                  @click="removeTag(tag)"
-                  type="button"
-                  class="ml-1 text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  ×
-                </button>
-              </span>
-            </div>
-            <div class="flex gap-2">
-              <input
-                v-model="tagInput"
-                @keyup.enter="addTag"
-                type="text"
-                placeholder="输入标签后按回车添加"
-                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <button
-                @click="addTag"
-                type="button"
-                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                添加
-              </button>
-            </div>
-          </div>
-
           <!-- 操作按钮 -->
           <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
@@ -424,9 +420,10 @@
             </button>
             <button
               type="submit"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              :disabled="publishing"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              发布问题
+              {{ publishing ? '发布中...' : '发布问题' }}
             </button>
           </div>
         </form>
@@ -461,7 +458,7 @@
         <!-- 问题信息 -->
         <div v-if="selectedQuestion" class="px-6 py-4 bg-gray-50 border-b border-gray-200">
           <h4 class="font-medium text-gray-800 mb-2">{{ selectedQuestion.title }}</h4>
-          <p class="text-sm text-gray-600 line-clamp-2">{{ selectedQuestion.description }}</p>
+          <p class="text-sm text-gray-600 line-clamp-2">{{ selectedQuestion.content }}</p>
         </div>
 
         <form @submit.prevent="submitAnswer" class="p-6 space-y-6">
@@ -488,9 +485,10 @@
             </button>
             <button
               type="submit"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              :disabled="answering"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              提交回答
+              {{ answering ? '提交中...' : '提交回答' }}
             </button>
           </div>
         </form>
@@ -500,9 +498,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import {
+  createQuestion,
+  answerQuestion,
+  followQuestion,
+  unfollowQuestion,
+  getQuestionList,
+  getMyFollowedQuestions,
+} from '@/api/modules/question'
+import type { Question, CreateQuestionRequest, AnswerQuestionRequest } from '@/api/types/question'
 
 const router = useRouter()
 
@@ -512,163 +519,37 @@ const selectedCategory = ref('')
 const sortBy = ref('latest')
 const currentPage = ref(1)
 const itemsPerPage = 10
+const loading = ref(false)
+const publishing = ref(false)
+const answering = ref(false)
 
 // 对话框控制
 const showPublishDialog = ref(false)
 const showAnswerForm = ref(false)
-type Question = (typeof questions.value)[number]
 const selectedQuestion = ref<Question | null>(null)
 
 // 发布问题表单
 const newQuestion = ref<{
   title: string
-  description: string
-  category: string
-  tags: string[]
+  content: string
+  researchArea: string
 }>({
   title: '',
-  description: '',
-  category: '',
-  tags: [],
+  content: '',
+  researchArea: '',
 })
-const tagInput = ref('')
 
 // 回答表单
 const newAnswer = ref({
   content: '',
 })
 
-// 模拟数据
-const questions = ref([
-  {
-    id: 1,
-    title: '如何选择合适的机器学习算法来解决多分类问题？',
-    description:
-      '我正在处理一个包含10个类别的图像分类任务，数据集大小约为50000张图片。目前考虑使用CNN，但不确定具体应该选择哪种架构。数据集存在一定的类别不平衡问题，有些类别的样本数量较少。希望能得到一些关于算法选择和数据预处理的建议。',
-    category: '机器学习',
-    tags: ['CNN', '图像分类', '多分类', '类别不平衡'],
-    author: {
-      id: 1,
-      name: '张研究员',
-      avatar: '/default-avatar.png',
-      institution: '清华大学',
-    },
-    createdAt: '2025-06-25T10:30:00',
-    answerCount: 5,
-    viewCount: 128,
-    followCount: 12,
-    isFollowed: false,
-    topAnswer: {
-      author: {
-        name: '李教授',
-        avatar: '/default-avatar.png',
-      },
-      content:
-        '对于多分类图像任务，我建议从ResNet或EfficientNet开始尝试。针对类别不平衡，可以考虑使用焦点损失(Focal Loss)或加权交叉熵损失...',
-    },
-  },
-  {
-    id: 2,
-    title: '深度学习模型在小样本数据集上的过拟合问题如何解决？',
-    description:
-      '我的数据集只有2000个样本，但特征维度很高（约1000维）。使用传统的深度网络容易出现过拟合，验证集准确率远低于训练集。已经尝试了dropout和L2正则化，但效果有限。',
-    category: '机器学习',
-    tags: ['深度学习', '小样本', '过拟合', '正则化'],
-    author: {
-      id: 2,
-      name: '王博士',
-      avatar: '/default-avatar.png',
-      institution: '北京大学',
-    },
-    createdAt: '2025-06-25T09:15:00',
-    answerCount: 8,
-    viewCount: 256,
-    followCount: 18,
-    isFollowed: true,
-    topAnswer: {
-      author: {
-        name: '陈研究员',
-        avatar: '/default-avatar.png',
-      },
-      content:
-        '小样本问题建议考虑迁移学习，使用预训练模型进行微调。另外可以尝试数据增强、早停法和集成学习等方法...',
-    },
-  },
-  {
-    id: 3,
-    title: '如何评估时间序列预测模型的性能？',
-    description:
-      '我在做股价预测的研究，使用LSTM模型。除了常见的RMSE和MAE，还有哪些指标可以更好地评估时间序列预测的效果？特别是在金融领域的应用。',
-    category: '数据分析',
-    tags: ['时间序列', 'LSTM', '股价预测', '模型评估'],
-    author: {
-      id: 3,
-      name: '刘分析师',
-      avatar: '/default-avatar.png',
-      institution: '复旦大学',
-    },
-    createdAt: '2025-06-25T08:45:00',
-    answerCount: 3,
-    viewCount: 89,
-    followCount: 7,
-    isFollowed: false,
-    topAnswer: null,
-  },
-  {
-    id: 4,
-    title: '研究论文中的实验部分应该如何设计才能更有说服力？',
-    description:
-      '即将投稿一篇关于自然语言处理的论文，但担心实验部分不够充分。应该包含哪些对比实验？如何选择基线模型？消融实验的设计有什么要点？',
-    category: '论文写作',
-    tags: ['论文写作', '实验设计', '对比实验', '消融实验'],
-    author: {
-      id: 4,
-      name: '赵硕士',
-      avatar: '/default-avatar.png',
-      institution: '上海交通大学',
-    },
-    createdAt: '2025-06-24T16:20:00',
-    answerCount: 12,
-    viewCount: 445,
-    followCount: 25,
-    isFollowed: true,
-    topAnswer: {
-      author: {
-        name: '孙教授',
-        avatar: '/default-avatar.png',
-      },
-      content:
-        '实验设计需要考虑完整性和公平性。建议包含与最新SOTA方法的对比、不同数据集上的验证、详细的消融实验分析...',
-    },
-  },
-  {
-    id: 5,
-    title: 'Transformer架构在视觉任务上的应用前景如何？',
-    description:
-      'Vision Transformer (ViT) 最近很热门，想了解它相比传统CNN的优势在哪里？在什么场景下使用ViT会更好？计算资源需求如何？',
-    category: '理论研究',
-    tags: ['Transformer', 'ViT', '计算机视觉', 'CNN'],
-    author: {
-      id: 5,
-      name: '钱研究生',
-      avatar: '/default-avatar.png',
-      institution: '中科院',
-    },
-    createdAt: '2025-06-24T14:10:00',
-    answerCount: 6,
-    viewCount: 178,
-    followCount: 14,
-    isFollowed: false,
-    topAnswer: {
-      author: {
-        name: '周专家',
-        avatar: '/default-avatar.png',
-      },
-      content:
-        'ViT在大规模数据集上表现优异，特别是在需要捕捉长距离依赖的任务中。但计算成本较高，小数据集上可能不如CNN...',
-    },
-  },
-])
+// 问题数据
+const questions = ref<Question[]>([])
+
+// 我的关注问题数据
+const myFollowedQuestions = ref<Question[]>([])
+const loadingFollowed = ref(false)
 
 const popularTags = ref([
   { name: '机器学习', count: 45 },
@@ -712,32 +593,41 @@ const activeUsers = ref([
 const filteredQuestions = computed(() => {
   let filtered = questions.value
 
+  // 如果是我的关注模式，使用关注的问题数据
+  if (sortBy.value === 'my-followed') {
+    filtered = myFollowedQuestions.value
+  }
+
   // 搜索过滤
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(
       q =>
         q.title.toLowerCase().includes(query) ||
-        q.description.toLowerCase().includes(query) ||
-        q.tags.some(tag => tag.toLowerCase().includes(query))
+        q.content.toLowerCase().includes(query) ||
+        q.researchArea.toLowerCase().includes(query)
     )
   }
 
   // 分类过滤
   if (selectedCategory.value) {
-    filtered = filtered.filter(q => q.category === selectedCategory.value)
+    filtered = filtered.filter(q => q.researchArea === selectedCategory.value)
   }
 
   // 排序
   switch (sortBy.value) {
     case 'latest':
-      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      filtered.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
       break
     case 'hot':
-      filtered.sort((a, b) => b.answerCount + b.viewCount - (a.answerCount + a.viewCount))
+      filtered.sort((a, b) => b.answerNum + parseInt(b.likeNum) - (a.answerNum + parseInt(a.likeNum)))
       break
     case 'unanswered':
-      filtered.sort((a, b) => a.answerCount - b.answerCount)
+      filtered.sort((a, b) => a.answerNum - b.answerNum)
+      break
+    case 'my-followed':
+      // 我的关注按最新时间排序
+      filtered.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
       break
   }
 
@@ -748,24 +638,49 @@ const filteredQuestions = computed(() => {
 
 const totalPages = computed(() => {
   let filtered = questions.value
+  
+  // 如果是我的关注模式，使用关注的问题数据
+  if (sortBy.value === 'my-followed') {
+    filtered = myFollowedQuestions.value
+  }
+  
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(
       q =>
         q.title.toLowerCase().includes(query) ||
-        q.description.toLowerCase().includes(query) ||
-        q.tags.some(tag => tag.toLowerCase().includes(query))
+        q.content.toLowerCase().includes(query) ||
+        q.researchArea.toLowerCase().includes(query)
     )
   }
   if (selectedCategory.value) {
-    filtered = filtered.filter(q => q.category === selectedCategory.value)
+    filtered = filtered.filter(q => q.researchArea === selectedCategory.value)
   }
   return Math.ceil(filtered.length / itemsPerPage)
 })
 
+// 获取头像URL
+const getAvatarUrl = (imgUrl: string) => {
+  if (!imgUrl || imgUrl === '') {
+    return '/default-avatar.png'
+  }
+  if (imgUrl.startsWith('http')) {
+    return imgUrl
+  }
+  return import.meta.env.VITE_API_BASE_URL + imgUrl
+}
+
 // 方法
 const formatTime = (dateString: string) => {
+  if (!dateString) return '未知时间'
+  
   const date = new Date(dateString)
+  
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return '未知时间'
+  }
+  
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const minutes = Math.floor(diff / (1000 * 60))
@@ -785,12 +700,88 @@ const formatTime = (dateString: string) => {
   }).format(date)
 }
 
-const toggleFollow = (questionId: number) => {
-  const question = questions.value.find(q => q.id === questionId)
-  if (question) {
-    question.isFollowed = !question.isFollowed
-    question.followCount += question.isFollowed ? 1 : -1
-    ElMessage.success(question.isFollowed ? '关注成功' : '取消关注')
+const loadQuestions = async () => {
+  try {
+    loading.value = true
+    const response = await getQuestionList()
+    if (response && response.code === '200') {
+      // 确保数据是数组格式
+      if (Array.isArray(response.data)) {
+        questions.value = response.data
+      } else if (response.data && Array.isArray(response.data.questions)) {
+        questions.value = response.data.questions
+      } else {
+        questions.value = []
+      }
+    } else {
+      questions.value = []
+      if (response && response.message) {
+        ElMessage.warning(response.message)
+      }
+    }
+  } catch (error) {
+    console.error('加载问题列表失败:', error)
+    ElMessage.error('加载问题列表失败')
+    questions.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+// 加载我的关注问题
+const loadMyFollowedQuestions = async () => {
+  try {
+    loadingFollowed.value = true
+    const response = await getMyFollowedQuestions()
+    
+    if (response && response.code === '200') {
+      // 确保数据是数组格式
+      if (Array.isArray(response.data)) {
+        myFollowedQuestions.value = response.data
+      } else if (response.data && Array.isArray(response.data.questions)) {
+        myFollowedQuestions.value = response.data.questions
+      } else {
+        myFollowedQuestions.value = []
+      }
+    } else {
+      myFollowedQuestions.value = []
+      if (response && response.message) {
+        ElMessage.warning(response.message)
+      }
+    }
+  } catch (error) {
+    console.error('加载我的关注问题失败:', error)
+    ElMessage.error('加载关注问题失败')
+    myFollowedQuestions.value = []
+  } finally {
+    loadingFollowed.value = false
+  }
+}
+
+const toggleFollow = async (questionId: string) => {
+  try {
+    const question = questions.value.find(q => q.id === questionId)
+    if (!question) return
+
+    if (question.followNum > 0) {
+      // 取消关注
+      await unfollowQuestion({ projectId: questionId })
+      question.followNum--
+      
+      // 如果在我的关注模式下，从关注列表中移除
+      if (sortBy.value === 'my-followed') {
+        myFollowedQuestions.value = myFollowedQuestions.value.filter(q => q.id !== questionId)
+      }
+    } else {
+      // 关注
+      await followQuestion({ questionId })
+      question.followNum++
+    }
+    
+    ElMessage.success(question.followNum > 0 ? '关注成功' : '取消关注')
+  } catch (error) {
+    console.error('关注操作失败:', error)
+    ElMessage.error('操作失败')
   }
 }
 
@@ -798,77 +789,125 @@ const searchByTag = (tagName: string) => {
   searchQuery.value = tagName
 }
 
-const addTag = () => {
-  const tag = tagInput.value.trim()
-  if (tag && !newQuestion.value.tags.includes(tag)) {
-    newQuestion.value.tags.push(tag)
-    tagInput.value = ''
+const publishQuestion = async () => {
+  try {
+    publishing.value = true
+    console.log('开始发布问题...')
+    
+    const requestData: CreateQuestionRequest = {
+      title: newQuestion.value.title,
+      content: newQuestion.value.content,
+      researchArea: newQuestion.value.researchArea,
+    }
+    
+    console.log('发布问题请求数据:', requestData)
+    const response = await createQuestion(requestData)
+    console.log('发布问题响应:', response)
+
+    if (response && response.code === '200') {
+      // 重置表单
+      newQuestion.value = {
+        title: '',
+        content: '',
+        researchArea: '',
+      }
+
+      showPublishDialog.value = false
+      ElMessage.success('问题发布成功！')
+      
+      // 重新加载问题列表
+      console.log('重新加载问题列表...')
+      await loadQuestions()
+    } else {
+      ElMessage.error(response?.message || '发布问题失败')
+    }
+  } catch (error) {
+    console.error('发布问题失败:', error)
+    ElMessage.error('发布问题失败')
+  } finally {
+    publishing.value = false
   }
 }
 
-const removeTag = (tag: string) => {
-  const index = newQuestion.value.tags.indexOf(tag)
-  if (index > -1) {
-    newQuestion.value.tags.splice(index, 1)
-  }
-}
-
-const publishQuestion = () => {
-  // 模拟发布问题
-  const question = {
-    id: Date.now(),
-    title: newQuestion.value.title,
-    description: newQuestion.value.description,
-    category: newQuestion.value.category,
-    tags: [...newQuestion.value.tags],
-    author: {
-      id: 999,
-      name: '当前用户',
-      avatar: '/default-avatar.png',
-      institution: '我的大学',
-    },
-    createdAt: new Date().toISOString(),
-    answerCount: 0,
-    viewCount: 0,
-    followCount: 0,
-    isFollowed: false,
-    topAnswer: null,
-  }
-
-  questions.value.unshift(question)
-
-  // 重置表单
-  newQuestion.value = {
-    title: '',
-    description: '',
-    category: '',
-    tags: [],
-  }
-
-  showPublishDialog.value = false
-  ElMessage.success('问题发布成功！')
-}
-
-const showAnswerDialog = (question: any) => {
+const showAnswerDialog = (question: Question) => {
   selectedQuestion.value = question
   showAnswerForm.value = true
 }
 
-const submitAnswer = () => {
-  if (selectedQuestion.value) {
-    selectedQuestion.value.answerCount++
-    newAnswer.value.content = ''
-    showAnswerForm.value = false
-    ElMessage.success('回答提交成功！')
+const submitAnswer = async () => {
+  if (!selectedQuestion.value) {
+    ElMessage.error('请选择要回答的问题')
+    return
+  }
+
+  if (!newAnswer.value.content.trim()) {
+    ElMessage.error('请输入回答内容')
+    return
+  }
+
+  try {
+    answering.value = true
+    console.log('开始提交回答...')
+    
+    const requestData: AnswerQuestionRequest = {
+      questionId: parseInt(selectedQuestion.value.id),
+      content: newAnswer.value.content.trim(),
+      answerId: -1, // 默认为-1，表示对问题的回答
+    }
+
+    console.log('提交回答请求数据:', requestData)
+    const response = await answerQuestion(requestData)
+    console.log('提交回答响应:', response)
+
+    if (response && response.code === '200') {
+      // 更新本地问题数据
+      selectedQuestion.value.answerNum++
+      
+      // 重置表单
+      newAnswer.value.content = ''
+      showAnswerForm.value = false
+      
+      ElMessage.success('回答提交成功！')
+      
+      // 重新加载问题列表以获取最新数据
+      await loadQuestions()
+    } else {
+      ElMessage.error(response?.message || '提交回答失败')
+    }
+  } catch (error: any) {
+    console.error('提交回答失败:', error)
+    
+    // 详细的错误信息
+    if (error.response) {
+      console.error('错误响应:', error.response.data)
+      console.error('错误状态:', error.response.status)
+      ElMessage.error(`提交回答失败: ${error.response.data?.message || error.response.statusText}`)
+    } else if (error.request) {
+      console.error('请求错误:', error.request)
+      ElMessage.error('网络错误，请检查网络连接')
+    } else {
+      console.error('其他错误:', error.message)
+      ElMessage.error('提交回答失败，请重试')
+    }
+  } finally {
+    answering.value = false
   }
 }
 
-const viewQuestion = (questionId: number) => {
+const viewQuestion = (questionId: string) => {
   router.push(`/research/qa/${questionId}`)
 }
 
 onMounted(() => {
-  // 页面初始化
+  loadQuestions()
+})
+
+// 监听排序方式变化
+watch(sortBy, (newValue) => {
+  currentPage.value = 1 // 重置页码
+  if (newValue === 'my-followed') {
+    loadMyFollowedQuestions()
+  }
 })
 </script>
 
