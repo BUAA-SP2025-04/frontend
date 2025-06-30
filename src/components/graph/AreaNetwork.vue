@@ -274,7 +274,7 @@ const prepareChartData = (nodes: any[], links: any[]) => {
     value: 1,
     lineStyle: {
       color: '#10b981',
-      width: link.attr && !isNaN(Number(link.attr)) ? Math.max(2, Number(link.attr)) : 2,
+      width: link.attr && !isNaN(Number(link.attr.count)) ? Math.max(2, Number(link.attr.count)) : 2,
       type: 'solid',
     },
     label: link.label,
