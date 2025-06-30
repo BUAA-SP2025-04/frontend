@@ -10,7 +10,7 @@
         <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf"> 下载当前PDF </el-button>
       </div>
 
-      <div v-if="pdfUrl" class="card">
+      <div v-if="pdfUrl" class="card" ref="pdfContainer">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">PDF预览</h3>
           <!-- <div class="flex space-x-2">
@@ -18,7 +18,7 @@
               <el-button size="small" @click="zoomOut">缩小</el-button>
               <el-button size="small" @click="resetZoom">重置</el-button>
             </div> -->
-          <div class="tools">
+          <div class="tools" v-if="allowEdit">
             <button
               class="tool-btn"
               :class="{ active: activeTool === 'highlight' }"
@@ -30,14 +30,15 @@
             <button class="tool-btn" @click="clearAnnotations">
               <i class="fas fa-trash-alt"></i> 清除批注
             </button>
-            <button class="tool-btn" @click="downloadAnnotations">
+            <!-- <button class="tool-btn" @click="downloadAnnotations">
               <i class="fas fa-download"></i> 导出批注
-            </button>
+            </button> -->
           </div>
         </div>
 
-        <div class="border rounded-lg overflow-hidden">
+        <div class="border rounded-lg overflow-hidden relative">
           <VuePdfEmbed
+            ref="pdfViewer"
             :source="pdfUrl"
             :page="currentPage"
             :scale="5"
@@ -53,31 +54,33 @@
               zIndex: 100,
             }"
           ></div>
-        </div>
 
-        <div
-          v-if="highlightPreview.visible"
-          class="highlight-preview"
-          :style="{
-            left: highlightPreview.x + 'px',
-            top: highlightPreview.y + 'px',
-            width: highlightPreview.width + 'px',
-            height: highlightPreview.height + 'px',
-          }"
-        ></div>
+          <div
+            v-if="highlightPreview.visible"
+            class="highlight-preview"
+            :style="{
+              left: highlightPreview.x + 'px',
+              top: highlightPreview.y + 'px',
+              width: highlightPreview.width + 'px',
+              height: highlightPreview.height + 'px',
+            }"
+          ></div>
 
-        <div
-          v-for="annotation in visibleAnnotations"
-          :key="annotation.id"
-          class="annotation-marker"
-          :style="{
-            left: annotation.markerX + 'px',
-            top: annotation.markerY + 'px',
-          }"
-          @mouseenter="showAnnotationPopup(annotation, $event)"
-          @mouseleave="activePopup = null"
-        >
-          <i class="fas fa-comment"></i>
+          <div
+            v-for="annotation in visibleAnnotations"
+            :key="annotation.id"
+            class="annotation-marker"
+            :style="{
+              left: annotation.markerX + 'px',
+              top: annotation.markerY + 'px',
+            }"
+            @mouseenter="showAnnotationPopup(annotation, $event)"
+            @mouseleave="activePopup = null"
+            @click="deleteAnnotation(annotation.id)"
+          >
+            <div style="color: white" v-if="activePopup">×</div>
+            <i class="fas fa-comment"></i>
+          </div>
         </div>
 
         <div
@@ -88,37 +91,32 @@
             top: popupPosition.y + 'px',
           }"
         >
-          <button class="close-btn" @click="activePopup = null">
+          <!-- <button class="close-btn" @click="activePopup = null">
             <i class="fas fa-times"></i>
-          </button>
+          </button> -->
           <h4>批注内容</h4>
           <p>{{ activePopup.comment || '（无批注内容）' }}</p>
           <p class="annotation-page">页码: {{ activePopup.page }}</p>
         </div>
 
-        <div class="flex justify-between items-center mt-4">
+        <div class="flex justify-center items-center mt-4">
           <div class="flex items-center space-x-2">
-            <el-button :disabled="currentPage <= 1" size="small" @click="previousPage">
+            <el-button :disabled="currentPage <= 1" size="medium" @click="previousPage">
               上一页
             </el-button>
             <span class="text-sm text-gray-600">
               第 {{ currentPage }} 页 / 共 {{ totalPages }} 页
             </span>
-            <el-button :disabled="currentPage >= totalPages" size="small" @click="nextPage">
+            <el-button :disabled="currentPage >= totalPages" size="medium" @click="nextPage">
               下一页
             </el-button>
           </div>
 
-          <div class="flex items-center space-x-2">
-            <el-button size="small" @click="toggleAISummary"> AI总结</el-button>
-          </div>
-
-          <!-- AI总结侧边栏 -->
-          <el-drawer v-model:visible="isAISummaryVisible" title="AI总结" direction="rtl">
-            <div class="p-4">
-              <p>这里是AI总结内容。</p>
-            </div>
-          </el-drawer>
+          <!-- <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-600">缩放:</span>
+            <el-slider v-model="scale" :min="0.5" :max="2" :step="0.1" style="width: 100px" />
+            <span class="text-sm text-gray-600">{{ Math.round(scale * 100) }}%</span>
+          </div>-->
         </div>
       </div>
 
@@ -148,27 +146,85 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref, onMounted, nextTick, watch, computed, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import VuePdfEmbed from 'vue-pdf-embed'
+import type { UploadFile } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { getPublicationFile } from '@/api/modules/publication'
+import { annotationAPI } from '@/api/modules/annotation'
+import type { HighlightPreview, PopupPosition } from '@/api/types/annotation'
+import { useUserStore } from '@/stores/user'
+
+// 定义批注类型
+interface Annotation {
+  id: string
+  type: string
+  page: number
+  x: number
+  y: number
+  width: number
+  height: number
+  comment: string
+  markerX: number
+  markerY: number
+}
 
 const selectedFile = ref<File | null>(null)
 const pdfUrl = ref<string>('')
 const currentPage = ref(1)
 const totalPages = ref(1)
+const scale = ref(1)
 const showDownload = ref(false)
 const pdfBlob = ref<Blob | null>(null)
-const isAISummaryVisible = ref(false)
 const pdfContainer = ref<HTMLElement | null>(null)
 const pdfLoaded = ref(false)
+const pdfViewer = ref<HTMLElement | null>(null)
 const isPdfRendered = ref(false)
 const resizeObserver = ref<ResizeObserver | null>(null)
 
+// 批注相关变量
+const annotationLayer = ref<HTMLElement | null>(null)
+const canvasContext = ref<CanvasRenderingContext2D | null>(null)
+const activeTool = ref<string | null>(null)
+const isDrawing = ref(false)
+const startPos = ref({ x: 0, y: 0 })
+const annotations = ref<Annotation[]>([])
+const activePopup = ref<Annotation | null>(null)
+const popupPosition = ref({ x: 0, y: 0 })
+const highlightPreview = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+})
+
+// 新增缺失的变量
+const paperId = ref<number>(0)
+const allowEdit = ref<number>(0)
+
 const route = useRoute()
+
+const userStore = useUserStore()
+let userId = ''
+const initUserInfo = () => {
+  if (userStore.user) {
+    userId = String(userStore.user.id)
+  }
+}
+
+const handleFileChange = (file: UploadFile) => {
+  if (file.raw) {
+    selectedFile.value = file.raw
+    pdfUrl.value = URL.createObjectURL(file.raw)
+    currentPage.value = 1
+  }
+}
 
 const onPdfLoaded = (pdf: any) => {
   totalPages.value = pdf.numPages
+  isPdfRendered.value = true
 }
 
 const onPageLoaded = (page: any) => {
@@ -198,18 +254,40 @@ const nextPage = () => {
   }
 }
 
+const zoomIn = () => {
+  scale.value = Math.min(scale.value + 0.1, 2)
+}
+
+const zoomOut = () => {
+  scale.value = Math.max(scale.value - 0.1, 0.5)
+}
+
+const resetZoom = () => {
+  scale.value = 1
+}
+
 // 支持通过参数传递url并请求pdf
 onMounted(async () => {
+  initUserInfo()
+  if (route.query.paperId) paperId.value = parseInt(route.query.paperId as string)
+  if (route.query.allowEdit) allowEdit.value = parseInt(route.query.allowEdit as string)
   const urlParam = route.query.url as string | undefined
   if (urlParam) {
     showDownload.value = true
     try {
+      console.log(urlParam)
       const blob: Blob = await getPublicationFile(urlParam)
       pdfBlob.value = blob
       pdfUrl.value = URL.createObjectURL(blob)
       currentPage.value = 1
       selectedFile.value = null
-      if (pdfContainer.value) {
+      if (pdfContainer.value && allowEdit.value == 1) {
+        try {
+          const res = await annotationAPI.getAnnotationList(userId, paperId.value.toString())
+          annotations.value = res.data.map((a: any) => ({ type: 'highlight', ...a }))
+        } catch (error) {
+          ElMessage.error('读取文献高亮批注失败')
+        }
         resizeObserver.value = new ResizeObserver(() => {
           initAnnotationCanvas()
           redrawAnnotations()
@@ -323,7 +401,8 @@ const redrawAnnotations = () => {
     .filter(anno => anno.page === currentPage.value)
     .forEach(anno => {
       // 绘制高亮区域
-      ctx.fillStyle = 'rgba(255, 235, 59, 0.3)'
+      ctx.fillStyle = 'rgba(255, 255, 0, 0.25)'
+      // console.log(anno.x, anno.y, anno.width, anno.height)
       ctx.fillRect(anno.x, anno.y, anno.width, anno.height)
 
       // // 绘制高亮边框
@@ -335,28 +414,11 @@ const redrawAnnotations = () => {
 }
 
 // 显示批注弹窗
-const showAnnotationPopup = (
-  annotation:
-    | Annotation
-    | {
-        id: string
-        type: string
-        page: number
-        x: number
-        y: number
-        width: number
-        height: number
-        comment: string
-        markerX: number
-        markerY: number
-      }
-    | null,
-  event: { clientX: number; clientY: number }
-) => {
+const showAnnotationPopup = (annotation: Annotation, event: MouseEvent) => {
   activePopup.value = annotation
   popupPosition.value = {
-    x: event.clientX + 10,
-    y: event.clientY + 10,
+    x: event.pageX + 300 < window.innerWidth ? event.pageX + 20 : event.pageX - 300,
+    y: event.pageY + 10,
   }
 }
 
@@ -377,6 +439,7 @@ const toggleHighlightMode = () => {
 const getRelativeCoordinates = (e: MouseEvent) => {
   if (!annotationLayer.value) return { x: 0, y: 0 }
   // 获取PDF容器的边界矩形
+  // const container = pdfViewer.value?.$el?.querySelector('.vue-pdf-embed-container');
   const container = pdfContainer.value?.querySelector('.border') as HTMLElement
   if (!container) return { x: 0, y: 0 }
 
@@ -421,7 +484,7 @@ const handleMouseMove = (e: MouseEvent) => {
   }
 }
 
-const handleMouseUp = () => {
+const handleMouseUp = async () => {
   if (!isDrawing.value) return
 
   isDrawing.value = false
@@ -431,8 +494,21 @@ const handleMouseUp = () => {
   if (highlightPreview.value.width > 5 && highlightPreview.value.height > 5) {
     const commentText = prompt('请输入批注内容（可选）：', '')
 
+    const newAnnotationUpload = {
+      // id: Date.now().toString(),
+      // type: 'highlight',
+      page: currentPage.value,
+      x: highlightPreview.value.x,
+      y: highlightPreview.value.y,
+      width: highlightPreview.value.width,
+      height: highlightPreview.value.height,
+      comment: commentText || '',
+      markerX: highlightPreview.value.x + highlightPreview.value.width,
+      markerY: highlightPreview.value.y,
+      // paperId: paperId
+    }
     const newAnnotation = {
-      id: Date.now().toString(),
+      id: '0',
       type: 'highlight',
       page: currentPage.value,
       x: highlightPreview.value.x,
@@ -442,6 +518,18 @@ const handleMouseUp = () => {
       comment: commentText || '',
       markerX: highlightPreview.value.x + highlightPreview.value.width,
       markerY: highlightPreview.value.y,
+      paperId: paperId.value,
+    }
+
+    try {
+      const res = await annotationAPI.uploadAnnotation(
+        userId,
+        paperId.value.toString(),
+        newAnnotationUpload
+      )
+      newAnnotation.id = res.data.toString()
+    } catch (error) {
+      console.log('云端批注添加失败')
     }
 
     annotations.value.push(newAnnotation)
@@ -453,22 +541,49 @@ const handleMouseUp = () => {
 }
 
 // 清除当前页批注
-const clearAnnotations = () => {
+const clearAnnotations = async () => {
   if (annotations.value.length === 0) {
     ElMessage.warning('当前没有可清除的批注')
     return
   }
-
-  annotations.value = annotations.value.filter(anno => anno.page !== currentPage.value)
-  redrawAnnotations()
-  ElMessage.success('已清除当前页所有批注')
+  try {
+    await ElMessageBox.confirm('确定清除当页所有批注吗？', '确认删除', {
+      type: 'warning',
+    })
+    annotations.value.forEach(async anno => {
+      if (anno.page === currentPage.value) {
+        try {
+          await annotationAPI.deleteAnnotation(userId, anno.id)
+        } catch (error) {
+          ElMessage.error('有一个批注云端删除失败了')
+        }
+      }
+    })
+    annotations.value = annotations.value.filter(anno => anno.page !== currentPage.value)
+    redrawAnnotations()
+    ElMessage.success('已清除当前页所有批注')
+  } catch (error) {
+    // 用户取消
+  }
 }
 
 // 删除单个批注
-const deleteAnnotation = (id: string) => {
-  annotations.value = annotations.value.filter(anno => anno.id !== id)
-  redrawAnnotations()
-  ElMessage.success('批注已删除')
+const deleteAnnotation = async (id: string) => {
+  try {
+    await ElMessageBox.confirm('确定要删除这个批注吗？', '确认删除', {
+      type: 'warning',
+    })
+    try {
+      await annotationAPI.deleteAnnotation(userId, id)
+      annotations.value = annotations.value.filter(anno => anno.id !== id)
+      redrawAnnotations()
+      ElMessage.success('批注已删除')
+    } catch (error) {
+      ElMessage.error('删除失败')
+    }
+  } catch (error) {
+    // 用户取消
+  }
 }
 
 // 导出批注
@@ -547,11 +662,8 @@ onMounted(() => {
     attachEventListeners()
   }, 2000)
 })
-
-const toggleAISummary = () => {
-  isAISummaryVisible.value = !isAISummaryVisible.value
-}
 </script>
+
 
 <style>
 /* 添加一些基本样式 */
@@ -634,6 +746,197 @@ const toggleAISummary = () => {
   height: 100%;
   pointer-events: auto;
   z-index: 10;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-top: 1px solid #eee;
+  margin-top: 20px;
+}
+
+.page-info {
+  font-size: 1rem;
+  color: #7f8c8d;
+}
+
+.annotation-list {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.annotation-list h4 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
+.annotation-item {
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #3498db;
+}
+
+.annotation-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.annotation-text {
+  flex: 1;
+}
+
+.annotation-page {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.annotation-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.annotation-actions button {
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.annotation-actions button:hover {
+  color: yellow;
+}
+
+.highlight-preview {
+  position: absolute;
+  border: 2px dashed yellow;
+  background: rgba(255, 255, 0, 0.25);
+  z-index: 70;
+}
+
+.annotation-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: blue;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.annotation-marker:hover {
+  background: red;
+}
+
+.annotation-marker i {
+  color: white;
+  font-size: 12px;
+}
+
+.annotation-popup {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 120;
+  width: 280px;
+  max-width: 90vw;
+}
+
+.annotation-popup h4 {
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.annotation-popup p {
+  color: #555;
+  line-height: 1.5;
+}
+
+.annotation-popup .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  padding: 20px;
+  color: #7f8c8d;
+  border-top: 1px solid #eee;
+}
+
+.instructions {
+  background: #e3f2fd;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border-left: 4px solid #3498db;
+}
+
+.instructions h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.instructions ol {
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .tools {
+    flex-wrap: wrap;
+  }
+
+  .tool-btn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .pdf-container {
+    min-height: 400px;
+  }
+}
+
+/* 确保 PDF 容器有相对定位 */
+.border.rounded-lg.overflow-hidden {
+  position: relative;
+  min-height: 500px;
+}
+
+/* 确保批注层在 PDF 上方 */
+.annotation-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20; /* 提高层级 */
+  pointer-events: none; /* 默认不拦截事件 */
 }
 
 .pagination {
@@ -813,49 +1116,13 @@ footer {
   min-height: 500px;
 }
 
-/* 确保批注层在 PDF 上方 */
-.annotation-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 20; /* 提高层级 */
-}
-.annotation-layer[style] {
-  position: absolute !important;
-}
-
 /* 层级调整 */
 .vue-pdf-embed {
   position: relative;
   z-index: 10; /* PDF渲染层 */
 }
 
-.annotation-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 100; /* 批注层高于PDF层 */
-  pointer-events: none; /* 默认不拦截事件 */
-}
-
 .annotation-layer.active {
   pointer-events: auto; /* 批注模式时捕获事件 */
-}
-
-/* 高亮预览层级 */
-.highlight-preview {
-  z-index: 30;
-}
-
-/* 批注标记层级 */
-.annotation-marker {
-  z-index: 40;
-}
-
-/* 批注弹窗层级 */
-.annotation-popup {
-  z-index: 50;
 }
 </style>

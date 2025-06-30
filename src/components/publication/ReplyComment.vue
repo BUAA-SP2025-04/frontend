@@ -156,7 +156,7 @@ const props = defineProps<{
   reply: ExtendedComment
 }>()
 
-const emit = defineEmits(['reply', 'delete', 'set-active-reply'])
+const emit = defineEmits(['reply', 'delete', 'set-active-reply', 'like'])
 
 const userStore = useUserStore()
 const userCacheStore = useUserCacheStore()
@@ -188,13 +188,13 @@ async function handleLike() {
     if (props.reply.isLiked) {
       // 已点赞，发送取消点赞请求
       await disLikeComment(props.reply.id)
-      props.reply.isLiked = false
-      props.reply.likes--
+      // 通过emit通知父组件更新状态
+      emit('like', { id: props.reply.id, isLiked: false, likes: props.reply.likes - 1 })
     } else {
       // 未点赞，发送点赞请求
       await likeComment(props.reply.id)
-      props.reply.isLiked = true
-      props.reply.likes++
+      // 通过emit通知父组件更新状态
+      emit('like', { id: props.reply.id, isLiked: true, likes: props.reply.likes + 1 })
     }
   } catch (error) {
     console.error('回复点赞操作失败:', error)

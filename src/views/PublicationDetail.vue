@@ -4,8 +4,8 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-0">
       <el-button
         type="text"
-        @click="$router.go(-1)"
         class="flex items-center text-gray-600 hover:text-blue-600 p-0"
+        @click="$router.go(-1)"
       >
         <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -49,16 +49,32 @@
                   </svg>
                   <span class="text-gray-600">作者：</span>
                   <div class="flex flex-wrap gap-2">
-                    <el-tag
+                    <template
                       v-for="(author, index) in getAuthorsList(publication.authors)"
                       :key="index"
-                      type="info"
-                      effect="plain"
-                      size="default"
-                      class="text-gray-700 bg-gray-100 border-gray-200 text-base font-medium"
                     >
-                      {{ author }}
-                    </el-tag>
+                      <!-- 有ID的作者 - 可点击跳转 -->
+                      <el-tag
+                        v-if="author.id && author.id !== 0"
+                        type="info"
+                        effect="plain"
+                        size="default"
+                        class="text-blue-600 bg-blue-50 border-blue-200 text-base font-medium hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition-all duration-200"
+                        @click="navigateToUser(author.id)"
+                      >
+                        {{ author.name }}
+                      </el-tag>
+                      <!-- 没有ID的作者 - 不可点击 -->
+                      <el-tag
+                        v-else
+                        type="info"
+                        effect="plain"
+                        size="default"
+                        class="text-gray-700 bg-gray-100 border-gray-200 text-base font-medium"
+                      >
+                        {{ author.name }}
+                      </el-tag>
+                    </template>
                   </div>
                 </div>
 
@@ -177,7 +193,7 @@
                       formatNumber(publication.readerNum || 0)
                     }}</span>
                   </div>
-                  <!-- <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-2">
                     <svg
                       class="w-5 h-5 text-red-500"
                       fill="none"
@@ -195,7 +211,7 @@
                     <span class="text-red-600 font-semibold">{{
                       formatNumber(publication.likeNum || 0)
                     }}</span>
-                  </div> -->
+                  </div>
                 </div>
               </div>
 
@@ -263,8 +279,8 @@
                   <el-button
                     type="text"
                     size="small"
-                    @click="toggleAbstract"
                     class="text-blue-600 hover:text-blue-800 p-0"
+                    @click="toggleAbstract"
                   >
                     {{ isAbstractExpanded ? '收起' : '展开' }}
                   </el-button>
@@ -274,13 +290,57 @@
 
             <!-- 操作按钮 -->
             <div class="flex items-center gap-4 mt-6">
-              <el-button
-                v-if="publication.pdfUrl && publication.pdfUrl.trim()"
-                type="primary"
-                @click="openPdf"
-                class="flex items-center gap-2"
+              <!-- 点赞按钮 -->
+              <button
+                @click="togglePublicationLike"
+                :class="[
+                  'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 relative overflow-hidden border-2',
+                  publication.isLiked
+                    ? 'text-white bg-red-600 border-red-600 hover:bg-red-700 hover:border-red-700 hover:shadow-md'
+                    : 'text-gray-600 border-gray-200 hover:text-red-500 hover:border-red-200 hover:shadow-md',
+                ]"
+                :disabled="likeLoading"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- 加载动画 -->
+                <div
+                  v-if="likeLoading"
+                  class="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center rounded-lg"
+                >
+                  <div
+                    class="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"
+                  ></div>
+                </div>
+
+                <svg
+                  class="w-5 h-5 transition-all duration-300"
+                  :class="[
+                    publication.isLiked
+                      ? 'text-white animate-pulse'
+                      : 'text-gray-400 hover:text-red-500',
+                  ]"
+                  :fill="publication.isLiked ? 'currentColor' : 'none'"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+                <span class="font-semibold text-lg">{{
+                  publication.isLiked ? '已点赞' : '点赞'
+                }}</span>
+              </button>
+
+              <!-- 查看PDF按钮 -->
+              <button
+                v-if="publication.pdfUrl && publication.pdfUrl.trim()"
+                @click="openPdf"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 text-white bg-blue-600 border-blue-600 hover:bg-blue-700 hover:border-blue-700 hover:shadow-md"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -288,15 +348,16 @@
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                查看PDF
-              </el-button>
-              <el-button
+                <span class="font-semibold text-lg">查看PDF</span>
+              </button>
+
+              <!-- 下载PDF按钮 -->
+              <button
                 v-if="publication.pdfUrl && publication.pdfUrl.trim()"
-                type="success"
                 @click="downloadPdf"
-                class="flex items-center gap-2"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 text-white bg-green-600 border-green-600 hover:bg-green-700 hover:border-green-700 hover:shadow-md"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -304,10 +365,38 @@
                     d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
                   />
                 </svg>
-                下载PDF
-              </el-button>
-              <el-button v-else type="warning" @click="applyPdf" class="flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span class="font-semibold text-lg">下载PDF</span>
+              </button>
+
+              <!-- 添加至文献库按钮 -->
+              <button
+                @click="showAddToLibraryDialog"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 text-white bg-purple-600 border-purple-600 hover:bg-purple-700 hover:border-purple-700 hover:shadow-md"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                  />
+                </svg>
+                <span class="font-semibold text-lg">添加至文献库</span>
+              </button>
+
+              <!-- 申请PDF按钮 -->
+              <button
+                v-if="!publication.pdfUrl || !publication.pdfUrl.trim()"
+                @click="applyPdf"
+                :disabled="applyingPdf"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 text-white bg-orange-600 border-orange-600 hover:bg-orange-700 hover:border-orange-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                <!-- 加载动画 -->
+                <div
+                  v-if="applyingPdf"
+                  class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                ></div>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -315,8 +404,10 @@
                     d="M16 12v1m0 4h.01M12 8v4m0 4h.01M8 12v1m0 4h.01M12 4v.01M12 20v.01M4 12v.01M20 12v.01"
                   />
                 </svg>
-                申请PDF
-              </el-button>
+                <span class="font-semibold text-lg">{{
+                  applyingPdf ? '申请中...' : '申请PDF'
+                }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -324,8 +415,8 @@
         <!-- 评论区 -->
         <div
           id="comments"
-          class="bg-white rounded-xl shadow-lg overflow-hidden mt-8"
           v-loading="commentsLoading"
+          class="bg-white rounded-xl shadow-lg overflow-hidden mt-8"
           element-loading-text="精彩评论马上到来..."
         >
           <div class="p-8">
@@ -352,7 +443,7 @@
             <div class="mb-8">
               <CommentForm
                 :publication-id="publication.id"
-                :parent-id="activeReplyId"
+                :parent-id="activeReplyId || undefined"
                 :reply-to-user-name="getReplyToUserName()"
                 :replied-user-id="getrepliedUserIdString()"
                 @submitted="loadComments"
@@ -367,7 +458,7 @@
                 :comment="comment"
                 :replies="comment.replies"
                 :active-reply-id="activeReplyId"
-                @like="toggleCommentLike"
+                @like="handleCommentLike"
                 @set-active-reply="setActiveReply"
                 @reply-submitted="handleReplySubmitted"
               />
@@ -402,8 +493,8 @@
     <!-- 浮动回到顶部按钮 -->
     <div
       v-show="showBackToTop"
-      @click="scrollToTop"
       class="fixed bottom-8 right-8 w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 z-50"
+      @click="scrollToTop"
     >
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -414,35 +505,195 @@
         />
       </svg>
     </div>
+
+    <!-- 添加至文献库弹窗 -->
+    <el-dialog
+      v-model="showLibraryDialog"
+      title="选择收藏夹"
+      width="500px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="true"
+    >
+      <div class="space-y-4">
+        <div v-if="categoriesLoading" class="text-center py-8">
+          <div
+            class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"
+          ></div>
+          <p class="text-gray-500 mt-2">加载收藏夹中...</p>
+        </div>
+
+        <div v-else-if="categories.length === 0" class="text-center py-8">
+          <svg
+            class="w-16 h-16 text-gray-300 mx-auto mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+            />
+          </svg>
+          <p class="text-gray-500 mb-4">暂无收藏夹</p>
+          <el-button type="primary" @click="createNewCategory">创建新收藏夹</el-button>
+        </div>
+
+        <div v-else class="space-y-3">
+          <div
+            v-for="category in categories"
+            :key="category.id"
+            @click="selectCategory(category)"
+            class="flex items-center justify-between p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all duration-200"
+            :class="{ 'border-blue-500 bg-blue-50': selectedCategory?.id === category.id }"
+          >
+            <div class="flex items-center gap-3">
+              <svg
+                class="w-6 h-6 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                />
+              </svg>
+              <div>
+                <h3 class="font-semibold text-gray-900">{{ category.name }}</h3>
+              </div>
+            </div>
+            <svg
+              v-if="selectedCategory?.id === category.id"
+              class="w-5 h-5 text-blue-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-between">
+          <el-button @click="showLibraryDialog = false">取消</el-button>
+          <div class="flex gap-2">
+            <el-button type="primary" @click="createNewCategory">新建收藏夹</el-button>
+            <el-button
+              type="success"
+              :disabled="!selectedCategory || addingToLibrary"
+              :loading="addingToLibrary"
+              @click="addToLibrary"
+            >
+              {{ addingToLibrary ? '添加中...' : '添加到收藏夹' }}
+            </el-button>
+          </div>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 新建收藏夹弹窗 -->
+    <el-dialog
+      v-model="showCreateCategoryDialog"
+      title="新建收藏夹"
+      width="400px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="true"
+    >
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">收藏夹名称</label>
+          <el-input
+            v-model="newCategoryName"
+            placeholder="请输入收藏夹名称"
+            maxlength="20"
+            show-word-limit
+            clearable
+            @keyup.enter="handleCreateCategory"
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <el-button @click="cancelCreateCategory">取消</el-button>
+          <el-button
+            type="primary"
+            :disabled="!newCategoryName.trim() || creatingCategory"
+            :loading="creatingCategory"
+            @click="handleCreateCategory"
+          >
+            {{ creatingCategory ? '创建中...' : '创建' }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { getPublicationInformById, readPublication } from '@/api/modules/publication'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  getPublicationInformById,
+  readPublication,
+  likePublication,
+  unlikePublication,
+  isLikePublication,
+  hasApplication,
+  apply,
+} from '@/api/modules/publication'
+import { libraryAPI } from '@/api/modules/library'
 import {
   disLikeComment,
   getPublicationComments,
   getReplyComments,
   likeComment,
 } from '@/api/modules/comment'
-import type { Publication } from '@/api/types/publication'
+import type { Publication, PublicationDetail } from '@/api/types/publication'
 import type { Comment } from '@/api/types/comment'
-import PublicationCommentComp from '@/components/PublicationComment.vue'
-import CommentForm from '@/components/CommentForm.vue'
+import type { UserDetail } from '@/api/types/user'
+import { useUserStore } from '@/stores/user'
+import PublicationCommentComp from '@/components/publication/PublicationComment.vue'
+import CommentForm from '@/components/publication/CommentForm.vue'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
-const publication = ref<Publication | null>(null)
+const publication = ref<PublicationDetail | null>(null)
 const comments = ref<Comment[]>([])
 const commentsLoading = ref(true)
 const isAbstractExpanded = ref(false)
 const sortType = ref('hot')
 const activeReplyId = ref<number | null>(null)
 const showBackToTop = ref(false)
+const likeLoading = ref(false)
+
+// 文献库相关变量
+const showLibraryDialog = ref(false)
+const categories = ref<any[]>([])
+const categoriesLoading = ref(false)
+const selectedCategory = ref<any>(null)
+const addingToLibrary = ref(false)
+
+// 新建收藏夹相关变量
+const showCreateCategoryDialog = ref(false)
+const newCategoryName = ref('')
+const creatingCategory = ref(false)
+
+// 申请PDF相关变量
+const receiverId = ref<number | null>(null)
+const applyingPdf = ref(false)
 
 // 回复目标信息
 const replyTarget = ref<{
@@ -462,12 +713,41 @@ onMounted(async () => {
     return
   }
 
+  // 获取接收者ID（从路由参数中获取，如果没有则使用当前用户ID）
+  const routeReceiverId = route.query.receiverId || route.params.receiverId
+  if (routeReceiverId) {
+    receiverId.value = Number(routeReceiverId)
+  } else {
+    // 如果没有指定接收者，则使用当前用户ID
+    receiverId.value = userStore.user?.id ? Number(userStore.user.id) : null
+  }
+
   try {
     // 获取成果详情
     const response = await getPublicationInformById(String(publicationId))
-    if (response.data) {
-      console.log(response.data)
-      publication.value = processPublicationData(response.data)
+    if (response) {
+      // 处理新的数据结构：将authors和publication合并为PublicationDetail格式
+      const processedData = {
+        ...response.data.publication,
+        authors: response.data.authors || [],
+      }
+      publication.value = processPublicationData(processedData)
+      console.log(publication.value.authors)
+      // 查询是否已经点赞了这个成果
+      try {
+        const likeResponse = await isLikePublication(String(publicationId))
+        console.log(likeResponse)
+        if (likeResponse && publication.value) {
+          // 根据API响应更新点赞状态
+          publication.value.isLiked = likeResponse.data
+        }
+      } catch (likeError) {
+        // 如果查询点赞状态失败，保持默认状态（未点赞）
+        console.log('查询点赞状态失败，默认为未点赞状态')
+        if (publication.value) {
+          publication.value.isLiked = false
+        }
+      }
     }
 
     // 获取评论列表（异步加载，不影响页面显示）
@@ -577,6 +857,24 @@ const toggleCommentLike = async (comment: Comment) => {
   }
 }
 
+// 处理二级评论点赞
+const toggleReplyLike = async (reply: Comment) => {
+  try {
+    if (reply.isLiked) {
+      await disLikeComment(reply.id)
+      reply.isLiked = false
+      reply.likes--
+    } else {
+      await likeComment(reply.id)
+      reply.isLiked = true
+      reply.likes++
+    }
+  } catch (error) {
+    console.error('回复点赞失败:', error)
+    ElMessage.error('操作失败')
+  }
+}
+
 // 设置活跃的回复ID
 function setActiveReply(
   commentId: number | null,
@@ -622,8 +920,53 @@ const downloadPdf = () => {
   }
 }
 
-const applyPdf = () => {
-  ElMessage.info('请联系作者或管理员申请PDF全文。')
+const applyPdf = async () => {
+  if (!publication.value) return
+
+  // 检查用户是否登录
+  if (!userStore.user?.id) {
+    ElMessage.error('请先登录')
+    return
+  }
+
+  // 检查是否有接收者ID
+  if (!receiverId.value) {
+    ElMessage.error('无法确定申请目标，请刷新页面重试')
+    return
+  }
+
+  // 用户确认是否要申请
+  try {
+    await ElMessageBox.confirm('确定要向该成果的作者申请PDF全文吗？', '申请确认', {
+      confirmButtonText: '确定申请',
+      cancelButtonText: '取消',
+      type: 'info',
+    })
+  } catch {
+    // 用户取消申请
+    return
+  }
+
+  applyingPdf.value = true
+  try {
+    // 首先查询是否已经申请过
+    const hasAppliedResponse = await hasApplication(publication.value.id)
+
+    if (hasAppliedResponse.data) {
+      ElMessage.warning('您已经申请过这个PDF了，请耐心等待作者回复')
+      return
+    }
+
+    // 发送申请
+    await apply(publication.value.id, receiverId.value)
+
+    ElMessage.success('申请已发送，请等待作者回复')
+  } catch (error) {
+    console.error('申请PDF失败:', error)
+    ElMessage.error('申请失败，请稍后重试')
+  } finally {
+    applyingPdf.value = false
+  }
 }
 
 const getStatusType = (status: string) => {
@@ -674,12 +1017,27 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-const getAuthorsList = (authors: string | null) => {
+const getAuthorsList = (authors: string | null | any[]) => {
   if (!authors) return []
+  if (Array.isArray(authors)) {
+    return authors
+      .map(author => {
+        if (typeof author === 'string') {
+          return { name: author, id: 0 }
+        }
+        return {
+          name: author.authorName || author.name || '',
+          id: author.authorId || 0,
+        }
+      })
+      .filter(author => author.name.length > 0)
+  }
+  // 如果是字符串，按逗号分割
   return authors
     .split(',')
     .map(author => author.trim())
     .filter(author => author.length > 0)
+    .map(author => ({ name: author, id: 0 }))
 }
 
 const getKeywordsList = (keywords: string) => {
@@ -691,11 +1049,11 @@ const getKeywordsList = (keywords: string) => {
 }
 
 // 处理成果数据，为null值添加默认值
-const processPublicationData = (data: Publication): Publication => {
+const processPublicationData = (data: PublicationDetail): PublicationDetail => {
   return {
     ...data,
     title: data.title || '无标题',
-    authors: data.authors || '',
+    authors: data.authors || [],
     venue: data.venue || '未知机构',
     year: data.year || null,
     status: data.status || 'unknown',
@@ -705,6 +1063,7 @@ const processPublicationData = (data: Publication): Publication => {
     pdfUrl: data.pdfUrl || '',
     readerNum: data.readerNum || 0,
     likeNum: data.likeNum || 0,
+    isLiked: data.isLiked || false,
     id: data.id || 0,
     createdAt: data.createdAt || new Date().toISOString(),
   }
@@ -748,6 +1107,171 @@ const getrepliedUserIdString = () => {
   // 格式: "id,name"
   return `${replyTarget.value.id},${replyTarget.value.name}`
 }
+
+const handleCommentLike = async (
+  likeData: Comment | { id: number; isLiked: boolean; likes: number }
+) => {
+  try {
+    // 判断是一级评论还是二级评论的点赞数据
+    if ('content' in likeData) {
+      // 一级评论
+      const comment = likeData as Comment
+      if (comment.isLiked) {
+        await disLikeComment(comment.id)
+        comment.isLiked = false
+        comment.likes--
+      } else {
+        await likeComment(comment.id)
+        comment.isLiked = true
+        comment.likes++
+      }
+    } else {
+      // 二级评论 - 数据已经在子组件中更新，这里不需要重复处理
+      // 因为ReplyComment组件已经通过emit传递了更新后的数据
+      console.log('二级评论点赞状态已更新:', likeData)
+    }
+  } catch (error) {
+    console.error('点赞失败:', error)
+    ElMessage.error('操作失败')
+  }
+}
+
+const togglePublicationLike = async () => {
+  if (likeLoading.value || !publication.value) return
+
+  try {
+    likeLoading.value = true
+    if (publication.value.isLiked) {
+      await unlikePublication(publication.value.id)
+      publication.value.isLiked = false
+      publication.value.likeNum--
+    } else {
+      await likePublication(publication.value.id)
+      publication.value.isLiked = true
+      publication.value.likeNum++
+    }
+  } catch (error) {
+    console.error('点赞失败:', error)
+    ElMessage.error('操作失败')
+  } finally {
+    likeLoading.value = false
+  }
+}
+
+const showAddToLibraryDialog = async () => {
+  showLibraryDialog.value = true
+  selectedCategory.value = null
+  await loadCategories()
+}
+
+const loadCategories = async () => {
+  categoriesLoading.value = true
+  try {
+    // 获取当前用户ID
+    const userId = userStore.user?.id
+    if (!userId) {
+      ElMessage.error('请先登录')
+      showLibraryDialog.value = false
+      return
+    }
+
+    const response = await libraryAPI.getCategoryList(String(userId))
+    if (response.data) {
+      categories.value = response.data
+    }
+  } catch (error) {
+    console.error('加载收藏夹失败:', error)
+    ElMessage.error('加载收藏夹失败')
+  } finally {
+    categoriesLoading.value = false
+  }
+}
+
+const selectCategory = (category: any) => {
+  selectedCategory.value = category
+}
+
+const createNewCategory = () => {
+  showCreateCategoryDialog.value = true
+  newCategoryName.value = ''
+}
+
+const handleCreateCategory = async () => {
+  if (!newCategoryName.value.trim()) return
+
+  // 检查用户是否登录
+  const userId = userStore.user?.id
+  if (!userId) {
+    ElMessage.error('请先登录')
+    return
+  }
+
+  creatingCategory.value = true
+  try {
+    const response = await libraryAPI.createFolder(Number(userId), newCategoryName.value.trim())
+
+    if (response.data) {
+      ElMessage.success('收藏夹创建成功')
+      showCreateCategoryDialog.value = false
+      const categoryName = newCategoryName.value.trim()
+      newCategoryName.value = ''
+
+      // 重新加载收藏夹列表
+      await loadCategories()
+
+      // 自动选中新创建的收藏夹
+      if (response.data) {
+        selectedCategory.value = {
+          id: response.data,
+          name: categoryName,
+          paperCount: 0,
+        }
+      }
+    }
+  } catch (error) {
+    console.error('创建收藏夹失败:', error)
+    ElMessage.error('创建收藏夹失败')
+  } finally {
+    creatingCategory.value = false
+  }
+}
+
+const cancelCreateCategory = () => {
+  showCreateCategoryDialog.value = false
+  newCategoryName.value = ''
+}
+
+const addToLibrary = async () => {
+  if (!selectedCategory.value || !publication.value) return
+
+  // 检查用户是否登录
+  const userId = userStore.user?.id
+  if (!userId) {
+    ElMessage.error('请先登录')
+    return
+  }
+
+  addingToLibrary.value = true
+  try {
+    const paperId = publication.value.id
+    const categoryId = selectedCategory.value.id
+
+    await libraryAPI.favoritePaper(Number(userId), paperId, categoryId)
+
+    ElMessage.success('成功添加到收藏夹')
+    showLibraryDialog.value = false
+    selectedCategory.value = null
+  } catch (error) {
+    console.error('添加到收藏夹失败:', error)
+    ElMessage.error('添加到收藏夹失败')
+  } finally {
+    addingToLibrary.value = false
+  }
+}
+
+const navigateToUser = (userId: number) => {
+  router.push(`/user/${userId}`)
+}
 </script>
 
 <style scoped>
@@ -782,5 +1306,50 @@ const getrepliedUserIdString = () => {
 .bili-comment-input .el-textarea__inner::placeholder {
   color: #b6c2e1;
   opacity: 1;
+}
+
+/* 点赞按钮动画 */
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.3);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.3);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+.animate-pulse {
+  animation: heartBeat 1.5s ease-in-out infinite;
+}
+
+/* 按钮点击波纹效果 */
+button:active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.3);
+  transform: translate(-50%, -50%);
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  to {
+    width: 100px;
+    height: 100px;
+    opacity: 0;
+  }
 }
 </style>

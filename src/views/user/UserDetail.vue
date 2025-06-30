@@ -177,16 +177,13 @@
                   <span>作者：</span>
                   <span
                     v-for="author in getAuthors(paper.authors)"
-                    :key="author"
+                    :key="author.authorId || author.authorName"
                     class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium"
-                    >{{ author }}</span
+                    >{{ author.authorName }}</span
                   >
                   <span
                     v-if="
-                      !paper.authors ||
-                      paper.authors.trim() === '' ||
-                      (paper.authors || '').split(',').filter(author => author.trim() !== '')
-                        .length === 0
+                      !paper.authors || !Array.isArray(paper.authors) || paper.authors.length === 0
                     "
                     class="text-gray-400"
                   >
@@ -260,6 +257,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getUserDetail, getUserPapers, follow, getIfFollow, unfollow } from '@/api/modules/user'
 import type { UserDetail, Paper } from '@/api/types/user'
+import type { Author } from '@/api/types/publication'
 import { Male, Female, UserFilled, CircleCheckFilled, Plus, Close } from '@element-plus/icons-vue'
 import { ElIcon, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
@@ -294,16 +292,15 @@ onMounted(async () => {
       const paperRes = await getUserPapers(response.data.id)
       console.log(paperRes)
       if (paperRes.data && Array.isArray(paperRes.data)) {
-        // 直接使用返回的论文数据
+        // 处理新的数据结构：将authors和publication合并为Paper格式
         papers.value = paperRes.data
-          .filter(paper => paper && typeof paper === 'object' && paper.id) // 确保paper是有效对象
-          .map(paper => {
-            // 确保authors字段是字符串格式
-            if (!paper.authors || typeof paper.authors !== 'string') {
-              paper.authors = ''
-            }
-            return paper
-          })
+          .filter(
+            item => item && typeof item === 'object' && item.publication && item.publication.id
+          )
+          .map(item => ({
+            ...item.publication,
+            authors: item.authors || [],
+          }))
       } else {
         papers.value = []
       }
@@ -386,12 +383,9 @@ const showPaperDetail = (paper: Paper) => {
   }
 }
 
-function getAuthors(authors: string | undefined): string[] {
-  if (!authors || authors.trim() === '') return []
-  return authors
-    .split(',')
-    .map(a => a.trim())
-    .filter(Boolean)
+function getAuthors(authors: Author[] | undefined): Author[] {
+  if (!authors || !Array.isArray(authors)) return []
+  return authors.filter(author => author && author.authorName && author.authorName.trim() !== '')
 }
 
 function handleImageError(event: Event) {

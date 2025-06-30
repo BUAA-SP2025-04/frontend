@@ -1,10 +1,21 @@
 export type PublicationType = 'journal' | 'conference' | 'patent'
 export type PublicationStatus = 'published' | 'accepted' | 'under-review' | 'draft'
 
-export interface Publication {
+export interface Author {
+  authorId: number
+  authorName: string
+  publicationId: number
+}
+
+export interface likeResponse {
+  message: string
+  data: boolean | undefined
+  code: string
+}
+
+export interface publicationInfo {
   abstracts: string | null
-  authors: string | null
-  conference: string
+  conference: null
   createdAt: string
   doi: string | null
   id: number
@@ -22,13 +33,41 @@ export interface Publication {
   year: number | null
 }
 
+export interface Publication {
+  authors: Author[]
+  publication: publicationInfo
+}
+
+// 用于详情页面的合并后的Publication类型
+export interface PublicationDetail {
+  id: number
+  title: string
+  authors: Author[]
+  conference: string | null
+  venue: string | null
+  year: number | null
+  status: PublicationStatus
+  keywords: string | null
+  doi: string | null
+  pdfUrl: string | null
+  abstracts: string | null
+  readerNum: number
+  likeNum: number
+  isLiked?: boolean
+  institutionId: number
+  isPublic: number
+  type: PublicationType
+  uploaderId: number
+  createdAt: string
+}
+
 export interface PublicationProfile {
   id?: number
   type: PublicationType
   title: string
   authors: string | null
   venue: string | null
-  year: number | null
+  year: string | null
   status: PublicationStatus
   abstracts: string | null
   keywords: string | null
@@ -66,52 +105,13 @@ export interface PublicationStatsResponse {
 export interface PublicationListResponse {
   message: string
   data: {
-    publications: Publication[]
-  }
+    authors: Author[]
+    publication: publicationInfo
+  }[]
 }
 
 export interface PublicationInformResponse {
   message: string
   data: Publication
-  code: string
-}
-
-// 成果评论相关类型
-export interface PublicationComment {
-  id: number
-  content: string
-  author: {
-    id: number
-    name: string
-    avatar?: string
-    institution?: string
-  }
-  createdAt: string
-  likesCount: number
-  isLiked: boolean
-  parentId?: number
-  replies?: PublicationComment[]
-}
-
-export interface CreatePublicationCommentRequest {
-  content: string
-  parentId?: number
-}
-
-export interface PublicationCommentResponse {
-  message: string
-  data: {
-    comments: PublicationComment[]
-    total: number
-    hasMore: boolean
-  }
-  code: string
-}
-
-export interface CreatePublicationCommentResponse {
-  message: string
-  data: {
-    id: number
-  }
   code: string
 }

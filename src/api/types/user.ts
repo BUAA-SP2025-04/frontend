@@ -1,3 +1,5 @@
+import type { Author, Publication } from "./publication"
+
 // 注册请求体
 export interface RegisterUserRequest {
   email: string
@@ -68,15 +70,15 @@ export interface UserDetail {
 export interface Paper {
   id: number
   title: string
-  authors: string
-  conference: string
-  venue: string
-  year: number
+  authors: Author[]
+  conference: string | null
+  venue: string | null
+  year: number | null
   status: string
-  keywords: string
-  doi: string
-  pdfUrl: string
-  abstract: string
+  keywords: string | null
+  doi: string | null
+  pdfUrl: string | null
+  abstracts: string | null
   readerNum: number
   likeNum: number
   _showFullAbstract?: boolean

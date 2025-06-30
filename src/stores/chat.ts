@@ -326,7 +326,15 @@ export const useChatStore = defineStore('chat', () => {
   const loadConversations = async () => {
     try {
       const response = await chatAPI.getConversations()
-      conversations.value = response.conversations
+      // 转换API返回的Conversation格式为store期望的格式
+      conversations.value = response.conversations.map(conv => ({
+        id: conv.id,
+        participants: [conv.userA, conv.userB],
+        lastMessage: conv.lastMessage,
+        unreadCount: conv.unreadCount,
+        createdAt: conv.createdAt,
+        updatedAt: conv.updatedAt,
+      }))
     } catch (error) {
       console.error('加载会话列表失败:', error)
     }
@@ -344,12 +352,12 @@ export const useChatStore = defineStore('chat', () => {
       const response = await chatAPI.getConversationHistory(params)
 
       if (loadMore) {
-        messages.value[conversationId] = [...response.messages, ...existingMessages]
+        messages.value[conversationId] = [...response.data.messages, ...existingMessages]
       } else {
-        messages.value[conversationId] = response.messages
+        messages.value[conversationId] = response.data.messages
       }
 
-      return response.hasMore
+      return response.data.hasMore
     } catch (error) {
       console.error('加载消息失败:', error)
       return false
@@ -359,8 +367,8 @@ export const useChatStore = defineStore('chat', () => {
   const loadChatUser = async (userId: number) => {
     try {
       const response = await chatAPI.getChatUser(userId)
-      chatUsers.value[userId] = response.user
-      return response.user
+      chatUsers.value[userId] = response.data
+      return response.data
     } catch (error) {
       console.error('加载用户信息失败:', error)
       return null
