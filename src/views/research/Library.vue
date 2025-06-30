@@ -644,8 +644,7 @@
               <el-input
                 v-model="authorInput"
                 placeholder="输入作者姓名后按回车添加"
-                @keyup.enter="newPaper.authors.push(authorInput), authorInput = ''
-                "
+                @keyup.enter="newPaper.authors.push(authorInput), authorInput = ''"
                 clearable
               ></el-input>
               <div class="tag-container">
