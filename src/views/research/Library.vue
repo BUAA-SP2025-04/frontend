@@ -35,10 +35,7 @@
             </svg>
             上传文献
           </el-button>
-          <el-button
-            type="primary"
-            @click="showNewFolderDialog"
-          >
+          <el-button type="primary" @click="showNewFolderDialog">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
@@ -644,10 +641,7 @@
               <el-input
                 v-model="authorInput"
                 placeholder="输入作者姓名后按回车添加"
-                @keyup.enter="
-                  newPaper.authors.push(authorInput)
-                  authorInput = ''
-                "
+                @keyup.enter="addInputToArray(authorInput, newPaper.authors)"
                 clearable
               ></el-input>
               <div class="tag-container">
@@ -696,10 +690,7 @@
               <el-input
                 v-model="tagInput"
                 placeholder="输入关键词后按回车添加"
-                @keyup.enter="
-                  newPaper.tags.push(tagInput)
-                  tagInput = ''
-                "
+                @keyup.enter="addInputToArray(tagInput, newPaper.tags)"
                 clearable
               ></el-input>
               <div class="tag-container">
@@ -745,13 +736,7 @@
 
         <template #footer>
           <span class="dialog-footer">
-            <el-button
-              @click="
-                showUploadDialog = false
-                cancelUpload()
-              "
-              >取消</el-button
-            >
+            <el-button @click="handleCancelUpload">取消</el-button>
             <el-button type="primary" @click="handleUpload">上传</el-button>
           </span>
         </template>
@@ -817,10 +802,7 @@
         <template #footer>
           <span class="dialog-footer">
             <el-button
-              @click="
-                showFavoriteDialog = false
-                favoritePaperId = -1
-              "
+              @click="clearFavoritePaper()"
               >取消</el-button
             >
             <el-button type="primary" @click="favoritePaper()">收藏</el-button>
@@ -1186,6 +1168,11 @@ const togglePaperSelection = (paperId: number) => {
 
 const handleDragStart = (event: DragEvent, paper: any) => {
   event.dataTransfer?.setData('application/json', JSON.stringify(paper))
+}
+
+const clearFavoritePaper = () => {
+  showFavoriteDialog.value = false
+  favoritePaperId = -1
 }
 
 const handleDrop = (event: DragEvent, folderId: number) => {
@@ -1599,6 +1586,11 @@ const formatDate = (date: Date) => {
   }).format(date)
 }
 
+const handleCancelUpload = () => {
+  showUploadDialog.value = false
+  cancelUpload()
+}
+
 const cancelUpload = async () => {
   if (newPaper.pdfUrl.trim()) await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
   showUploadDialog.value = false
@@ -1618,6 +1610,13 @@ const cancelRenameFolder = () => {
 const showNewFolderDialog = () => {
   showFolderDialog.value = true
   newFolder.name = ''
+}
+
+// 通用添加方法
+function addInputToArray(inputRef: string, array: string[]) {
+  if (!inputRef) return
+  array.push(inputRef)
+  inputRef = ''
 }
 </script>
 

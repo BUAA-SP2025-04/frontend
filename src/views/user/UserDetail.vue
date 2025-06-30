@@ -378,8 +378,13 @@ function formatNumber(num: number | null | undefined): string {
 
 const showPaperDetail = (paper: Paper) => {
   if (paper && paper.id) {
-    // 跳转到成果详情页面
-    router.push(`/publication/${paper.id}`)
+    // 跳转到成果详情页面，传递receiverId参数
+    router.push({
+      path: `/publication/${paper.id}`,
+      query: {
+        receiverId: user.value?.id?.toString() || '',
+      },
+    })
   }
 }
 
