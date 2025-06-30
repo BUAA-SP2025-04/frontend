@@ -37,10 +37,7 @@
           </el-button>
           <el-button
             type="primary"
-            @click="
-              showFolderDialog = true
-              newFolder.name = ''
-            "
+            @click="showFolderDialog = true, newFolder.name = ''"
           >
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -647,9 +644,7 @@
               <el-input
                 v-model="authorInput"
                 placeholder="输入作者姓名后按回车添加"
-                @keyup.enter="
-                  newPaper.authors.push(authorInput)
-                  authorInput = ''
+                @keyup.enter="newPaper.authors.push(authorInput), authorInput = ''
                 "
                 clearable
               ></el-input>
@@ -699,10 +694,7 @@
               <el-input
                 v-model="tagInput"
                 placeholder="输入关键词后按回车添加"
-                @keyup.enter="
-                  newPaper.tags.push(tagInput)
-                  tagInput = ''
-                "
+                @keyup.enter="newPaper.tags.push(tagInput), tagInput = ''"
                 clearable
               ></el-input>
               <div class="tag-container">
@@ -749,10 +741,7 @@
         <template #footer>
           <span class="dialog-footer">
             <el-button
-              @click="
-                showUploadDialog = false
-                cancelUpload()
-              "
+              @click="showUploadDialog = false, cancelUpload()"
               >取消</el-button
             >
             <el-button type="primary" @click="handleUpload">上传</el-button>
@@ -820,10 +809,7 @@
         <template #footer>
           <span class="dialog-footer">
             <el-button
-              @click="
-                showFavoriteDialog = false
-                favoritePaperId = -1
-              "
+              @click="showFavoriteDialog = false, favoritePaperId = -1"
               >取消</el-button
             >
             <el-button type="primary" @click="favoritePaper()">收藏</el-button>
