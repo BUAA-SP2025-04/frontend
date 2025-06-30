@@ -96,6 +96,7 @@ const props = withDefaults(
   defineProps<{
     layoutType?: string
     isDarkMode?: boolean
+    selectedNode: any
   }>(),
   {
     layoutType: 'force',
@@ -255,7 +256,10 @@ const prepareChartData = (nodes: any[], links: any[]) => {
   const chartNodes = nodes.map(node => ({
     id: node.id,
     name: node.name,
-    symbolSize: node.type === 'user' ? 35 : 40,
+    symbolSize: node.type == 'user' ? Math.min(
+      50,
+      30 + (Number(node.publicationNum) || 0) * 1.5 + (Number(node.projectNum) || 0) * 2.5
+    ) : Math.min(50, 30 + (Number(node.publicationNum) || 0) * 1.5 + (Number(node.projectNum) || 0) * 1.5 + (Number(node.subscribeNum) || 0) * 1),
     itemStyle: {
       color: node.type === 'user' ? '#8b5cf6' : '#10b981',
     },
@@ -268,7 +272,11 @@ const prepareChartData = (nodes: any[], links: any[]) => {
     source: link.source,
     target: link.target,
     value: 1,
-    lineStyle: { color: '#10b981', width: 2, type: 'solid' },
+    lineStyle: {
+      color: '#10b981',
+      width: link.attr && !isNaN(Number(link.attr)) ? Math.max(2, Number(link.attr)) : 2,
+      type: 'solid',
+    },
     label: link.label,
     relationshipType: link.label?.formatter || 'MAJORS_IN',
     ...link,
@@ -338,9 +346,17 @@ const updateChart = (chartInstance: echarts.ECharts, data: any) => {
       formatter: (params: any) => {
         if (params.dataType === 'node') {
           if (params.data.type === 'user') {
-            return `<div class="font-bold text-lg">${params.data.name}</div>`
+            return `<div class="font-bold text-lg">${params.data.name}</div>
+            <div class="text-sm opacity-75">论文: ${params.data.publicationNum || 0} 篇，项目: ${
+              params.data.projectNum || 0
+            } 个</div>
+            `
           } else {
-            return `<div class="font-bold text-lg">${params.data.name}</div><div class="text-sm opacity-75">研究领域</div>`
+            return `<div class="font-bold text-lg">${params.data.name}</div>
+            <div class="text-sm opacity-75">论文: ${params.data.publicationNum || 0} 篇，项目: ${
+              params.data.projectNum || 0
+            } 个</div>
+            `
           }
         }
         return ''
@@ -480,9 +496,13 @@ const handleResize = () => {
 }
 
 onMounted(async () => {
-  await nextTick()
   initializeChart()
   window.addEventListener('resize', handleResize)
+  await nextTick()
+  if (props.selectedNode && props.selectedNode.type === 'user') {
+    // 不执行初始化
+    return
+  }
   await loadGraphData()
 })
 

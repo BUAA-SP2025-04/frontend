@@ -96,6 +96,7 @@ const props = withDefaults(
   defineProps<{
     layoutType?: string
     isDarkMode?: boolean
+    selectedNode: any
   }>(),
   {
     layoutType: 'force',
@@ -147,15 +148,6 @@ const loadGraphData = async () => {
 
     const response = await getInstitution(user.id)
 
-    // 固定的机构列表
-    const fixedInstitutions = [
-      '麻省理工学院',
-      '中国科学技术大学',
-      '北京航空航天大学',
-      '清华大学',
-      '北京大学',
-    ]
-
     if (response.data) {
       // 处理API返回的节点数据
       const apiNodes = response.data.nodes.map((node: any) => {
@@ -181,35 +173,44 @@ const loadGraphData = async () => {
         }
       })
 
-      // 获取API返回的机构名称
-      const apiInstitutionNames = new Set(
-        apiNodes.filter((node: any) => node.type === 'language').map((node: any) => node.name)
+      // 只保留与当前用户有关联的机构节点
+      const userIdStr = String(user.id)
+      const relatedInstitutionIds = new Set(
+        response.data.links
+          .filter(
+            (link: any) =>
+              link.fromId.toString() === userIdStr || link.toId.toString() === userIdStr
+          )
+          .map((link: any) => {
+            // 机构节点id为字符串
+            return link.fromId.toString() === userIdStr
+              ? link.toId.toString()
+              : link.fromId.toString()
+          })
       )
+      // 只保留与自己有关的机构节点和所有用户节点
+      const processedNodes = apiNodes.filter((node: any) => {
+        if (node.type === 'user') return true
+        if (node.type === 'language') return relatedInstitutionIds.has(node.id)
+        return false
+      })
 
-      // 只添加API中没有的固定机构
-      const missingInstitutions = fixedInstitutions.filter(
-        institution => !apiInstitutionNames.has(institution)
-      )
-
-      // 创建缺失的机构节点
-      const missingInstitutionNodes = missingInstitutions.map(institution => ({
-        id: institution,
-        name: institution,
-        type: 'language',
-        category: 1,
-        imgUrl: null,
-        initials: institution.charAt(0),
-      }))
-
-      // 合并所有节点：API返回的节点 + 缺失的固定机构节点
-      const processedNodes = [...apiNodes, ...missingInstitutionNodes]
-
-      const processedLinks = response.data.links.map((link: any) => ({
-        source: link.fromId.toString(),
-        target: link.toId.toString(),
-        label: { show: false, formatter: link.formatter || 'BELONGS_TO' },
-        relationshipType: link.formatter || 'BELONGS_TO',
-      }))
+      // 只保留与自己有关的连接
+      const processedLinks = response.data.links
+        .filter((link: any) => {
+          return (
+            (link.fromId.toString() === userIdStr &&
+              relatedInstitutionIds.has(link.toId.toString())) ||
+            (link.toId.toString() === userIdStr &&
+              relatedInstitutionIds.has(link.fromId.toString()))
+          )
+        })
+        .map((link: any) => ({
+          source: link.fromId.toString(),
+          target: link.toId.toString(),
+          label: { show: false, formatter: link.formatter || 'BELONGS_TO' },
+          relationshipType: link.formatter || 'BELONGS_TO',
+        }))
 
       graphNodes.value = processedNodes
       graphLinks.value = processedLinks
@@ -277,6 +278,7 @@ const loadUserGraph = async (userId: string) => {
       emit('linkCountChange', processedLinks.length)
 
       console.log('用户机构网络加载完成')
+      console.log(props.selectedNode)
     }
   } catch (error) {
     console.error('加载用户机构网络数据失败:', error)
@@ -290,7 +292,19 @@ const prepareChartData = (nodes: any[], links: any[], centerUser: boolean = fals
     const baseNode = {
       id: node.id,
       name: node.name,
-      symbolSize: node.type === 'user' ? 35 : 30,
+      symbolSize:
+        node.type == 'user'
+          ? Math.min(
+              50,
+              30 + (Number(node.publicationNum) || 0) * 1.5 + (Number(node.projectNum) || 0) * 2.5
+            )
+          : Math.min(
+              70,
+              50 +
+                (Number(node.publicationNum) || 0) * 1.5 +
+                (Number(node.projectNum) || 0) * 1.5 +
+                (Number(node.subscribeNum) || 0) * 1
+            ),
       itemStyle: {
         color: node.type === 'user' ? '#8b5cf6' : '#3b82f6',
       },
@@ -316,7 +330,11 @@ const prepareChartData = (nodes: any[], links: any[], centerUser: boolean = fals
     source: link.source,
     target: link.target,
     value: 1,
-    lineStyle: { color: '#3b82f6', width: 2, type: 'solid' },
+    lineStyle: {
+      color: '#3b82f6',
+      width: link.attr && !isNaN(Number(link.attr)) ? Math.max(2, Number(link.attr)) : 2,
+      type: 'solid',
+    },
     label: link.label,
     relationshipType: link.label?.formatter || 'BELONGS_TO',
     ...link,
@@ -386,9 +404,18 @@ const updateChart = (chartInstance: echarts.ECharts, data: any) => {
       formatter: (params: any) => {
         if (params.dataType === 'node') {
           if (params.data.type === 'user') {
-            return `<div class="font-bold text-lg">${params.data.name}</div>`
+            return `<div class="font-bold text-lg">${params.data.name}</div>
+            <div class="text-sm opacity-75">论文: ${params.data.publicationNum || 0} 篇，项目: ${
+              params.data.projectNum || 0
+            } 个</div>
+            `
           } else {
-            return `<div class="font-bold text-lg">${params.data.name}</div><div class="text-sm opacity-75">机构</div>`
+            return `<div class="font-bold text-lg">${params.data.name}</div>
+            <div class="text-sm opacity-75">论文: ${params.data.publicationNum || 0} 篇，项目: ${
+              params.data.projectNum || 0
+            } 个</div>
+            <div class="text-sm opacity-75">关注者: ${params.data.subscribeNum || 0} 人</div>
+            `
           }
         }
         return ''
@@ -416,8 +443,9 @@ const loadInstitutionResearchers = async (institutionName: string, researchersDa
     loading.value = true
     const response = await getResearcherByInstitution(institutionName)
 
-    // 处理API返回的数据结构
-    const { nodes, links } = researchersData
+    // 直接使用接口返回的数据结构
+    const nodes = response.data?.nodes || []
+    const links = response.data?.links || []
 
     // 处理节点数据
     const processedNodes = nodes.map((node: any) => {
@@ -528,9 +556,13 @@ const handleResize = () => {
 }
 
 onMounted(async () => {
-  await nextTick()
   initializeChart()
   window.addEventListener('resize', handleResize)
+  await nextTick()
+  if (props.selectedNode && props.selectedNode.type === 'user') {
+    // 不执行初始化
+    return
+  }
   await loadGraphData()
 })
 

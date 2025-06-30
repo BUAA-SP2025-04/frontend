@@ -267,6 +267,7 @@
                 v-if="graphType === 'follow'"
                 :layout-type="layoutType"
                 :is-dark-mode="isDarkMode"
+                :selected-node="selectedNode"
                 @node-click="handleNodeClick"
                 @node-count-change="handleNodeCountChange"
                 @link-count-change="handleLinkCountChange"
@@ -278,6 +279,7 @@
                 v-else-if="graphType === 'institution'"
                 :layout-type="layoutType"
                 :is-dark-mode="isDarkMode"
+                :selected-node="selectedNode"
                 @node-click="handleNodeClick"
                 @node-count-change="handleNodeCountChange"
                 @link-count-change="handleLinkCountChange"
@@ -289,6 +291,7 @@
                 v-else-if="graphType === 'area'"
                 :layout-type="layoutType"
                 :is-dark-mode="isDarkMode"
+                :selected-node="selectedNode"
                 @node-click="handleNodeClick"
                 @node-count-change="handleNodeCountChange"
                 @link-count-change="handleLinkCountChange"
@@ -437,7 +440,11 @@
                     <span
                       class="text-xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent"
                     >
-                      {{ formatNumber(selectedNode.publishNum || 0) }}
+                      {{
+                        selectedNode.type === 'user'
+                          ? formatNumber(selectedNode.publishNum || 0)
+                          : formatNumber(selectedNode.publicationNum || 0)
+                      }}
                     </span>
                     <span class="text-xs text-slate-600 dark:text-slate-400">论文</span>
                   </div>
@@ -448,7 +455,11 @@
                     <span
                       class="text-xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent"
                     >
-                      {{ formatNumber(selectedNode.followerNum || 0) }}
+                      {{
+                        selectedNode.type === 'user'
+                          ? formatNumber(selectedNode.followerNum || 0)
+                          : formatNumber(selectedNode.subscribeNum || 0)
+                      }}
                     </span>
                     <span class="text-xs text-slate-600 dark:text-slate-400">关注者</span>
                   </div>
@@ -459,7 +470,11 @@
                     <span
                       class="text-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent"
                     >
-                      {{ formatNumber(selectedNode.subjectNum || 0) }}
+                      {{
+                        selectedNode.type === 'user'
+                          ? formatNumber(selectedNode.subjectNum || 0)
+                          : formatNumber(selectedNode.projectNum || 0)
+                      }}
                     </span>
                     <span class="text-xs text-slate-600 dark:text-slate-400">项目</span>
                   </div>
@@ -528,7 +543,7 @@
                 </div>
 
                 <!-- 关联节点 -->
-                <div
+                <!-- <div
                   v-if="relatedNodes.length"
                   class="pt-4 border-t border-slate-200 dark:border-slate-700"
                 >
@@ -569,7 +584,7 @@
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> -->
               </div>
 
               <div v-else class="p-10 flex flex-col items-center justify-center text-center">
@@ -594,7 +609,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { onClickOutside } from '@vueuse/core'
 import { Female, Male, Moon, Sunny } from '@element-plus/icons-vue'
@@ -679,9 +694,6 @@ const handleNodeClick = async (nodeData: any) => {
 
   // 根据节点类型处理
   if (nodeData.type === 'user') {
-    // 用户节点：获取详细信息
-    console.log('开始获取用户详细信息...')
-    // 立即显示加载状态
     loadingUserDetail.value = true
 
     try {
@@ -820,21 +832,6 @@ const zoomOut = () => {
   zoomLevel.value = Math.max(0.2, zoomLevel.value * 0.8)
 }
 
-const exportAsImage = () => {
-  // 导出功能由子组件处理
-  console.log('导出图片功能需要由子组件实现')
-}
-
-const exportData = () => {
-  // 导出功能由子组件处理
-  console.log('导出数据功能需要由子组件实现')
-}
-
-const selectNode = (nodeId: string) => {
-  // 节点选择功能由子组件处理
-  console.log('选择节点功能需要由子组件实现')
-}
-
 const viewProfileDetail = (nodeId: string) => {
   // 跳转到用户详情页面
   router.push(`/user/${nodeId}`)
@@ -902,7 +899,7 @@ const graphTitle = computed(() => {
     case 'area':
       return '领域网络'
     default:
-      return '知识网络'
+      return '知识图谱'
   }
 })
 
@@ -920,9 +917,28 @@ const currentLayoutLabel = computed(() => {
 })
 
 // 监听器
-watch([graphType], () => {
-  // 切换图谱类型时，重置选中节点
-  selectedNode.value = null
+watch([graphType], async () => {
+  // 切换图谱类型时，如果当前选中的是用户节点，则以该用户为中心构建新类型网络
+  await nextTick()
+  if (selectedNode.value && selectedNode.value.type === 'user') {
+    if (graphType.value === 'follow' && followNetworkRef.value) {
+      followNetworkRef.value.loadUserGraph(selectedNode.value.id) 
+    } else if (graphType.value === 'institution' && institutionNetworkRef.value) {
+      institutionNetworkRef.value.loadUserGraph(selectedNode.value.id)
+    } else if (graphType.value === 'area' && areaNetworkRef.value) {
+      areaNetworkRef.value.loadUserGraph(selectedNode.value.id)
+    }
+  } else if (userStore.user) {
+    // 未选中用户节点时，使用当前登录用户
+    selectedNode.value = null
+    if (graphType.value === 'follow' && followNetworkRef.value) {
+      followNetworkRef.value.loadUserGraph(userStore.user.id)
+    } else if (graphType.value === 'institution' && institutionNetworkRef.value) {
+      institutionNetworkRef.value.loadUserGraph(userStore.user.id)
+    } else if (graphType.value === 'area' && areaNetworkRef.value) {
+      areaNetworkRef.value.loadUserGraph(userStore.user.id)
+    }
+  }
 })
 
 watch(layoutType, () => {
@@ -963,12 +979,7 @@ const handleImageError = (event: Event) => {
 
 <style scoped>
 .research-graph-container {
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .graph-container {
