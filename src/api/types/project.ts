@@ -165,6 +165,7 @@ export interface UpdateProjectRequest {
   recruitNum: number
   status: string
   contact: string
+  cooperatorIds: number[]
 }
 
 // 删除项目请求体

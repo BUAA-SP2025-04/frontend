@@ -133,7 +133,7 @@
                         <div class="flex space-x-2">
                           <button
                             class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                            @click="editProject"
+                            @click="editProject(project)"
                           >
                             编辑
                           </button>
@@ -592,7 +592,9 @@
     <!-- 发布项目对话框 -->
     <PublishProjectDialog
       :visible="showPublishDialog"
-      @close="showPublishDialog = false"
+      :edit-project="projectToEdit"
+      :is-edit="isEditMode"
+      @close="handleClosePublishDialog"
       @success="handlePublishSuccess"
     />
 
@@ -770,6 +772,17 @@ const joinedProjectStatusFilter = ref('')
 const createdSearch = ref('')
 const appliedSearch = ref('')
 const joinedSearch = ref('')
+
+// 新增通用确认弹窗
+const confirmDialog = ref({
+  visible: false,
+  title: '',
+  message: '',
+  onConfirm: () => {},
+})
+
+const isEditMode = ref(false)
+const projectToEdit = ref<ProjectWithApplications | null>(null)
 
 // 数据
 const myProjects = ref<ProjectWithApplications[]>([])
@@ -984,8 +997,10 @@ const handleApplicationsRefresh = () => {
   loadMyProjects()
 }
 
-const editProject = () => {
-  ElMessage.info('编辑功能开发中...')
+const editProject = (project: ProjectWithApplications) => {
+  projectToEdit.value = project
+  isEditMode.value = true
+  showPublishDialog.value = true
 }
 
 const deleteProject = (projectId: number) => {
@@ -1168,8 +1183,13 @@ const viewProjectDetail = (projectId: number) => {
 
 const handlePublishSuccess = () => {
   showPublishDialog.value = false
-  ElMessage.success('项目发布成功！')
   loadMyProjects()
+}
+
+const handleClosePublishDialog = () => {
+  showPublishDialog.value = false
+  isEditMode.value = false
+  projectToEdit.value = null
 }
 
 // 监听路由变化，设置默认标签页
@@ -1231,14 +1251,6 @@ onMounted(() => {
     // 默认加载我创建的项目
     loadMyProjects()
   }
-})
-
-// 新增通用确认弹窗
-const confirmDialog = ref({
-  visible: false,
-  title: '',
-  message: '',
-  onConfirm: () => {},
 })
 </script>
 
