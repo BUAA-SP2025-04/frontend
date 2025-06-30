@@ -63,10 +63,10 @@
             required
           >
             <option value="">请选择时间投入</option>
-            <option value="full-time">全职参与</option>
-            <option value="part-time">兼职参与（每周20+小时）</option>
-            <option value="flexible">灵活参与（每周10-20小时）</option>
-            <option value="limited">有限参与（每周5-10小时）</option>
+            <option value="全职参与">全职参与</option>
+            <option value="兼职参与（每周20+小时）">兼职参与（每周20+小时）</option>
+            <option value="灵活参与（每周10-20小时）">灵活参与（每周10-20小时）</option>
+            <option value="有限参与（每周5-10小时）">有限参与（每周5-10小时）</option>
           </select>
         </div>
 

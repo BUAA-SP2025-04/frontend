@@ -292,7 +292,8 @@
                     我的提问
                   </router-link>
 
-                  <div class="border-t border-gray-100"></div>
+                  我的问答
+                </router-link>
 
                   <button
                     class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"

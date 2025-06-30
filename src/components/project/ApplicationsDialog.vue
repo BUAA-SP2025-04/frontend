@@ -37,11 +37,7 @@
         <div class="space-y-4">
           <div
             v-for="applicationElement in applications"
-            :key="
-              applicationElement.application?.applicant?.id ||
-              applicationElement.application?.id ||
-              Math.random()
-            "
+            :key="applicationElement?.applicant?.id || applicationElement?.id || Math.random()"
             class="bg-white rounded-lg border border-slate-200 hover:shadow-md transition-shadow"
           >
             <div class="p-6">
@@ -49,19 +45,19 @@
               <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center space-x-4">
                   <img
-                    :src="getAvatarUrl(applicationElement.application?.applicant?.imgUrl || '')"
-                    :alt="applicationElement.application?.applicant?.name || '未知用户'"
+                    :src="getAvatarUrl(applicationElement?.applicant?.imgUrl || '')"
+                    :alt="applicationElement?.applicant?.name || '未知用户'"
                     class="w-12 h-12 rounded-full object-cover border-2 border-slate-200"
                   />
                   <div>
                     <h4 class="text-lg font-semibold text-slate-900">
-                      {{ applicationElement.application?.applicant?.name || '未知用户' }}
+                      {{ applicationElement?.applicant?.name || '未知用户' }}
                     </h4>
                     <p class="text-sm text-slate-600">
-                      {{ applicationElement.application?.applicant?.institution || '未知机构' }}
+                      {{ applicationElement?.applicant?.institution || '未知机构' }}
                     </p>
                     <p class="text-xs text-slate-500">
-                      {{ applicationElement.application?.applicant?.title || '未知职位' }}
+                      {{ applicationElement?.applicant?.title || '未知职位' }}
                     </p>
                   </div>
                 </div>
@@ -69,28 +65,21 @@
                   <span
                     :class="[
                       'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
-                      getApplicationStatusColor(
-                        applicationElement.application?.status || 'pending'
-                      ),
+                      getApplicationStatusColor(applicationElement?.status || 'pending'),
                     ]"
                   >
-                    {{
-                      getApplicationStatusText(applicationElement.application?.status || 'pending')
-                    }}
+                    {{ getApplicationStatusText(applicationElement?.status || 'pending') }}
                   </span>
-                  <div
-                    v-if="applicationElement.application?.status === 'unhandled'"
-                    class="flex space-x-2"
-                  >
+                  <div v-if="applicationElement?.status === 'unhandled'" class="flex space-x-2">
                     <button
                       class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm"
-                      @click="handleApplication(applicationElement.application?.id || 0, true)"
+                      @click="handleApplication(applicationElement?.id || 0, true)"
                     >
                       通过
                     </button>
                     <button
                       class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
-                      @click="handleApplication(applicationElement.application?.id || 0, false)"
+                      @click="handleApplication(applicationElement?.id || 0, false)"
                     >
                       拒绝
                     </button>
@@ -104,7 +93,7 @@
                 <div class="bg-slate-50 rounded-lg p-4">
                   <h5 class="text-sm font-medium text-slate-700 mb-2">申请理由</h5>
                   <p class="text-slate-600 text-sm leading-relaxed">
-                    {{ applicationElement.application?.reason || '暂无申请理由' }}
+                    {{ applicationElement?.reason || '暂无申请理由' }}
                   </p>
                 </div>
 
@@ -112,7 +101,7 @@
                 <div class="bg-slate-50 rounded-lg p-4">
                   <h5 class="text-sm font-medium text-slate-700 mb-2">相关经验</h5>
                   <p class="text-slate-600 text-sm leading-relaxed">
-                    {{ applicationElement.application?.experience || '暂无相关经验' }}
+                    {{ applicationElement?.experience || '暂无相关经验' }}
                   </p>
                 </div>
               </div>
@@ -122,13 +111,13 @@
                 <div class="bg-slate-50 rounded-lg p-4">
                   <h5 class="text-sm font-medium text-slate-700 mb-2">联系方式</h5>
                   <p class="text-slate-600 text-sm">
-                    {{ applicationElement.application?.contact || '暂无联系方式' }}
+                    {{ applicationElement?.contact || '暂无联系方式' }}
                   </p>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-4">
                   <h5 class="text-sm font-medium text-slate-700 mb-2">时间投入</h5>
                   <p class="text-slate-600 text-sm">
-                    {{ getTimeCommitmentText(applicationElement.application?.workTime || '') }}
+                    {{ getTimeCommitmentText(applicationElement?.workTime || '') }}
                   </p>
                 </div>
               </div>
@@ -136,7 +125,7 @@
               <!-- 申请时间 -->
               <div class="flex items-center justify-between pt-4 border-t border-slate-200">
                 <div class="text-sm text-slate-500">
-                  申请于 {{ formatTime(applicationElement.application?.createdAt || '') }}
+                  申请于 {{ formatTime(applicationElement?.createdAt || '') }}
                 </div>
               </div>
             </div>
@@ -170,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { handleApplication as handleApplicationApi } from '@/api/modules/project'
 import type { ProjectWithApplications } from '@/api/types/project'
@@ -184,27 +173,26 @@ const emit = defineEmits<{
   refresh: []
 }>()
 
+// 本地状态管理，用于实时更新申请状态
+const localApplications = ref<Map<number, string>>(new Map())
+
 // 计算属性
 const applications = computed(() => {
   const apps = props.project?.applications || []
-  console.log('ApplicationsDialog - 原始applications数据:', apps)
-  if (apps.length > 0) {
-    console.log('第一个application元素:', apps[0])
-    console.log('第一个application的application字段:', apps[0].application)
-    if (apps[0].application) {
-      console.log('第一个application的applicant字段:', apps[0].application.applicant)
-      console.log('第一个application的status字段:', apps[0].application.status)
-    }
-  }
-  return apps
+  // 合并本地状态和原始数据
+  return apps.map(app => ({
+    ...app,
+    status: localApplications.value.get(app.id) || app.status,
+  }))
 })
 const pendingApplications = computed(() =>
-  applications.value.filter(app => app && app.application && app.application.status === 'unhandled')
+  applications.value.filter(app => app && app.status === 'unhandled')
 )
 
 // 方法
 const getApplicationStatusColor = (status: string) => {
   const colors = {
+    unhandled: 'bg-yellow-100 text-yellow-800',
     pending: 'bg-yellow-100 text-yellow-800',
     approved: 'bg-green-100 text-green-800',
     rejected: 'bg-red-100 text-red-800',
@@ -214,6 +202,7 @@ const getApplicationStatusColor = (status: string) => {
 
 const getApplicationStatusText = (status: string) => {
   const texts = {
+    unhandled: '待处理',
     pending: '待处理',
     approved: '已通过',
     rejected: '已拒绝',
@@ -261,6 +250,11 @@ const getAvatarUrl = (imgUrl: string) => {
 const handleApplication = async (applicationId: number, accept: boolean) => {
   try {
     await handleApplicationApi({ applicationId: applicationId, accept })
+
+    // 立即更新本地状态
+    const newStatus = accept ? 'approved' : 'rejected'
+    localApplications.value.set(applicationId, newStatus)
+
     ElMessage.success(accept ? '申请已通过' : '申请已拒绝')
     emit('refresh')
   } catch (error) {

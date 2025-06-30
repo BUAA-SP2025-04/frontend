@@ -156,7 +156,7 @@ const routes: RouteRecordRaw[] = [
     path: '/research/my-questions',
     name: 'MyQuestions',
     component: () => import('@/views/research/MyQuestions.vue'),
-    meta: { title: '我的提问' },
+    meta: { title: '我的问答' },
   },
   {
     path: '/research/knowledge-graph',
@@ -172,6 +172,14 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    // 如果有保存的位置（比如用户点击了浏览器的后退按钮），则恢复到该位置
+    if (savedPosition) {
+      return savedPosition
+    }
+    // 否则滚动到页面顶部
+    return { top: 0 }
+  }
 })
 
 router.beforeEach((to, from, next) => {
