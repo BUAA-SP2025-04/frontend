@@ -643,13 +643,13 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  getPublicationInformById,
-  readPublication,
-  likePublication,
-  unlikePublication,
-  isLikePublication,
-  hasApplication,
   apply,
+  getPublicationInformById,
+  hasApplication,
+  isLikePublication,
+  likePublication,
+  readPublication,
+  unlikePublication,
 } from '@/api/modules/publication'
 import { libraryAPI } from '@/api/modules/library'
 import {
@@ -658,9 +658,8 @@ import {
   getReplyComments,
   likeComment,
 } from '@/api/modules/comment'
-import type { Publication, PublicationDetail } from '@/api/types/publication'
+import type { PublicationDetail } from '@/api/types/publication'
 import type { Comment } from '@/api/types/comment'
-import type { UserDetail } from '@/api/types/user'
 import { useUserStore } from '@/stores/user'
 import PublicationCommentComp from '@/components/publication/PublicationComment.vue'
 import CommentForm from '@/components/publication/CommentForm.vue'

@@ -64,7 +64,7 @@ const rendered = computed(() => md.render(props.source || ''))
 .markdown-content {
   color: #333333;
   font-size: 16px;
-  font-family: "HarmonyOS Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.6;
   word-wrap: break-word;
   max-width: 100%;

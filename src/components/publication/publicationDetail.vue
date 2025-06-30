@@ -79,8 +79,8 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { ElButton, ElDialog, ElTag, ElLink, ElIcon } from 'element-plus'
-import { View, Star } from '@element-plus/icons-vue'
+import { ElButton, ElDialog, ElIcon, ElLink, ElTag } from 'element-plus'
+import { Star, View } from '@element-plus/icons-vue'
 
 const props = defineProps({
   achievement: {

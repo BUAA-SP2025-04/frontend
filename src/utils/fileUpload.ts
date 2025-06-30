@@ -8,9 +8,14 @@ export interface UploadResponse {
   mimeType: string
 }
 
-export async function uploadFile(file: File): Promise<UploadResponse> {
+export async function uploadFile(file: File, conversationId?: string): Promise<UploadResponse> {
   const formData = new FormData()
   formData.append('file', file)
+  
+  // 添加 conversationId 参数
+  if (conversationId) {
+    formData.append('conversationId', conversationId)
+  }
 
   try {
     const response = await fetch(UPLOAD_URL, {

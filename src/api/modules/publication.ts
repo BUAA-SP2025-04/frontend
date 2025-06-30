@@ -1,7 +1,6 @@
 import request from '@/utils/request'
 import type {
   likeResponse,
-  Publication,
   PublicationInformResponse,
   PublicationListResponse,
   PublicationProfile,
@@ -88,7 +87,7 @@ export function unlikePublication(id: number | string): Promise<EmptyResponse> {
 }
 
 export function isLikePublication(id: number | string): Promise<likeResponse> {
-  return request.get('/publication/isLike', { params: {id: id} })
+  return request.get('/publication/isLike', { params: { id: id } })
 }
 
 export function hasApplication(id: number | string): Promise<likeResponse> {
@@ -96,5 +95,5 @@ export function hasApplication(id: number | string): Promise<likeResponse> {
 }
 
 export function apply(publicationId: number | string, receiverId: number | string) {
-  return request.post('/apply', {publicationId, receiverId})
+  return request.post('/apply', { publicationId, receiverId })
 }

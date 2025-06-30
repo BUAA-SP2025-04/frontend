@@ -22,8 +22,19 @@
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <!-- 主内容区域 -->
         <div class="lg:col-span-3">
+          <!-- 加载状态 -->
+          <div v-if="loading" class="text-center py-12">
+            <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-blue-500 hover:bg-blue-400 transition ease-in-out duration-150 cursor-not-allowed">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              加载中...
+            </div>
+          </div>
+
           <!-- 问题详情卡片 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+          <div v-if="!loading" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
             <div class="p-8">
               <!-- 问题标题和操作 -->
               <div class="flex items-start justify-between mb-6">
@@ -33,22 +44,67 @@
                   </h1>
                   <div class="flex flex-wrap gap-2 mb-4">
                     <span
-                      v-for="tag in question.tags"
+                      v-for="tag in questionTags"
                       :key="tag"
                       class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
                     >
                       {{ tag }}
                     </span>
+                    <!-- 问题状态标签 -->
+                    <span
+                      :class="[
+                        'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
+                        hasBestAnswer
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      ]"
+                    >
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                      {{ hasBestAnswer ? '已解决' : '待解决' }}
+                    </span>
                   </div>
                 </div>
 
-                <!-- 关注和分享按钮 -->
+                <!-- 操作按钮 -->
                 <div class="flex space-x-3 ml-6">
+                  <!-- 回复问题按钮 -->
                   <button
+                    @click="replyToQuestion"
+                    class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  >
+                    <svg
+                      class="w-5 h-5 inline-block mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                      ></path>
+                    </svg>
+                    回复
+                  </button>
+
+                  <!-- 根据是否为问题作者显示不同按钮 -->
+                  <button
+                    v-if="!isQuestionAuthor"
                     @click="toggleFollow"
                     :class="[
                       'px-6 py-3 rounded-lg font-medium transition-colors',
-                      question.isFollowed
+                      isFollowing
                         ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200',
                     ]"
@@ -66,7 +122,34 @@
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                       ></path>
                     </svg>
-                    {{ question.isFollowed ? '已关注' : '关注问题' }}
+                    {{ isFollowing ? '已关注' : '关注问题' }}
+                  </button>
+
+                  <!-- 问题作者显示设置最佳回答按钮 -->
+                  <button
+                    v-if="isQuestionAuthor"
+                    @click="showBestAnswerDialog = true"
+                    :class="[
+                      'px-6 py-3 rounded-lg font-medium transition-colors',
+                      hasBestAnswer 
+                        ? 'bg-orange-600 text-white hover:bg-orange-700' 
+                        : 'bg-purple-600 text-white hover:bg-purple-700'
+                    ]"
+                  >
+                    <svg
+                      class="w-5 h-5 inline-block mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    {{ hasBestAnswer ? '重新设置最佳回答' : '设置最佳回答' }}
                   </button>
 
                   <button
@@ -102,17 +185,22 @@
                 <div class="flex items-center space-x-6">
                   <div class="flex items-center">
                     <img
-                      :src="question.author.avatar"
-                      :alt="question.author.name"
+                      :src="getAvatarUrl(question.user.imgUrl)"
+                      :alt="question.user.name"
                       class="w-12 h-12 rounded-full mr-3 ring-2 ring-gray-200"
                     />
                     <div>
-                      <p class="font-medium text-gray-800">{{ question.author.name }}</p>
-                      <p class="text-sm text-gray-500">{{ question.author.institution }}</p>
+                      <p 
+                        class="font-medium text-gray-800 hover:text-blue-600 cursor-pointer transition-colors"
+                        @click="goToUserDetail(question.user.id)"
+                      >
+                        {{ question.user.name }}
+                      </p>
+                      <p class="text-sm text-gray-500">{{ question.user.institution }}</p>
                     </div>
                   </div>
                   <div class="text-sm text-gray-500">
-                    发布于 {{ formatTime(question.createdAt) }}
+                    发布于 {{ formatTime(question.createAt) }}
                   </div>
                 </div>
 
@@ -137,7 +225,7 @@
                         d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                       ></path>
                     </svg>
-                    {{ question.viewCount }} 浏览
+                    {{ question.answerNum }} 浏览
                   </span>
                   <span class="flex items-center px-3 py-1 bg-gray-100 rounded-full">
                     <svg
@@ -153,7 +241,7 @@
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                       ></path>
                     </svg>
-                    {{ question.followCount }} 关注
+                    {{ question.followNum }} 关注
                   </span>
                 </div>
               </div>
@@ -164,7 +252,7 @@
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
             <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
               <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold text-gray-900">{{ answers.length }} 个回答</h2>
+                <h2 class="text-xl font-semibold text-gray-900">{{ question.answers?.length || 0 }} 个回答</h2>
                 <div class="flex items-center space-x-3">
                   <label class="text-sm text-gray-600">排序方式：</label>
                   <select
@@ -182,73 +270,53 @@
             <!-- 回答列表 -->
             <div>
               <template v-for="(answer, idx) in sortedAnswers" :key="answer.id">
-                <div class="p-8  transition-colors">
+                <div class="p-8 transition-colors" :class="{ 'bg-green-50 border-l-4 border-green-500': answer.id === question.bestAnswer?.id }">
+                  <!-- 最佳回答标识 -->
+                  <div v-if="answer.id === question.bestAnswer?.id" class="mb-4 flex items-center">
+                    <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-green-800 bg-green-100 px-3 py-1 rounded-full">
+                      最佳回答
+                    </span>
+                  </div>
+                  
                   <!-- 回答者信息 -->
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
                       <img
-                        :src="answer.author.avatar"
-                        :alt="answer.author.name"
+                        :src="getAvatarUrl(answer.user.imgUrl)"
+                        :alt="answer.user.name"
                         class="w-12 h-12 rounded-full mr-3 ring-2 ring-gray-200"
                       />
                       <div>
-                        <p class="font-medium text-gray-800">{{ answer.author.name }}</p>
+                        <p 
+                          class="font-medium text-gray-800 hover:text-blue-600 cursor-pointer transition-colors"
+                          @click="goToUserDetail(answer.user.id)"
+                        >
+                          {{ answer.user.name }}
+                        </p>
                         <p class="text-sm text-gray-500">
-                          {{ answer.author.institution }} · {{ formatTime(answer.createdAt) }}
+                          {{ answer.user.institution }} · {{ formatTime(answer.createdAt) }}
                         </p>
                       </div>
                     </div>
 
-                    <!-- 最佳答案标记 -->
-                    <div v-if="answer.isBest" class="flex items-center">
-                      <span
-                        class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800"
-                      >
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clip-rule="evenodd"
-                          ></path>
-                        </svg>
-                        最佳答案
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- 回答内容 -->
-                  <Markdown
-                    class="prose prose-lg max-w-none mb-6 text-gray-700"
-                    :source="answer.content"
-                  />
-
-                  <!-- 回答操作 -->
-                  <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <!-- 回答操作 -->
                     <div class="flex items-center space-x-4">
                       <!-- 点赞 -->
                       <button
                         @click="toggleLike(answer.id)"
                         :class="[
                           'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                          answer.isLiked
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                          answer.liked
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         ]"
                       >
                         <svg
-                          v-if="answer.isLiked"
-                          class="w-5 h-5 text-blue-500"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                          />
-                        </svg>
-                        <svg
-                          v-else
                           class="w-5 h-5"
-                          fill="none"
+                          :fill="answer.liked ? 'currentColor' : 'none'"
                           stroke="currentColor"
                           stroke-width="1.5"
                           viewBox="0 0 24 24"
@@ -259,12 +327,12 @@
                             d="M16.5 3.75c-1.74 0-3.41.81-4.5 2.09A6.235 6.235 0 0 0 7.5 3.75C4.42 3.75 2 6.09 2 9.08c0 3.4 3.4 6.36 8.55 11.13a1.5 1.5 0 0 0 2.1 0C18.6 15.44 22 12.48 22 9.08c0-2.99-2.42-5.33-5.5-5.33z"
                           />
                         </svg>
-                        <span>{{ answer.likeCount }}</span>
+                        <span>{{ answer.likeNum }}</span>
                       </button>
 
-                      <!-- 评论 -->
+                      <!-- 回复 -->
                       <button
-                        @click="toggleComments(answer.id)"
+                        @click="startReply(parseInt(answer.id))"
                         class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                       >
                         <svg
@@ -277,10 +345,10 @@
                           <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6A8.38 8.38 0 0112.5 3a8.5 8.5 0 018.5 8.5z"
+                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
                           />
                         </svg>
-                        <span>{{ answer.commentCount }}</span>
+                        回复
                       </button>
 
                       <!-- 分享 -->
@@ -299,213 +367,70 @@
                         分享
                       </button>
                     </div>
-
-                    <!-- 采纳按钮（仅问题作者可见） -->
-                    <div v-if="isQuestionAuthor && !answer.isBest && !hasBestAnswer">
-                      <button
-                        @click="markAsBest(answer.id)"
-                        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                      >
-                        采纳为最佳答案
-                      </button>
-                    </div>
                   </div>
 
-                  <!-- 多级评论区域 -->
-                  <div v-if="answer.showComments" class="mt-6 pt-6 border-t border-gray-200">
-                    <!-- 评论列表 -->
-                    <div
-                      v-if="answer.comments && answer.comments.length > 0"
-                      class="space-y-4 mb-6"
-                    >
-                      <div v-for="comment in answer.comments" :key="comment.id" class="group">
-                        <!-- 主评论 -->
-                        <div class="flex space-x-3">
-                          <img
-                            :src="comment.author.avatar || '/default-avatar.png'"
-                            :alt="comment.author.name"
-                            class="w-8 h-8 rounded-full ring-2 ring-gray-200"
-                          />
-                          <div class="flex-1">
-                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                              <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-medium text-gray-800">{{
-                                  comment.author.name
-                                }}</span>
-                                <div class="flex items-center space-x-2">
-                                  <span class="text-xs text-gray-500">{{
-                                    formatTime(comment.createdAt)
-                                  }}</span>
-                                  <button
-                                    @click="replyToComment(answer.id, comment.id)"
-                                    class="text-xs text-blue-600 hover:text-blue-700 transition-colors opacity-0 group-hover:opacity-100"
-                                  >
-                                    回复
-                                  </button>
-                                </div>
-                              </div>
-                              <p class="text-sm text-gray-700">{{ comment.content }}</p>
+                  <!-- 回答内容 -->
+                  <Markdown
+                    class="prose prose-lg max-w-none mb-6 text-gray-700"
+                    :source="answer.content"
+                  />
 
-                              <!-- 评论操作 -->
-                              <div class="flex items-center space-x-4 mt-2">
-                                <button
-                                  @click="toggleCommentLike(comment.id)"
-                                  :class="[
-                                    'flex items-center space-x-1 text-xs transition-colors',
-                                    comment.isLiked
-                                      ? 'text-blue-600'
-                                      : 'text-gray-500 hover:text-blue-600',
-                                  ]"
-                                >
-                                  <svg
-                                    class="w-3 h-3"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                    ></path>
-                                  </svg>
-                                  <span>{{ comment.likeCount || 0 }}</span>
-                                </button>
-                              </div>
-                            </div>
-
-                            <!-- 二级评论 -->
-                            <div
-                              v-if="comment.replies && comment.replies.length > 0"
-                              class="ml-4 mt-3 space-y-3"
-                            >
-                              <div
-                                v-for="reply in comment.replies"
-                                :key="reply.id"
-                                class="flex space-x-3 group"
-                              >
-                                <img
-                                  :src="reply.author.avatar || '/default-avatar.png'"
-                                  :alt="reply.author.name"
-                                  class="w-6 h-6 rounded-full ring-1 ring-gray-200"
-                                />
-                                <div class="flex-1">
-                                  <div class="bg-white rounded-lg p-3 border border-gray-200">
-                                    <div class="flex items-center justify-between mb-1">
-                                      <span class="text-xs font-medium text-gray-700">{{
-                                        reply.author.name
-                                      }}</span>
-                                      <div class="flex items-center space-x-2">
-                                        <span class="text-xs text-gray-400">{{
-                                          formatTime(reply.createdAt)
-                                        }}</span>
-                                        <button
-                                          @click="replyToComment(answer.id, comment.id, reply.id)"
-                                          class="text-xs text-blue-600 hover:text-blue-700 transition-colors opacity-0 group-hover:opacity-100"
-                                        >
-                                          回复
-                                        </button>
-                                      </div>
-                                    </div>
-                                    <p class="text-xs text-gray-600">
-                                      <span v-if="reply.replyTo" class="text-blue-600 font-medium"
-                                        >@{{ reply.replyTo.name }}
-                                      </span>
-                                      {{ reply.content }}
-                                    </p>
-
-                                    <!-- 二级评论操作 -->
-                                    <div class="flex items-center space-x-3 mt-2">
-                                      <button
-                                        @click="toggleCommentLike(reply.id)"
-                                        :class="[
-                                          'flex items-center space-x-1 text-xs transition-colors',
-                                          reply.isLiked
-                                            ? 'text-blue-600'
-                                            : 'text-gray-400 hover:text-blue-600',
-                                        ]"
-                                      >
-                                        <svg
-                                          class="w-3 h-3"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                          ></path>
-                                        </svg>
-                                        <span>{{ reply.likeCount || 0 }}</span>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <!-- 回复框 -->
-                            <div v-if="replyingTo[comment.id]" class="ml-4 mt-3">
-                              <div class="flex space-x-3">
-                                <img
-                                  src="/default-avatar.png"
-                                  alt="当前用户"
-                                  class="w-6 h-6 rounded-full"
-                                />
-                                <div class="flex-1">
-                                  <textarea
-                                    v-model="replyContents[comment.id]"
-                                    :placeholder="getReplyPlaceholder(comment.id)"
-                                    rows="2"
-                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                  ></textarea>
-                                  <div class="flex justify-end space-x-2 mt-2">
-                                    <button
-                                      @click="cancelReply(comment.id)"
-                                      class="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 transition-colors"
-                                    >
-                                      取消
-                                    </button>
-                                    <button
-                                      @click="submitReply(answer.id, comment.id)"
-                                      :disabled="!replyContents[comment.id]?.trim()"
-                                      class="px-4 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs"
-                                    >
-                                      发布回复
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                  <!-- 二级回答区域 -->
+                  <div v-if="answer.childAnswers && answer.childAnswers.length > 0" class="ml-8 border-l-2 border-gray-200">
+                    <div v-for="childAnswer in answer.childAnswers" :key="childAnswer.id" class="p-6 bg-gray-50">
+                      <!-- 二级回答者信息 -->
+                      <div class="flex items-center mb-3">
+                        <img
+                          :src="getAvatarUrl(childAnswer.user.imgUrl)"
+                          :alt="childAnswer.user.name"
+                          class="w-8 h-8 rounded-full mr-2 ring-1 ring-gray-200"
+                        />
+                        <div class="flex-1">
+                          <p 
+                            class="text-sm font-medium text-gray-800 hover:text-blue-600 cursor-pointer transition-colors"
+                            @click="goToUserDetail(childAnswer.user.id)"
+                          >
+                            {{ childAnswer.user.name }}
+                          </p>
+                          <p class="text-xs text-gray-500">
+                            回复 {{ childAnswer.parentUserName }} · {{ formatTime(childAnswer.createdAt) }}
+                          </p>
                         </div>
                       </div>
-                    </div>
 
-                    <!-- 添加评论 -->
-                    <div class="flex space-x-3">
-                      <img
-                        src="/default-avatar.png"
-                        alt="当前用户"
-                        class="w-8 h-8 rounded-full ring-2 ring-gray-200"
-                      />
-                      <div class="flex-1">
-                        <textarea
-                          v-model="newComments[answer.id]"
-                          placeholder="写下你的评论..."
-                          rows="3"
-                          class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                        ></textarea>
-                        <div class="flex justify-end mt-3">
+                      <!-- 二级回答内容 -->
+                      <div class="ml-10">
+                        <Markdown
+                          class="prose prose-sm max-w-none mb-3 text-gray-700"
+                          :source="childAnswer.content"
+                        />
+
+                        <!-- 二级回答操作 -->
+                        <div class="flex items-center space-x-3 text-xs">
                           <button
-                            @click="addComment(answer.id)"
-                            :disabled="!newComments[answer.id]?.trim()"
-                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                            @click="toggleLike(childAnswer.id)"
+                            :class="[
+                              'flex items-center space-x-1 transition-colors',
+                              childAnswer.liked
+                                ? 'text-red-500 hover:text-red-700'
+                                : 'text-gray-500 hover:text-gray-700'
+                            ]"
                           >
-                            发布评论
+                            <svg 
+                              class="w-4 h-4" 
+                              :fill="childAnswer.liked ? 'currentColor' : 'none'" 
+                              stroke="currentColor" 
+                              viewBox="0 0 24 24"
+                            >
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            <span>{{ childAnswer.likeNum }}</span>
+                          </button>
+                          <button
+                            @click="startReply(parseInt(childAnswer.id))"
+                            class="text-gray-500 hover:text-gray-700"
+                          >
+                            回复
                           </button>
                         </div>
                       </div>
@@ -528,6 +453,26 @@
                 写回答
               </h3>
               <p class="text-sm text-gray-600 mt-1">分享你的见解，帮助解决这个问题</p>
+              
+              <!-- 回复提示 -->
+              <div v-if="replyingToAnswerId !== null || isReplyingToQuestion" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-blue-800">
+                      {{ getReplyPreview() }}
+                    </span>
+                  </div>
+                  <button
+                    @click="cancelAnswerReply"
+                    class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                  >
+                    取消回复
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- Body -->
@@ -543,7 +488,7 @@
                     v-model="newAnswerContent"
                     rows="14"
                     class="flex-1 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm resize-none"
-                    placeholder="你可以使用 Markdown 语法来格式化你的回答..."
+                    :placeholder="getTextareaPlaceholder()"
                   ></textarea>
                 </div>
 
@@ -562,11 +507,18 @@
               <!-- 提交 -->
               <div class="flex justify-end mt-6 pt-6 border-t border-gray-200">
                 <button
+                  v-if="replyingToAnswerId"
+                  @click="cancelAnswerReply"
+                  class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium mr-3"
+                >
+                  取消回复
+                </button>
+                <button
                   @click="submitAnswer"
                   :disabled="!newAnswerContent.trim()"
                   class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                 >
-                  发布回答
+                  {{ replyingToAnswerId ? '发布回复' : '发布回答' }}
                 </button>
               </div>
             </div>
@@ -582,25 +534,25 @@
               <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span class="text-gray-600">回答数</span>
                 <span class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg">{{
-                  answers.length
+                  question.answers?.length
                 }}</span>
               </div>
               <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span class="text-gray-600">浏览数</span>
                 <span class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg">{{
-                  question.viewCount
+                  question.answerNum
                 }}</span>
               </div>
               <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span class="text-gray-600">关注数</span>
                 <span class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg">{{
-                  question.followCount
+                  question.followNum
                 }}</span>
               </div>
               <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span class="text-gray-600">发布时间</span>
                 <span class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg text-xs">{{
-                  formatDate(question.createdAt)
+                  formatDate(question.createAt)
                 }}</span>
               </div>
             </div>
@@ -657,325 +609,211 @@
         </div>
       </div>
     </div>
+
+    <!-- 最佳回答选择对话框 -->
+    <div v-if="showBestAnswerDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">
+              {{ hasBestAnswer ? '重新设置最佳回答' : '选择最佳回答' }}
+            </h3>
+            <button
+              @click="showBestAnswerDialog = false"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+          <p class="text-sm text-gray-600 mt-2">
+            {{ hasBestAnswer 
+              ? '当前已有最佳回答，您可以选择其他回答作为新的最佳答案' 
+              : '请选择一个回答作为最佳答案，这将标记问题为已解决' 
+            }}
+          </p>
+          <!-- 显示当前最佳回答 -->
+          <div v-if="hasBestAnswer && question.bestAnswer" class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div class="flex items-center mb-2">
+              <svg class="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+              <span class="text-sm font-medium text-green-800">当前最佳回答</span>
+            </div>
+            <div class="flex items-center mb-1">
+              <img
+                :src="getAvatarUrl(question.bestAnswer.user.imgUrl)"
+                :alt="question.bestAnswer.user.name"
+                class="w-6 h-6 rounded-full mr-2"
+              />
+              <span class="text-sm font-medium text-gray-800">{{ question.bestAnswer.user.name }}</span>
+              <span class="text-xs text-gray-500 ml-2">{{ formatTime(question.bestAnswer.createdAt) }}</span>
+            </div>
+            <p class="text-sm text-gray-700 line-clamp-2">{{ question.bestAnswer.content }}</p>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <!-- 回答列表 -->
+          <div v-if="sortedAnswers.length === 0" class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">暂无回答</h3>
+            <p class="mt-1 text-sm text-gray-500">还没有人回答这个问题</p>
+          </div>
+
+          <div v-else class="space-y-4">
+            <div
+              v-for="answer in sortedAnswers"
+              :key="answer.id"
+              class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors cursor-pointer"
+              @click="selectBestAnswer(answer.id)"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center mb-2">
+                    <img
+                      :src="getAvatarUrl(answer.user.imgUrl)"
+                      :alt="answer.user.name"
+                      class="w-8 h-8 rounded-full mr-2"
+                    />
+                    <span class="font-medium text-gray-800">{{ answer.user.name }}</span>
+                    <span class="text-sm text-gray-500 ml-2">{{ formatTime(answer.createdAt) }}</span>
+                  </div>
+                  <div class="text-gray-700 line-clamp-3">{{ answer.content }}</div>
+                  <div class="flex items-center mt-2 text-sm text-gray-500">
+                    <span class="flex items-center mr-4">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      {{ answer.likeNum }} 点赞
+                    </span>
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
+                      </svg>
+                      {{ answer.childAnswers?.length || 0 }} 回复
+                    </span>
+                  </div>
+                </div>
+                <div class="ml-4">
+                  <button
+                    v-if="answer.id === question.bestAnswer?.id"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm cursor-default"
+                    disabled
+                  >
+                    <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    当前最佳
+                  </button>
+                  <button
+                    v-else
+                    @click.stop="selectBestAnswer(answer.id)"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    {{ hasBestAnswer ? '设为最佳' : '选择为最佳' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end">
+          <button
+            @click="showBestAnswerDialog = false"
+            class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { marked } from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 import Markdown from '@/components/Markdown.vue'
+import { useUserStore } from '@/stores/user'
+import {
+  getQuestionDetail,
+  followQuestion,
+  unfollowQuestion,
+  likeAnswer,
+  unlikeAnswer,
+  updateQuestion,
+  answerQuestion,
+} from '@/api/modules/question'
+import type { QuestionDetailResponse, QuestionAnswer, QuestionDetailApiResponse, AnswerQuestionRequest } from '@/api/types/question'
 
 const route = useRoute()
 const router = useRouter()
-
-// 配置marked
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-  renderer: new marked.Renderer(),
-  highlight: function (code: string, lang: string) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(code, { language: lang }).value
-      } catch (__) {}
-    }
-    return hljs.highlightAuto(code).value
-  },
-} as any)
+const userStore = useUserStore()
 
 // 响应式数据
 const answerSortBy = ref('helpful')
 const newAnswerContent = ref('')
-const newComments = ref<Record<number, string>>({})
-const replyingTo = ref<Record<number, boolean>>({})
-const replyContents = ref<Record<number, string>>({})
-const replyTargets = ref<Record<number, any>>({}) // 存储回复的目标用户
+const newComments = ref<Record<string, string>>({})
+const replyingTo = ref<Record<string, boolean>>({})
+const replyContents = ref<Record<string, string>>({})
+const replyTargets = ref<Record<string, any>>({})
 const isQuestionAuthor = ref(false)
+const loading = ref(true)
+const replyingToAnswerId = ref<number | null>(null)
+const isReplyingToQuestion = ref(false)
+const isFollowing = ref(false)
+const originalScrollPosition = ref(0) // 记录原始滚动位置
+const showBestAnswerDialog = ref(false) // 控制最佳回答选择对话框
 
-// 模拟问题数据（更新avatar路径）
-const question = ref({
-  id: 1,
-  title: '如何选择合适的机器学习算法来解决多分类问题？',
-  description: `我正在处理一个包含10个类别的图像分类任务，数据集大小约为50000张图片。目前考虑使用CNN，但不确定具体应该选择哪种架构。
-
-## 数据集详情
-- **总样本数**：50,000张图片
-- **类别数**：10个类别
-- **图片尺寸**：224x224 RGB
-- **数据分布**：存在类别不平衡问题
-
-## 遇到的问题
-1. 某些类别的样本数量较少（最少的类别只有2000个样本）
-2. 不确定应该使用哪种CNN架构
-3. 如何处理类别不平衡问题
-
-## 已尝试的方法
-- 基础的CNN模型（准确率约75%）
-- 数据增强（旋转、翻转、缩放）
-- 简单的权重平衡
-
-希望能得到一些关于**算法选择**和**数据预处理**的专业建议。有经验的同行能否分享一些实际的解决方案？
-
-\`\`\`python
-# 当前使用的简单模型
-model = Sequential([
-    Conv2D(32, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Conv2D(64, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Flatten(),
-    Dense(512, activation='relu'),
-    Dropout(0.5),
-    Dense(10, activation='softmax')
-])
-\`\`\``,
-  category: '机器学习',
-  tags: ['CNN', '图像分类', '多分类', '类别不平衡'],
-  author: {
-    id: 1,
-    name: '张研究员',
-    avatar: '/default-avatar.png',
-    institution: '清华大学',
+// 问题数据
+const question = ref<QuestionDetailResponse>({
+  id: '',
+  user: {
+    id: 0,
+    name: '',
+    email: '',
+    gender: '',
+    bio: '',
+    researchArea: '',
+    title: '',
+    imgUrl: '',
+    institution: '',
+    createdAt: '',
+    followerNum: 0,
+    subjectNum: 0,
+    publishNum: 0,
+    likeNum: 0,
+    readerNum: 0,
   },
-  createdAt: '2025-06-25T10:30:00',
-  viewCount: 328,
-  followCount: 15,
-  isFollowed: false,
+  title: '',
+  content: '',
+  createAt: '',
+  researchArea: '',
+  answerNum: 0,
+  likeNum: '0',
+  followNum: 0,
+  answers: [],
 })
 
-// 模拟回答数据（增加多级评论）
-const answers = ref([
-  {
-    id: 1,
-    content: `对于你的多分类图像任务，我建议从以下几个方面来优化：
-
-## 1. 模型架构选择
-
-根据你的数据集规模（50k样本），我推荐以下几种架构：
-
-### ResNet系列
-\`\`\`python
-from tensorflow.keras.applications import ResNet50
-
-base_model = ResNet50(
-    weights='imagenet',
-    include_top=False,
-    input_shape=(224, 224, 3)
-)
-
-model = Sequential([
-    base_model,
-    GlobalAveragePooling2D(),
-    Dense(512, activation='relu'),
-    Dropout(0.5),
-    Dense(10, activation='softmax')
-])
-\`\`\`
-
-### EfficientNet
-EfficientNet在准确率和效率之间取得了很好的平衡：
-
-\`\`\`python
-from tensorflow.keras.applications import EfficientNetB0
-
-base_model = EfficientNetB0(
-    weights='imagenet',
-    include_top=False,
-    input_shape=(224, 224, 3)
-)
-\`\`\`
-
-## 2. 类别不平衡解决方案
-
-### 损失函数优化
-使用**Focal Loss**来解决类别不平衡：
-
-\`\`\`python
-def focal_loss(gamma=2., alpha=0.25):
-    def focal_loss_fixed(y_true, y_pred):
-        epsilon = K.epsilon()
-        y_pred = K.clip(y_pred, epsilon, 1. - epsilon)
-        p_t = tf.where(K.equal(y_true, 1), y_pred, 1 - y_pred)
-        alpha_factor = K.ones_like(y_true) * alpha
-        alpha_t = tf.where(K.equal(y_true, 1), alpha_factor, 1 - alpha_factor)
-        cross_entropy = -K.log(p_t)
-        weight = alpha_t * K.pow((1 - p_t), gamma)
-        loss = weight * cross_entropy
-        return K.mean(K.sum(loss, axis=1))
-    return focal_loss_fixed
-\`\`\`
-
-预期通过这些优化，你的模型准确率应该能提升到**85-90%**以上。`,
-    author: {
-      id: 2,
-      name: '李教授',
-      avatar: '/default-avatar.png',
-      institution: '北京大学',
-      title: '机器学习教授',
-    },
-    createdAt: '2025-06-25T11:15:00',
-    likeCount: 24,
-    commentCount: 5,
-    isLiked: false,
-    isBest: true,
-    showComments: false,
-    comments: [
-      {
-        id: 1,
-        content: '非常详细的回答！Focal Loss确实很有效，我在项目中使用过。',
-        author: {
-          name: '王研究生',
-          avatar: '/default-avatar.png',
-        },
-        createdAt: '2025-06-25T12:00:00',
-        likeCount: 3,
-        isLiked: false,
-        replies: [
-          {
-            id: 11,
-            content: '同意！Focal Loss对我的医学图像分类项目帮助很大。',
-            author: {
-              name: '陈博士',
-              avatar: '/default-avatar.png',
-            },
-            replyTo: {
-              name: '王研究生',
-            },
-            createdAt: '2025-06-25T12:30:00',
-            likeCount: 1,
-            isLiked: false,
-          },
-          {
-            id: 12,
-            content: '请问Focal Loss的gamma参数如何调优？',
-            author: {
-              name: '赵同学',
-              avatar: '/default-avatar.png',
-            },
-            replyTo: {
-              name: '王研究生',
-            },
-            createdAt: '2025-06-25T13:00:00',
-            likeCount: 0,
-            isLiked: false,
-          },
-        ],
-      },
-      {
-        id: 2,
-        content: '请问EfficientNet和ResNet在计算效率上有多大差别？',
-        author: {
-          name: '孙工程师',
-          avatar: '/default-avatar.png',
-        },
-        createdAt: '2025-06-25T13:30:00',
-        likeCount: 2,
-        isLiked: true,
-        replies: [
-          {
-            id: 21,
-            content: 'EfficientNet通常比同等精度的ResNet快20-30%，参数量也更少。',
-            author: {
-              name: '李教授',
-              avatar: '/default-avatar.png',
-            },
-            replyTo: {
-              name: '孙工程师',
-            },
-            createdAt: '2025-06-25T14:00:00',
-            likeCount: 5,
-            isLiked: false,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 2,
-    content: `补充一些实际经验：
-
-## 预训练模型的选择
-
-除了前面提到的架构，我还推荐考虑**Vision Transformer (ViT)**：
-
-\`\`\`python
-import timm
-
-model = timm.create_model(
-    'vit_base_patch16_224',
-    pretrained=True,
-    num_classes=10
-)
-\`\`\`
-
-ViT在大规模数据集上表现很好，但需要更多的计算资源。
-
-希望这些补充信息对你有帮助！`,
-    author: {
-      id: 3,
-      name: '赵工程师',
-      avatar: '/default-avatar.png',
-      institution: '字节跳动',
-      title: '高级算法工程师',
-    },
-    createdAt: '2025-06-25T14:20:00',
-    likeCount: 18,
-    commentCount: 2,
-    isLiked: true,
-    isBest: false,
-    showComments: false,
-    comments: [
-      {
-        id: 3,
-        content: 'ViT确实强大，但训练时间比CNN长很多。',
-        author: {
-          name: '周研究员',
-          avatar: '/default-avatar.png',
-        },
-        createdAt: '2025-06-25T15:00:00',
-        likeCount: 1,
-        isLiked: false,
-        replies: [],
-      },
-    ],
-  },
-])
-
-// 相关问题
-const relatedQuestions = ref([
-  {
-    id: 2,
-    title: '深度学习模型在小样本数据集上的过拟合问题如何解决？',
-    answerCount: 8,
-    viewCount: 256,
-  },
-  {
-    id: 3,
-    title: 'CNN和Vision Transformer在图像分类任务上的性能对比',
-    answerCount: 5,
-    viewCount: 178,
-  },
-  {
-    id: 4,
-    title: '如何处理医学图像分类中的类别不平衡问题？',
-    answerCount: 12,
-    viewCount: 389,
-  },
-  {
-    id: 5,
-    title: '迁移学习在小数据集上的最佳实践',
-    answerCount: 7,
-    viewCount: 203,
-  },
-])
+// 添加tags属性用于模板
+const questionTags = ref<string[]>([])
 
 // 计算属性
 const renderedDescription = computed(() => {
-  return question.value.description
+  return question.value.content
 })
 
 const previewContent = computed(() => {
@@ -983,14 +821,14 @@ const previewContent = computed(() => {
 })
 
 const sortedAnswers = computed(() => {
-  const sorted = [...answers.value]
+  const sorted = [...(question.value.answers || [])]
 
   switch (answerSortBy.value) {
     case 'helpful':
       sorted.sort((a, b) => {
-        if (a.isBest && !b.isBest) return -1
-        if (!a.isBest && b.isBest) return 1
-        return b.likeCount - a.likeCount
+        if (a.id === question.value.bestAnswer?.id && b.id !== question.value.bestAnswer?.id) return -1
+        if (a.id !== question.value.bestAnswer?.id && b.id === question.value.bestAnswer?.id) return 1
+        return parseInt(b.likeNum) - parseInt(a.likeNum)
       })
       break
     case 'latest':
@@ -1005,16 +843,184 @@ const sortedAnswers = computed(() => {
 })
 
 const hasBestAnswer = computed(() => {
-  return answers.value.some(answer => answer.isBest)
+  return !!question.value.bestAnswer
 })
 
 // 方法
-const renderMarkdown = (content: string) => {
-  return marked(content)
+const loadQuestionDetail = async () => {
+  const questionId = route.params.id as string
+  if (!questionId) {
+    ElMessage.error('问题ID不存在')
+    return
+  }
+
+  try {
+    loading.value = true
+    console.log('开始加载问题详情，问题ID:', questionId)
+    
+    const response = await getQuestionDetail(questionId)
+    console.log('问题详情API响应:', response)
+    
+    if (response && response.code === '200' && response.data) {
+      // 处理响应数据，确保所有必需字段都存在
+      const apiData = response.data
+      const questionData = apiData.question // API返回的是嵌套的question对象
+      const answersData = apiData.answerWithReplies || [] // API返回的是answerWithReplies数组
+      
+      // 设置关注状态
+      isFollowing.value = apiData.followed || false
+      
+      // 判断当前用户是否为问题作者
+      // 使用用户store获取当前用户ID
+      const currentUserId = userStore.user?.id
+      isQuestionAuthor.value = !!(currentUserId && questionData.userId === parseInt(currentUserId.toString()))
+      
+      // 直接将answerWithReplies映射为answer + childAnswers
+      const mappedAnswers = answersData.map((item: any) => {
+        const answer = item.answer;
+        return {
+          id: answer.id?.toString() || '',
+          user: answer.user || {
+            id: answer.userId || 0,
+            name: '未知用户',
+            email: '',
+            gender: '',
+            bio: '',
+            researchArea: '',
+            title: '',
+            imgUrl: '',
+            institution: '',
+            createdAt: '',
+            followerNum: 0,
+            subjectNum: 0,
+            publishNum: 0,
+            likeNum: 0,
+            readerNum: 0,
+          },
+          content: answer.content || '',
+          createdAt: answer.createdAt || new Date().toISOString(),
+          likeNum: answer.likeNum?.toString() || '0',
+          liked: item.liked || false, // 添加点赞状态
+          childAnswers: (item.replies || []).map((reply: any) => ({
+            id: reply.id?.toString() || '',
+            user: reply.user || {
+              id: reply.userId || 0,
+              name: '未知用户',
+              email: '',
+              gender: '',
+              bio: '',
+              researchArea: '',
+              title: '',
+              imgUrl: '',
+              institution: '',
+              createdAt: '',
+              followerNum: 0,
+              subjectNum: 0,
+              publishNum: 0,
+              likeNum: 0,
+              readerNum: 0,
+            },
+            content: reply.content || '',
+            parentUserId: answer.user.id?.toString() || '',
+            parentUserName: answer.user.name || '',
+            createdAt: reply.createdAt || new Date().toISOString(),
+            likeNum: reply.likeNum?.toString() || '0',
+            liked: false, // 2级回答暂时使用默认状态，因为API没有提供单独的liked字段
+          })),
+        }
+      })
+      
+      question.value = {
+        id: questionData.id?.toString() || questionId,
+        user: questionData.user || {
+          id: 0,
+          name: '未知用户',
+          email: '',
+          gender: '',
+          bio: '',
+          researchArea: '',
+          title: '',
+          imgUrl: '',
+          institution: '',
+          createdAt: '',
+          followerNum: 0,
+          subjectNum: 0,
+          publishNum: 0,
+          likeNum: 0,
+          readerNum: 0,
+        },
+        title: questionData.title || '',
+        content: questionData.content || '',
+        createAt: questionData.createdAt || new Date().toISOString(), // API返回的是createdAt
+        researchArea: questionData.researchArea || '未分类',
+        answerNum: questionData.answerNum || 0,
+        likeNum: questionData.likeNum?.toString() || '0',
+        followNum: questionData.followNum || 0,
+        followed: apiData.followed || false, // 添加关注状态
+        bestAnswer: questionData.bestAnswer ? {
+          ...questionData.bestAnswer,
+          id: questionData.bestAnswer.id?.toString() || '',
+          user: questionData.bestAnswer.user || {
+            id: (questionData.bestAnswer as any).userId || 0,
+            name: '未知用户',
+            email: '',
+            gender: '',
+            bio: '',
+            researchArea: '',
+            title: '',
+            imgUrl: '',
+            institution: '',
+            createdAt: '',
+            followerNum: 0,
+            subjectNum: 0,
+            publishNum: 0,
+            likeNum: 0,
+            readerNum: 0,
+          },
+          content: questionData.bestAnswer.content || '',
+          createdAt: questionData.bestAnswer.createdAt || new Date().toISOString(),
+          likeNum: questionData.bestAnswer.likeNum?.toString() || '0',
+        } : undefined,
+        answers: mappedAnswers, // 直接使用映射后的答案数组
+      }
+      
+      // 从研究领域生成标签
+      questionTags.value = question.value.researchArea ? [question.value.researchArea] : ['未分类']
+      
+      console.log('解析后的问题详情:', question.value)
+      console.log('回答数量:', question.value.answers.length)
+      console.log('回答列表:', question.value.answers)
+      console.log('最佳回答:', question.value.bestAnswer)
+      console.log('问题标签:', questionTags.value)
+      console.log('关注状态:', isFollowing.value)
+      console.log('是否为问题作者:', isQuestionAuthor.value)
+      
+    } else {
+      console.warn('API响应格式异常:', response)
+      if (response && response.message) {
+        ElMessage.warning(response.message)
+      } else {
+        ElMessage.error('加载问题详情失败')
+      }
+    }
+  } catch (error) {
+    console.error('加载问题详情失败:', error)
+    ElMessage.error('加载问题详情失败')
+  } finally {
+    loading.value = false
+  }
 }
 
 const formatTime = (dateString: string) => {
+  if (!dateString) return '未知时间'
+  
   const date = new Date(dateString)
+  
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return '未知时间'
+  }
+  
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const minutes = Math.floor(diff / (1000 * 60))
@@ -1035,21 +1041,63 @@ const formatTime = (dateString: string) => {
 }
 
 const formatDate = (dateString: string) => {
+  if (!dateString) return '未知日期'
+  
+  const date = new Date(dateString)
+  
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return '未知日期'
+  }
+  
   return new Intl.DateTimeFormat('zh-CN', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  }).format(new Date(dateString))
+  }).format(date)
+}
+
+const getAvatarUrl = (imgUrl: string) => {
+  if (!imgUrl || imgUrl === '') {
+    return '/default-avatar.png'
+  }
+  if (imgUrl.startsWith('http')) {
+    return imgUrl
+  }
+  return import.meta.env.VITE_API_BASE_URL + imgUrl
 }
 
 const goBack = () => {
   router.push('/research/qa')
 }
 
-const toggleFollow = () => {
-  question.value.isFollowed = !question.value.isFollowed
-  question.value.followCount += question.value.isFollowed ? 1 : -1
-  ElMessage.success(question.value.isFollowed ? '关注成功' : '取消关注')
+const toggleFollow = async () => {
+  try {
+    if (isFollowing.value) {
+      // 取消关注
+      const response = await unfollowQuestion({ questionId: question.value.id })
+      if (response && response.code === '200') {
+        isFollowing.value = false
+        question.value.followNum = Math.max(0, question.value.followNum - 1)
+        ElMessage.success('取消关注成功')
+      } else {
+        ElMessage.error(response?.message || '取消关注失败')
+      }
+    } else {
+      // 关注
+      const response = await followQuestion({ questionId: question.value.id })
+      if (response && response.code === '200') {
+        isFollowing.value = true
+        question.value.followNum++
+        ElMessage.success('关注成功')
+      } else {
+        ElMessage.error(response?.message || '关注失败')
+      }
+    }
+  } catch (error) {
+    console.error('关注操作失败:', error)
+    ElMessage.error('操作失败')
+  }
 }
 
 const shareQuestion = () => {
@@ -1064,145 +1112,142 @@ const shareQuestion = () => {
     })
 }
 
-const toggleLike = (answerId: number) => {
-  const answer = answers.value.find(a => a.id === answerId)
-  if (answer) {
-    answer.isLiked = !answer.isLiked
-    answer.likeCount += answer.isLiked ? 1 : -1
-  }
-}
-
-const toggleComments = (answerId: number) => {
-  const answer = answers.value.find(a => a.id === answerId)
-  if (answer) {
-    answer.showComments = !answer.showComments
-  }
-}
-
-const toggleCommentLike = (commentId: number) => {
-  // 在所有答案的评论和回复中查找
-  answers.value.forEach(answer => {
-    if (answer.comments) {
-      answer.comments.forEach(comment => {
-        if (comment.id === commentId) {
-          comment.isLiked = !comment.isLiked
-          comment.likeCount = (comment.likeCount || 0) + (comment.isLiked ? 1 : -1)
+const toggleLike = async (answerId: string) => {
+  try {
+    console.log('开始点赞回答:', answerId)
+    
+    // 先查找1级回答
+    let answer = question.value.answers?.find(a => a.id === answerId)
+    let isChildAnswer = false
+    
+    // 如果没找到1级回答，查找2级回答
+    if (!answer) {
+      for (const parentAnswer of question.value.answers || []) {
+        const childAnswer = parentAnswer.childAnswers?.find(ca => ca.id === answerId)
+        if (childAnswer) {
+          answer = childAnswer
+          isChildAnswer = true
+          break
         }
-        if (comment.replies) {
-          comment.replies.forEach(reply => {
-            if (reply.id === commentId) {
-              reply.isLiked = !reply.isLiked
-              reply.likeCount = (reply.likeCount || 0) + (reply.isLiked ? 1 : -1)
-            }
-          })
-        }
-      })
-    }
-  })
-}
-
-const replyToComment = (answerId: number, commentId: number, replyId?: number) => {
-  replyingTo.value[commentId] = true
-
-  // 设置回复目标
-  const answer = answers.value.find(a => a.id === answerId)
-  if (answer && answer.comments) {
-    const comment = answer.comments.find(c => c.id === commentId)
-    if (replyId && comment && comment.replies) {
-      const reply = comment.replies.find(r => r.id === replyId)
-      if (reply) {
-        replyTargets.value[commentId] = reply.author
       }
-    } else if (comment) {
-      replyTargets.value[commentId] = comment.author
     }
+    
+    if (!answer) {
+      ElMessage.error('找不到对应的回答')
+      return
+    }
+    
+    // 根据当前状态决定是点赞还是取消点赞
+    if (answer.liked) {
+      // 取消点赞
+      const response = await unlikeAnswer({ answerId })
+      if (response && response.code === '200') {
+        answer.liked = false
+        answer.likeNum = (parseInt(answer.likeNum) - 1).toString()
+        ElMessage.success('取消点赞成功')
+      } else {
+        ElMessage.error(response?.message || '取消点赞失败')
+      }
+    } else {
+      // 点赞
+      const response = await likeAnswer({ answerId })
+      if (response && response.code === '200') {
+        answer.liked = true
+        answer.likeNum = (parseInt(answer.likeNum) + 1).toString()
+        ElMessage.success('点赞成功')
+      } else {
+        ElMessage.error(response?.message || '点赞失败')
+      }
+    }
+  } catch (error) {
+    console.error('点赞操作失败:', error)
+    ElMessage.error('操作失败')
   }
+}
 
+const toggleComments = (answerId: string) => {
+  // 这里可以添加显示/隐藏评论的逻辑
+}
+
+const toggleCommentLike = (commentId: string) => {
+  // 这里可以添加评论点赞的逻辑
+}
+
+const replyToComment = (answerId: string, commentId: string, replyId?: string) => {
+  replyingTo.value[commentId] = true
   replyContents.value[commentId] = ''
 }
 
-const getReplyPlaceholder = (commentId: number) => {
-  const target = replyTargets.value[commentId]
-  return target ? `回复 @${target.name}...` : '写下你的回复...'
+const getReplyPlaceholder = (commentId: string) => {
+  return '写下你的回复...'
 }
 
-const cancelReply = (commentId: number) => {
+const cancelReply = (commentId: string) => {
   replyingTo.value[commentId] = false
   replyContents.value[commentId] = ''
   delete replyTargets.value[commentId]
 }
 
-const submitReply = (answerId: number, commentId: number) => {
+const submitReply = async (answerId: string, commentId: string) => {
   const content = replyContents.value[commentId]?.trim()
   if (!content) return
 
-  const answer = answers.value.find(a => a.id === answerId)
-  if (answer && answer.comments) {
-    const comment = answer.comments.find(c => c.id === commentId)
-    if (comment) {
-      if (!comment.replies) comment.replies = []
-
-      const newReply = {
-        id: Date.now(),
-        content,
-        author: {
-          name: '当前用户',
-          avatar: '/default-avatar.png',
-        },
-        replyTo: replyTargets.value[commentId] || null,
-        createdAt: new Date().toISOString(),
-        likeCount: 0,
-        isLiked: false,
-      }
-
-      comment.replies.push(newReply)
-      answer.commentCount++
-
-      // 清理状态
-      cancelReply(commentId)
-
-      ElMessage.success('回复发布成功')
-    }
+  try {
+    // 这里可以添加提交回复的逻辑
+    cancelReply(commentId)
+    ElMessage.success('回复发布成功')
+  } catch (error) {
+    console.error('提交回复失败:', error)
+    ElMessage.error('发布失败')
   }
 }
 
-const addComment = (answerId: number) => {
+const addComment = async (answerId: string) => {
   const content = newComments.value[answerId]?.trim()
   if (!content) return
 
-  const answer = answers.value.find(a => a.id === answerId)
-  if (answer) {
-    if (!answer.comments) answer.comments = []
-
-    answer.comments.push({
-      id: Date.now(),
-      content,
-      author: {
-        name: '当前用户',
-        avatar: '/default-avatar.png',
-      },
-      createdAt: new Date().toISOString(),
-      likeCount: 0,
-      isLiked: false,
-      replies: [],
-    })
-
-    answer.commentCount++
+  try {
+    // 这里可以添加添加评论的逻辑
     newComments.value[answerId] = ''
     ElMessage.success('评论发布成功')
+  } catch (error) {
+    console.error('发布评论失败:', error)
+    ElMessage.error('发布失败')
   }
 }
 
-const markAsBest = (answerId: number) => {
-  const answer = answers.value.find(a => a.id === answerId)
-  if (answer) {
-    answers.value.forEach(a => (a.isBest = false))
-    answer.isBest = true
-    ElMessage.success('已采纳为最佳答案')
+const selectBestAnswer = async (answerId: string) => {
+  try {
+    console.log('开始设置最佳答案:', answerId)
+    const requestData = {
+      id: parseInt(question.value.id),
+      title: question.value.title,
+      content: question.value.content,
+      researchArea: question.value.researchArea,
+      bestAnswerId: parseInt(answerId),
+    }
+    console.log('设置最佳答案请求数据:', requestData)
+    
+    const response = await updateQuestion(requestData)
+    console.log('设置最佳答案响应:', response)
+    
+    if (response && response.code === '200') {
+      question.value.bestAnswer = question.value.answers?.find(a => a.id === answerId)
+      showBestAnswerDialog.value = false
+      const successMessage = hasBestAnswer.value 
+        ? '已更新最佳答案' 
+        : '已设置最佳答案，问题标记为已解决'
+      ElMessage.success(successMessage)
+    } else {
+      ElMessage.error(response?.message || '设置最佳答案失败')
+    }
+  } catch (error) {
+    console.error('设置最佳答案失败:', error)
+    ElMessage.error('操作失败')
   }
 }
 
-const shareAnswer = (answerId: number) => {
+const shareAnswer = (answerId: string) => {
   const url = `${window.location.href}#answer-${answerId}`
   navigator.clipboard
     .writeText(url)
@@ -1214,44 +1259,207 @@ const shareAnswer = (answerId: number) => {
     })
 }
 
-const submitAnswer = () => {
+const submitAnswer = async () => {
   if (!newAnswerContent.value.trim()) return
 
-  const newAnswer = {
-    id: Date.now(),
-    content: newAnswerContent.value,
-    author: {
-      id: 999,
-      name: '当前用户',
-      avatar: '/default-avatar.png',
-      institution: '我的大学',
-      title: '研究生',
-    },
-    createdAt: new Date().toISOString(),
-    likeCount: 0,
-    commentCount: 0,
-    isLiked: false,
-    isBest: false,
-    showComments: false,
-    comments: [],
+  try {
+    console.log('开始提交回答...')
+    const requestData: AnswerQuestionRequest = {
+      questionId: parseInt(question.value.id),
+      content: newAnswerContent.value.trim(),
+      answerId: replyingToAnswerId.value || -1, // 如果是回复某个回答，使用该回答的ID，否则为-1
+    }
+    console.log('提交回答请求数据:', requestData)
+    
+    const response = await answerQuestion(requestData)
+    console.log('提交回答响应:', response)
+    
+    if (response && response.code === '200') {
+      newAnswerContent.value = ''
+      replyingToAnswerId.value = null // 重置回复状态
+      isReplyingToQuestion.value = false
+      ElMessage.success(replyingToAnswerId.value ? '回复发布成功！' : '回答发布成功！')
+      
+      // 重新加载问题详情
+      console.log('重新加载问题详情...')
+      await loadQuestionDetail()
+    } else {
+      ElMessage.error(response?.message || '发布回答失败')
+    }
+  } catch (error) {
+    console.error('发布回答失败:', error)
+    ElMessage.error('发布失败')
   }
-
-  answers.value.push(newAnswer)
-  newAnswerContent.value = ''
-  ElMessage.success('回答发布成功！')
 }
 
-const goToQuestion = (questionId: number) => {
+// 跳转到页面底部
+const scrollToBottom = () => {
+  // 使用 nextTick 确保DOM更新后再滚动
+  nextTick(() => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth'
+    })
+  })
+}
+
+// 滚动回原位置
+const scrollToOriginalPosition = () => {
+  nextTick(() => {
+    window.scrollTo({
+      top: originalScrollPosition.value,
+      behavior: 'smooth'
+    })
+  })
+}
+
+// 开始回复某个回答
+const startReply = (answerId: number) => {
+  // 记录当前滚动位置
+  originalScrollPosition.value = window.pageYOffset || document.documentElement.scrollTop
+  replyingToAnswerId.value = answerId
+  newAnswerContent.value = ''
+  // 跳转到页面底部
+  scrollToBottom()
+}
+
+// 回复问题（不是回复其他回答）
+const replyToQuestion = () => {
+  // 记录当前滚动位置
+  originalScrollPosition.value = window.pageYOffset || document.documentElement.scrollTop
+  replyingToAnswerId.value = null // 设置为null表示回复问题本身
+  isReplyingToQuestion.value = true
+  newAnswerContent.value = ''
+  // 跳转到页面底部
+  scrollToBottom()
+}
+
+// 取消回复
+const cancelAnswerReply = () => {
+  replyingToAnswerId.value = null
+  isReplyingToQuestion.value = false
+  newAnswerContent.value = ''
+  // 滚动回原位置
+  scrollToOriginalPosition()
+}
+
+const getReplyPreview = () => {
+  if (replyingToAnswerId.value === null && isReplyingToQuestion.value) {
+    // 回复问题本身
+    return `正在回复问题：${formatPreviewContent(question.value.title)}`
+  } else if (replyingToAnswerId.value !== undefined && replyingToAnswerId.value !== null) {
+    // 回复某个回答（可能是1级或2级回答）
+    // 先查找1级回答
+    const answer = question.value.answers?.find(a => a.id === replyingToAnswerId.value?.toString())
+    if (answer) {
+      return `正在回复 ${answer.user.name}：${formatPreviewContent(answer.content)}`
+    }
+    
+    // 如果没找到1级回答，查找2级回答
+    for (const parentAnswer of question.value.answers || []) {
+      const childAnswer = parentAnswer.childAnswers?.find(ca => ca.id === replyingToAnswerId.value?.toString())
+      if (childAnswer) {
+        return `正在回复 ${childAnswer.user.name}：${formatPreviewContent(childAnswer.content)}`
+      }
+    }
+  }
+  return ''
+}
+
+const getTextareaPlaceholder = () => {
+  if (replyingToAnswerId.value === null && isReplyingToQuestion.value) {
+    return '正在回复问题，请输入你的回复内容...（支持 Markdown 语法）'
+  } else if (replyingToAnswerId.value !== undefined && replyingToAnswerId.value !== null) {
+    // 查找要回复的用户
+    const answer = question.value.answers?.find(a => a.id === replyingToAnswerId.value?.toString())
+    if (answer) {
+      return `正在回复 ${answer.user.name}，请输入你的回复内容...（支持 Markdown 语法）`
+    }
+    
+    // 查找2级回答
+    for (const parentAnswer of question.value.answers || []) {
+      const childAnswer = parentAnswer.childAnswers?.find(ca => ca.id === replyingToAnswerId.value?.toString())
+      if (childAnswer) {
+        return `正在回复 ${childAnswer.user.name}，请输入你的回复内容...（支持 Markdown 语法）`
+      }
+    }
+  }
+  return '你可以使用 Markdown 语法来格式化你的回答...'
+}
+
+// 格式化预览内容（限制长度并添加省略号）
+const formatPreviewContent = (content: string) => {
+  if (!content) return ''
+  // 移除Markdown标记，只保留纯文本
+  const plainText = content.replace(/[#*`\[\]()]/g, '').replace(/\n/g, ' ').trim()
+  if (plainText.length <= 50) {
+    return plainText
+  }
+  return plainText.substring(0, 50) + '...'
+}
+
+// 判断是回复1级还是2级回答
+const getReplyType = () => {
+  if (replyingToAnswerId.value === null && isReplyingToQuestion.value) {
+    return 'question'
+  } else if (replyingToAnswerId.value !== undefined && replyingToAnswerId.value !== null) {
+    // 先查找1级回答
+    const answer = question.value.answers?.find(a => a.id === replyingToAnswerId.value?.toString())
+    if (answer) {
+      return 'answer'
+    }
+    
+    // 如果没找到1级回答，查找2级回答
+    for (const parentAnswer of question.value.answers || []) {
+      const childAnswer = parentAnswer.childAnswers?.find(ca => ca.id === replyingToAnswerId.value?.toString())
+      if (childAnswer) {
+        return 'reply'
+      }
+    }
+  }
+  return 'unknown'
+}
+
+const goToQuestion = (questionId: string) => {
   router.push(`/research/qa/${questionId}`)
 }
 
-onMounted(() => {
-  question.value.viewCount++
-  isQuestionAuthor.value = false
+const goToUserDetail = (userId: number) => {
+  router.push(`/user/${userId}`)
+}
 
-  answers.value.forEach(answer => {
-    newComments.value[answer.id] = ''
-  })
+// 相关问题
+const relatedQuestions = ref([
+  {
+    id: '2',
+    title: '深度学习模型在小样本数据集上的过拟合问题如何解决？',
+    answerCount: 8,
+    viewCount: 256,
+  },
+  {
+    id: '3',
+    title: 'CNN和Vision Transformer在图像分类任务上的性能对比',
+    answerCount: 5,
+    viewCount: 178,
+  },
+  {
+    id: '4',
+    title: '如何处理医学图像分类中的类别不平衡问题？',
+    answerCount: 12,
+    viewCount: 389,
+  },
+  {
+    id: '5',
+    title: '迁移学习在小数据集上的最佳实践',
+    answerCount: 7,
+    viewCount: 203,
+  },
+])
+
+onMounted(() => {
+  // 滚动到页面顶部
+  window.scrollTo(0, 0)
+  loadQuestionDetail()
 })
 </script>
 

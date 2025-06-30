@@ -1,5 +1,5 @@
-import axios from 'axios'
 import type { AxiosInstance, AxiosResponse } from 'axios'
+import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 
@@ -34,7 +34,6 @@ request.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    // console.log('请求token:', token)
 
     // 添加时间戳防止缓存
     if (config.method === 'get') {
@@ -44,7 +43,6 @@ request.interceptors.request.use(
       }
     }
 
-    // console.log('请求配置:', config) // 调试日志
     return config
   },
   error => {
@@ -87,7 +85,7 @@ request.interceptors.response.use(
     }
   },
   error => {
-    //console.error('响应错误:', error) // 调试日志
+    console.error('响应错误:', error) // 调试日志
 
     // 网络错误处理
     if (error.response) {
@@ -114,6 +112,9 @@ request.interceptors.response.use(
       }
     } else if (error.request) {
       console.error('网络连接失败:', error.request)
+      console.error('请求URL:', error.config?.url)
+      console.error('请求方法:', error.config?.method)
+      console.error('请求头:', error.config?.headers)
       ElMessage.error('网络连接失败，请检查网络设置')
     } else {
       console.error('请求配置错误:', error.message)

@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as echarts from 'echarts'
 import { getFollow } from '@/api/modules/graph'
 import { useUserStore } from '@/stores/user'
@@ -549,9 +549,7 @@ defineExpose({
 })
 </script>
 
-export default {
-  name: 'FollowNetwork'
-}
+export default { name: 'FollowNetwork' }
 
 <style scoped>
 .graph-container {
@@ -562,4 +560,4 @@ export default {
 .dark .graph-container {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
-</style> 
+</style>

@@ -68,9 +68,10 @@
                             : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400',
                         ]"
                       ></i> -->
-                      <span class="font-semibold tracking-wider relative z-10 text-sm leading-tight">{{
-                        type.label
-                      }}</span>
+                      <span
+                        class="font-semibold tracking-wider relative z-10 text-sm leading-tight"
+                        >{{ type.label }}</span
+                      >
 
                       <!-- 悬停时的边框光效 -->
                       <div
@@ -120,9 +121,10 @@
                             : 'text-slate-500 dark:text-slate-400 group-hover:text-emerald-500 dark:group-hover:text-emerald-400',
                         ]"
                       ></i> -->
-                      <span class="font-semibold tracking-wider relative z-10 text-sm leading-tight">{{
-                        layout.label
-                      }}</span>
+                      <span
+                        class="font-semibold tracking-wider relative z-10 text-sm leading-tight"
+                        >{{ layout.label }}</span
+                      >
 
                       <!-- 悬停时的边框光效 -->
                       <div
@@ -592,13 +594,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { onClickOutside } from '@vueuse/core'
-import { Moon, Sunny, Male, Female } from '@element-plus/icons-vue'
+import { Female, Male, Moon, Sunny } from '@element-plus/icons-vue'
 import { getUserDetail } from '../../api/modules/user'
-import { getResearcherByInstitution, getResearcherByArea } from '../../api/modules/graph'
-import type { UserDetail } from '../../api/types/user'
+import { getResearcherByArea, getResearcherByInstitution } from '../../api/modules/graph'
 import { useUserStore } from '@/stores/user'
 import FollowNetwork from '@/components/graph/FollowNetwork.vue'
 import InstitutionNetwork from '@/components/graph/InstitutionNetwork.vue'
@@ -962,7 +963,12 @@ const handleImageError = (event: Event) => {
 
 <style scoped>
 .research-graph-container {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
 }
 
 .graph-container {
@@ -1099,4 +1105,3 @@ button:active {
   animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 </style>
-

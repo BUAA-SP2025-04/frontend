@@ -14,14 +14,14 @@ export const annotationAPI = {
 
   // 上传新高亮批注
   uploadAnnotation: (userId: string, paperId: string, newAnnotation: AnnotationUpload): Promise<UploadAnnotationResponse> =>
-    request.post('/annotation/list', newAnnotation, {
+    request.post('/annotation/upload', newAnnotation, {
       params: { userId, paperId },
     }),
 
-  // 上传新高亮批注
-  deleteAnnotation: (userId: string, annotationId: string): Promise<UploadAnnotationResponse> =>
-    request.post('/annotation/list', null, {
-      params: { userId, annotationId },
+  // 删除高亮批注
+  deleteAnnotation: (annotationId: string): Promise<UploadAnnotationResponse> =>
+    request.post('/annotation/delete', null, {
+      params: { annotationId },
     }),
   
 }

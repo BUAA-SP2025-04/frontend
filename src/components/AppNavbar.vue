@@ -98,10 +98,15 @@
         <!-- 右侧用户菜单和通知 -->
         <div class="flex items-center space-x-4">
           <!-- 通知按钮 -->
-          <div v-if="isAuthenticated" class="relative">
+          <div 
+            v-if="isAuthenticated" 
+            class="relative"
+            @mouseenter="handleNotificationHover(true)"
+            @mouseleave="handleNotificationHover(false)"
+          >
             <button
               class="p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 transition-colors"
-              @click="showNotifications = !showNotifications"
+              @click="toggleNotifications"
             >
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -121,54 +126,69 @@
             </button>
 
             <!-- 通知下拉菜单 -->
-            <div
-              v-if="showNotifications"
-              class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
-              @click.stop
+            <transition
+              enter-active-class="transition ease-out duration-200"
+              enter-from-class="transform opacity-0 scale-95"
+              enter-to-class="transform opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-150"
+              leave-from-class="transform opacity-100 scale-100"
+              leave-to-class="transform opacity-0 scale-95"
             >
-              <div class="p-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">通知</h3>
-              </div>
-              <div class="max-h-96 overflow-y-auto">
-                <div
-                  v-for="notification in notificationStore.notifications"
-                  :key="notification.id"
-                  :class="['p-4 border-b hover:bg-gray-50', { 'bg-blue-50': !notification.isRead }]"
-                  @click="handleNotificationClick(notification)"
-                >
-                  <div class="flex items-start space-x-3">
-                    <div class="flex-shrink-0">
-                      <img
-                        :src="
-                          notification.avatarUrl
-                            ? `${API_BASE_URL}${notification.avatarUrl}`
-                            : `http://api.btstu.cn/sjtx/api.php?lx=${'c2'}`
-                        "
-                        :alt="(notification.senderId || notification.userId).toString()"
-                        class="h-8 w-8 rounded-full"
-                      />
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-gray-900">{{ notification.name }}</p>
-                      <p class="text-sm text-gray-500">{{ notification.content }}</p>
-                      <p class="text-xs text-gray-400">{{ formatTime(notification.createdAt) }}</p>
+              <div
+                v-if="showNotifications"
+                class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                @mouseenter="handleNotificationMenuHover(true)"
+                @mouseleave="handleNotificationMenuHover(false)"
+              >
+                <div class="p-4 border-b border-gray-200">
+                  <h3 class="text-lg font-medium text-gray-900">通知</h3>
+                </div>
+                <div class="max-h-96 overflow-y-auto">
+                  <div
+                    v-for="notification in notificationStore.notifications"
+                    :key="notification.id"
+                    :class="['p-4 border-b hover:bg-gray-50 cursor-pointer', { 'bg-blue-50': !notification.isRead }]"
+                    @click="handleNotificationClick(notification)"
+                  >
+                    <div class="flex items-start space-x-3">
+                      <div class="flex-shrink-0">
+                        <img
+                          :src="
+                            notification.avatarUrl
+                              ? `${API_BASE_URL}${notification.avatarUrl}`
+                              : `http://api.btstu.cn/sjtx/api.php?lx=${'c2'}`
+                          "
+                          :alt="(notification.senderId || notification.userId).toString()"
+                          class="h-8 w-8 rounded-full"
+                        />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900">{{ notification.name }}</p>
+                        <p class="text-sm text-gray-500">{{ notification.content }}</p>
+                        <p class="text-xs text-gray-400">{{ formatTime(notification.createdAt) }}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
+                <div class="p-4 text-center">
+                  <router-link to="/messages" class="text-sm text-indigo-600 hover:text-indigo-700">
+                    查看所有通知
+                  </router-link>
+                </div>
               </div>
-              <div class="p-4 text-center">
-                <router-link to="/messages" class="text-sm text-indigo-600 hover:text-indigo-700">
-                  查看所有通知
-                </router-link>
-              </div>
-            </div>
+            </transition>
           </div>
 
           <!-- 用户菜单 -->
-          <div v-if="isAuthenticated" class="relative">
+          <div 
+            v-if="isAuthenticated" 
+            class="relative"
+            @mouseenter="handleUserMenuHover(true)"
+            @mouseleave="handleUserMenuHover(false)"
+          >
             <button
               class="flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              @click="showUserMenu = !showUserMenu"
+              @click="toggleUserMenu"
             >
               <img
                 :src="currentUser?.imgUrl || `/default-avatar.png`"
@@ -177,7 +197,8 @@
               />
               <span class="hidden md:block text-gray-700 font-medium">{{ currentUser?.name }}</span>
               <svg
-                class="h-4 w-4 text-gray-400"
+                class="h-4 w-4 text-gray-400 transition-transform duration-200"
+                :class="{ 'rotate-180': showUserMenu }"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -192,105 +213,103 @@
             </button>
 
             <!-- 用户下拉菜单 -->
-            <div
-              v-if="showUserMenu"
-              class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+            <transition
+              enter-active-class="transition ease-out duration-200"
+              enter-from-class="transform opacity-0 scale-95"
+              enter-to-class="transform opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-150"
+              leave-from-class="transform opacity-100 scale-100"
+              leave-to-class="transform opacity-0 scale-95"
             >
-              <div class="py-1">
-                <router-link
-                  to="/profile"
-                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                  个人资料
-                </router-link>
+              <div
+                v-if="showUserMenu"
+                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                @mouseenter="handleUserMenuDropdownHover(true)"
+                @mouseleave="handleUserMenuDropdownHover(false)"
+              >
+                <div class="py-1">
+                  <router-link
+                    to="/profile"
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    @click="closeUserMenu"
+                  >
+                    <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                    个人资料
+                  </router-link>
 
-                <router-link
-                  to="/achievements"
-                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                    />
-                  </svg>
-                  科研成果
-                </router-link>
+                  <router-link
+                    to="/achievements"
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    @click="closeUserMenu"
+                  >
+                    <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                      />
+                    </svg>
+                    科研成果
+                  </router-link>
 
-                <router-link
-                  to="/research/my-workspace"
-                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M3 7a2 2 0 012-2h3.172a2 2 0 011.414.586l1.828 1.828A2 2 0 0012.828 8H19a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
-                    />
-                  </svg>
-                  项目管理
-                </router-link>
+                  <router-link
+                    to="/research/my-workspace"
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    @click="closeUserMenu"
+                  >
+                    <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 7a2 2 0 012-2h3.172a2 2 0 011.414.586l1.828 1.828A2 2 0 0012.828 8H19a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                      />
+                    </svg>
+                    项目管理
+                  </router-link>
 
-                <router-link
-                  to="/research/my-questions"
-                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="1.5"
-                      d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
-                    />
-                  </svg>
+                  <router-link
+                    to="/research/my-questions"
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    @click="closeUserMenu"
+                  >
+                    <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+                      />
+                    </svg>
+                    我的提问
+                  </router-link>
 
-                  我的提问
-                </router-link>
 
-                <!-- <router-link
-                  to="/follow"
-                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                  我的关注
-                </router-link> -->
-
-                <div class="border-t border-gray-100"></div>
-
-                <button
-                  class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  @click="logout"
-                >
-                  <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
-                  退出登录
-                </button>
+                  <button
+                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    @click="logout"
+                  >
+                    <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      />
+                    </svg>
+                    退出登录
+                  </button>
+                </div>
               </div>
-            </div>
+            </transition>
           </div>
 
           <!-- 未登录状态 -->
@@ -357,19 +376,27 @@
         </router-link>
 
         <router-link
-          to="/pdf-reader"
+          to="/research/projects"
           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
           @click="showMobileMenu = false"
         >
-          PDF阅读器
+          科研项目
         </router-link>
 
         <router-link
-          to="/visualization"
+          to="/research/qa"
           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
           @click="showMobileMenu = false"
         >
-          数据可视化
+          科研问答
+        </router-link>
+
+        <router-link
+          to="/research/knowledge-graph"
+          class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+          @click="showMobileMenu = false"
+        >
+          知识图谱
         </router-link>
       </div>
     </div>
@@ -383,6 +410,7 @@ import { ElMessage } from 'element-plus'
 import { useNotificationStore } from '@/stores/notification'
 import { wsService } from '@/utils/websocket'
 import { useUserStore } from '@/stores/user'
+import { logoutUser } from '@/api/modules/user'
 import type { Notification } from '@/api/types/notification'
 
 const router = useRouter()
@@ -394,11 +422,107 @@ const showNotifications = ref(false)
 const showUserMenu = ref(false)
 const showMobileMenu = ref(false)
 
+// hover 状态管理
+const isHoveringNotification = ref(false)
+const isHoveringNotificationMenu = ref(false)
+const isHoveringUserMenu = ref(false)
+const isHoveringUserMenuDropdown = ref(false)
+
+// 定时器
+let notificationTimer: number | null = null
+let userMenuTimer: number | null = null
+
 // currentUser 响应式对象，自动同步 userStore.user
 const currentUser = computed(() => userStore.user)
 
 // 模拟用户状态
 const isAuthenticated = computed(() => userStore.isAuthenticated)
+
+// 通知相关的 hover 处理
+const handleNotificationHover = (isHovering: boolean) => {
+  isHoveringNotification.value = isHovering
+  
+  if (notificationTimer) {
+    clearTimeout(notificationTimer)
+    notificationTimer = null
+  }
+
+  if (isHovering) {
+    showNotifications.value = true
+  } else {
+    notificationTimer = window.setTimeout(() => {
+      if (!isHoveringNotificationMenu.value) {
+        showNotifications.value = false
+      }
+    }, 150)
+  }
+}
+
+const handleNotificationMenuHover = (isHovering: boolean) => {
+  isHoveringNotificationMenu.value = isHovering
+  
+  if (notificationTimer) {
+    clearTimeout(notificationTimer)
+    notificationTimer = null
+  }
+
+  if (!isHovering) {
+    notificationTimer = window.setTimeout(() => {
+      if (!isHoveringNotification.value) {
+        showNotifications.value = false
+      }
+    }, 150)
+  }
+}
+
+const toggleNotifications = () => {
+  showNotifications.value = !showNotifications.value
+}
+
+// 用户菜单相关的 hover 处理
+const handleUserMenuHover = (isHovering: boolean) => {
+  isHoveringUserMenu.value = isHovering
+  
+  if (userMenuTimer) {
+    clearTimeout(userMenuTimer)
+    userMenuTimer = null
+  }
+
+  if (isHovering) {
+    showUserMenu.value = true
+  } else {
+    userMenuTimer = window.setTimeout(() => {
+      if (!isHoveringUserMenuDropdown.value) {
+        showUserMenu.value = false
+      }
+    }, 150)
+  }
+}
+
+const handleUserMenuDropdownHover = (isHovering: boolean) => {
+  isHoveringUserMenuDropdown.value = isHovering
+  
+  if (userMenuTimer) {
+    clearTimeout(userMenuTimer)
+    userMenuTimer = null
+  }
+
+  if (!isHovering) {
+    userMenuTimer = window.setTimeout(() => {
+      if (!isHoveringUserMenu.value) {
+        showUserMenu.value = false
+      }
+    }, 150)
+  }
+}
+
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value
+}
+
+const closeUserMenu = () => {
+  showUserMenu.value = false
+}
 
 // 监听用户登录状态变化
 watch(isAuthenticated, (newValue, oldValue) => {
@@ -433,14 +557,25 @@ const handleNotificationClick = async (notification: Notification) => {
   }
 }
 
-const logout = () => {
-  localStorage.removeItem('token')
-  userStore.clearUser()
-  userStore.clearToken()
-  notificationStore.clearNotifications() // 清除通知
-  wsService.disconnect() // 断开 WebSocket 连接
-  ElMessage.success('已退出登录')
-  router.push('/login')
+const logout = async () => {
+  try {
+    // 调用后端退出登录接口
+    await logoutUser()
+  } catch (error) {
+    console.error('退出登录请求失败:', error)
+    // 即使后端请求失败，也要清除前端状态
+  } finally {
+    // 清除前端状态
+    localStorage.removeItem('token')
+    userStore.clearUser()
+    userStore.clearToken()
+    notificationStore.clearNotifications()
+    wsService.disconnect()
+    
+    showUserMenu.value = false
+    ElMessage.success('已退出登录')
+    router.push('/login')
+  }
 }
 
 const formatTime = (dateStr: string) => {
@@ -480,6 +615,13 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  // 清理定时器
+  if (notificationTimer) {
+    clearTimeout(notificationTimer)
+  }
+  if (userMenuTimer) {
+    clearTimeout(userMenuTimer)
+  }
 })
 </script>
 
@@ -505,5 +647,16 @@ nav {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* 过渡动画 */
+.transition {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 旋转动画 */
+.rotate-180 {
+  transform: rotate(180deg);
 }
 </style>

@@ -14,18 +14,18 @@ export const getInstitution = (id: number | string) => {
 
 export const getArea = (id: number | string) => {
   return request.post('/neo/getArea', {
-    id: id
+    id: id,
   })
 }
 
 export const getResearcherByInstitution = (name: string) => {
   return request.post('/neo/getResearcherByInst', {
-    name: name
+    name: name,
   })
 }
 
 export const getResearcherByArea = (name: string) => {
   return request.post('/neo/getResearcherByArea', {
-    name: name
+    name: name,
   })
 }
