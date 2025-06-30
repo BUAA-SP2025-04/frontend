@@ -458,7 +458,7 @@
                 :comment="comment"
                 :replies="comment.replies"
                 :active-reply-id="activeReplyId"
-                @like="handleCommentLike"
+                :like="handleCommentLike"
                 @set-active-reply="setActiveReply"
                 @reply-submitted="handleReplySubmitted"
               />
@@ -644,13 +644,13 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  apply,
   getPublicationInformById,
-  hasApplication,
-  isLikePublication,
-  likePublication,
   readPublication,
+  likePublication,
   unlikePublication,
+  isLikePublication,
+  hasApplication,
+  apply,
 } from '@/api/modules/publication'
 import { libraryAPI } from '@/api/modules/library'
 import {
@@ -659,8 +659,9 @@ import {
   getReplyComments,
   likeComment,
 } from '@/api/modules/comment'
-import type { PublicationDetail } from '@/api/types/publication'
+import type { Publication, PublicationDetail } from '@/api/types/publication'
 import type { Comment } from '@/api/types/comment'
+import type { UserDetail } from '@/api/types/user'
 import { useUserStore } from '@/stores/user'
 import PublicationCommentComp from '@/components/publication/PublicationComment.vue'
 import CommentForm from '@/components/publication/CommentForm.vue'
@@ -735,7 +736,7 @@ onMounted(async () => {
       // 查询是否已经点赞了这个成果
       try {
         const likeResponse = await isLikePublication(String(publicationId))
-        console.log(likeResponse)
+        // console.log(likeResponse)
         if (likeResponse && publication.value) {
           // 根据API响应更新点赞状态
           publication.value.isLiked = likeResponse.data
@@ -839,22 +840,6 @@ const loadComments = async () => {
   }
 }
 
-const toggleCommentLike = async (comment: Comment) => {
-  try {
-    if (comment.isLiked) {
-      await disLikeComment(comment.id)
-      comment.isLiked = false
-      comment.likes--
-    } else {
-      await likeComment(comment.id)
-      comment.isLiked = true
-      comment.likes++
-    }
-  } catch (error) {
-    console.error('点赞失败:', error)
-    ElMessage.error('操作失败')
-  }
-}
 
 // 处理二级评论点赞
 const toggleReplyLike = async (reply: Comment) => {

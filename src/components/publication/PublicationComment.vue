@@ -63,7 +63,7 @@
         <span>{{ formatTime(comment.createdAt) }}</span>
         <button
           v-if="comment.content !== '该评论已删除'"
-          @click="handleLike"
+          @click="handleLike" 
           :class="comment.isLiked ? 'text-red-500' : 'hover:text-red-500'"
           class="flex items-center gap-1 transition-colors"
           :disabled="likeLoading"
@@ -339,7 +339,6 @@ async function fetchUserInfo(userId: number) {
   return await userCacheStore.getCachedUserInfo(userId)
 }
 
-// 处理点赞 - 简化版本
 async function handleLike() {
   if (likeLoading.value) return
 
@@ -356,8 +355,6 @@ async function handleLike() {
       props.comment.isLiked = true
       props.comment.likes++
     }
-    // 将事件传递给父组件
-    emit('like', props.comment)
   } catch (error) {
     console.error('点赞操作失败:', error)
   } finally {
