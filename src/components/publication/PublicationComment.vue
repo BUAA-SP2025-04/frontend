@@ -233,7 +233,7 @@ const props = defineProps<{
   replies?: Comment[]
 }>()
 
-const emit = defineEmits(['reply', 'delete', 'reply-submitted', 'set-active-reply'])
+const emit = defineEmits(['reply', 'delete', 'reply-submitted', 'set-active-reply', 'like'])
 
 const userStore = useUserStore()
 const userCacheStore = useUserCacheStore()
@@ -355,8 +355,6 @@ async function handleLike() {
       props.comment.isLiked = true
       props.comment.likes++
     }
-    // 将事件传递给父组件
-    // emit('like', props.comment)
   } catch (error) {
     console.error('点赞操作失败:', error)
   } finally {

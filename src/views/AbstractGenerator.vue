@@ -28,7 +28,7 @@
         <TypewriterDisplay
           ref="typewriterRef"
           :upload-file-id="uploadFileId"
-          :user="currentUser"
+          :user="String(currentUser)"
           :auto-start="false"
           :typing-speed="30"
           @complete="handleComplete"

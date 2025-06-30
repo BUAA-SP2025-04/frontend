@@ -160,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch, computed, onUnmounted } from 'vue'
+import { ref, onMounted, nextTick, watch, computed, onUnmounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import VuePdfEmbed from 'vue-pdf-embed'
 import type { UploadFile } from 'element-plus'
@@ -215,12 +215,7 @@ const newAnno = reactive({
   comment: ''
 })
 
-// 新增缺失的变量
-const paperId = ref<number>(0)
-const allowEdit = ref<number>(0)
 const uploading = ref<boolean>(false)
-
-const route = useRoute()
 const router = useRouter()
 
 const userStore = useUserStore()
