@@ -53,7 +53,7 @@
 
       <!-- 标签页 -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <el-tabs v-model="activeTab" class="qa-tabs" @tab-click="handleTabClick">
+        <el-tabs v-model="activeTab" class="project-tabs" @tab-click="handleTabClick">
           <el-tab-pane label="我的提问" name="questions">
             <div class="p-6">
               <!-- 我的提问内容 -->
@@ -101,108 +101,114 @@
                 <div
                   v-for="question in filteredQuestions"
                   :key="question.id"
-                  class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative"
                 >
-                  <div class="p-6">
-                    <!-- 问题头部 -->
-                    <div class="flex items-start justify-between mb-4">
-                      <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                          <h3
-                            class="text-lg font-semibold text-gray-800 hover:text-blue-600 cursor-pointer transition-colors"
-                            @click="viewQuestion(question.id)"
-                          >
-                            {{ question.title }}
-                          </h3>
-                          <span
-                            :class="[
-                              'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                              getStatusStyle(!!question.bestAnswer),
-                            ]"
-                          >
-                            {{ getStatusText(!!question.bestAnswer) }}
-                          </span>
-                          <span
-                            :class="[
-                              'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                              question.answerNum > 0
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800',
-                            ]"
-                          >
-                            {{ question.answerNum > 0 ? '已回答' : '待回答' }}
-                          </span>
-                        </div>
-
-                        <!-- 问题状态和分类 -->
-                        <div class="flex items-center space-x-2 mb-3">
-                          <span class="text-sm text-gray-500">{{ question.researchArea }}</span>
-                        </div>
-
-                        <!-- 问题描述 -->
-                        <p class="text-gray-600 mb-4 line-clamp-2">{{ question.content }}</p>
-
-                        <!-- 问题元信息 -->
-                        <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                          <div class="flex items-center space-x-4">
-                            <span>{{ formatTime(question.createAt) }}</span>
-                            <span>{{ question.answerNum }} 回答</span>
-                            <span>{{ question.followNum }} 浏览</span>
-                          </div>
-                          <div class="flex items-center space-x-2">
-                            <span>{{ question.followNum }} 关注</span>
-                            <span>{{ question.likeNum }} 点赞</span>
-                          </div>
-                        </div>
-
-                        <!-- 最新回答预览 -->
-                        <div
-                          v-if="question.bestAnswer"
-                          class="bg-gray-50 rounded-lg p-4 mb-4 border-l-4 border-blue-500"
+                  <!-- 右上角操作按钮区（查看详情、编辑、删除） -->
+                  <div class="flex space-x-2 absolute top-4 right-4 z-10">
+                    <button
+                      class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
+                      @click="viewQuestion(question.id)"
+                      title="查看详情"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                    <button
+                      class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
+                      @click="editQuestion(question)"
+                      title="编辑"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6-6M3 17.25V21h3.75l11.06-11.06a2.121 2.121 0 00-3-3L3 17.25z" />
+                      </svg>
+                    </button>
+                    <button
+                      class="p-2 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 transition-colors"
+                      @click="deleteQuestion(question.id)"
+                      title="删除"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <!-- 标题和状态标签 -->
+                  <div class="flex items-center mb-2">
+                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">{{ question.title }}</h2>
+                    <!-- 是否回答状态 -->
+                    <span
+                      :class="[
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
+                        question.answerNum > 0
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      ]"
+                    >
+                      {{ question.answerNum > 0 ? '已回答' : '未回答' }}
+                    </span>
+                    <!-- 是否解决状态 -->
+                    <span
+                      :class="[
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
+                        question.bestAnswer
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      ]"
+                    >
+                      {{ question.bestAnswer ? '已解决' : '未解决' }}
+                    </span>
+                  </div>
+                  <!-- 研究领域标签（移动到标题下方） -->
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    <span
+                      v-for="field in (question.researchArea || '').split(',')"
+                      :key="field"
+                      class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
+                    >
+                      {{ field.trim() }}
+                    </span>
+                  </div>
+                  <!-- 问题描述 -->
+                  <p class="text-gray-600 mb-2 line-clamp-2">{{ question.content }}</p>
+                  <!-- 统计信息+发布时间 -->
+                  <div class="flex items-center space-x-6 text-sm text-gray-500 mb-4">
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
+                      </svg>
+                      {{ question.answerNum }} 回答
+                    </span>
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      {{ question.followNum }} 浏览
+                    </span>
+                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt) }}</span>
+                  </div>
+                  <!-- 最佳回答预览区 -->
+                  <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-green-100">
+                    <div class="bg-green-50 rounded-lg p-4">
+                      <div class="flex items-center mb-2">
+                        <img
+                          :src="question.bestAnswer.user.imgUrl || '/default-avatar.png'"
+                          :alt="question.bestAnswer.user.name"
+                          class="w-6 h-6 rounded-full mr-2"
+                        />
+                        <span
+                          class="text-sm font-medium text-gray-700 hover:text-blue-600 cursor-pointer transition-colors"
+                          @click="goToUserDetail(String(question.bestAnswer.user.id))"
                         >
-                          <div class="flex items-center mb-2">
-                            <img
-                              :src="question.bestAnswer.user.imgUrl || '/default-avatar.png'"
-                              :alt="question.bestAnswer.user.name"
-                              class="w-6 h-6 rounded-full mr-2"
-                            />
-                            <span class="text-sm font-medium text-gray-700">{{
-                              question.bestAnswer.user.name
-                            }}</span>
-                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              最佳答案
-                            </span>
-                          </div>
-                          <p class="text-sm text-gray-600 line-clamp-2">{{ question.bestAnswer.content }}</p>
-                        </div>
-
-                        <!-- 操作按钮 -->
-                        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                          <div class="flex space-x-3">
-                            <button
-                              @click="viewQuestion(question.id)"
-                              class="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors hover:bg-blue-50 px-3 py-1 rounded-lg"
-                            >
-                              查看详情
-                            </button>
-                            <button
-                              @click="editQuestion(question)"
-                              class="text-gray-600 hover:text-gray-700 text-sm font-medium transition-colors hover:bg-gray-50 px-3 py-1 rounded-lg"
-                            >
-                              编辑
-                            </button>
-                          </div>
-
-                          <div class="flex space-x-2">
-                            <button
-                              @click="deleteQuestion(question.id)"
-                              class="text-red-600 hover:text-red-700 text-sm font-medium transition-colors hover:bg-red-50 px-3 py-1 rounded-lg"
-                            >
-                              删除
-                            </button>
-                          </div>
-                        </div>
+                          {{ question.bestAnswer.user.name }}
+                        </span>
+                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          最佳答案
+                        </span>
                       </div>
+                      <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ question.bestAnswer.content }}</p>
                     </div>
                   </div>
                 </div>
@@ -244,7 +250,7 @@
               <div class="mb-6">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-lg font-semibold text-gray-900">我的回答</h3>
-                  <span class="text-sm text-gray-500">共 {{ myAnswers.length }} 个回答</span>
+                  <span class="text-sm text-gray-500">共 {{ myAnswers.length }} 个问题</span>
                 </div>
 
                 <!-- 筛选工具栏 -->
@@ -264,8 +270,8 @@
                 <!-- 统计信息 -->
                 <div class="flex items-center space-x-6 text-sm text-gray-600">
                   <span>总计: <strong class="text-gray-800">{{ myAnswers.length }}</strong></span>
-                  <span>被采纳: <strong class="text-green-600">{{ acceptedAnswers.length }}</strong></span>
-                  <span>获点赞: <strong class="text-blue-600">{{ totalLikes }}</strong></span>
+                  <span>被采纳: <strong class="text-green-600">{{ myAnswers.filter(q => q.bestAnswer).length }}</strong></span>
+                  <span>获点赞: <strong class="text-blue-600">{{ myAnswers.reduce((sum, q) => sum + (q.likeNum || 0), 0) }}</strong></span>
                 </div>
               </div>
 
@@ -323,9 +329,103 @@
                   </button>
                 </div>
 
-                <!-- 回答列表内容将在这里实现 -->
-                <div class="text-center py-8 text-gray-500">
-                  <p>我的回答功能正在开发中...</p>
+                <!-- 回答问题卡片 -->
+                <div
+                  v-for="question in myAnswers"
+                  :key="question.id"
+                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative"
+                >
+                  <!-- 右上角操作按钮区（仅查看详情） -->
+                  <div class="flex space-x-2 absolute top-4 right-4 z-10">
+                    <button
+                      class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
+                      @click="viewQuestion(question.id)"
+                      title="查看详情"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <!-- 标题和状态标签 -->
+                  <div class="flex items-center mb-2">
+                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">{{ question.title }}</h2>
+                    <!-- 是否回答状态 -->
+                    <span
+                      :class="[
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
+                        question.answerNum > 0
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      ]"
+                    >
+                      {{ question.answerNum > 0 ? '已回答' : '未回答' }}
+                    </span>
+                    <!-- 是否解决状态 -->
+                    <span
+                      :class="[
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
+                        question.bestAnswer
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      ]"
+                    >
+                      {{ question.bestAnswer ? '已解决' : '未解决' }}
+                    </span>
+                  </div>
+                  <!-- 研究领域标签（移动到标题下方） -->
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    <span
+                      v-for="field in (question.researchArea || '').split(',')"
+                      :key="field"
+                      class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
+                    >
+                      {{ field.trim() }}
+                    </span>
+                  </div>
+                  <!-- 问题描述 -->
+                  <p class="text-gray-600 mb-2 line-clamp-2">{{ question.content }}</p>
+                  <!-- 统计信息+发布时间 -->
+                  <div class="flex items-center space-x-6 text-sm text-gray-500 mb-4">
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
+                      </svg>
+                      {{ question.answerNum }} 回答
+                    </span>
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      {{ question.followNum }} 浏览
+                    </span>
+                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt || question.createdAt) }}</span>
+                  </div>
+                  <!-- 最佳回答预览区 -->
+                  <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-green-100">
+                    <div class="bg-green-50 rounded-lg p-4">
+                      <div class="flex items-center mb-2">
+                        <img
+                          :src="question.bestAnswer.user?.imgUrl || '/default-avatar.png'"
+                          :alt="question.bestAnswer.user?.name || '用户'"
+                          class="w-6 h-6 rounded-full mr-2"
+                        />
+                        <span
+                          v-if="question.bestAnswer.user"
+                          class="text-sm font-medium text-gray-700 hover:text-blue-600 cursor-pointer transition-colors"
+                          @click="goToUserDetail(String(question.bestAnswer.user.id))"
+                        >
+                          {{ question.bestAnswer.user.name }}
+                        </span>
+                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          最佳答案
+                        </span>
+                      </div>
+                      <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ question.bestAnswer.content }}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -428,7 +528,38 @@
                     :key="question.id"
                     class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
                   >
-                    <div class="p-6">
+                    <div class="p-6 relative">
+                      <!-- 右上角操作按钮区（查看详情、编辑、删除） -->
+                      <div class="flex space-x-2 absolute top-4 right-4 z-10">
+                        <button
+                          class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
+                          @click="viewQuestion(question.id)"
+                          title="查看详情"
+                        >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                        <button
+                          class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
+                          @click="editQuestion(question)"
+                          title="编辑"
+                        >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6-6M3 17.25V21h3.75l11.06-11.06a2.121 2.121 0 00-3-3L3 17.25z" />
+                          </svg>
+                        </button>
+                        <button
+                          class="p-2 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 transition-colors"
+                          @click="deleteQuestion(question.id)"
+                          title="删除"
+                        >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
                       <!-- 问题头部 -->
                       <div class="flex items-start justify-between mb-4">
                         <div class="flex-1">
@@ -439,92 +570,84 @@
                             >
                               {{ question.title }}
                             </h3>
+                            <!-- 是否回答状态 -->
                             <span
                               :class="[
                                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                                getStatusStyle(!!question.bestAnswer),
+                                question.answerNum > 0 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
                               ]"
                             >
-                              {{ getStatusText(!!question.bestAnswer) }}
+                              {{ question.answerNum > 0 ? '已回答' : '未回答' }}
                             </span>
+                            <!-- 是否解决状态 -->
                             <span
                               :class="[
                                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                                question.answerNum > 0
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-yellow-100 text-yellow-800',
+                                question.bestAnswer 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
                               ]"
                             >
-                              {{ question.answerNum > 0 ? '已回答' : '待回答' }}
+                              {{ question.bestAnswer ? '已解决' : '未解决' }}
                             </span>
                           </div>
 
-                          <!-- 问题作者信息 -->
+                          <!-- 问题状态和分类 -->
                           <div class="flex items-center space-x-2 mb-3">
-                            <img
-                              :src="(question.user && question.user.imgUrl) || '/default-avatar.png'"
-                              :alt="(question.user && question.user.name) || '未知用户'"
-                              class="w-6 h-6 rounded-full"
-                            />
-                            <span class="text-sm text-gray-600">{{ (question.user && question.user.name) || '未知用户' }}</span>
                             <span class="text-sm text-gray-500">{{ question.researchArea }}</span>
                           </div>
 
                           <!-- 问题描述 -->
                           <p class="text-gray-600 mb-4 line-clamp-2">{{ question.content }}</p>
 
-                          <!-- 问题元信息 -->
-                          <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                            <div class="flex items-center space-x-4">
-                              <span>{{ formatTime(question.createAt) }}</span>
-                              <span>{{ question.answerNum }} 回答</span>
-                              <span>{{ question.followNum }} 浏览</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                              <span>{{ question.followNum }} 关注</span>
-                              <span>{{ question.likeNum }} 点赞</span>
-                            </div>
+                          <!-- 统计信息+发布时间 -->
+                          <div class="flex items-center space-x-6 text-sm text-gray-500 mb-4">
+                            <span class="flex items-center">
+                              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
+                              </svg>
+                              {{ question.answerNum }} 回答
+                            </span>
+                            <span class="flex items-center">
+                              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                ></path>
+                              </svg>
+                              {{ question.followNum }} 浏览
+                            </span>
+                            <span class="ml-auto text-gray-400">{{ formatTime(question.createAt) }}</span>
                           </div>
 
-                          <!-- 最新回答预览 -->
+                          <!-- 最佳回答预览区 -->
                           <div
                             v-if="question.bestAnswer"
-                            class="bg-gray-50 rounded-lg p-4 mb-4 border-l-4 border-blue-500"
+                            class="mt-4 pt-4 border-t border-gray-200"
                           >
-                            <div class="flex items-center mb-2">
-                              <img
-                                :src="question.bestAnswer.user.imgUrl || '/default-avatar.png'"
-                                :alt="question.bestAnswer.user.name"
-                                class="w-6 h-6 rounded-full mr-2"
-                              />
-                              <span class="text-sm font-medium text-gray-700">{{
-                                question.bestAnswer.user.name
-                              }}</span>
-                              <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                最佳答案
-                              </span>
-                            </div>
-                            <p class="text-sm text-gray-600 line-clamp-2">{{ question.bestAnswer.content }}</p>
-                          </div>
-
-                          <!-- 操作按钮 -->
-                          <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                            <div class="flex space-x-3">
-                              <button
-                                @click="viewQuestion(question.id)"
-                                class="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors hover:bg-blue-50 px-3 py-1 rounded-lg"
-                              >
-                                查看详情
-                              </button>
-                            </div>
-
-                            <div class="flex space-x-2">
-                              <button
-                                @click="unfollowQuestion(question.id)"
-                                class="text-red-600 hover:text-red-700 text-sm font-medium transition-colors hover:bg-red-50 px-3 py-1 rounded-lg"
-                              >
-                                取消关注
-                              </button>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                              <div class="flex items-center mb-2">
+                                <img
+                                  :src="question.bestAnswer.user.imgUrl || '/default-avatar.png'"
+                                  :alt="question.bestAnswer.user.name"
+                                  class="w-6 h-6 rounded-full mr-2"
+                                />
+                                <span 
+                                  class="text-sm font-medium text-gray-700 hover:text-blue-600 cursor-pointer transition-colors"
+                                  @click="goToUserDetail(String(question.bestAnswer.user.id))"
+                                >
+                                  {{ question.bestAnswer.user.name }}
+                                </span>
+                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  最佳答案
+                                </span>
+                              </div>
+                              <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ question.bestAnswer.content }}</p>
                             </div>
                           </div>
                         </div>
@@ -852,6 +975,7 @@ import {
   unfollowQuestion as unfollowQuestionApi,
   getMyAskedQuestions,
   getMyFollowedQuestions,
+  getMyAnsweredQuestions,
   createQuestion,
   updateQuestion as updateQuestionApi,
 } from '@/api/modules/question'
@@ -892,17 +1016,17 @@ const newQuestion = ref<{
 
 // 编辑问题表单
 const editingQuestion = ref<{
-  id: string | null
+  id: number | null
   title: string
   researchArea: string
   content: string
-  tags: string[]
+  bestAnswerId?: number
 }>({
   id: null,
   title: '',
   researchArea: '',
   content: '',
-  tags: [],
+  bestAnswerId: undefined,
 })
 
 // 我的问题数据
@@ -943,8 +1067,8 @@ const filteredFollowedQuestions = computed(() => {
     case 'latestUpdate':
       // 按最新回答时间排序，如果没有回答则按问题创建时间
       filtered.sort((a, b) => {
-        const aTime = a.bestAnswer ? new Date(a.bestAnswer.createdAt).getTime() : new Date(a.createAt).getTime()
-        const bTime = b.bestAnswer ? new Date(b.bestAnswer.createdAt).getTime() : new Date(b.createAt).getTime()
+        const aTime = a.bestAnswer ? new Date(a.bestAnswer.createAt).getTime() : new Date(a.createAt).getTime()
+        const bTime = b.bestAnswer ? new Date(b.bestAnswer.createAt).getTime() : new Date(b.createAt).getTime()
         return bTime - aTime
       })
       break
@@ -968,7 +1092,9 @@ const solvedFollowedCount = computed(() => {
 
 // 方法
 const formatTime = (dateString: string) => {
+  if (!dateString) return '-'
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '-'
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const minutes = Math.floor(diff / (1000 * 60))
@@ -1000,297 +1126,129 @@ const viewQuestion = (questionId: string) => {
   router.push(`/research/qa/${questionId}`)
 }
 
+const shareQuestion = (question: Question) => {
+  // 实现分享功能
+}
+
 const editQuestion = (question: Question) => {
   editingQuestion.value = {
-    id: question.id,
+    id: Number(question.id),
     title: question.title,
-    researchArea: question.researchArea,
     content: question.content,
-    tags: [question.researchArea], // 使用研究领域作为标签
+    researchArea: question.researchArea,
+    bestAnswerId: question.bestAnswer ? Number(question.bestAnswer.id) : undefined,
   }
   showEditDialog.value = true
 }
 
-const updateQuestion = async () => {
-  if (!editingQuestion.value.id) {
-    ElMessage.error('问题ID不存在')
-    return
-  }
-
-  // 表单验证
-  if (!editingQuestion.value.title.trim()) {
-    ElMessage.error('请输入问题标题')
-    return
-  }
-  
-  if (!editingQuestion.value.content.trim()) {
-    ElMessage.error('请输入问题描述')
-    return
-  }
-  
-  if (!editingQuestion.value.researchArea) {
-    ElMessage.error('请选择问题分类')
-    return
-  }
-
-  try {
-    const requestData: UpdateQuestionRequest = {
-      id: parseInt(editingQuestion.value.id),
-      title: editingQuestion.value.title.trim(),
-      content: editingQuestion.value.content.trim(),
-      researchArea: editingQuestion.value.researchArea,
-      bestAnswerId: -1, // 设为-1，表示没有最佳答案
-    }
-
-    await updateQuestionApi(requestData)
-    
-    showEditDialog.value = false
-    ElMessage.success('问题更新成功')
-    
-    // 重新加载问题列表
-    await loadQuestions()
-  } catch (error) {
-    console.error('更新问题失败:', error)
-    ElMessage.error('更新问题失败，请重试')
-  }
-}
-
 const deleteQuestion = async (questionId: string) => {
+  loading.value = true
   try {
     await deleteQuestionApi({ questionId })
     ElMessage.success('删除成功')
-    await loadQuestions()
-  } catch (error) {
-    console.error('删除问题失败:', error)
+    loadQuestions()
+  } catch (e) {
     ElMessage.error('删除失败')
   }
+  loading.value = false
 }
 
-const unfollowQuestion = async (questionId: string) => {
+const publishQuestion = () => {
+  // 实现发布新问题功能
+}
+
+const updateQuestion = async () => {
+  if (editingQuestion.value.id == null) return
+  loading.value = true
   try {
-    await unfollowQuestionApi({ questionId: questionId })
-    ElMessage.success('取消关注成功')
-    await loadFollowedQuestions()
-  } catch (error) {
-    console.error('取消关注失败:', error)
-    ElMessage.error('取消关注失败')
+    const payload = {
+      id: editingQuestion.value.id,
+      title: editingQuestion.value.title,
+      content: editingQuestion.value.content,
+      researchArea: editingQuestion.value.researchArea,
+      ...(editingQuestion.value.bestAnswerId !== undefined ? { bestAnswerId: editingQuestion.value.bestAnswerId } : {})
+    }
+    await updateQuestionApi(payload)
+    ElMessage.success('修改成功')
+    showEditDialog.value = false
+    loadQuestions()
+  } catch (e) {
+    ElMessage.error('修改失败')
+  }
+  loading.value = false
+}
+
+const goToUserDetail = (userId: string) => {
+  // 实现跳转到用户详情功能
+}
+
+const handleTabClick = (tab: any) => {
+  if (tab.name === 'questions') {
+    loadQuestions()
+  } else if (tab.name === 'answers') {
+    loadAnswers()
+  } else if (tab.name === 'followed') {
+    loadFollowedQuestions()
   }
 }
 
 const loadQuestions = async () => {
+  loading.value = true
   try {
-    loading.value = true
-    
-    const response = await getMyAskedQuestions()
-    
-    // 处理响应数据
-    if (response && response.code === '200' && response.data) {
-      // 如果data直接是问题数组
-      if (Array.isArray(response.data)) {
-        // 处理数据，确保所有必需字段都存在
-        myQuestions.value = response.data.map((item: any) => ({
-          id: item.id || '',
-          user: item.user || {
-            id: item.userId || 0,
-            name: '未知用户',
-            researchArea: '',
-            title: '',
-            imgUrl: '',
-            institution: '',
-            createdAt: '',
-          },
-          title: item.title || '',
-          content: item.content || '',
-          createAt: item.createAt || item.createdAt || new Date().toISOString(),
-          researchArea: item.reaesrchArea || item.researchArea || '未分类',
-          answerNum: item.answerNum || 0,
-          likeNum: item.likeNum || '0',
-          followNum: item.followNum || 0,
-          bestAnswer: item.bestAnswer || undefined,
-          answers: item.answers || [],
-        })) as Question[]
-      }
-      // 如果data包含questions字段
-      else if (response.data.questions && Array.isArray(response.data.questions)) {
-        myQuestions.value = response.data.questions.map((item: any) => ({
-          id: item.id || '',
-          user: item.user || {
-            id: item.userId || 0,
-            name: '未知用户',
-            researchArea: '',
-            title: '',
-            imgUrl: '',
-            institution: '',
-            createdAt: '',
-          },
-          title: item.title || '',
-          content: item.content || '',
-          createAt: item.createAt || item.createdAt || new Date().toISOString(),
-          researchArea: item.reaesrchArea || item.researchArea || '未分类',
-          answerNum: item.answerNum || 0,
-          likeNum: item.likeNum || '0',
-          followNum: item.followNum || 0,
-          bestAnswer: item.bestAnswer || undefined,
-          answers: item.answers || [],
-        })) as Question[]
-      }
-      else {
+    const res = await getMyAskedQuestions()
+    if (res.code === "200" && res.data) {
+      if (Array.isArray(res.data)) {
+        myQuestions.value = res.data
+      } else if (res.data.questions) {
+        myQuestions.value = res.data.questions
+      } else {
         myQuestions.value = []
       }
     } else {
-      console.warn('API响应格式异常:', response)
       myQuestions.value = []
-      if (response && response.message) {
-        ElMessage.warning(response.message)
-      }
     }
-  } catch (error) {
-    console.error('加载问题列表失败:', error)
-    ElMessage.error('加载问题列表失败')
+  } catch (e) {
     myQuestions.value = []
-  } finally {
-    loading.value = false
   }
+  loading.value = false
+}
+
+const loadAnswers = async () => {
+  loading.value = true
+  try {
+    const res = await getMyAnsweredQuestions()
+    if (res.code === '200' && res.data) {
+      myAnswers.value = Array.isArray(res.data) ? res.data : []
+    } else {
+      myAnswers.value = []
+    }
+  } catch (e) {
+    myAnswers.value = []
+  }
+  loading.value = false
 }
 
 const loadFollowedQuestions = async () => {
+  loading.value = true
   try {
-    loading.value = true
-    
-    const response = await getMyFollowedQuestions()
-    
-    // 处理响应数据
-    if (response && response.code === '200' && response.data) {
-      // 如果data直接是问题数组
-      if (Array.isArray(response.data)) {
-        followedQuestions.value = response.data.map((item: any) => ({
-          id: item.id?.toString() || '',
-          user: item.user || {
-            id: item.userId || 0,
-            name: '未知用户',
-            researchArea: '',
-            title: '',
-            imgUrl: '',
-            institution: '',
-            createdAt: '',
-          },
-          title: item.title || '',
-          content: item.content || '',
-          createAt: item.createdAt || item.createAt || new Date().toISOString(),
-          researchArea: item.researchArea || '未分类',
-          answerNum: item.answerNum || 0,
-          likeNum: item.likeNum?.toString() || '0',
-          followNum: item.followNum || 0,
-          bestAnswer: item.bestAnswer || undefined,
-          answers: item.answers || [],
-        }))
-      }
-      // 如果data包含questions字段
-      else if (response.data.questions && Array.isArray(response.data.questions)) {
-        followedQuestions.value = response.data.questions.map((item: any) => ({
-          id: item.id?.toString() || '',
-          user: item.user || {
-            id: item.userId || 0,
-            name: '未知用户',
-            researchArea: '',
-            title: '',
-            imgUrl: '',
-            institution: '',
-            createdAt: '',
-          },
-          title: item.title || '',
-          content: item.content || '',
-          createAt: item.createdAt || item.createAt || new Date().toISOString(),
-          researchArea: item.researchArea || '未分类',
-          answerNum: item.answerNum || 0,
-          likeNum: item.likeNum?.toString() || '0',
-          followNum: item.followNum || 0,
-          bestAnswer: item.bestAnswer || undefined,
-          answers: item.answers || [],
-        }))
-      }
-      else {
-        followedQuestions.value = []
-      }
+    const res = await getMyFollowedQuestions()
+    if (res.code === '200' && res.data) {
+      followedQuestions.value = Array.isArray(res.data) ? res.data : []
     } else {
-      console.warn('API响应格式异常:', response)
       followedQuestions.value = []
-      if (response && response.message) {
-        ElMessage.warning(response.message)
-      }
     }
-  } catch (error) {
-    console.error('加载关注问题列表失败:', error)
-    ElMessage.error('加载关注问题列表失败')
+  } catch (e) {
     followedQuestions.value = []
-  } finally {
-    loading.value = false
   }
-}
-
-const publishQuestion = async () => {
-  // 表单验证
-  if (!newQuestion.value.title.trim()) {
-    ElMessage.error('请输入问题标题')
-    return
-  }
-  
-  if (!newQuestion.value.content.trim()) {
-    ElMessage.error('请输入问题描述')
-    return
-  }
-  
-  if (!newQuestion.value.researchArea) {
-    ElMessage.error('请选择问题分类')
-    return
-  }
-
-  try {
-    const requestData: CreateQuestionRequest = {
-      title: newQuestion.value.title.trim(),
-      content: newQuestion.value.content.trim(),
-      researchArea: newQuestion.value.researchArea,
-    }
-    
-    const response = await createQuestion(requestData)
-    
-    if (response && response.code === '200') {
-      // 重置表单
-      newQuestion.value = {
-        title: '',
-        researchArea: '',
-        content: '',
-        tags: [],
-      }
-
-      showPublishDialog.value = false
-      ElMessage.success('问题发布成功！')
-      
-      // 重新加载问题列表
-      await loadQuestions()
-    } else {
-      ElMessage.error(response?.message || '发布问题失败')
-    }
-  } catch (error) {
-    console.error('发布问题失败:', error)
-    ElMessage.error('发布问题失败，请重试')
-  }
-}
-
-const handleTabClick = (tab: any) => {
-  // 处理标签页点击事件
-  if (tab.name === 'followed') {
-    loadFollowedQuestions()
-  } else if (tab.name === 'questions') {
-    loadQuestions()
-  }
-  // 我的回答功能暂时不实现
+  loading.value = false
 }
 
 onMounted(() => {
-  loadQuestions()
-  // 如果当前是关注问题标签页，也加载关注问题数据
-  if (activeTab.value === 'followed') {
+  if (activeTab.value === 'questions') {
+    loadQuestions()
+  } else if (activeTab.value === 'answers') {
+    loadAnswers()
+  } else if (activeTab.value === 'followed') {
     loadFollowedQuestions()
   }
 })
@@ -1305,28 +1263,24 @@ onMounted(() => {
   line-clamp: 2;
 }
 
-/* 自定义标签页样式 */
-:deep(.qa-tabs .el-tabs__header) {
+/* 对齐项目管理tab风格 */
+:deep(.project-tabs .el-tabs__header) {
   margin-bottom: 0;
   border-bottom: 1px solid #e5e7eb;
 }
-
-:deep(.qa-tabs .el-tabs__nav-wrap) {
+:deep(.project-tabs .el-tabs__nav-wrap) {
   padding: 0 24px;
 }
-
-:deep(.qa-tabs .el-tabs__item) {
+:deep(.project-tabs .el-tabs__item) {
   font-size: 16px;
   font-weight: 500;
   padding: 16px 24px;
 }
-
-:deep(.qa-tabs .el-tabs__item.is-active) {
+:deep(.project-tabs .el-tabs__item.is-active) {
   color: #3b82f6;
   font-weight: 600;
 }
-
-:deep(.qa-tabs .el-tabs__active-bar) {
+:deep(.project-tabs .el-tabs__active-bar) {
   background-color: #3b82f6;
   height: 3px;
 }
