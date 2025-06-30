@@ -152,65 +152,136 @@
 
           <!-- 消息列表 -->
           <div class="bg-white rounded-lg shadow">
-            <!-- 私信列表 -->
-            <div v-if="activeCategory === 'chat'" class="divide-y divide-gray-200">
-              <div
-                v-for="conversation in filteredConversations"
-                :key="conversation.id"
-                :class="[
-                  'p-6 hover:bg-gray-50 cursor-pointer transition-colors relative',
-                  !conversation.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : '',
-                ]"
-                @click=""
-              >
-                <!-- 未读标记小图标 -->
-                <button
-                  v-if="!conversation.isRead"
-                  @click.stop="markAsReadLocal('conversation', conversation.lastMessage.id)"
-                  class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
-                  title="标记为已读"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                </button>
+<!-- 私信列表 -->
+<div v-if="activeCategory === 'chat'" class="divide-y divide-gray-200">
+  <div
+    v-for="conversation in filteredConversations"
+    :key="conversation.id"
+    :class="[
+      'p-6 hover:bg-gray-50 cursor-pointer transition-colors relative',
+      !conversation.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : '',
+    ]"
+    @click="openChat(conversation.userId)"
+  >
+    <!-- 未读标记小图标 -->
+    <button
+      v-if="!conversation.isRead"
+      @click.stop="markAsReadLocal('conversation', conversation.conversationId)"
+      class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+      title="标记为已读"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 13l4 4L19 7"
+        ></path>
+      </svg>
+    </button>
 
-                <div class="flex items-start space-x-4 pr-8">
-                  <div class="relative flex-shrink-0">
-                    <img
-                      :src="conversation.avatar"
-                      :alt="conversation.name"
-                      class="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div
-                      v-if="conversation.isOnline"
-                      class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"
-                    ></div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-2">
-                      <h3 class="text-sm font-medium text-gray-900">{{ conversation.name }}</h3>
-                      <div class="flex items-center space-x-2">
-                        <span class="text-xs text-gray-500">{{
-                          formatTime(conversation.lastMessageTime)
-                        }}</span>
-                      </div>
-                    </div>
-                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {{ conversation.lastMessage.content }}
-                    </p>
-                    <div class="flex items-center mt-2 space-x-4 text-xs text-gray-500">
-                      <span>{{ conversation.institution }}</span>
-                    </div>
-                  </div>
+    <div class="flex items-start space-x-4 pr-8">
+      <div class="relative flex-shrink-0">
+        <img
+          :src="conversation.avatar"
+          :alt="conversation.name"
+          class="w-12 h-12 rounded-full object-cover"
+        />
+        <div
+          v-if="conversation.online"
+          class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"
+        ></div>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-medium text-gray-900">{{ conversation.name }}</h3>
+          <div class="flex items-center space-x-2">
+            <!-- 未读数量徽章 -->
+            <span
+              v-if="conversation.unreadCount > 0"
+              class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500 text-white"
+            >
+              {{ conversation.unreadCount > 99 ? '99+' : conversation.unreadCount }}
+            </span>
+            <span class="text-xs text-gray-500">{{
+              formatTime(conversation.lastMessageTime)
+            }}</span>
+          </div>
+        </div>
+        
+        
+        <!-- 消息内容预览 - 更紧凑的布局 -->
+        <div class="flex items-start space-x-2">
+          <!-- 消息类型图标 -->
+          <div class="flex-shrink-0 mt-0.5">
+            <!-- 文件类型图标 -->
+            <div 
+              v-if="conversation.lastMessage.type === 'file'"
+              class="flex items-center justify-center w-5 h-5 bg-orange-100 rounded"
+            >
+              <svg class="w-3 h-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  stroke-width="2" 
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            
+            <!-- 图片类型图标 -->
+            <div 
+              v-else-if="conversation.lastMessage.type === 'image'"
+              class="flex items-center justify-center w-5 h-5 bg-green-100 rounded"
+            >
+              <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  stroke-width="2" 
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            
+            <!-- 文本消息图标 -->
+            <div 
+              v-else
+              class="flex items-center justify-center w-5 h-5 bg-blue-100 rounded"
+            >
+              <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  stroke-width="2" 
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
+            </div>
+          </div>
+          
+          <!-- 消息内容文本 -->
+          <p class="text-sm text-gray-600 line-clamp-2 flex-1 min-w-0 mt-1">
+            {{ getLastMessagePreview(conversation.lastMessage) }}
+          </p>
+        </div>
+                
+                <div class="flex items-center mt-2 space-x-4 text-xs text-gray-500">
+                  <span>{{ conversation.institution }}</span>
+                  <!-- 在线状态 -->
+                  <span 
+                    v-if="conversation.online"
+                    class="flex items-center space-x-1 text-green-600"
+                  >
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>在线</span>
+                  </span>
+                  <span v-else class="text-gray-400">离线</span>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
             <!-- 系统通知列表 -->
             <div v-else-if="activeCategory === 'system'" class="divide-y divide-gray-200">
@@ -683,14 +754,17 @@ const markAllAsRead = async () => {
 }
 
 // 前端直接标记单条已读，减少后端请求
-const markAsReadLocal = async (category: string, id: number) => {
+const markAsReadLocal = async (category: string, id: string | number) => {
   try {
     // 统一传参格式
     if (category === 'system' || category === 'activity') {
       // 🔥 只调用状态管理，不再调用messagesAPI.markAsRead
-      await notificationStore.markNotificationAsRead(category, id)
+      // 确保传递给 store 的是正确的类型
+      const numericId = typeof id === 'string' ? parseInt(id) : id
+      await notificationStore.markNotificationAsRead(category, numericId)
     } else if (category === 'chat' || category === 'conversation') {
       // 私信仍然调用原有逻辑
+      // conversationId 可能是字符串，保持原样传递
       await messagesAPI.markAsRead('conversation', id)
     }
     ElMessage.success('已标记为已读')
@@ -724,9 +798,12 @@ const updateAllAsRead = () => {
 }
 
 // 前端更新单条已读状态
-const updateSingleAsRead = (category: string, id: number) => {
+const updateSingleAsRead = (category: string, id: number | string) => {
   if (category === 'chat' || category === 'conversation') {
-    const convIndex = conversations.value.findIndex(conv => conv.id === id)
+    // 对于会话，id 可能是数字或字符串，需要灵活匹配
+    const convIndex = conversations.value.findIndex(conv => 
+      conv.id == id || conv.conversationId == id
+    )
     if (convIndex !== -1) {
       conversations.value[convIndex].isRead = true
       conversations.value[convIndex].unreadCount = 0
@@ -753,6 +830,55 @@ const updateSingleAsRead = (category: string, id: number) => {
         messageCategories.value[2].unreadCount - 1
       )
     }
+  }
+}
+
+const getLastMessagePreview = (lastMessage: any) => {
+  // 如果没有lastMessage对象，显示暂无消息
+  if (!lastMessage) {
+    return '暂无消息'
+  }
+  
+  const { type, content, isMe } = lastMessage
+  
+  switch (type) {
+    case 'image':
+      // 图片消息：根据发送者显示不同提示
+      if (isMe) {
+        return '你发送了一张图片'
+      } else {
+        return '收到了新图片'
+      }
+    case 'file':
+      // 文件消息：根据发送者和文件名显示不同提示
+      if (content && content.trim() && content.includes('.')) {
+        // 有文件名的情况
+        if (isMe) {
+          return `你发送了文件: ${content}`
+        } else {
+          return `收到了新文件: ${content}`
+        }
+      } else {
+        // 没有文件名的情况
+        if (isMe) {
+          return '你发送了一个文件'
+        } else {
+          return '收到了新文件'
+        }
+      }
+    case 'text':
+    default:
+      // 文本消息：如果content为空，显示特殊提示
+      if (!content || !content.trim()) {
+        if (isMe) {
+          return ' '
+        } else {
+          return ' '
+        }
+      }
+      // 有文本内容时正常显示，添加发送者前缀
+      const prefix = isMe ? '你: ' : ''
+      return `${prefix}${content}`
   }
 }
 
@@ -915,51 +1041,37 @@ const saveSettings = async () => {
 
 const loadCurrentCategory = async () => {
   try {
-    if (activeCategory.value === 'chat') {
+       if (activeCategory.value === 'chat') {
       const res = await messagesAPI.getConversations()
       console.log('会话数据:', res)
 
-      if (res && res.data) {
-        if (Array.isArray(res.data)) {
-          conversations.value = res.data.map(conv => ({
-            id: conv.userId,
-            userId: conv.userId,
-            conversationId: conv.conversationId
-              ? conv.conversationId
-              : `conv_${Math.min(currentUserId.value, conv.userId)}_${Math.max(currentUserId.value, conv.userId)}`,
-            name: conv.name,
-            avatar: getFullImageUrl(conv.avatar), // 拼接头像URL
-            institution: conv.institution || '',
-            isOnline: conv.isOnline ?? conv.isOnline ?? false,
-            isRead: (conv.unreadCount ?? 0) === 0,
-            unreadCount: conv.unreadCount ?? 0,
-            lastMessage: conv.lastMessage
-              ? {
-                  id: conv.lastMessage.id,
-                  senderId: conv.lastMessage.senderId,
-                  receiverId: conv.lastMessage.receiverId,
-                  content: conv.lastMessage.content,
-                  createdAt: conv.lastMessage.createdAt,
-                  isRead: conv.lastMessage.isRead,
-                }
-              : {
-                  id: -1,
-                  senderId: conv.userId,
-                  receiverId: conv.userId,
-                  content: '',
-                  createdAt: '',
-                  isRead: true,
-                },
-            lastMessageTime: conv.lastMessage?.createdAt, // 取消息时间
-          }))
-          messageCategories.value[0].unreadCount = res.data.reduce(
-            (sum, conv) => sum + (conv.unreadCount ?? 0),
-            0
-          )
-        } else {
-          conversations.value = []
-          messageCategories.value[0].unreadCount = 0
-        }
+      // 适配新的数据结构：data.list
+      const convList = Array.isArray(res.data?.list) ? res.data.list : []
+      
+      if (convList.length > 0) {
+        conversations.value = convList.map(conv => ({
+          id: conv.userId,
+          userId: conv.userId,
+          conversationId: conv.conversationId || `conv_${Math.min(currentUserId.value, conv.userId)}_${Math.max(currentUserId.value, conv.userId)}`,
+          name: conv.name || '未知用户',
+          avatar: getFullImageUrl(conv.avatar),
+          institution: conv.institution || '',
+          online: conv.online ?? false,
+          isRead: conv.isRead ?? (conv.unreadCount === 0),
+          unreadCount: conv.unreadCount || 0,
+          lastMessage: {
+            content: conv.lastMessage?.content || '',
+            type: conv.lastMessage?.type || 'text',
+            isMe: conv.lastMessage?.isMe || false,
+          },
+          lastMessageTime: conv.lastMessageTime || new Date().toISOString()
+        }))
+
+        // 计算未读消息总数
+        messageCategories.value[0].unreadCount = convList.reduce(
+          (sum, conv) => sum + (conv.unreadCount || 0),
+          0
+        )
       } else {
         conversations.value = []
         messageCategories.value[0].unreadCount = 0

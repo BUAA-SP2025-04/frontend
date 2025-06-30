@@ -119,6 +119,11 @@ export function getMyAskedQuestions(): Promise<ApiResponse<QuestionListResponse>
   return request.get('/question/my/asked')
 }
 
+// 获取我回答过的问题
+export function getMyAnsweredQuestions(): Promise<ApiResponse<QuestionListResponse>> {
+  return request.get('/question/my/answered')
+}
+
 // 获取活跃用户
 export function getTopAnswerUsers(): Promise<ApiResponse<any[]>> {
   return request.get('/question/top-answer-users')

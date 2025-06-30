@@ -9,26 +9,45 @@ export interface Friend {
 }
 
 // 私信会话
-export interface Conversation {
-  id: number                // 可以用 userId 赋值
+export interface ConversationRaw {
   userId: number
+  conversationId: string
+  name: string
+  avatar: string | null
+  institution: string
+  online: boolean
+  read: boolean
+  unreadCount: number
+  lastMessage: {
+    content: string
+    isMe: boolean
+    type: string
+  } | null
+  lastMessageTime: string
+}
+
+// 前端使用的会话数据（转换后）
+export interface Conversation {
+  id: number
+  userId: number
+  conversationId: string
   name: string
   avatar: string
   institution: string
-  isOnline: boolean        
+  online: boolean
+  isRead: boolean
   unreadCount: number
   lastMessage: {
-    id: number
-    senderId: number
-    receiverId: number
     content: string
-    createdAt: string
-    isRead: boolean
+    type?: string
+    isMe?: boolean
   }
-  lastMessageTime?: string  
-  isRead?: boolean    
-  conversationId: string      
+  lastMessageTime: string
 }
+
+export interface GetConversationsResponse extends ApiResponse<{ 
+  list: Conversation[]    // 后端返回原始数据
+}> {}
 
 // 系统通知
 export interface SystemNotification {
@@ -101,7 +120,6 @@ export interface ApiResponse<T = any> {
 // API 响应类型 - 包含完整响应结构
 export interface GetFriendsResponse extends ApiResponse<Friend[] | Friend | { list: Friend[] }> {}
 
-export interface GetConversationsResponse extends ApiResponse<Conversation[] | { list: Conversation[]; unreadCount: number }> {}
 
 export interface GetSystemNotificationsResponse extends ApiResponse<SystemNotification[] | { list: SystemNotification[]; unreadCount: number }> {}
 
