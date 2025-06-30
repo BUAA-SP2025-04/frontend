@@ -219,16 +219,28 @@
           </el-form-item>
 
           <el-form-item label="作者">
-            <el-input
-              v-model="currentPublication.authors"
-              :placeholder="`请输入作者，用英文逗号分隔（当前用户：${userName}，不可删除）`"
-              :disabled="true"
-            />
-            <el-input
-              v-model="otherAuthors"
-              placeholder="可添加其他作者，用英文逗号分隔"
-              style="margin-top: 8px"
-            />
+            <div>
+              <el-tag :key="userName" type="info" disable-transitions style="margin-right: 4px">
+                {{ userName }}
+              </el-tag>
+              <el-tag
+                v-for="(tag, index) in authorTags"
+                :key="tag.authorName"
+                :closable="tag.authorId === 0"
+                style="margin-right: 4px"
+                @close="removeAuthorTag(index)"
+              >
+                {{ tag.authorName }}
+              </el-tag>
+              <div style="margin-top: 8px">
+                <el-input
+                  v-model="authorInput"
+                  placeholder="输入作者名后回车添加"
+                  style="width: 200px"
+                  @keyup.enter="addAuthorTag"
+                />
+              </div>
+            </div>
           </el-form-item>
 
           <el-form-item label="发表于">
@@ -255,10 +267,35 @@
           </el-form-item>
 
           <el-form-item label="关键词">
-            <el-input
-              v-model="currentPublication.keywords"
-              placeholder="请输入关键词，用英文逗号分隔"
-            />
+            <div>
+              <template v-if="keywordTags.length > 0">
+                <el-tag
+                  v-for="(tag, index) in keywordTags"
+                  :key="tag"
+                  closable
+                  class="mr-1 mb-1"
+                  @close="removeKeywordTag(index)"
+                >
+                  {{ tag }}
+                </el-tag>
+                <div style="margin-top: 8px">
+                  <el-input
+                    v-model="keywordInput"
+                    placeholder="输入关键词后回车添加"
+                    style="width: 200px"
+                    @keyup.enter="addKeywordTag"
+                  />
+                </div>
+              </template>
+              <template v-else>
+                <el-input
+                  v-model="keywordInput"
+                  placeholder="输入关键词后回车添加"
+                  style="width: 200px"
+                  @keyup.enter="addKeywordTag"
+                />
+              </template>
+            </div>
           </el-form-item>
 
           <el-form-item label="doi" prop="doi">
@@ -333,13 +370,14 @@
             <p>1. 您上传的文件仅用于本系统的学术出版物管理，不会用于其他用途。</p>
             <p>2. 您有权随时删除您上传的文件及相关数据。</p>
             <p>3. 我们承诺保护您的数据安全，不会将您的数据泄露给第三方。</p>
-            <p>如您同意以上条款，请点击"同意"继续上传，否则请取消操作。</p>
+            <p class="text-red-600">请您确认您有权利公开分享此文档</p>
+            <p>
+              如您同意以上条款并确认您有此文档的公开权利，请点击“同意并确认”继续上传，否则请取消操作。
+            </p>
           </div>
           <template #footer>
             <el-button @click="onCancelPrivacy">取消</el-button>
-            <el-button type="primary" @click="onAgreePrivacy">
-              我确认我有权利公开分享此文档，我同意本网站要求的上传条件
-            </el-button>
+            <el-button type="primary" @click="onAgreePrivacy"> 同意并确认</el-button>
           </template>
         </el-dialog>
       </el-dialog>
@@ -359,10 +397,10 @@
       <!-- 成果认领对话框 -->
       <el-dialog
         v-model="showClaimDialog"
+        v-loading="claimLoading"
         title="成果认领"
         width="60%"
         destroy-on-close
-        v-loading="claimLoading"
       >
         <div class="space-y-4">
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -421,7 +459,7 @@
                     </div>
                   </div>
                   <div class="flex gap-2">
-                    <el-button size="small" @click="viewClaimDetail(result)"> 查看详情 </el-button>
+                    <el-button size="small" @click="viewClaimDetail(result)"> 查看详情</el-button>
                     <el-button size="small" type="primary" @click="claimPublication(result)">
                       认领此成果
                     </el-button>
@@ -452,7 +490,7 @@
         <template #footer>
           <span class="dialog-footer">
             <el-button @click="showClaimDialog = false">关闭</el-button>
-            <el-button type="primary" @click="refreshClaimResults" :loading="claimLoading">
+            <el-button type="primary" :loading="claimLoading" @click="refreshClaimResults">
               刷新列表
             </el-button>
           </span>
@@ -484,15 +522,15 @@ import type {
   SavePublicationRequest,
 } from '@/api/types/publication'
 import {
+  claimPublication as claimPublicationApi,
   deletePublication,
   deletePublicationFile,
+  getProbablePublicationsByName,
   getPublicationsByUser,
   getPublicationStatsByUser,
   savePublication,
   updatePublicationFile,
   uploadPublicationFile,
-  getProbablePublicationsByName,
-  claimPublication as claimPublicationApi,
 } from '@/api/modules/publication'
 import { useUserStore } from '@/stores/user'
 import PublicationStatsCardGroup from '@/components/publication/PublicationStatsCardGroup.vue'
@@ -660,7 +698,7 @@ const filteredPublications = computed(() => {
       (item: PublicationDetail) =>
         item.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         item.authors.some(
-          (a: any) =>
+          (a: Author) =>
             a.authorName && a.authorName.toLowerCase().includes(searchQuery.value.toLowerCase())
         ) ||
         item.keywords?.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -803,29 +841,22 @@ const handlePdfUrl = async (): Promise<string> => {
 }
 
 const submitSuccess = () => {
-  if (!isEditing.value && userStore.user?.id) {
-    loading.value = true
-    getPublicationsByUser(userStore.user.id)
-      .then(res => {
-        if (Array.isArray(res.data)) {
-          publications.splice(0, publications.length)
-          res.data.forEach(item => {
-            const publicationDetail = convertToPublicationDetail(item)
-            publications.push(publicationDetail)
-          })
-        }
-      })
-      .finally(() => {
-        loading.value = false
-      })
-    stats.totalPublicationNum = (stats.totalPublicationNum || 0) + 1
-  } else if (isEditing.value) {
-    // 编辑成功后更新当前列表
-    const idx = publications.findIndex(item => item.id === currentPublication.id)
-    if (idx !== -1) {
-      Object.assign(publications[idx], currentPublication)
-    }
-  }
+  loading.value = true
+  getPublicationsByUser(userStore.user!.id)
+    .then(res => {
+      if (Array.isArray(res.data)) {
+        publications.splice(0, publications.length)
+        res.data.forEach(item => {
+          const publication = { ...item.publication, authors: item.authors }
+          publications.push(publication)
+        })
+      }
+    })
+    .finally(() => {
+      loading.value = false
+    })
+
+  if (!isEditing.value) stats.totalPublicationNum = (stats.totalPublicationNum || 0) + 1
   resetForm()
   closeDialog()
 }
@@ -851,52 +882,89 @@ const handleDelete = (id: number) => {
       }
     })
     .catch(err => {
+      if (err === 'cancel') return
       ElMessage.error(`删除失败：${err.message}`)
     })
 }
 
 const resetForm = () => {
   Object.assign(currentPublication, JSON.parse(JSON.stringify(emptyPublication)))
+  authorInput.value = ''
+  keywordInput.value = ''
   pdfInputType.value = 'url'
   pdfFile.value = null
   oldFilePath.value = ''
 }
 
-const closeDialog = () => {
-  showAddDialog.value = false
-}
-const otherAuthors = ref('')
-const authorsInput = ref<string>('')
+// 作者与类型 tag 输入相关
+const authorTags = ref<{ authorName: string; authorId: number }[]>([])
+const authorInput = ref('')
+const keywordTags = ref<string[]>([])
+const keywordInput = ref('')
 
-// 在打开添加对话框时，默认 authors 为当前用户 name，且不可删除
+// 添加作者 tag
+function addAuthorTag() {
+  const val = authorInput.value.trim()
+  if (val && !authorTags.value.some(a => a.authorName === val) && val !== userName.value) {
+    authorTags.value.push({ authorName: val, authorId: 0 })
+  }
+  authorInput.value = ''
+}
+
+// 删除作者 tag（只允许 authorId 为 0 的 tag 删除）
+function removeAuthorTag(index: number) {
+  if (authorTags.value[index].authorId === 0) {
+    authorTags.value.splice(index, 1)
+  }
+}
+
+// 添加关键词 tag
+function addKeywordTag() {
+  const val = keywordInput.value.trim()
+  if (val && !keywordTags.value.includes(val)) {
+    keywordTags.value.push(val)
+  }
+  keywordInput.value = ''
+}
+
+// 删除关键词 tag
+function removeKeywordTag(index: number) {
+  keywordTags.value.splice(index, 1)
+}
+
+// 打开对话框时初始化 tag
 watch(
   () => showAddDialog.value,
   val => {
     if (val) {
+      // 作者
+      authorTags.value = []
       if (isEditing.value && Array.isArray(currentPublication.authors)) {
-        authorsInput.value = (currentPublication.authors as Author[])
-          .map(a => a.authorName)
-          .join(', ')
-      } else if (!isEditing.value) {
-        authorsInput.value = userName.value
+        ;(currentPublication.authors as Author[]).forEach(a => {
+          if (a.authorName !== userName.value) {
+            authorTags.value.push({ authorName: a.authorName, authorId: a.authorId ?? 0 })
+          }
+        })
+      }
+      // 关键词
+      keywordTags.value = []
+      if (isEditing.value && currentPublication.keywords) {
+        const arr = currentPublication.keywords.split(',').map(k => k.trim())
+        keywordTags.value = arr.filter(k => k !== '')
       }
     }
   }
 )
 
-const agreePrivacyCallback = ref<() => void>(() => {})
-const rejectPrivacyCallback = ref<() => void>(() => {})
-
-const onAgreePrivacy = () => {
-  agreePrivacyCallback.value()
-}
-const onCancelPrivacy = () => {
-  rejectPrivacyCallback.value()
-}
-
+// 保存前同步 tag 到 currentPublication
 const handleSave = async () => {
   if (!formRef.value) return
-  currentPublication.authors = authorsInput.value
+  // authors
+  currentPublication.authors = [userName.value, ...authorTags.value.map(a => a.authorName)].join(
+    ','
+  )
+  // keywords
+  currentPublication.keywords = keywordTags.value.join(',')
   formRef.value
     .validate()
     .then(() => {
@@ -933,6 +1001,7 @@ const handleSave = async () => {
       }
       // PDF无异常再保存
       let urlApi = isEditing.value ? '/publication/update' : '/publication/add'
+      //console.log(payload)
       return savePublication(urlApi, payload)
     })
     .then(() => {
@@ -964,6 +1033,20 @@ const handleSave = async () => {
 function onShowInfo(row: PublicationDetail) {
   shownPublication.value = row
   showInfo.value = true
+}
+
+const closeDialog = () => {
+  showAddDialog.value = false
+}
+
+const agreePrivacyCallback = ref<() => void>(() => {})
+const rejectPrivacyCallback = ref<() => void>(() => {})
+
+const onAgreePrivacy = () => {
+  agreePrivacyCallback.value()
+}
+const onCancelPrivacy = () => {
+  rejectPrivacyCallback.value()
 }
 
 // 成果认领相关方法
@@ -1032,7 +1115,7 @@ const viewClaimDetail = (publication: Publication) => {
   showClaimDetailDialog.value = true
 }
 
-const formatAuthors = (authors: any): string => {
+const formatAuthors = (authors: Author[] | string): string => {
   if (!authors) {
     return '暂无数据'
   }
@@ -1045,7 +1128,7 @@ const formatAuthors = (authors: any): string => {
   // 如果authors是数组，提取authorName字段
   if (Array.isArray(authors)) {
     return authors
-      .map((author: any) => author.authorName)
+      .map((author: Author) => author.authorName)
       .filter(Boolean)
       .join(', ')
   }

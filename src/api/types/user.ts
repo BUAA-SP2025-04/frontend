@@ -1,4 +1,4 @@
-import type { Author, Publication } from "./publication"
+import type { Author } from './publication'
 
 // 注册请求体
 export interface RegisterUserRequest {

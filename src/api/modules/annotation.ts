@@ -2,7 +2,7 @@ import request from '@/utils/request'
 import type {
   AnnotationUpload,
   GetAnnotationListResponse,
-  UploadAnnotationResponse
+  UploadAnnotationResponse,
 } from '@/api/types/annotation'
 
 export const annotationAPI = {
@@ -13,7 +13,11 @@ export const annotationAPI = {
     }),
 
   // 上传新高亮批注
-  uploadAnnotation: (userId: string, paperId: string, newAnnotation: AnnotationUpload): Promise<UploadAnnotationResponse> =>
+  uploadAnnotation: (
+    userId: string,
+    paperId: string,
+    newAnnotation: AnnotationUpload
+  ): Promise<UploadAnnotationResponse> =>
     request.post('/annotation/list', newAnnotation, {
       params: { userId, paperId },
     }),
@@ -23,5 +27,4 @@ export const annotationAPI = {
     request.post('/annotation/list', null, {
       params: { userId, annotationId },
     }),
-  
 }

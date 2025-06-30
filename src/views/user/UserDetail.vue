@@ -253,12 +253,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getUserDetail, getUserPapers, follow, getIfFollow, unfollow } from '@/api/modules/user'
-import type { UserDetail, Paper } from '@/api/types/user'
+import { follow, getIfFollow, getUserDetail, getUserPapers, unfollow } from '@/api/modules/user'
+import type { Paper, UserDetail } from '@/api/types/user'
 import type { Author } from '@/api/types/publication'
-import { Male, Female, UserFilled, CircleCheckFilled, Plus, Close } from '@element-plus/icons-vue'
+import { CircleCheckFilled, Close, Female, Male, Plus, UserFilled } from '@element-plus/icons-vue'
 import { ElIcon, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 
@@ -449,7 +449,9 @@ function getStatusLabel(status: string) {
   height: 34px;
   min-height: 34px;
   line-height: 34px;
-  transition: background 0.3s, transform 0.2s;
+  transition:
+    background 0.3s,
+    transform 0.2s;
 }
 .follow-btn:hover {
   background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);

@@ -25,20 +25,20 @@ const md: MarkdownIt = new MarkdownIt({
   typographer: true,
   breaks: true,
   highlight: (str, lang) => {
-    let langLabel = '';
+    let langLabel = ''
     if (lang) {
-      langLabel = `<div class="code-lang-label">${lang}</div>`;
+      langLabel = `<div class="code-lang-label">${lang}</div>`
     }
-    let codeHtml = '';
+    let codeHtml = ''
     if (lang && hljs.getLanguage(lang)) {
       try {
-        codeHtml = hljs.highlight(str, { language: lang }).value;
+        codeHtml = hljs.highlight(str, { language: lang }).value
       } catch {}
     } else {
-      codeHtml = md.utils.escapeHtml(str);
+      codeHtml = md.utils.escapeHtml(str)
     }
-    return `<div class="code-block-wrapper">${langLabel}<pre class="hljs"><code>${codeHtml}</code></pre></div>`;
-  }
+    return `<div class="code-block-wrapper">${langLabel}<pre class="hljs"><code>${codeHtml}</code></pre></div>`
+  },
 })
   .use(katex, {
     throwOnError: false,
@@ -64,7 +64,14 @@ const rendered = computed(() => md.render(props.source || ''))
 .markdown-content {
   color: #333333;
   font-size: 16px;
-  font-family: "HarmonyOS Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family:
+    'HarmonyOS Sans SC',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Helvetica,
+    Arial,
+    sans-serif;
   line-height: 1.6;
   word-wrap: break-word;
   max-width: 100%;
@@ -139,7 +146,7 @@ const rendered = computed(() => md.render(props.source || ''))
   background: #f6f8fa;
   padding: 2px 8px;
   border-radius: 3px;
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
   z-index: 10;
   backdrop-filter: blur(4px);
 }
@@ -153,7 +160,7 @@ const rendered = computed(() => md.render(props.source || ''))
   overflow-x: auto;
   font-size: 14px;
   line-height: 1.45;
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
 /* 行内代码 */
@@ -164,7 +171,7 @@ const rendered = computed(() => md.render(props.source || ''))
   margin: 0;
   font-size: 85%;
   border-radius: 3px;
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
 .markdown-content pre code {
