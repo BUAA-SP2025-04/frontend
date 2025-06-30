@@ -1,13 +1,13 @@
 import request from '@/utils/request'
 import type {
-  GetConversationHistoryRequest,
-  GetConversationHistoryResponse,
-  CreateConversationRequest,
-  CreateConversationResponse,
-  UploadFileResponse,
+  ApiResponse,
   ChatUser,
   Conversation,
-  ApiResponse,
+  CreateConversationRequest,
+  CreateConversationResponse,
+  GetConversationHistoryRequest,
+  GetConversationHistoryResponse,
+  UploadFileResponse,
 } from '@/api/types/chat'
 
 export const chatAPI = {

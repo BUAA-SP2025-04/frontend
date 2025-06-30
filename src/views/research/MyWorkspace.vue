@@ -650,18 +650,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
-  getMyProjects,
-  getMyApplications,
-  getMyJoinedProjects,
-  deleteProject as deleteProjectApi,
   cancelApplication as cancelApplicationApi,
   cancelJoinProject,
+  deleteProject as deleteProjectApi,
+  getMyApplications,
+  getMyJoinedProjects,
+  getMyProjects,
 } from '@/api/modules/project'
-import type { ProjectWithApplications, ApplicationDetail, Project } from '@/api/types/project'
+import type { ApplicationDetail, Project, ProjectWithApplications } from '@/api/types/project'
 import PublishProjectDialog from '@/components/project/PublishProjectDialog.vue'
 import ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
 import ApplicationsDialog from '@/components/project/ApplicationsDialog.vue'

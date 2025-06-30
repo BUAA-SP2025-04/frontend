@@ -25,7 +25,6 @@
 
             <div class="flex items-center space-x-3">
               <div class="relative">
-                
                 <img
                   :src="getChatUserAvatar()"
                   :alt="chatUser?.name || '用户'"
@@ -39,58 +38,78 @@
               </div>
 
               <div>
-              <div class="flex items-center space-x-2">
-                <h2 class="text-lg font-semibold text-gray-900">
-                  {{ chatUser?.name || '加载中...' }}
-                </h2>
-
-              </div>
-                  <p class="text-sm flex items-center space-x-1 mt-1">
-                    <template v-if="isTyping">
-                      <span class="inline-flex items-center">
-                        <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse mr-1"></span>
-                        正在输入...
-                      </span>
-                    </template>
-                    <template v-else-if="chatUser?.online">
-                      <span class="inline-flex items-center">
-                        <span class="w-2 h-2 bg-green-400 rounded-full mr-1"></span>
-                        在线
-                      </span>
-                    </template>
-                    <template v-else>ba
-                      <span class="inline-flex items-center">
-                        <span class="w-2 h-2 bg-gray-400 rounded-full mr-1"></span>
-                        {{ getLastSeenText() }}
-                      </span>
-                    </template>
-                  </p>
+                <div class="flex items-center space-x-2">
+                  <h2 class="text-lg font-semibold text-gray-900">
+                    {{ chatUser?.name || '加载中...' }}
+                  </h2>
+                </div>
+                <p class="text-sm flex items-center space-x-1 mt-1">
+                  <template v-if="isTyping">
+                    <span class="inline-flex items-center">
+                      <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse mr-1"></span>
+                      正在输入...
+                    </span>
+                  </template>
+                  <template v-else-if="chatUser?.online">
+                    <span class="inline-flex items-center">
+                      <span class="w-2 h-2 bg-green-400 rounded-full mr-1"></span>
+                      在线
+                    </span>
+                  </template>
+                  <template v-else
+                    >ba
+                    <span class="inline-flex items-center">
+                      <span class="w-2 h-2 bg-gray-400 rounded-full mr-1"></span>
+                      {{ getLastSeenText() }}
+                    </span>
+                  </template>
+                </p>
               </div>
             </div>
           </div>
 
-  <div class="flex items-center space-x-4">
-    <!-- 机构信息 - 卡片式 -->
-    <div v-if="chatUser?.institution" class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg px-3 py-2 shadow-sm">
-      <div class="flex items-center space-x-2">
-        <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.84L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.84l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
-        </svg>
-        <span class="text-sm font-medium text-purple-700">{{ chatUser.institution }}</span>
-      </div>
-    </div>
+          <div class="flex items-center space-x-4">
+            <!-- 机构信息 - 卡片式 -->
+            <div
+              v-if="chatUser?.institution"
+              class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg px-3 py-2 shadow-sm"
+            >
+              <div class="flex items-center space-x-2">
+                <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.84L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.84l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"
+                  />
+                </svg>
+                <span class="text-sm font-medium text-purple-700">{{ chatUser.institution }}</span>
+              </div>
+            </div>
 
-    <!-- 连接状态 - WiFi图标风格 -->
-    <div class="flex items-center space-x-2 text-xs text-gray-500">
-        <svg   v-if="isConnected"  xmlns="http://www.w3.org/2000/svg"  fill="none"  viewBox="0 0 24 24"  stroke-width="1.5"  stroke="rgb(59,130,246)"  class="size-5 animate-pulse">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
-        </svg>
+            <!-- 连接状态 - WiFi图标风格 -->
+            <div class="flex items-center space-x-2 text-xs text-gray-500">
+              <svg
+                v-if="isConnected"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="rgb(59,130,246)"
+                class="size-5 animate-pulse"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z"
+                />
+              </svg>
 
-      <svg v-else class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.366zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
-      </svg>
-    </div>
-           
+              <svg v-else class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.366zM18 10a8 8 0 11-16 0 8 8 0 0116 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
 
             <!-- 更多选项 -->
             <el-dropdown trigger="click" @command="handleMoreAction">
@@ -234,7 +253,7 @@
                         />
                       </div>
 
-                     <!-- 文件消息 -->
+                      <!-- 文件消息 -->
                       <div
                         v-else-if="message.type === 'file'"
                         :class="[
@@ -246,7 +265,9 @@
                         @click="downloadFile(message.fileInfo)"
                       >
                         <div class="flex items-center space-x-3">
-                          <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <div
+                            class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"
+                          >
                             <svg
                               class="w-5 h-5 text-gray-600"
                               fill="currentColor"
@@ -261,10 +282,16 @@
                           </div>
                           <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-gray-900 truncate">
-                              {{ message.fileInfo?.name || message.fileInfo?.fileName || '未知文件' }}
+                              {{
+                                message.fileInfo?.name || message.fileInfo?.fileName || '未知文件'
+                              }}
                             </p>
                             <p class="text-xs text-gray-500">
-                              {{ formatFileSize(message.fileInfo?.size || message.fileInfo?.fileSize || 0) }}
+                              {{
+                                formatFileSize(
+                                  message.fileInfo?.size || message.fileInfo?.fileSize || 0
+                                )
+                              }}
                             </p>
                           </div>
                           <svg
@@ -651,6 +678,7 @@ import { wsService } from '@/utils/websocketChat'
 import { uploadFile } from '@/utils/fileUpload'
 import { chatAPI } from '@/api/modules/chat'
 import type { GetConversationHistoryRequest } from '@/api/types/chat'
+
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
@@ -836,7 +864,7 @@ const getChatUserAvatar = () => {
     }
     return API_BASE_URL + chatUser.value.avatar
   }
-  return  '/default-avatar.png'
+  return '/default-avatar.png'
 }
 
 // 初始化 WebSocket 连接
@@ -940,10 +968,7 @@ const handleReadStatus = (raw: any) => {
     data.readBy !== currentUserId.value // 不是自己已读自己
   ) {
     messages.value.forEach(msg => {
-      if (
-        data.messageIds.includes(String(msg.id)) &&
-        msg.senderId === currentUserId.value
-      ) {
+      if (data.messageIds.includes(String(msg.id)) && msg.senderId === currentUserId.value) {
         msg.status = 'read'
       }
     })
@@ -1093,17 +1118,15 @@ const handleInputChange = () => {
 // 标记消息为已读
 const markAsRead = () => {
   if (isConnected.value) {
-
-  const unreadMessages = messages.value
-    .filter(m => m.senderId !== currentUserId.value && m.status !== 'read')
-    .map(m => String(m.id))
+    const unreadMessages = messages.value
+      .filter(m => m.senderId !== currentUserId.value && m.status !== 'read')
+      .map(m => String(m.id))
 
     if (unreadMessages.length > 0) {
       console.log('标记消息已读:', unreadMessages)
       wsService.sendReadStatus(conversationId.value, unreadMessages)
     }
-  }
-  else{
+  } else {
     console.warn('无法标记已读，WebSocket未连接')
   }
 }
@@ -1120,8 +1143,6 @@ const getImageUrl = (message: any) => {
   }
   return message.content
 }
-
-
 
 const nextCursor = ref<string | undefined>(undefined)
 
@@ -1148,7 +1169,7 @@ const loadMessages = async (loadMore = false) => {
 
     if (loadMore) {
       if (nextCursor.value) {
-        const cursor = nextCursor.value.replace(/([+-]\d{2}:\d{2}|Z)$/, '')+ 'Z' // 确保格式正确
+        const cursor = nextCursor.value.replace(/([+-]\d{2}:\d{2}|Z)$/, '') + 'Z' // 确保格式正确
         console.log('加载更多消息，before:', cursor)
         params.before = cursor
       }
@@ -1158,7 +1179,7 @@ const loadMessages = async (loadMore = false) => {
       params.before = nextCursor.value
       console.log('加载最新消息，before:', params.before)
     }
-    
+
     const response = await chatAPI.getConversationHistory(params)
 
     // 格式化消息数据
@@ -1185,7 +1206,7 @@ const loadMessages = async (loadMore = false) => {
           name: extractFileName(msg.content),
           url: API_BASE_URL + msg.content,
           size: 0,
-          mimeType: getFileType(msg.content)
+          mimeType: getFileType(msg.content),
         }
       }
 
@@ -1216,7 +1237,7 @@ const loadMessages = async (loadMore = false) => {
     if (!loadMore) {
       scrollToBottom()
       nextTick(() => {
-      checkAndLoadMore()
+        checkAndLoadMore()
       })
     }
 
@@ -1305,13 +1326,12 @@ function getLocalDateTimeString(date: Date) {
   return `${y}-${m}-${d} ${h}:${min}:${s}`
 }
 
-
 // 生命周期钩子
 onMounted(async () => {
   console.log('Chat.vue 组件挂载')
   await initializeChat()
   scrollToBottom()
-    nextTick(() => {
+  nextTick(() => {
     markAsRead()
   })
 
@@ -1432,7 +1452,6 @@ const previewImage = (imageUrl: string) => {
   showImagePreview.value = true
 }
 
-
 const downloadFile = (fileInfo: any) => {
   if (!fileInfo) {
     ElMessage.error('文件信息无效')
@@ -1516,17 +1535,17 @@ const formatMessageTime = (date: Date | string) => {
   try {
     messageDate = new Date(date)
     if (isNaN(messageDate.getTime())) return ''
-    
+
     const now = new Date()
     const diff = now.getTime() - messageDate.getTime()
-    
+
     // 如果 messageDate 在未来，或者 diff 超过一天，都直接格式化
     if (diff < 0 || diff >= 24 * 60 * 60 * 1000) {
       return new Intl.DateTimeFormat('zh-CN', {
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       }).format(messageDate)
     }
 
@@ -1615,9 +1634,7 @@ const handleDragLeave = (event: DragEvent) => {
 
 watch(
   () => messages.value.length,
-  () => {
-
-  }
+  () => {}
 )
 </script>
 <style scoped>

@@ -146,14 +146,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch, computed, onUnmounted } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import VuePdfEmbed from 'vue-pdf-embed'
 import type { UploadFile } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getPublicationFile } from '@/api/modules/publication'
 import { annotationAPI } from '@/api/modules/annotation'
-import type { HighlightPreview, PopupPosition } from '@/api/types/annotation'
 import { useUserStore } from '@/stores/user'
 
 // 定义批注类型
@@ -663,7 +662,6 @@ onMounted(() => {
   }, 2000)
 })
 </script>
-
 
 <style>
 /* 添加一些基本样式 */

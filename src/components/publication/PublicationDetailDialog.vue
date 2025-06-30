@@ -64,7 +64,7 @@
       <!-- 摘要信息 -->
       <div class="p-4">
         <h3 class="text-lg font-semibold text-gray-900 mb-3">摘要</h3>
-        <p class="text-gray-700 leading-relaxed">{{ publication.abstracts || "暂无摘要信息" }}</p>
+        <p class="text-gray-700 leading-relaxed">{{ publication.abstracts || '暂无摘要信息' }}</p>
       </div>
       <!-- 统计信息 -->
       <div class="bg-blue-50 rounded-lg p-4">
@@ -186,4 +186,4 @@ const displayAuthors = computed(() => {
 
   return '暂无数据'
 })
-</script> 
+</script>
