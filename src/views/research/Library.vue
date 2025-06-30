@@ -37,10 +37,7 @@
           </el-button>
           <el-button
             type="primary"
-            @click="
-              showFolderDialog = true
-              newFolder.name = ''
-            "
+            @click="showNewFolderDialog"
           >
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -1615,6 +1612,11 @@ const cancelCreateFolder = () => {
 
 const cancelRenameFolder = () => {
   showFolderRenameDialog.value = false
+  newFolder.name = ''
+}
+
+const showNewFolderDialog = () => {
+  showFolderDialog.value = true
   newFolder.name = ''
 }
 </script>
