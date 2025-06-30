@@ -1,8 +1,8 @@
 <!-- filepath: c:\Users\Windows11\Desktop\小学期\frontend\src\views\social\Chat.vue -->
 <template>
-  <div class="h-screen bg-gray-100 flex justify-center">
+  <div class="chat-wrapper">
     <!-- 聊天容器 - 限制最大宽度，居中显示 -->
-    <div class="w-full max-w-4xl bg-white shadow-lg flex flex-col">
+    <div class="w-full max-w-4xl bg-white shadow-lg flex flex-col h-full">
       <!-- 聊天头部 -->
       <div class="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
         <div class="flex items-center justify-between">
@@ -1655,6 +1655,40 @@ watch(
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+.chat-wrapper {
+  height: 95vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  padding: 0;
+  margin: 0;
+  background-color: #f3f4f6;
+}
+
+/* 确保没有额外的边距和填充 */
+.chat-wrapper * {
+  box-sizing: border-box;
+}
+
+/* 禁止外部滚动条 - 添加这部分 */
+:global(html) {
+  overflow: hidden;
+}
+
+:global(body) {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* 如果上面的方法不生效，尝试这个更强制的方法 */
+:global(html, body) {
+  height: 100vh;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* 响应式设计 */
