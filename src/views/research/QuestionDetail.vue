@@ -127,9 +127,14 @@
 
                   <!-- 问题作者显示设置最佳回答按钮 -->
                   <button
-                    v-if="isQuestionAuthor && !hasBestAnswer"
+                    v-if="isQuestionAuthor"
                     @click="showBestAnswerDialog = true"
-                    class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                    :class="[
+                      'px-6 py-3 rounded-lg font-medium transition-colors',
+                      hasBestAnswer 
+                        ? 'bg-orange-600 text-white hover:bg-orange-700' 
+                        : 'bg-purple-600 text-white hover:bg-purple-700'
+                    ]"
                   >
                     <svg
                       class="w-5 h-5 inline-block mr-2"
@@ -144,7 +149,7 @@
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                       ></path>
                     </svg>
-                    设置最佳回答
+                    {{ hasBestAnswer ? '重新设置最佳回答' : '设置最佳回答' }}
                   </button>
 
                   <button
@@ -265,7 +270,17 @@
             <!-- 回答列表 -->
             <div>
               <template v-for="(answer, idx) in sortedAnswers" :key="answer.id">
-                <div class="p-8 transition-colors">
+                <div class="p-8 transition-colors" :class="{ 'bg-green-50 border-l-4 border-green-500': answer.id === question.bestAnswer?.id }">
+                  <!-- 最佳回答标识 -->
+                  <div v-if="answer.id === question.bestAnswer?.id" class="mb-4 flex items-center">
+                    <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-green-800 bg-green-100 px-3 py-1 rounded-full">
+                      最佳回答
+                    </span>
+                  </div>
+                  
                   <!-- 回答者信息 -->
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
@@ -438,6 +453,26 @@
                 写回答
               </h3>
               <p class="text-sm text-gray-600 mt-1">分享你的见解，帮助解决这个问题</p>
+              
+              <!-- 回复提示 -->
+              <div v-if="replyingToAnswerId !== null || isReplyingToQuestion" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-blue-800">
+                      {{ getReplyPreview() }}
+                    </span>
+                  </div>
+                  <button
+                    @click="cancelAnswerReply"
+                    class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                  >
+                    取消回复
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- Body -->
@@ -453,7 +488,7 @@
                     v-model="newAnswerContent"
                     rows="14"
                     class="flex-1 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm resize-none"
-                    placeholder="你可以使用 Markdown 语法来格式化你的回答..."
+                    :placeholder="getTextareaPlaceholder()"
                   ></textarea>
                 </div>
 
@@ -580,7 +615,9 @@
       <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div class="px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">选择最佳回答</h3>
+            <h3 class="text-lg font-semibold text-gray-900">
+              {{ hasBestAnswer ? '重新设置最佳回答' : '选择最佳回答' }}
+            </h3>
             <button
               @click="showBestAnswerDialog = false"
               class="text-gray-400 hover:text-gray-600 transition-colors"
@@ -595,7 +632,31 @@
               </svg>
             </button>
           </div>
-          <p class="text-sm text-gray-600 mt-2">请选择一个回答作为最佳答案，这将标记问题为已解决</p>
+          <p class="text-sm text-gray-600 mt-2">
+            {{ hasBestAnswer 
+              ? '当前已有最佳回答，您可以选择其他回答作为新的最佳答案' 
+              : '请选择一个回答作为最佳答案，这将标记问题为已解决' 
+            }}
+          </p>
+          <!-- 显示当前最佳回答 -->
+          <div v-if="hasBestAnswer && question.bestAnswer" class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div class="flex items-center mb-2">
+              <svg class="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+              <span class="text-sm font-medium text-green-800">当前最佳回答</span>
+            </div>
+            <div class="flex items-center mb-1">
+              <img
+                :src="getAvatarUrl(question.bestAnswer.user.imgUrl)"
+                :alt="question.bestAnswer.user.name"
+                class="w-6 h-6 rounded-full mr-2"
+              />
+              <span class="text-sm font-medium text-gray-800">{{ question.bestAnswer.user.name }}</span>
+              <span class="text-xs text-gray-500 ml-2">{{ formatTime(question.bestAnswer.createdAt) }}</span>
+            </div>
+            <p class="text-sm text-gray-700 line-clamp-2">{{ question.bestAnswer.content }}</p>
+          </div>
         </div>
 
         <div class="p-6">
@@ -644,10 +705,21 @@
                 </div>
                 <div class="ml-4">
                   <button
+                    v-if="answer.id === question.bestAnswer?.id"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm cursor-default"
+                    disabled
+                  >
+                    <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    当前最佳
+                  </button>
+                  <button
+                    v-else
                     @click.stop="selectBestAnswer(answer.id)"
                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                   >
-                    选择为最佳
+                    {{ hasBestAnswer ? '设为最佳' : '选择为最佳' }}
                   </button>
                 </div>
               </div>
@@ -1162,7 +1234,10 @@ const selectBestAnswer = async (answerId: string) => {
     if (response && response.code === '200') {
       question.value.bestAnswer = question.value.answers?.find(a => a.id === answerId)
       showBestAnswerDialog.value = false
-      ElMessage.success('已设置最佳答案，问题标记为已解决')
+      const successMessage = hasBestAnswer.value 
+        ? '已更新最佳答案' 
+        : '已设置最佳答案，问题标记为已解决'
+      ElMessage.success(successMessage)
     } else {
       ElMessage.error(response?.message || '设置最佳答案失败')
     }
@@ -1271,24 +1346,45 @@ const cancelAnswerReply = () => {
 const getReplyPreview = () => {
   if (replyingToAnswerId.value === null && isReplyingToQuestion.value) {
     // 回复问题本身
-    return question.value.title
+    return `正在回复问题：${formatPreviewContent(question.value.title)}`
   } else if (replyingToAnswerId.value !== undefined && replyingToAnswerId.value !== null) {
     // 回复某个回答（可能是1级或2级回答）
     // 先查找1级回答
     const answer = question.value.answers?.find(a => a.id === replyingToAnswerId.value?.toString())
     if (answer) {
-      return `${answer.user.name}：${answer.content}`
+      return `正在回复 ${answer.user.name}：${formatPreviewContent(answer.content)}`
     }
     
     // 如果没找到1级回答，查找2级回答
     for (const parentAnswer of question.value.answers || []) {
       const childAnswer = parentAnswer.childAnswers?.find(ca => ca.id === replyingToAnswerId.value?.toString())
       if (childAnswer) {
-        return `${childAnswer.user.name}：${childAnswer.content}`
+        return `正在回复 ${childAnswer.user.name}：${formatPreviewContent(childAnswer.content)}`
       }
     }
   }
   return ''
+}
+
+const getTextareaPlaceholder = () => {
+  if (replyingToAnswerId.value === null && isReplyingToQuestion.value) {
+    return '正在回复问题，请输入你的回复内容...（支持 Markdown 语法）'
+  } else if (replyingToAnswerId.value !== undefined && replyingToAnswerId.value !== null) {
+    // 查找要回复的用户
+    const answer = question.value.answers?.find(a => a.id === replyingToAnswerId.value?.toString())
+    if (answer) {
+      return `正在回复 ${answer.user.name}，请输入你的回复内容...（支持 Markdown 语法）`
+    }
+    
+    // 查找2级回答
+    for (const parentAnswer of question.value.answers || []) {
+      const childAnswer = parentAnswer.childAnswers?.find(ca => ca.id === replyingToAnswerId.value?.toString())
+      if (childAnswer) {
+        return `正在回复 ${childAnswer.user.name}，请输入你的回复内容...（支持 Markdown 语法）`
+      }
+    }
+  }
+  return '你可以使用 Markdown 语法来格式化你的回答...'
 }
 
 // 格式化预览内容（限制长度并添加省略号）

@@ -1603,6 +1603,11 @@ const cancelRenameFolder = () => {
   showFolderRenameDialog.value = false
   newFolder.name = ''
 }
+
+const showNewFolderDialog = () => {
+  showFolderDialog.value = true
+  newFolder.name = ''
+}
 </script>
 
 <style scoped>

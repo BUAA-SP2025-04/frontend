@@ -71,3 +71,7 @@ export function getIfFollow(id: string | number) {
 export function getUserInfo(): Promise<any> {
   return request.get('/user/get')
 }
+
+export function logoutUser(): Promise<any> {
+  return request.post('/user/logout')
+}
