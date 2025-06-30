@@ -327,7 +327,10 @@
       :is-my-project="selectedProjectForDetail && selectedProjectForDetail.projBelongings === 3"
       @close="showProjectDetail = false"
     />
-    <FollowersDialog v-model:visible="showFollowersDialog" :id="route.params.id" />
+    <FollowersDialog
+      v-model:visible="showFollowersDialog"
+      :id="Array.isArray(route.params.id) ? route.params.id[0] : route.params.id"
+    />
   </div>
 </template>
 

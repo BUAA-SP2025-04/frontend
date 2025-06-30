@@ -22,7 +22,7 @@
                     <el-tag
                       v-for="area in f.researchArea
                         .split(',')
-                        .map(a => a.trim())
+                        .map((a: string) => a.trim())
                         .filter(Boolean)
                         .slice(0, 3)"
                       :key="area"
@@ -35,14 +35,14 @@
                       v-if="
                         f.researchArea
                           .split(',')
-                          .map(a => a.trim())
+                          .map((a: string) => a.trim())
                           .filter(Boolean).length > 3
                       "
                       effect="dark"
                       :content="
                         f.researchArea
                           .split(',')
-                          .map(a => a.trim())
+                          .map((a: string) => a.trim())
                           .filter(Boolean)
                           .slice(3)
                           .join('，')
@@ -54,7 +54,7 @@
                         >+{{
                           f.researchArea
                             .split(',')
-                            .map(a => a.trim())
+                            .map((a: string) => a.trim())
                             .filter(Boolean).length - 3
                         }}</el-tag
                       >
@@ -84,7 +84,7 @@
                     <el-tag
                       v-for="area in f.researchArea
                         .split(',')
-                        .map(a => a.trim())
+                        .map((a: string) => a.trim())
                         .filter(Boolean)
                         .slice(0, 3)"
                       :key="area"
@@ -97,14 +97,14 @@
                       v-if="
                         f.researchArea
                           .split(',')
-                          .map(a => a.trim())
+                          .map((a: string) => a.trim())
                           .filter(Boolean).length > 3
                       "
                       effect="dark"
                       :content="
                         f.researchArea
                           .split(',')
-                          .map(a => a.trim())
+                          .map((a: string) => a.trim())
                           .filter(Boolean)
                           .slice(3)
                           .join('，')
@@ -116,7 +116,7 @@
                         >+{{
                           f.researchArea
                             .split(',')
-                            .map(a => a.trim())
+                            .map((a: string) => a.trim())
                             .filter(Boolean).length - 3
                         }}</el-tag
                       >
