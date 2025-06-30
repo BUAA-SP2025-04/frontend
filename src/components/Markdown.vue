@@ -1,66 +1,43 @@
 <template>
-  <div class="markdown-content" v-html="rendered" />
+  <div class="markdown-content" v-html="renderedContent"></div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps } from 'vue'
-import MarkdownIt from 'markdown-it'
-import katex from 'markdown-it-katex'
-import taskLists from 'markdown-it-task-lists'
-import container from 'markdown-it-container'
-import anchor from 'markdown-it-anchor'
-import toc from 'markdown-it-table-of-contents'
+import { computed } from 'vue'
+import { marked } from 'marked'
 import hljs from 'highlight.js'
-import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github.css'
 
-const props = defineProps<{
+interface Props {
   source: string
-  enableToc?: boolean
-}>()
-
-const md: MarkdownIt = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
-  breaks: true,
-  highlight: (str, lang) => {
-    let langLabel = ''
-    if (lang) {
-      langLabel = `<div class="code-lang-label">${lang}</div>`
-    }
-    let codeHtml = ''
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        codeHtml = hljs.highlight(str, { language: lang }).value
-      } catch {}
-    } else {
-      codeHtml = md.utils.escapeHtml(str)
-    }
-    return `<div class="code-block-wrapper">${langLabel}<pre class="hljs"><code>${codeHtml}</code></pre></div>`
-  },
-})
-  .use(katex, {
-    throwOnError: false,
-    errorColor: '#cc0000',
-  })
-  .use(taskLists, { enabled: true })
-  .use(container, 'info')
-  .use(container, 'warning')
-  .use(container, 'danger')
-
-if (props.enableToc) {
-  md.use(anchor, {
-    permalink: anchor.permalink.headerLink(),
-  }).use(toc, {
-    includeLevel: [1, 2, 3],
-  })
 }
 
-const rendered = computed(() => md.render(props.source || ''))
+const props = defineProps<Props>()
+
+// 配置 marked
+marked.setOptions({
+  breaks: true,
+  gfm: true
+})
+
+// 自定义渲染器来处理代码高亮
+const renderer = new marked.Renderer()
+renderer.code = ({ text, lang }: { text: string; lang?: string }) => {
+  if (lang && hljs.getLanguage(lang)) {
+    try {
+      const highlighted = hljs.highlight(text, { language: lang }).value
+      return `<pre><code class="hljs language-${lang}">${highlighted}</code></pre>`
+    } catch {}
+  }
+  return `<pre><code>${text}</code></pre>`
+}
+
+marked.use({ renderer })
+
+const renderedContent = computed(() => marked.parse(props.source || ''))
 </script>
 
-<style>
+<style scoped>
 .markdown-content {
   color: #333333;
   font-size: 16px;
@@ -105,7 +82,7 @@ const rendered = computed(() => md.render(props.source || ''))
   padding-bottom: 0.3rem;
 }
 
-.markdown-content h3 {
+.markdown-content :deep(h2) {
   font-size: 1.25rem;
 }
 
@@ -292,7 +269,7 @@ const rendered = computed(() => md.render(props.source || ''))
   font-weight: 600;
 }
 
-.markdown-content em {
+.markdown-content :deep(em) {
   font-style: italic;
 }
 
