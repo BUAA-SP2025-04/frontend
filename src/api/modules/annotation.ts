@@ -2,7 +2,7 @@ import request from '@/utils/request'
 import type {
   AnnotationUpload,
   GetAnnotationListResponse,
-  UploadAnnotationResponse
+  UploadAnnotationResponse,
 } from '@/api/types/annotation'
 
 export const annotationAPI = {
@@ -23,5 +23,4 @@ export const annotationAPI = {
     request.post('/annotation/delete', null, {
       params: { annotationId },
     }),
-  
 }

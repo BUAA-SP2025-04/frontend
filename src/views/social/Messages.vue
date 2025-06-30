@@ -84,7 +84,7 @@
                   v-for="friend in allFriends"
                   :key="friend.id"
                   class="flex items-center p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  @click=""
+                  @click="startChat(friend.id)"
                 >
                   <div class="relative">
                     <img
@@ -277,66 +277,70 @@
             </div>
 
             <!-- 动态提醒列表 -->
-          <div v-else-if="activeCategory === 'activity'" class="divide-y divide-gray-200">
-            <div
-              v-for="activity in filteredActivityNotifications"
-              :key="activity.id"
-              :class="[
-                'p-6 hover:bg-gray-50 cursor-pointer transition-colors relative',
-                !activity.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : '',
-              ]"
-              @click="handleActivityClick(activity)"
-            >
-              <!-- 未读标记小图标 -->
-              <button
-                v-if="!activity.isRead"
-                @click.stop="markAsReadLocal('activity', activity.id)"
-                class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
-                title="标记为已读"
+            <div v-else-if="activeCategory === 'activity'" class="divide-y divide-gray-200">
+              <div
+                v-for="activity in filteredActivityNotifications"
+                :key="activity.id"
+                :class="[
+                  'p-6 hover:bg-gray-50 cursor-pointer transition-colors relative',
+                  !activity.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : '',
+                ]"
+                @click="handleActivityClick(activity)"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  ></path>
-                </svg>
-              </button>
+                <!-- 未读标记小图标 -->
+                <button
+                  v-if="!activity.isRead"
+                  @click.stop="markAsReadLocal('activity', activity.id)"
+                  class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+                  title="标记为已读"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 13l4 4L19 7"
+                    ></path>
+                  </svg>
+                </button>
 
-              <div class="flex items-start space-x-4 pr-8">
-                <img
-                  :src="activity.user.avatar"
-                  :alt="activity.user.name"
-                  class="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                />
-                <div class="flex-1 min-w-0">
-                  <!-- 🔥 优化后的标题区域 -->
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center space-x-2">
-                      <span class="font-medium text-gray-900">{{ activity.user.name }}</span>
-                      <span
-                        :class="[
-                          'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-                          getActivityTagColor(activity.type),
-                        ]"
-                      >
-                        {{ getActivityLabel(activity.type) }}
-                      </span>
+                <div class="flex items-start space-x-4 pr-8">
+                  <img
+                    :src="activity.user.avatar"
+                    :alt="activity.user.name"
+                    class="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <!-- 🔥 优化后的标题区域 -->
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="flex items-center space-x-2">
+                        <span class="font-medium text-gray-900">{{ activity.user.name }}</span>
+                        <span
+                          :class="[
+                            'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                            getActivityTagColor(activity.type),
+                          ]"
+                        >
+                          {{ getActivityLabel(activity.type) }}
+                        </span>
+                      </div>
+                      <span class="text-xs text-gray-500 whitespace-nowrap">{{
+                        formatTime(activity.createdAt)
+                      }}</span>
                     </div>
-                    <span class="text-xs text-gray-500 whitespace-nowrap">{{
-                      formatTime(activity.createdAt)
-                    }}</span>
+
+                    <!-- 🔥 简化后的内容区域 - 保持原有显示 -->
+                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">
+                      {{
+                        typeof activity.content === 'object' && activity.content !== null
+                          ? activity.content.description
+                          : activity.content
+                      }}
+                    </p>
                   </div>
-                  
-                  <!-- 🔥 简化后的内容区域 - 保持原有显示 -->
-                  <p class="text-sm text-gray-600 mt-1 line-clamp-2">
-                    {{ typeof activity.content === 'object' && activity.content !== null ? activity.content.description : activity.content }}
-                  </p>
                 </div>
               </div>
             </div>
-          </div>
 
             <!-- 空状态 -->
             <div v-if="filteredMessages.length === 0" class="p-12 text-center">
@@ -428,23 +432,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, h, onMounted } from 'vue'
+import { computed, h, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { messagesAPI } from '@/api/modules/messages'
 import { useNotificationStore } from '@/stores/notification'
+import { chatAPI } from '@/api/modules/chat'
+import { useUserStore } from '@/stores/user'
 import type {
-
-  Friend,
-  Conversation,
-  SystemNotification,
   ActivityNotification,
-  MessageSettings
+  Conversation,
+  Friend,
+  MessageSettings,
+  SystemNotification,
 } from '@/api/types/messages'
 
 const router = useRouter()
 
 const notificationStore = useNotificationStore()
+
+const userStore = useUserStore()
+
+// 在其他计算属性附近添加
+const currentUserId = computed(() => {
+  const userId = userStore.user?.id
+  return typeof userId === 'string' ? parseInt(userId) : userId || 1
+})
 
 // 图标组件
 const ChatIcon = () =>
@@ -576,8 +589,12 @@ const filteredActivityNotifications = computed(() => {
     filtered = filtered.filter(
       activity =>
         activity.user.name.includes(searchQuery.value) ||
-        (typeof activity.content === 'object' && activity.content !== null && activity.content.title.includes(searchQuery.value)) ||
-        (typeof activity.content === 'object' && activity.content !== null && activity.content.description.includes(searchQuery.value))
+        (typeof activity.content === 'object' &&
+          activity.content !== null &&
+          activity.content.title.includes(searchQuery.value)) ||
+        (typeof activity.content === 'object' &&
+          activity.content !== null &&
+          activity.content.description.includes(searchQuery.value))
     )
   }
 
@@ -615,8 +632,31 @@ const setActiveCategory = (categoryId: string) => {
   loadCurrentCategory()
 }
 
-const startChat = (userId: number) => {
-  router.push(`/chat/${userId}`)
+const startChat = async (userId: number) => {
+  // 生成标准格式的 conversationId
+  const myId = currentUserId.value
+  const conversationId = `conv_${Math.min(myId, userId)}_${Math.max(myId, userId)}`
+
+  // 检查是否已经存在该会话
+  const existingConversation = conversations.value.find(
+    conv => conv.conversationId === conversationId
+  )
+
+  if (existingConversation) {
+    // 已有会话，直接跳转
+    router.push(`/chat/${userId}`)
+  } else {
+    try {
+      // 创建新会话
+      const response = await chatAPI.createConversation({ participantId: userId })
+      // 跳转到聊天页面
+      router.push(`/chat/${userId}`)
+      // 可选：更新本地会话列表
+    } catch (error) {
+      console.error('创建对话失败:', error)
+      ElMessage.error('无法开始聊天，请重试')
+    }
+  }
 }
 
 const openChat = (userId: number) => {
@@ -716,7 +756,6 @@ const updateSingleAsRead = (category: string, id: number) => {
   }
 }
 
-
 const handleActivityClick = (activity: ActivityNotification) => {
   if (!activity.isRead) {
     markAsReadLocal('activity', activity.id)
@@ -726,12 +765,12 @@ const handleActivityClick = (activity: ActivityNotification) => {
 
 const getFullImageUrl = (imageUrl: string | null) => {
   if (!imageUrl) return '/default-avatar.png'
-  
+
   // 如果已经是完整URL，直接返回
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return imageUrl
   }
-  
+
   // 拼接基础URL
   const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
   return `${baseUrl}${imageUrl}`
@@ -744,7 +783,7 @@ const getActivityTagColor = (type: string) => {
     start_project: 'bg-purple-100 text-purple-700 border border-purple-200',
     join_conference: 'bg-orange-100 text-orange-700 border border-orange-200',
     like: 'bg-red-100 text-red-700 border border-red-200',
-    comment: 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+    comment: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
   }
   return colors[type] || 'bg-gray-100 text-gray-700 border border-gray-200'
 }
@@ -794,7 +833,6 @@ const getNotificationTypeLabel = (type: string) => {
   }
   return labels[type] || '系统通知'
 }
-
 
 const getEmptyStateText = () => {
   const texts = {
@@ -849,7 +887,7 @@ const openSettingsDialog = async () => {
   try {
     const response = await messagesAPI.getMessageSettings()
     console.log('设置数据:', response) // 调试日志
-    
+
     if (response && response.data && response.data.settings) {
       Object.assign(messageSettings, response.data.settings)
     }
@@ -865,7 +903,7 @@ const saveSettings = async () => {
   try {
     const res = await messagesAPI.saveMessageSettings(messageSettings)
     console.log('保存设置响应:', res) // 调试日志
-    
+
     ElMessage.success('设置保存成功')
     showSettingsDialog.value = false
     loadCurrentCategory() // 重新加载消息，应用新的设置
@@ -886,6 +924,9 @@ const loadCurrentCategory = async () => {
           conversations.value = res.data.map(conv => ({
             id: conv.userId,
             userId: conv.userId,
+            conversationId: conv.conversationId
+              ? conv.conversationId
+              : `conv_${Math.min(currentUserId.value, conv.userId)}_${Math.max(currentUserId.value, conv.userId)}`,
             name: conv.name,
             avatar: getFullImageUrl(conv.avatar), // 拼接头像URL
             institution: conv.institution || '',
@@ -907,15 +948,15 @@ const loadCurrentCategory = async () => {
                   receiverId: conv.userId,
                   content: '',
                   createdAt: '',
-                  isRead: true
+                  isRead: true,
                 },
-            lastMessageTime: conv.lastMessage?.createdAt // 取消息时间
+            lastMessageTime: conv.lastMessage?.createdAt, // 取消息时间
           }))
           messageCategories.value[0].unreadCount = res.data.reduce(
             (sum, conv) => sum + (conv.unreadCount ?? 0),
             0
           )
-        }  else {
+        } else {
           conversations.value = []
           messageCategories.value[0].unreadCount = 0
         }
@@ -926,7 +967,7 @@ const loadCurrentCategory = async () => {
     } else if (activeCategory.value === 'system') {
       const res = await messagesAPI.getSystemNotifications()
       console.log('系统通知数据:', res) // 调试日志
-      
+
       if (res && res.data) {
         if (Array.isArray(res.data)) {
           // 🔥 补充系统通知缺失的字段
@@ -937,7 +978,7 @@ const loadCurrentCategory = async () => {
             content: notif.content || '',
             isRead: notif.isRead || false,
             createdAt: notif.createdAt || new Date().toISOString(),
-            action: null // 🔥 后端没有action字段，设为null
+            action: null, // 🔥 后端没有action字段，设为null
           }))
           messageCategories.value[1].unreadCount = res.data.filter(notif => !notif.isRead).length
         } else if (res.data.list) {
@@ -949,7 +990,7 @@ const loadCurrentCategory = async () => {
                 content: notif.content || '',
                 isRead: notif.isRead || false,
                 createdAt: notif.createdAt || new Date().toISOString(),
-                action: null
+                action: null,
               }))
             : []
           messageCategories.value[1].unreadCount = res.data.unreadCount || 0
@@ -961,51 +1002,53 @@ const loadCurrentCategory = async () => {
         systemNotifications.value = []
         messageCategories.value[1].unreadCount = 0
       }
-      
-    } 
-    else if (activeCategory.value === 'activity') {
-  const res = await messagesAPI.getActivityNotifications()
-  console.log('动态通知数据:', res)
+    } else if (activeCategory.value === 'activity') {
+      const res = await messagesAPI.getActivityNotifications()
+      console.log('动态通知数据:', res)
 
-  if (res && res.data) {
-    if (Array.isArray(res.data)) {
-      activityNotifications.value = res.data.map(item => {
-        const notification = item.notification || item
-        return {
-          id: notification.id,
-          type: parseActivityType(typeof notification.content === 'string' ? notification.content : (notification.content?.description ?? '')),
-          user: {
-            id: notification.senderId ?? notification.userId ?? -1,
-            name: item.name || '未知用户', // 直接用后端返回的name
-            avatar: getFullImageUrl(item.avatarUrl ?? null), // 直接用后端返回的avatarUrl
-            institution: '未知机构'
-          },
-          content: parseContentFromActivity(
-            typeof notification.content === 'string'
-              ? notification.content
-              : (notification.content?.description ?? '')
-          ),
-          isRead: notification.isRead || false,
-          createdAt: notification.createdAt || new Date().toISOString(),
-          publicationId: item.publicationId
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          activityNotifications.value = res.data.map(item => {
+            const notification = item.notification || item
+            return {
+              id: notification.id,
+              type: parseActivityType(
+                typeof notification.content === 'string'
+                  ? notification.content
+                  : (notification.content?.description ?? '')
+              ),
+              user: {
+                id: notification.senderId ?? notification.userId ?? -1,
+                name: item.name || '未知用户', // 直接用后端返回的name
+                avatar: getFullImageUrl(item.avatarUrl ?? null), // 直接用后端返回的avatarUrl
+                institution: '未知机构',
+              },
+              content: parseContentFromActivity(
+                typeof notification.content === 'string'
+                  ? notification.content
+                  : (notification.content?.description ?? '')
+              ),
+              isRead: notification.isRead || false,
+              createdAt: notification.createdAt || new Date().toISOString(),
+              publicationId: item.publicationId,
+            }
+          })
+          messageCategories.value[2].unreadCount = res.data.filter(
+            item => !(item.notification?.isRead || item.isRead)
+          ).length
+        } else {
+          activityNotifications.value = []
+          messageCategories.value[2].unreadCount = 0
         }
-      })
-      messageCategories.value[2].unreadCount = res.data.filter(item =>
-        !(item.notification?.isRead || item.isRead)
-      ).length
-    } else {
-      activityNotifications.value = []
-      messageCategories.value[2].unreadCount = 0
+      } else {
+        activityNotifications.value = []
+        messageCategories.value[2].unreadCount = 0
+      }
     }
-  } else {
-    activityNotifications.value = []
-    messageCategories.value[2].unreadCount = 0
-  }
-}
   } catch (error) {
     console.error('加载消息失败:', error)
     ElMessage.error('加载消息失败')
-    
+
     // 出错时设置空数组，避免undefined错误
     if (activeCategory.value === 'chat') {
       conversations.value = []
@@ -1017,19 +1060,18 @@ const loadCurrentCategory = async () => {
   }
 }
 
-
 // 🔥 新增辅助函数：根据内容生成系统通知标题
 const getNotificationTitle = (content: string, type: string) => {
   if (content.includes('欢迎')) return '欢迎使用'
   if (content.includes('安全')) return '安全提醒'
   if (content.includes('更新')) return '系统更新'
   if (content.includes('维护')) return '系统维护'
-  
+
   // 根据类型生成默认标题
   const titleMap: Record<string, string> = {
-    'system': '系统通知',
-    'security': '安全提醒',
-    'update': '系统更新'
+    system: '系统通知',
+    security: '安全提醒',
+    update: '系统更新',
   }
   return titleMap[type] || '系统通知'
 }
@@ -1038,7 +1080,7 @@ const getNotificationTitle = (content: string, type: string) => {
 const parseActivityType = (content: string) => {
   if (content.includes('上传') || content.includes('论文')) return 'publish_paper'
   else if (content.includes('关注')) return 'follow'
-  
+
   if (content.includes('项目')) return 'start_project'
   if (content.includes('会议')) return 'join_conference'
   if (content.includes('点赞')) return 'like'
@@ -1046,46 +1088,44 @@ const parseActivityType = (content: string) => {
   return 'follow' // 默认类型
 }
 
-
-
 // 🔥 新增辅助函数：从content解析内容信息
 const parseContentFromActivity = (content: string) => {
   // 根据活动类型生成对应的标题和描述
   if (content.includes('成果')) {
     return {
       title: '项目动态',
-      description: content
+      description: content,
     }
   } else if (content.includes('发表') || content.includes('论文')) {
     return {
       title: '发表论文',
-      description: content
+      description: content,
     }
   } else if (content.includes('关注')) {
     return {
       title: '新增关注',
-      description: content
+      description: content,
     }
   } else if (content.includes('会议')) {
     return {
       title: '会议活动',
-      description: content
+      description: content,
     }
   } else if (content.includes('点赞')) {
     return {
       title: '获得点赞',
-      description: content
+      description: content,
     }
   } else if (content.includes('评论')) {
     return {
       title: '新增评论',
-      description: content
+      description: content,
     }
   }
-  
+
   return {
     title: '动态更新',
-    description: content
+    description: content,
   }
 }
 
@@ -1094,7 +1134,7 @@ const loadAllFriends = async () => {
   try {
     const res = await messagesAPI.getFriends()
     console.log('好友数据:', res) // 调试日志
-    
+
     if (res && res.data) {
       if (Array.isArray(res.data)) {
         // 🔥 补充好友列表缺失的字段
@@ -1104,9 +1144,13 @@ const loadAllFriends = async () => {
           avatar: getFullImageUrl(friend.avatar), // 🔥 处理null头像
           isOnline: friend.isOnline || false,
           status: friend.isOnline ? '在线' : '离线', // 🔥 根据isOnline生成status
-          institution: friend.institution || '未知机构' // 🔥 补充institution字段
+          institution: friend.institution || '未知机构', // 🔥 补充institution字段
         }))
-      } else if (typeof res.data === 'object' && 'list' in res.data && Array.isArray((res.data as any).list)) {
+      } else if (
+        typeof res.data === 'object' &&
+        'list' in res.data &&
+        Array.isArray((res.data as any).list)
+      ) {
         // 处理 { list: Friend[] } 格式
         allFriends.value = (res.data as any).list.map((friend: Friend) => ({
           id: friend.id,
@@ -1114,18 +1158,20 @@ const loadAllFriends = async () => {
           avatar: getFullImageUrl(friend.avatar),
           isOnline: friend.isOnline || false,
           status: friend.isOnline ? '在线' : '离线',
-          institution: friend.institution || '未知机构'
+          institution: friend.institution || '未知机构',
         }))
       } else if (typeof res.data === 'object' && 'id' in res.data) {
         // 单个好友对象，补充字段后包装成数组
-        allFriends.value = [{
-          id: res.data.id,
-          name: res.data.name || '未知用户',
-          avatar: res.data.avatar || '/default-avatar.png',
-          isOnline: res.data.isOnline || false,
-          status: res.data.isOnline ? '在线' : '离线',
-          institution: res.data.institution || '未知机构'
-        }]
+        allFriends.value = [
+          {
+            id: res.data.id,
+            name: res.data.name || '未知用户',
+            avatar: res.data.avatar || '/default-avatar.png',
+            isOnline: res.data.isOnline || false,
+            status: res.data.isOnline ? '在线' : '离线',
+            institution: res.data.institution || '未知机构',
+          },
+        ]
       } else {
         allFriends.value = []
       }
@@ -1147,7 +1193,7 @@ const getActivityText = (type: string) => {
     start_project: '启动了新项目',
     join_conference: '参加了会议',
     like: '点赞了你的内容',
-    comment: '评论了你的内容'
+    comment: '评论了你的内容',
   }
   return texts[type] || '有新动态'
 }
@@ -1160,7 +1206,7 @@ const getActivityLabel = (type: string) => {
     start_project: '项目启动',
     join_conference: '会议参与',
     like: '点赞互动',
-    comment: '评论互动'
+    comment: '评论互动',
   }
   return labels[type] || '动态更新'
 }
@@ -1168,12 +1214,12 @@ const getActivityLabel = (type: string) => {
 // 页面初始化
 onMounted(async () => {
   console.log('Messages组件挂载，开始初始化') // 调试日志
-  
+
   // 先加载设置，但不显示对话框
   try {
     const response = await messagesAPI.getMessageSettings()
     console.log('初始化设置数据:', response) // 调试日志
-    
+
     if (response && response.data && response.data.settings) {
       Object.assign(messageSettings, response.data.settings)
     }

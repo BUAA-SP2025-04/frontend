@@ -1,3 +1,9 @@
+export interface ApiResponse<T> {
+  code: string
+  message: string
+  data: T
+}
+
 // 聊天相关类型定义
 export interface ChatUser {
   id: number
@@ -39,9 +45,7 @@ export interface Conversation {
 // 请求和响应类型
 export interface GetConversationHistoryRequest {
   conversationId: string
-  page?: number
-  size?: number
-  before?: string // 时间戳，用于分页
+  before?: string | null // 时间戳，用于分页
 }
 
 export interface GetConversationHistoryResponse {

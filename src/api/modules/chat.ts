@@ -1,12 +1,13 @@
 import request from '@/utils/request'
 import type {
-  GetConversationHistoryRequest,
-  GetConversationHistoryResponse,
-  CreateConversationRequest,
-  CreateConversationResponse,
-  UploadFileResponse,
+  ApiResponse,
   ChatUser,
   Conversation,
+  CreateConversationRequest,
+  CreateConversationResponse,
+  GetConversationHistoryRequest,
+  GetConversationHistoryResponse,
+  UploadFileResponse,
 } from '@/api/types/chat'
 
 export const chatAPI = {
@@ -21,17 +22,15 @@ export const chatAPI = {
   // 获取会话历史消息
   getConversationHistory: (
     params: GetConversationHistoryRequest
-  ): Promise<GetConversationHistoryResponse> =>
+  ): Promise<ApiResponse<GetConversationHistoryResponse>> =>
     request.get(`/chat/conversations/${params.conversationId}/messages`, {
       params: {
-        page: params.page,
-        size: params.size,
-        before: params.before,
+        nextCursor: params.before,
       },
     }),
 
   // 获取聊天用户信息
-  getChatUser: (userId: number): Promise<{ user: ChatUser }> =>
+  getChatUser: (userId: number): Promise<{ data: ChatUser }> =>
     request.get(`/users/${userId}/chat-info`),
 
   // 上传文件
