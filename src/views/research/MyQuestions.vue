@@ -10,20 +10,6 @@
         </div>
         <div class="flex space-x-4">
           <button
-            @click="loadQuestions"
-            :disabled="loading"
-            class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg v-if="loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <svg v-else class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-            </svg>
-            {{ loading ? '刷新中...' : '刷新' }}
-          </button>
-          <button
             @click="router.push('/research/qa')"
             class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors border border-gray-200 hover:bg-gray-50"
           >
@@ -194,9 +180,9 @@
                     <div class="bg-green-50 rounded-lg p-4">
                       <div class="flex items-center mb-2">
                         <img
-                          :src="question.bestAnswer.user.imgUrl || '/default-avatar.png'"
-                          :alt="question.bestAnswer.user.name"
-                          class="w-6 h-6 rounded-full mr-2"
+                          :src="getAvatarUrl(question.bestAnswer.user?.imgUrl)"
+                          :alt="question.bestAnswer.user?.name"
+                          class="w-12 h-12 rounded-full mr-3 ring-2 ring-gray-200"
                         />
                         <span
                           class="text-sm font-medium text-gray-700 hover:text-blue-600 cursor-pointer transition-colors"
@@ -244,94 +230,39 @@
             </div>
           </el-tab-pane>
 
-          <el-tab-pane label="我的回答" name="answers">
+          <el-tab-pane label="我回答的问题" name="answers">
             <div class="p-6">
-              <!-- 我的回答内容 -->
+              <!-- 统计栏 -->
               <div class="mb-6">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-lg font-semibold text-gray-900">我的回答</h3>
+                  <h3 class="text-lg font-semibold text-gray-900">我回答的问题</h3>
                   <span class="text-sm text-gray-500">共 {{ myAnswers.length }} 个问题</span>
                 </div>
-
-                <!-- 筛选工具栏 -->
                 <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                  <div class="flex items-center space-x-4">
-                    <select
-                      v-model="answerSortBy"
-                      class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="latest">最新回答</option>
-                      <option value="mostLiked">点赞最多</option>
-                      <option value="mostViewed">浏览最多</option>
-                    </select>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                      <select
+                        v-model="answerSortBy"
+                        class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="latest">最近回答</option>
+                        <option value="earliest">最早回答</option>
+                        <option value="mostLiked">点赞最多</option>
+                      </select>
+                    </div>
+                    <div class="flex items-center space-x-6 text-sm text-gray-600">
+                      <span>总计: <strong class="text-gray-800">{{ myAnswers.length }}</strong></span>
+                      <span>已解决: <strong class="text-green-600">{{ myAnswers.filter(q => q.bestAnswer).length }}</strong></span>
+                      <span>待解决: <strong class="text-orange-600">{{ myAnswers.filter(q => !q.bestAnswer).length }}</strong></span>
+                    </div>
                   </div>
-                </div>
-
-                <!-- 统计信息 -->
-                <div class="flex items-center space-x-6 text-sm text-gray-600">
-                  <span>总计: <strong class="text-gray-800">{{ myAnswers.length }}</strong></span>
-                  <span>被采纳: <strong class="text-green-600">{{ myAnswers.filter(q => q.bestAnswer).length }}</strong></span>
-                  <span>获点赞: <strong class="text-blue-600">{{ myAnswers.reduce((sum, q) => sum + (q.likeNum || 0), 0) }}</strong></span>
                 </div>
               </div>
-
-              <!-- 回答列表 -->
-              <div class="space-y-4">
-                <!-- 加载状态 -->
-                <div v-if="loading" class="text-center py-12">
-                  <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-blue-500 hover:bg-blue-400 transition ease-in-out duration-150 cursor-not-allowed">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    加载中...
-                  </div>
-                </div>
-
-                <!-- 空状态 -->
+              <div v-if="loading" class="text-center py-12">加载中...</div>
+              <div v-else-if="myAnswers.length === 0" class="text-center py-12 text-gray-400">暂无回答</div>
+              <div v-else class="space-y-4">
                 <div
-                  v-if="!loading && myAnswers.length === 0"
-                  class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"
-                >
-                  <svg
-                    class="w-16 h-16 text-gray-300 mx-auto mb-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"
-                    ></path>
-                  </svg>
-                  <h3 class="text-lg font-medium text-gray-900 mb-2">暂无回答</h3>
-                  <p class="text-gray-500 mb-4">你还没有回答任何问题</p>
-                  <button
-                    class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                    @click="router.push('/research/qa')"
-                  >
-                    <svg
-                      class="w-5 h-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      ></path>
-                    </svg>
-                    浏览问题
-                  </button>
-                </div>
-
-                <!-- 回答问题卡片 -->
-                <div
-                  v-for="question in myAnswers"
+                  v-for="question in filteredAnswers"
                   :key="question.id"
                   class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative"
                 >
@@ -351,7 +282,6 @@
                   <!-- 标题和状态标签 -->
                   <div class="flex items-center mb-2">
                     <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">{{ question.title }}</h2>
-                    <!-- 是否回答状态 -->
                     <span
                       :class="[
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
@@ -362,7 +292,6 @@
                     >
                       {{ question.answerNum > 0 ? '已回答' : '未回答' }}
                     </span>
-                    <!-- 是否解决状态 -->
                     <span
                       :class="[
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
@@ -374,7 +303,7 @@
                       {{ question.bestAnswer ? '已解决' : '未解决' }}
                     </span>
                   </div>
-                  <!-- 研究领域标签（移动到标题下方） -->
+                  <!-- 研究领域标签 -->
                   <div class="flex flex-wrap gap-2 mb-2">
                     <span
                       v-for="field in (question.researchArea || '').split(',')"
@@ -408,12 +337,11 @@
                     <div class="bg-green-50 rounded-lg p-4">
                       <div class="flex items-center mb-2">
                         <img
-                          :src="question.bestAnswer.user?.imgUrl || '/default-avatar.png'"
-                          :alt="question.bestAnswer.user?.name || '用户'"
-                          class="w-6 h-6 rounded-full mr-2"
+                          :src="getAvatarUrl(question.bestAnswer.user?.imgUrl)"
+                          :alt="question.bestAnswer.user?.name"
+                          class="w-12 h-12 rounded-full mr-3 ring-2 ring-gray-200"
                         />
                         <span
-                          v-if="question.bestAnswer.user"
                           class="text-sm font-medium text-gray-700 hover:text-blue-600 cursor-pointer transition-colors"
                           @click="goToUserDetail(String(question.bestAnswer.user.id))"
                         >
@@ -431,227 +359,128 @@
             </div>
           </el-tab-pane>
 
-          <el-tab-pane label="关注的问题" name="followed">
+          <el-tab-pane label="我关注的问题" name="followed">
             <div class="p-6">
-              <!-- 关注的问题内容 -->
+              <!-- 统计栏 -->
               <div class="mb-6">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-lg font-semibold text-gray-900">关注的问题</h3>
+                  <h3 class="text-lg font-semibold text-gray-900">我关注的问题</h3>
                   <span class="text-sm text-gray-500">共 {{ followedQuestions.length }} 个问题</span>
                 </div>
-
-                <!-- 筛选工具栏 -->
                 <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                  <div class="flex items-center space-x-4">
-                    <select
-                      v-model="followedSortBy"
-                      class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="latest">最新关注</option>
-                      <option value="latestUpdate">最新更新</option>
-                      <option value="mostAnswered">回答最多</option>
-                    </select>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                      <select
+                        v-model="followedSortBy"
+                        class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="mostFollowed">关注最多</option>
+                        <option value="mostAnswered">回答最多</option>
+                        <option value="mostViewed">浏览最多</option>
+                      </select>
+                    </div>
+                    <div class="flex items-center space-x-6 text-sm text-gray-600">
+                      <span>总计: <strong class="text-gray-800">{{ followedQuestions.length }}</strong></span>
+                      <span>已解决: <strong class="text-green-600">{{ followedQuestions.filter(q => q.bestAnswer).length }}</strong></span>
+                      <span>待解决: <strong class="text-orange-600">{{ followedQuestions.filter(q => !q.bestAnswer).length }}</strong></span>
+                    </div>
                   </div>
-                </div>
-
-                <!-- 统计信息 -->
-                <div class="flex items-center space-x-6 text-sm text-gray-600">
-                  <span>总计: <strong class="text-gray-800">{{ followedQuestions.length }}</strong></span>
-                  <span>有新回答: <strong class="text-orange-600">{{ newAnswersCount }}</strong></span>
-                  <span>已解决: <strong class="text-green-600">{{ solvedFollowedCount }}</strong></span>
                 </div>
               </div>
-
-              <!-- 关注问题列表 -->
-              <div class="space-y-4">
-                <!-- 加载状态 -->
-                <div v-if="loading" class="text-center py-12">
-                  <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-blue-500 hover:bg-blue-400 transition ease-in-out duration-150 cursor-not-allowed">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    加载中...
-                  </div>
-                </div>
-
-                <!-- 空状态 -->
+              <div v-if="loading" class="text-center py-12">加载中...</div>
+              <div v-else-if="followedQuestions.length === 0" class="text-center py-12 text-gray-400">暂无关注问题</div>
+              <div v-else class="space-y-4">
                 <div
-                  v-if="!loading && followedQuestions.length === 0"
-                  class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"
+                  v-for="question in filteredFollowedQuestions"
+                  :key="question.id"
+                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative"
                 >
-                  <svg
-                    class="w-16 h-16 text-gray-300 mx-auto mb-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    ></path>
-                  </svg>
-                  <h3 class="text-lg font-medium text-gray-900 mb-2">暂无关注</h3>
-                  <p class="text-gray-500 mb-4">你还没有关注任何问题</p>
-                  <button
-                    class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                    @click="router.push('/research/qa')"
-                  >
-                    <svg
-                      class="w-5 h-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  <!-- 右上角操作按钮区（仅查看详情） -->
+                  <div class="flex space-x-2 absolute top-4 right-4 z-10">
+                    <button
+                      class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
+                      @click="viewQuestion(question.id)"
+                      title="查看详情"
                     >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      ></path>
-                    </svg>
-                    浏览问题
-                  </button>
-                </div>
-
-                <!-- 关注问题列表内容将在这里实现 -->
-                <div class="text-center py-8 text-gray-500">
-                  <p>关注问题功能正在开发中...</p>
-                </div>
-
-                <!-- 关注问题列表 -->
-                <div class="space-y-4">
-                  <div
-                    v-for="question in filteredFollowedQuestions"
-                    :key="question.id"
-                    class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
-                  >
-                    <div class="p-6 relative">
-                      <!-- 右上角操作按钮区（查看详情、编辑、删除） -->
-                      <div class="flex space-x-2 absolute top-4 right-4 z-10">
-                        <button
-                          class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
-                          @click="viewQuestion(question.id)"
-                          title="查看详情"
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <!-- 标题和状态标签 -->
+                  <div class="flex items-center mb-2">
+                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">{{ question.title }}</h2>
+                    <span
+                      :class="[
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
+                        question.answerNum > 0
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      ]"
+                    >
+                      {{ question.answerNum > 0 ? '已回答' : '未回答' }}
+                    </span>
+                    <span
+                      :class="[
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
+                        question.bestAnswer
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      ]"
+                    >
+                      {{ question.bestAnswer ? '已解决' : '未解决' }}
+                    </span>
+                  </div>
+                  <!-- 研究领域标签 -->
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    <span
+                      v-for="field in (question.researchArea || '').split(',')"
+                      :key="field"
+                      class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
+                    >
+                      {{ field.trim() }}
+                    </span>
+                  </div>
+                  <!-- 问题描述 -->
+                  <p class="text-gray-600 mb-2 line-clamp-2">{{ question.content }}</p>
+                  <!-- 统计信息+发布时间 -->
+                  <div class="flex items-center space-x-6 text-sm text-gray-500 mb-4">
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
+                      </svg>
+                      {{ question.answerNum }} 回答
+                    </span>
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      {{ question.followNum }} 浏览
+                    </span>
+                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt || question.createdAt) }}</span>
+                  </div>
+                  <!-- 最佳回答预览区 -->
+                  <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-green-100">
+                    <div class="bg-green-50 rounded-lg p-4">
+                      <div class="flex items-center mb-2">
+                        <img
+                          :src="getAvatarUrl(question.bestAnswer.user?.imgUrl)"
+                          :alt="question.bestAnswer.user?.name"
+                          class="w-12 h-12 rounded-full mr-3 ring-2 ring-gray-200"
+                        />
+                        <span
+                          class="text-sm font-medium text-gray-700 hover:text-blue-600 cursor-pointer transition-colors"
+                          @click="goToUserDetail(String(question.bestAnswer.user.id))"
                         >
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        </button>
-                        <button
-                          class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
-                          @click="editQuestion(question)"
-                          title="编辑"
-                        >
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6-6M3 17.25V21h3.75l11.06-11.06a2.121 2.121 0 00-3-3L3 17.25z" />
-                          </svg>
-                        </button>
-                        <button
-                          class="p-2 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 transition-colors"
-                          @click="deleteQuestion(question.id)"
-                          title="删除"
-                        >
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                          {{ question.bestAnswer.user.name }}
+                        </span>
+                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          最佳答案
+                        </span>
                       </div>
-                      <!-- 问题头部 -->
-                      <div class="flex items-start justify-between mb-4">
-                        <div class="flex-1">
-                          <div class="flex items-center gap-3 mb-2">
-                            <h3
-                              class="text-lg font-semibold text-gray-800 hover:text-blue-600 cursor-pointer transition-colors"
-                              @click="viewQuestion(question.id)"
-                            >
-                              {{ question.title }}
-                            </h3>
-                            <!-- 是否回答状态 -->
-                            <span
-                              :class="[
-                                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                                question.answerNum > 0 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-yellow-100 text-yellow-800'
-                              ]"
-                            >
-                              {{ question.answerNum > 0 ? '已回答' : '未回答' }}
-                            </span>
-                            <!-- 是否解决状态 -->
-                            <span
-                              :class="[
-                                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                                question.bestAnswer 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-yellow-100 text-yellow-800'
-                              ]"
-                            >
-                              {{ question.bestAnswer ? '已解决' : '未解决' }}
-                            </span>
-                          </div>
-
-                          <!-- 问题状态和分类 -->
-                          <div class="flex items-center space-x-2 mb-3">
-                            <span class="text-sm text-gray-500">{{ question.researchArea }}</span>
-                          </div>
-
-                          <!-- 问题描述 -->
-                          <p class="text-gray-600 mb-4 line-clamp-2">{{ question.content }}</p>
-
-                          <!-- 统计信息+发布时间 -->
-                          <div class="flex items-center space-x-6 text-sm text-gray-500 mb-4">
-                            <span class="flex items-center">
-                              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
-                              </svg>
-                              {{ question.answerNum }} 回答
-                            </span>
-                            <span class="flex items-center">
-                              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                ></path>
-                              </svg>
-                              {{ question.followNum }} 浏览
-                            </span>
-                            <span class="ml-auto text-gray-400">{{ formatTime(question.createAt) }}</span>
-                          </div>
-
-                          <!-- 最佳回答预览区 -->
-                          <div
-                            v-if="question.bestAnswer"
-                            class="mt-4 pt-4 border-t border-gray-200"
-                          >
-                            <div class="bg-gray-50 rounded-lg p-4">
-                              <div class="flex items-center mb-2">
-                                <img
-                                  :src="question.bestAnswer.user.imgUrl || '/default-avatar.png'"
-                                  :alt="question.bestAnswer.user.name"
-                                  class="w-6 h-6 rounded-full mr-2"
-                                />
-                                <span 
-                                  class="text-sm font-medium text-gray-700 hover:text-blue-600 cursor-pointer transition-colors"
-                                  @click="goToUserDetail(String(question.bestAnswer.user.id))"
-                                >
-                                  {{ question.bestAnswer.user.name }}
-                                </span>
-                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                  最佳答案
-                                </span>
-                              </div>
-                              <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ question.bestAnswer.content }}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ question.bestAnswer.content }}</p>
                     </div>
                   </div>
                 </div>
@@ -984,6 +813,16 @@ import { RESEARCH_CATEGORIES } from '../../utils/categories'
 
 const router = useRouter()
 
+const getAvatarUrl = (imgUrl: string) => {
+  if (!imgUrl || imgUrl === '') {
+    return '/default-avatar.png'
+  }
+  if (imgUrl.startsWith('http')) {
+    return imgUrl
+  }
+  return import.meta.env.VITE_API_BASE_URL + imgUrl
+}
+
 // 响应式数据
 const sortBy = ref('latest')
 const showPublishDialog = ref(false)
@@ -999,7 +838,7 @@ const totalLikes = ref(0)
 
 // 关注问题相关数据
 const followedQuestions = ref<any[]>([])
-const followedSortBy = ref('latest')
+const followedSortBy = ref('mostFollowed')
 
 // 发布问题表单
 const newQuestion = ref<{
@@ -1058,25 +897,19 @@ const openCount = computed(() => myQuestions.value.filter(q => !q.bestAnswer).le
 // 关注问题相关的计算属性
 const filteredFollowedQuestions = computed(() => {
   let filtered = [...followedQuestions.value]
-
-  // 排序
   switch (followedSortBy.value) {
-    case 'latest':
-      filtered.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
-      break
-    case 'latestUpdate':
-      // 按最新回答时间排序，如果没有回答则按问题创建时间
-      filtered.sort((a, b) => {
-        const aTime = a.bestAnswer ? new Date(a.bestAnswer.createAt).getTime() : new Date(a.createAt).getTime()
-        const bTime = b.bestAnswer ? new Date(b.bestAnswer.createAt).getTime() : new Date(b.createAt).getTime()
-        return bTime - aTime
-      })
+    case 'mostFollowed':
+      filtered.sort((a, b) => (b.followNum || 0) - (a.followNum || 0))
       break
     case 'mostAnswered':
-      filtered.sort((a, b) => b.answerNum - a.answerNum)
+      filtered.sort((a, b) => (b.answerNum || 0) - (a.answerNum || 0))
+      break
+    case 'mostViewed':
+      filtered.sort((a, b) => (b.viewNum || b.followNum || 0) - (a.viewNum || a.followNum || 0))
+      break
+    default:
       break
   }
-
   return filtered
 })
 
@@ -1182,13 +1015,26 @@ const goToUserDetail = (userId: string) => {
   // 实现跳转到用户详情功能
 }
 
+const questionsLoaded = ref(false)
+const answersLoaded = ref(false)
+const followedLoaded = ref(false)
+
 const handleTabClick = (tab: any) => {
-  if (tab.name === 'questions') {
-    loadQuestions()
-  } else if (tab.name === 'answers') {
-    loadAnswers()
-  } else if (tab.name === 'followed') {
-    loadFollowedQuestions()
+  if (tab.paneName === 'questions') {
+    if (!questionsLoaded.value) {
+      loadQuestions()
+      questionsLoaded.value = true
+    }
+  } else if (tab.paneName === 'answers') {
+    if (!answersLoaded.value) {
+      loadAnswers()
+      answersLoaded.value = true
+    }
+  } else if (tab.paneName === 'followed') {
+    if (!followedLoaded.value) {
+      loadFollowedQuestions()
+      followedLoaded.value = true
+    }
   }
 }
 
@@ -1211,14 +1057,15 @@ const loadQuestions = async () => {
     myQuestions.value = []
   }
   loading.value = false
+  questionsLoaded.value = true
 }
 
 const loadAnswers = async () => {
   loading.value = true
   try {
     const res = await getMyAnsweredQuestions()
-    if (res.code === '200' && res.data) {
-      myAnswers.value = Array.isArray(res.data) ? res.data : []
+    if (res.code === '200' && Array.isArray(res.data)) {
+      myAnswers.value = res.data
     } else {
       myAnswers.value = []
     }
@@ -1226,14 +1073,15 @@ const loadAnswers = async () => {
     myAnswers.value = []
   }
   loading.value = false
+  answersLoaded.value = true
 }
 
 const loadFollowedQuestions = async () => {
   loading.value = true
   try {
     const res = await getMyFollowedQuestions()
-    if (res.code === '200' && res.data) {
-      followedQuestions.value = Array.isArray(res.data) ? res.data : []
+    if (res.code === '200' && Array.isArray(res.data)) {
+      followedQuestions.value = res.data
     } else {
       followedQuestions.value = []
     }
@@ -1241,15 +1089,35 @@ const loadFollowedQuestions = async () => {
     followedQuestions.value = []
   }
   loading.value = false
+  followedLoaded.value = true
 }
+
+const filteredAnswers = computed(() => {
+  let filtered = [...myAnswers.value]
+  switch (answerSortBy.value) {
+    case 'latest':
+      filtered.sort((a, b) => new Date(b.answeredAt || b.createAt).getTime() - new Date(a.answeredAt || a.createAt).getTime())
+      break
+    case 'earliest':
+      filtered.sort((a, b) => new Date(a.answeredAt || a.createAt).getTime() - new Date(b.answeredAt || b.createAt).getTime())
+      break
+    case 'mostLiked':
+      filtered.sort((a, b) => (b.likeNum || 0) - (a.likeNum || 0))
+      break
+  }
+  return filtered
+})
 
 onMounted(() => {
   if (activeTab.value === 'questions') {
     loadQuestions()
+    questionsLoaded.value = true
   } else if (activeTab.value === 'answers') {
     loadAnswers()
+    answersLoaded.value = true
   } else if (activeTab.value === 'followed') {
     loadFollowedQuestions()
+    followedLoaded.value = true
   }
 })
 </script>
