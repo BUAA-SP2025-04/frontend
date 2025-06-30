@@ -157,7 +157,7 @@ const loadMyFollowedQuestions = async () => {
 // 取消关注问题
 const unfollowQuestionAction = async (questionId: string) => {
   try {
-    await unfollowQuestion({ projectId: questionId })
+    await unfollowQuestion({ questionId: questionId })
     ElMessage.success('取消关注成功')
     await loadMyFollowedQuestions()
   } catch (error) {

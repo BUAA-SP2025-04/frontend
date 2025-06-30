@@ -4,52 +4,35 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { marked } from 'marked'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
 
 interface Props {
   source: string
+  enableToc?: boolean
 }
 
 const props = defineProps<Props>()
 
-const md: MarkdownIt = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
+// 配置 marked
+marked.setOptions({
   breaks: true,
-  highlight: (str, lang) => {
-    let langLabel = '';
-    if (lang) {
-      langLabel = `<div class="code-lang-label">${lang}</div>`;
-    }
-    let codeHtml = '';
+  gfm: true,
+  renderer: new marked.Renderer(),
+  highlight: function (code: string, lang: string) {
     if (lang && hljs.getLanguage(lang)) {
       try {
-        codeHtml = hljs.highlight(str, { language: lang }).value;
-      } catch {}
-    } else {
-      codeHtml = md.utils.escapeHtml(str);
+        return hljs.highlight(code, { language: lang }).value
+      } catch (__) {}
     }
-    return `<div class="code-block-wrapper">${langLabel}<pre class="hljs"><code>${codeHtml}</code></pre></div>`;
-  }
+    return hljs.highlightAuto(code).value
+  },
+} as any)
+
+const renderedContent = computed(() => {
+  return marked(props.source || '')
 })
-  .use(katex, {
-    throwOnError: false,
-    errorColor: '#cc0000',
-  })
-  .use(taskLists, { enabled: true })
-  .use(container, 'info')
-  .use(container, 'warning')
-  .use(container, 'danger')
-
-if (props.enableToc) {
-  md.use(anchor, {
-    permalink: anchor.permalink.headerLink(),
-  }).use(toc, {
-    includeLevel: [1, 2, 3],
-  })
-}
-
-const rendered = computed(() => md.render(props.source || ''))
 </script>
 
 <style scoped>

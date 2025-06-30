@@ -117,4 +117,9 @@ export function getMyFollowedQuestions(): Promise<ApiResponse<QuestionListRespon
 // 获取我提问的问题
 export function getMyAskedQuestions(): Promise<ApiResponse<QuestionListResponse>> {
   return request.get('/question/my/asked')
+}
+
+// 获取活跃用户
+export function getTopAnswerUsers(): Promise<ApiResponse<any[]>> {
+  return request.get('/question/top-answer-users')
 } 

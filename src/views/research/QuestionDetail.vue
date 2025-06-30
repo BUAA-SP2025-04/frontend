@@ -50,10 +50,32 @@
                     >
                       {{ tag }}
                     </span>
+                    <!-- 问题状态标签 -->
+                    <span
+                      :class="[
+                        'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
+                        hasBestAnswer
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      ]"
+                    >
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                      {{ hasBestAnswer ? '已解决' : '待解决' }}
+                    </span>
                   </div>
                 </div>
 
-                <!-- 关注和分享按钮 -->
+                <!-- 操作按钮 -->
                 <div class="flex space-x-3 ml-6">
                   <!-- 回复问题按钮 -->
                   <button
@@ -76,7 +98,9 @@
                     回复
                   </button>
 
+                  <!-- 根据是否为问题作者显示不同按钮 -->
                   <button
+                    v-if="!isQuestionAuthor"
                     @click="toggleFollow"
                     :class="[
                       'px-6 py-3 rounded-lg font-medium transition-colors',
@@ -99,6 +123,28 @@
                       ></path>
                     </svg>
                     {{ isFollowing ? '已关注' : '关注问题' }}
+                  </button>
+
+                  <!-- 问题作者显示设置最佳回答按钮 -->
+                  <button
+                    v-if="isQuestionAuthor && !hasBestAnswer"
+                    @click="showBestAnswerDialog = true"
+                    class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                  >
+                    <svg
+                      class="w-5 h-5 inline-block mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    设置最佳回答
                   </button>
 
                   <button
@@ -283,11 +329,16 @@
                         <!-- 点赞 -->
                         <button
                           @click="toggleLike(answer.id)"
-                          class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                          :class="[
+                            'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                            answer.liked
+                              ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          ]"
                         >
                           <svg
                             class="w-5 h-5"
-                            fill="none"
+                            :fill="answer.liked ? 'currentColor' : 'none'"
                             stroke="currentColor"
                             stroke-width="1.5"
                             viewBox="0 0 24 24"
@@ -361,14 +412,15 @@
                       </div>
 
                       <!-- 采纳按钮（仅问题作者可见） -->
-                      <div v-if="isQuestionAuthor && answer.id !== question.bestAnswer?.id && !hasBestAnswer">
+                      <!-- 暂时隐藏，因为现在使用专门的设置最佳回答对话框 -->
+                      <!-- <div v-if="isQuestionAuthor && answer.id !== question.bestAnswer?.id && !hasBestAnswer">
                         <button
-                          @click="markAsBest(answer.id)"
+                          @click="selectBestAnswer(answer.id)"
                           class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
                         >
                           采纳为最佳答案
                         </button>
-                      </div>
+                      </div> -->
                     </div>
                   </div>
                   <div
@@ -410,9 +462,19 @@
                         <div class="flex items-center space-x-3 text-xs">
                           <button
                             @click="toggleLike(childAnswer.id)"
-                            class="flex items-center space-x-1 text-gray-500 hover:text-gray-700"
+                            :class="[
+                              'flex items-center space-x-1 transition-colors',
+                              childAnswer.liked
+                                ? 'text-red-500 hover:text-red-700'
+                                : 'text-gray-500 hover:text-gray-700'
+                            ]"
                           >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg 
+                              class="w-4 h-4" 
+                              :fill="childAnswer.liked ? 'currentColor' : 'none'" 
+                              stroke="currentColor" 
+                              viewBox="0 0 24 24"
+                            >
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
                             <span>{{ childAnswer.likeNum }}</span>
@@ -602,6 +664,97 @@
         </div>
       </div>
     </div>
+
+    <!-- 最佳回答选择对话框 -->
+    <div v-if="showBestAnswerDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">选择最佳回答</h3>
+            <button
+              @click="showBestAnswerDialog = false"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+          <p class="text-sm text-gray-600 mt-2">请选择一个回答作为最佳答案，这将标记问题为已解决</p>
+        </div>
+
+        <div class="p-6">
+          <!-- 回答列表 -->
+          <div v-if="sortedAnswers.length === 0" class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">暂无回答</h3>
+            <p class="mt-1 text-sm text-gray-500">还没有人回答这个问题</p>
+          </div>
+
+          <div v-else class="space-y-4">
+            <div
+              v-for="answer in sortedAnswers"
+              :key="answer.id"
+              class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors cursor-pointer"
+              @click="selectBestAnswer(answer.id)"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center mb-2">
+                    <img
+                      :src="getAvatarUrl(answer.user.imgUrl)"
+                      :alt="answer.user.name"
+                      class="w-8 h-8 rounded-full mr-2"
+                    />
+                    <span class="font-medium text-gray-800">{{ answer.user.name }}</span>
+                    <span class="text-sm text-gray-500 ml-2">{{ formatTime(answer.createdAt) }}</span>
+                  </div>
+                  <div class="text-gray-700 line-clamp-3">{{ answer.content }}</div>
+                  <div class="flex items-center mt-2 text-sm text-gray-500">
+                    <span class="flex items-center mr-4">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      {{ answer.likeNum }} 点赞
+                    </span>
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
+                      </svg>
+                      {{ answer.childAnswers?.length || 0 }} 回复
+                    </span>
+                  </div>
+                </div>
+                <div class="ml-4">
+                  <button
+                    @click.stop="selectBestAnswer(answer.id)"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    选择为最佳
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end">
+          <button
+            @click="showBestAnswerDialog = false"
+            class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -612,11 +765,13 @@ import { ElMessage } from 'element-plus'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 import Markdown from '@/components/Markdown.vue'
+import { useUserStore } from '@/stores/user'
 import {
   getQuestionDetail,
   followQuestion,
   unfollowQuestion,
   likeAnswer,
+  unlikeAnswer,
   updateQuestion,
   answerQuestion,
 } from '@/api/modules/question'
@@ -624,6 +779,7 @@ import type { QuestionDetailResponse, QuestionAnswer, QuestionDetailApiResponse,
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 // 响应式数据
 const answerSortBy = ref('helpful')
@@ -637,6 +793,8 @@ const loading = ref(true)
 const replyingToAnswerId = ref<number | null>(null)
 const isReplyingToQuestion = ref(false)
 const isFollowing = ref(false)
+const originalScrollPosition = ref(0) // 记录原始滚动位置
+const showBestAnswerDialog = ref(false) // 控制最佳回答选择对话框
 
 // 问题数据
 const question = ref<QuestionDetailResponse>({
@@ -644,11 +802,19 @@ const question = ref<QuestionDetailResponse>({
   user: {
     id: 0,
     name: '',
+    email: '',
+    gender: '',
+    bio: '',
     researchArea: '',
     title: '',
     imgUrl: '',
     institution: '',
     createdAt: '',
+    followerNum: 0,
+    subjectNum: 0,
+    publishNum: 0,
+    likeNum: 0,
+    readerNum: 0,
   },
   title: '',
   content: '',
@@ -719,6 +885,14 @@ const loadQuestionDetail = async () => {
       const questionData = apiData.question // API返回的是嵌套的question对象
       const answersData = apiData.answerWithReplies || [] // API返回的是answerWithReplies数组
       
+      // 设置关注状态
+      isFollowing.value = apiData.followed || false
+      
+      // 判断当前用户是否为问题作者
+      // 使用用户store获取当前用户ID
+      const currentUserId = userStore.user?.id
+      isQuestionAuthor.value = !!(currentUserId && questionData.userId === parseInt(currentUserId.toString()))
+      
       // 直接将answerWithReplies映射为answer + childAnswers
       const mappedAnswers = answersData.map((item: any) => {
         const answer = item.answer;
@@ -727,31 +901,49 @@ const loadQuestionDetail = async () => {
           user: answer.user || {
             id: answer.userId || 0,
             name: '未知用户',
+            email: '',
+            gender: '',
+            bio: '',
             researchArea: '',
             title: '',
             imgUrl: '',
             institution: '',
             createdAt: '',
+            followerNum: 0,
+            subjectNum: 0,
+            publishNum: 0,
+            likeNum: 0,
+            readerNum: 0,
           },
           content: answer.content || '',
           createdAt: answer.createdAt || new Date().toISOString(),
           likeNum: answer.likeNum?.toString() || '0',
+          liked: item.liked || false, // 添加点赞状态
           childAnswers: (item.replies || []).map((reply: any) => ({
             id: reply.id?.toString() || '',
             user: reply.user || {
               id: reply.userId || 0,
               name: '未知用户',
+              email: '',
+              gender: '',
+              bio: '',
               researchArea: '',
               title: '',
               imgUrl: '',
               institution: '',
               createdAt: '',
+              followerNum: 0,
+              subjectNum: 0,
+              publishNum: 0,
+              likeNum: 0,
+              readerNum: 0,
             },
             content: reply.content || '',
             parentUserId: answer.user.id?.toString() || '',
             parentUserName: answer.user.name || '',
             createdAt: reply.createdAt || new Date().toISOString(),
             likeNum: reply.likeNum?.toString() || '0',
+            liked: false, // 2级回答暂时使用默认状态，因为API没有提供单独的liked字段
           })),
         }
       })
@@ -761,11 +953,19 @@ const loadQuestionDetail = async () => {
         user: questionData.user || {
           id: 0,
           name: '未知用户',
+          email: '',
+          gender: '',
+          bio: '',
           researchArea: '',
           title: '',
           imgUrl: '',
           institution: '',
           createdAt: '',
+          followerNum: 0,
+          subjectNum: 0,
+          publishNum: 0,
+          likeNum: 0,
+          readerNum: 0,
         },
         title: questionData.title || '',
         content: questionData.content || '',
@@ -774,17 +974,26 @@ const loadQuestionDetail = async () => {
         answerNum: questionData.answerNum || 0,
         likeNum: questionData.likeNum?.toString() || '0',
         followNum: questionData.followNum || 0,
+        followed: apiData.followed || false, // 添加关注状态
         bestAnswer: questionData.bestAnswer ? {
           ...questionData.bestAnswer,
           id: questionData.bestAnswer.id?.toString() || '',
           user: questionData.bestAnswer.user || {
             id: (questionData.bestAnswer as any).userId || 0,
             name: '未知用户',
+            email: '',
+            gender: '',
+            bio: '',
             researchArea: '',
             title: '',
             imgUrl: '',
             institution: '',
             createdAt: '',
+            followerNum: 0,
+            subjectNum: 0,
+            publishNum: 0,
+            likeNum: 0,
+            readerNum: 0,
           },
           content: questionData.bestAnswer.content || '',
           createdAt: questionData.bestAnswer.createdAt || new Date().toISOString(),
@@ -796,15 +1005,13 @@ const loadQuestionDetail = async () => {
       // 从研究领域生成标签
       questionTags.value = question.value.researchArea ? [question.value.researchArea] : ['未分类']
       
-      // 初始化关注状态（这里需要根据后端返回的数据来判断当前用户是否已关注）
-      // 暂时设置为false，实际应该根据后端返回的isFollowed字段来判断
-      isFollowing.value = false
-      
       console.log('解析后的问题详情:', question.value)
       console.log('回答数量:', question.value.answers.length)
       console.log('回答列表:', question.value.answers)
       console.log('最佳回答:', question.value.bestAnswer)
       console.log('问题标签:', questionTags.value)
+      console.log('关注状态:', isFollowing.value)
+      console.log('是否为问题作者:', isQuestionAuthor.value)
       
     } else {
       console.warn('API响应格式异常:', response)
@@ -882,11 +1089,32 @@ const goBack = () => {
   router.push('/research/qa')
 }
 
-const toggleFollow = () => {
-  if (isFollowing.value) {
-    unfollowQuestionAction()
-  } else {
-    followQuestionAction()
+const toggleFollow = async () => {
+  try {
+    if (isFollowing.value) {
+      // 取消关注
+      const response = await unfollowQuestion({ questionId: question.value.id })
+      if (response && response.code === '200') {
+        isFollowing.value = false
+        question.value.followNum = Math.max(0, question.value.followNum - 1)
+        ElMessage.success('取消关注成功')
+      } else {
+        ElMessage.error(response?.message || '取消关注失败')
+      }
+    } else {
+      // 关注
+      const response = await followQuestion({ questionId: question.value.id })
+      if (response && response.code === '200') {
+        isFollowing.value = true
+        question.value.followNum++
+        ElMessage.success('关注成功')
+      } else {
+        ElMessage.error(response?.message || '关注失败')
+      }
+    }
+  } catch (error) {
+    console.error('关注操作失败:', error)
+    ElMessage.error('操作失败')
   }
 }
 
@@ -905,20 +1133,52 @@ const shareQuestion = () => {
 const toggleLike = async (answerId: string) => {
   try {
     console.log('开始点赞回答:', answerId)
-    const response = await likeAnswer({ answerId })
-    console.log('点赞响应:', response)
     
-    if (response && response.code === '200') {
-      const answer = question.value.answers?.find(a => a.id === answerId)
-      if (answer) {
-        answer.likeNum = (parseInt(answer.likeNum) + 1).toString()
-        ElMessage.success('点赞成功')
+    // 先查找1级回答
+    let answer = question.value.answers?.find(a => a.id === answerId)
+    let isChildAnswer = false
+    
+    // 如果没找到1级回答，查找2级回答
+    if (!answer) {
+      for (const parentAnswer of question.value.answers || []) {
+        const childAnswer = parentAnswer.childAnswers?.find(ca => ca.id === answerId)
+        if (childAnswer) {
+          answer = childAnswer
+          isChildAnswer = true
+          break
+        }
+      }
+    }
+    
+    if (!answer) {
+      ElMessage.error('找不到对应的回答')
+      return
+    }
+    
+    // 根据当前状态决定是点赞还是取消点赞
+    if (answer.liked) {
+      // 取消点赞
+      const response = await unlikeAnswer({ answerId })
+      if (response && response.code === '200') {
+        answer.liked = false
+        answer.likeNum = (parseInt(answer.likeNum) - 1).toString()
+        ElMessage.success('取消点赞成功')
+      } else {
+        ElMessage.error(response?.message || '取消点赞失败')
       }
     } else {
-      ElMessage.error(response?.message || '点赞失败')
+      // 点赞
+      const response = await likeAnswer({ answerId })
+      if (response && response.code === '200') {
+        answer.liked = true
+        answer.likeNum = (parseInt(answer.likeNum) + 1).toString()
+        ElMessage.success('点赞成功')
+      } else {
+        ElMessage.error(response?.message || '点赞失败')
+      }
     }
   } catch (error) {
-    console.error('点赞失败:', error)
+    console.error('点赞操作失败:', error)
     ElMessage.error('操作失败')
   }
 }
@@ -974,15 +1234,15 @@ const addComment = async (answerId: string) => {
   }
 }
 
-const markAsBest = async (answerId: string) => {
+const selectBestAnswer = async (answerId: string) => {
   try {
     console.log('开始设置最佳答案:', answerId)
     const requestData = {
-      id: question.value.id,
+      id: parseInt(question.value.id),
       title: question.value.title,
       content: question.value.content,
       researchArea: question.value.researchArea,
-      bestAnswerId: answerId,
+      bestAnswerId: parseInt(answerId),
     }
     console.log('设置最佳答案请求数据:', requestData)
     
@@ -991,7 +1251,8 @@ const markAsBest = async (answerId: string) => {
     
     if (response && response.code === '200') {
       question.value.bestAnswer = question.value.answers?.find(a => a.id === answerId)
-      ElMessage.success('已采纳为最佳答案')
+      showBestAnswerDialog.value = false
+      ElMessage.success('已设置最佳答案，问题标记为已解决')
     } else {
       ElMessage.error(response?.message || '设置最佳答案失败')
     }
@@ -1046,8 +1307,31 @@ const submitAnswer = async () => {
   }
 }
 
+// 跳转到页面底部
+const scrollToBottom = () => {
+  // 使用 nextTick 确保DOM更新后再滚动
+  nextTick(() => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth'
+    })
+  })
+}
+
+// 滚动回原位置
+const scrollToOriginalPosition = () => {
+  nextTick(() => {
+    window.scrollTo({
+      top: originalScrollPosition.value,
+      behavior: 'smooth'
+    })
+  })
+}
+
 // 开始回复某个回答
 const startReply = (answerId: number) => {
+  // 记录当前滚动位置
+  originalScrollPosition.value = window.pageYOffset || document.documentElement.scrollTop
   replyingToAnswerId.value = answerId
   newAnswerContent.value = ''
   // 跳转到页面底部
@@ -1056,6 +1340,8 @@ const startReply = (answerId: number) => {
 
 // 回复问题（不是回复其他回答）
 const replyToQuestion = () => {
+  // 记录当前滚动位置
+  originalScrollPosition.value = window.pageYOffset || document.documentElement.scrollTop
   replyingToAnswerId.value = null // 设置为null表示回复问题本身
   isReplyingToQuestion.value = true
   newAnswerContent.value = ''
@@ -1063,7 +1349,15 @@ const replyToQuestion = () => {
   scrollToBottom()
 }
 
-// 获取待回复内容的预览
+// 取消回复
+const cancelAnswerReply = () => {
+  replyingToAnswerId.value = null
+  isReplyingToQuestion.value = false
+  newAnswerContent.value = ''
+  // 滚动回原位置
+  scrollToOriginalPosition()
+}
+
 const getReplyPreview = () => {
   if (replyingToAnswerId.value === null && isReplyingToQuestion.value) {
     // 回复问题本身
@@ -1120,24 +1414,6 @@ const getReplyType = () => {
   return 'unknown'
 }
 
-// 跳转到页面底部
-const scrollToBottom = () => {
-  // 使用 nextTick 确保DOM更新后再滚动
-  nextTick(() => {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth'
-    })
-  })
-}
-
-// 取消回复
-const cancelAnswerReply = () => {
-  replyingToAnswerId.value = null
-  isReplyingToQuestion.value = false
-  newAnswerContent.value = ''
-}
-
 const goToQuestion = (questionId: string) => {
   router.push(`/research/qa/${questionId}`)
 }
@@ -1174,61 +1450,9 @@ const relatedQuestions = ref([
   },
 ])
 
-// 关注问题
-const followQuestionAction = async () => {
-  try {
-    const response = await fetch('/api/question/follow', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({
-        questionId: question.value.id
-      })
-    })
-    
-    if (response.ok) {
-      isFollowing.value = true
-      question.value.followNum++
-      ElMessage.success('关注成功')
-    } else {
-      ElMessage.error('关注失败')
-    }
-  } catch (error) {
-    console.error('关注问题失败:', error)
-    ElMessage.error('关注失败')
-  }
-}
-
-// 取消关注问题
-const unfollowQuestionAction = async () => {
-  try {
-    const response = await fetch('/api/question/unfollow', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({
-        questionId: question.value.id
-      })
-    })
-    
-    if (response.ok) {
-      isFollowing.value = false
-      question.value.followNum = Math.max(0, question.value.followNum - 1)
-      ElMessage.success('取消关注成功')
-    } else {
-      ElMessage.error('取消关注失败')
-    }
-  } catch (error) {
-    console.error('取消关注问题失败:', error)
-    ElMessage.error('取消关注失败')
-  }
-}
-
 onMounted(() => {
+  // 滚动到页面顶部
+  window.scrollTo(0, 0)
   loadQuestionDetail()
 })
 </script>
