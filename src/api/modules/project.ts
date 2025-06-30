@@ -62,11 +62,6 @@ export function getMyApplications(): Promise<ApplicationsResponse> {
   return request.get('/application/getAll')
 }
 
-// 检索项目
-export function searchProjects(data: { title: string }): Promise<ProjectsResponse> {
-  return request.post('/project/getByTitle', data)
-}
-
 // 退出项目
 export function cancelJoinProject(data: { projectId: number }): Promise<EmptyResponse> {
   return request.post('/project/cancelJoin', data)

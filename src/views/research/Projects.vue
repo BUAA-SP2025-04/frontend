@@ -171,7 +171,7 @@
                     <div class="flex items-center gap-3 mb-2">
                       <h3
                         class="text-xl font-semibold text-gray-900 hover:text-blue-600 cursor-pointer"
-                        @click="viewProject(project.id)"
+                        @click="viewProjectDetail(project)"
                       >
                         {{ project.title }}
                       </h3>
@@ -820,10 +820,6 @@ const shareProject = (project: Project) => {
     .catch(() => {
       ElMessage.error('复制失败，请手动复制链接')
     })
-}
-
-const viewProject = (projectId: number) => {
-  router.push(`/research/projects/${projectId}`)
 }
 
 const viewProjectDetail = (project: Project) => {
