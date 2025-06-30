@@ -1041,8 +1041,8 @@ const sendFileMessage = async (file: File) => {
   try {
     console.log('开始上传文件:', file.name, file.size, file.type)
 
-    // 上传文件
-    const uploadResponse = await uploadFile(file)
+    // 上传文件 - 传入 conversationId
+    const uploadResponse = await uploadFile(file, conversationId.value)
     console.log('文件上传响应:', uploadResponse)
 
     // 创建临时消息
