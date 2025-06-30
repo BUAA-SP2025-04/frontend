@@ -167,6 +167,15 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true,
     },
   },
+  {
+    path: '/abstract-generator',
+    name: 'AbstractGenerator',
+    component: () => import('@/views/AbstractGenerator.vue'),
+    meta: {
+      title: '智能摘要生成器',
+      requiresAuth: true,
+    },
+  },
 ]
 
 const router = createRouter({

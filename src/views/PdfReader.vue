@@ -8,6 +8,7 @@
 
       <div class="flex items-center space-x-4 mb-4">
         <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf"> 下载当前PDF </el-button>
+        <el-button type="primary" :disabled="!pdfUrl" @click="uploadToDify"> 生成摘要 </el-button>
       </div>
 
       <div v-if="pdfUrl" class="card" ref="pdfContainer">
@@ -147,12 +148,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch, computed, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import VuePdfEmbed from 'vue-pdf-embed'
 import type { UploadFile } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getPublicationFile } from '@/api/modules/publication'
 import { annotationAPI } from '@/api/modules/annotation'
+import { uploadFile } from '@/api/modules/abstract'
 import type { HighlightPreview, PopupPosition } from '@/api/types/annotation'
 import { useUserStore } from '@/stores/user'
 
@@ -203,8 +205,10 @@ const highlightPreview = ref({
 // 新增缺失的变量
 const paperId = ref<number>(0)
 const allowEdit = ref<number>(0)
+const uploading = ref<boolean>(false)
 
 const route = useRoute()
+const router = useRouter()
 
 const userStore = useUserStore()
 let userId = ''
@@ -311,6 +315,26 @@ const downloadPdf = () => {
     document.body.removeChild(link)
     // 可选：释放URL对象
     setTimeout(() => URL.revokeObjectURL(link.href), 100)
+  }
+}
+
+const uploadToDify = async () => {
+  if (!pdfUrl.value) {
+    ElMessage.warning('请先加载PDF文件')
+    return
+  }
+
+  try {
+    // 获取文件URL
+    const fileUrl = route.query.url
+
+    router.push({
+      name: 'AbstractGenerator',
+      query: { url: fileUrl },
+    })
+  } catch (error: any) {
+    console.error('跳转失败:', error)
+    ElMessage.error(`操作失败: ${error.message || '未知错误'}`)
   }
 }
 

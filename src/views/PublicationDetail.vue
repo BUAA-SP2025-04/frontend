@@ -458,7 +458,6 @@
                 :comment="comment"
                 :replies="comment.replies"
                 :active-reply-id="activeReplyId"
-                @like="handleCommentLike"
                 @set-active-reply="setActiveReply"
                 @reply-submitted="handleReplySubmitted"
               />
@@ -736,7 +735,7 @@ onMounted(async () => {
       // 查询是否已经点赞了这个成果
       try {
         const likeResponse = await isLikePublication(String(publicationId))
-        console.log(likeResponse)
+        // console.log(likeResponse)
         if (likeResponse && publication.value) {
           // 根据API响应更新点赞状态
           publication.value.isLiked = likeResponse.data
@@ -840,22 +839,6 @@ const loadComments = async () => {
   }
 }
 
-const toggleCommentLike = async (comment: Comment) => {
-  try {
-    if (comment.isLiked) {
-      await disLikeComment(comment.id)
-      comment.isLiked = false
-      comment.likes--
-    } else {
-      await likeComment(comment.id)
-      comment.isLiked = true
-      comment.likes++
-    }
-  } catch (error) {
-    console.error('点赞失败:', error)
-    ElMessage.error('操作失败')
-  }
-}
 
 // 处理二级评论点赞
 const toggleReplyLike = async (reply: Comment) => {
@@ -1108,33 +1091,6 @@ const getrepliedUserIdString = () => {
   return `${replyTarget.value.id},${replyTarget.value.name}`
 }
 
-const handleCommentLike = async (
-  likeData: Comment | { id: number; isLiked: boolean; likes: number }
-) => {
-  try {
-    // 判断是一级评论还是二级评论的点赞数据
-    if ('content' in likeData) {
-      // 一级评论
-      const comment = likeData as Comment
-      if (comment.isLiked) {
-        await disLikeComment(comment.id)
-        comment.isLiked = false
-        comment.likes--
-      } else {
-        await likeComment(comment.id)
-        comment.isLiked = true
-        comment.likes++
-      }
-    } else {
-      // 二级评论 - 数据已经在子组件中更新，这里不需要重复处理
-      // 因为ReplyComment组件已经通过emit传递了更新后的数据
-      console.log('二级评论点赞状态已更新:', likeData)
-    }
-  } catch (error) {
-    console.error('点赞失败:', error)
-    ElMessage.error('操作失败')
-  }
-}
 
 const togglePublicationLike = async () => {
   if (likeLoading.value || !publication.value) return

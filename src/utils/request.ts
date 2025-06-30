@@ -34,7 +34,7 @@ request.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    console.log('请求token:', token)
+    // console.log('请求token:', token)
 
     // 添加时间戳防止缓存
     if (config.method === 'get') {
@@ -44,7 +44,7 @@ request.interceptors.request.use(
       }
     }
 
-    console.log('请求配置:', config) // 调试日志
+    // console.log('请求配置:', config) // 调试日志
     return config
   },
   error => {
