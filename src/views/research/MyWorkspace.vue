@@ -218,6 +218,26 @@
                             </svg>
                             管理申请 ({{ project.applyNum }})
                           </button>
+                          <button
+                            v-if="getProjectStatus(project) === 'recruiting'"
+                            class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                            @click="getProjectInviteLink(project.id)"
+                          >
+                            <svg
+                              class="w-4 h-4 mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+                              ></path>
+                            </svg>
+                            邀请他人
+                          </button>
                         </div>
                         <div class="text-sm text-gray-500">
                           发布于 {{ formatTime(project.createdAt) }}
@@ -711,6 +731,7 @@ import {
   getMyApplications,
   getMyJoinedProjects,
   getMyProjects,
+  getInviteLink,
 } from '@/api/modules/project'
 import type { ApplicationDetail, Project, ProjectWithApplications } from '@/api/types/project'
 import PublishProjectDialog from '@/components/project/PublishProjectDialog.vue'
@@ -1190,6 +1211,21 @@ const handleClosePublishDialog = () => {
   showPublishDialog.value = false
   isEditMode.value = false
   projectToEdit.value = null
+}
+
+// 获取项目邀请链接
+const getProjectInviteLink = async (projectId: number) => {
+  try {
+    const res = await getInviteLink(projectId)
+    if (res?.data?.data) {
+      // 复制链接到剪贴板
+      await navigator.clipboard.writeText(res.data.data)
+      ElMessage.success('邀请链接已复制到剪贴板')
+    }
+  } catch (error) {
+    console.error('获取邀请链接失败:', error)
+    ElMessage.error('获取邀请链接失败')
+  }
 }
 
 // 监听路由变化，设置默认标签页

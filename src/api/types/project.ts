@@ -217,3 +217,10 @@ export interface EmptyResponse {
   message: string
   data: unknown
 }
+
+// 邀请链接响应类型
+export interface InviteLinkResponse {
+  code: string
+  message: string
+  data: string
+}

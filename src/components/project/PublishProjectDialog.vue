@@ -259,7 +259,7 @@
               >
                 <div class="flex items-center space-x-3">
                   <img
-                    :src="cooperator.imgUrl || '/default-avatar.png'"
+                    :src="getAvatarUrl(cooperator.imgUrl)"
                     :alt="cooperator.name"
                     class="w-8 h-8 rounded-full object-cover"
                   />
@@ -425,6 +425,17 @@ const validateFields = () => {
   return true
 }
 
+// 获取头像URL
+const getAvatarUrl = (imgUrl: string) => {
+  if (!imgUrl || imgUrl === '') {
+    return '/default-avatar.png'
+  }
+  if (imgUrl.startsWith('http')) {
+    return imgUrl
+  }
+  return import.meta.env.VITE_API_BASE_URL + imgUrl
+}
+
 // 验证团队规模
 const validateMaxMembers = () => {
   const value = newProject.value.maxMembers
@@ -438,6 +449,15 @@ const validateMaxMembers = () => {
     ElMessage.warning('团队规模最大为50人，已自动调整')
     return false
   }
+
+  // 编辑模式下，检查是否小于已招募人数
+  if (props.isEdit && props.editProject) {
+    if (value < props.editProject.recruitedNum) {
+      formErrors.value.maxMembers = `团队规模不能小于已招募人数(${props.editProject.recruitedNum}人)`
+      return false
+    }
+  }
+
   formErrors.value.maxMembers = ''
   return true
 }
@@ -608,6 +628,15 @@ function getProjectStatus(project: ProjectWithApplications): string {
 // 发布项目
 const saveProject = async () => {
   if (!validateForm()) return
+
+  // 编辑模式下额外验证
+  if (props.isEdit && props.editProject) {
+    if (newProject.value.maxMembers < props.editProject.recruitedNum) {
+      ElMessage.error(`团队规模不能小于已招募人数(${props.editProject.recruitedNum}人)`)
+      return
+    }
+  }
+
   try {
     if (props.isEdit && props.editProject) {
       await updateProject({
