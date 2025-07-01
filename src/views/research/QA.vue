@@ -1505,16 +1505,49 @@ const getShareText = (question: Question, format: string) => {
 
 const copyShareText = () => {
   const text = getShareText(selectedQuestionForShare.value!, shareFormat.value)
-  
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        ElMessage.success('分享文本已复制到剪贴板')
+        showShareDialog.value = false
+      })
+      .catch(() => {
+        fallbackCopyTextToClipboard(text)
+      })
+  } else {
+    fallbackCopyTextToClipboard(text)
+  }
+}
+
+function fallbackCopyTextToClipboard(text: string) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  textArea.style.position = 'fixed'
+  textArea.style.top = '0'
+  textArea.style.left = '0'
+  textArea.style.width = '2em'
+  textArea.style.height = '2em'
+  textArea.style.padding = '0'
+  textArea.style.border = 'none'
+  textArea.style.outline = 'none'
+  textArea.style.boxShadow = 'none'
+  textArea.style.background = 'transparent'
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  try {
+    const successful = document.execCommand('copy')
+    if (successful) {
       ElMessage.success('分享文本已复制到剪贴板')
       showShareDialog.value = false
-    })
-    .catch(() => {
+    } else {
       ElMessage.error('复制失败，请手动复制文本')
-    })
+    }
+  } catch (err) {
+    ElMessage.error('复制失败，请手动复制文本')
+  }
+  document.body.removeChild(textArea)
 }
 
 const goToUserDetail = (userId: number) => {
