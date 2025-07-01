@@ -1217,6 +1217,7 @@ const handlePaperAction = async (command: string) => {
             url: paper.pdfUrl,
             paperId: paperId,
             allowEdit: 1,
+            title: paper.title,
           },
         })
         // window.open(`/pdf-readerpdfUrl=${paper.pdfUrl}`, '_blank')

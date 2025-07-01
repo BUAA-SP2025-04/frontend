@@ -171,6 +171,7 @@ const handleDownloadingPdf = (downloading: boolean) => {
 onMounted(() => {
   const urlParam = route.query.url as string
   const titleParam = route.query.title as string
+  console.log(urlParam, titleParam)
   if (urlParam) {
     fileUrl.value = urlParam
     title.value = titleParam || ''
