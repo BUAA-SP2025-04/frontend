@@ -797,7 +797,7 @@
         </div>
 
         <div class="p-6 space-y-4">
-          <!-- 分享格式选择 -->
+          <!-- 分享格式选择，只保留简洁和详细 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-3">选择分享格式</label>
             <div class="space-y-2">
@@ -823,18 +823,6 @@
                 <div>
                   <span class="text-sm font-medium">详细格式</span>
                   <p class="text-xs text-gray-500">包含问题信息和统计</p>
-                </div>
-              </label>
-              <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
-                <input
-                  v-model="shareFormat"
-                  type="radio"
-                  value="social"
-                  class="mr-3 text-blue-600 focus:ring-blue-500"
-                />
-                <div>
-                  <span class="text-sm font-medium">社交媒体格式</span>
-                  <p class="text-xs text-gray-500">包含标签和表情符号</p>
                 </div>
               </label>
             </div>
@@ -873,6 +861,7 @@
             </button>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -1795,9 +1784,48 @@ const getShareText = (format: string) => {
 }
 
 const copyShareText = () => {
-  navigator.clipboard.writeText(getShareText(shareFormat.value))
-  ElMessage.success('分享文本已复制到剪贴板')
-  showShareDialog.value = false
+  const text = getShareText(shareFormat.value)
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        ElMessage.success('分享文本已复制到剪贴板')
+        showShareDialog.value = false
+      })
+      .catch(() => fallbackCopyTextToClipboard(text))
+  } else {
+    fallbackCopyTextToClipboard(text)
+  }
+}
+
+function fallbackCopyTextToClipboard(text: string) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  textArea.style.position = 'fixed'
+  textArea.style.top = '0'
+  textArea.style.left = '0'
+  textArea.style.width = '2em'
+  textArea.style.height = '2em'
+  textArea.style.padding = '0'
+  textArea.style.border = 'none'
+  textArea.style.outline = 'none'
+  textArea.style.boxShadow = 'none'
+  textArea.style.background = 'transparent'
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  try {
+    const successful = document.execCommand('copy')
+    if (successful) {
+      ElMessage.success('分享文本已复制到剪贴板')
+      showShareDialog.value = false
+    } else {
+      ElMessage.error('复制失败，请手动复制文本')
+    }
+  } catch (err) {
+    ElMessage.error('复制失败，请手动复制文本')
+  }
+  document.body.removeChild(textArea)
 }
 </script>
 

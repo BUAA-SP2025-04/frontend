@@ -8,13 +8,20 @@
 
       <div class="flex items-center space-x-4 mb-4">
         <el-button type="success" :disabled="!pdfUrl" @click="downloadPdf"> 下载当前PDF </el-button>
-        <el-button type="primary" :disabled="!pdfUrl" @click="uploadToDify"> 生成摘要 </el-button>
+        <el-button
+          v-if="showGenerateAbstractBtn"
+          type="primary"
+          :disabled="!pdfUrl"
+          @click="uploadToDify"
+        >
+          生成摘要
+        </el-button>
       </div>
 
       <div v-if="pdfUrl" class="card" ref="pdfContainer">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">PDF预览</h3>
-            <!-- <div class="flex space-x-2">
+          <!-- <div class="flex space-x-2">
               <el-button size="small" @click="zoomIn">放大</el-button>
               <el-button size="small" @click="zoomOut">缩小</el-button>
               <el-button size="small" @click="resetZoom">重置</el-button>
@@ -28,7 +35,9 @@
               :class="{ active: activeTool === 'highlight' }"
               @click="toggleHighlightMode"
             >
-              <i class="fas fa-highlighter">{{ activeTool === 'highlight' ? '批注模式中...' : '高亮批注' }}</i> 
+              <i class="fas fa-highlighter">{{
+                activeTool === 'highlight' ? '批注模式中...' : '高亮批注'
+              }}</i>
             </button>
             <button class="tool-btn" @click="clearAnnotations">
               <i class="fas fa-trash-alt">清除批注</i>
@@ -48,34 +57,36 @@
             @loaded="onPdfLoaded"
             @page-loaded="onPageLoaded"
           />
-          <div 
-            ref="annotationLayer" 
+          <div
+            ref="annotationLayer"
             class="annotation-layer"
-            :style="{ cursor: activeTool === 'highlight' ? 'crosshair' : 'default',
+            :style="{
+              cursor: activeTool === 'highlight' ? 'crosshair' : 'default',
               pointerEvents: activeTool === 'highlight' ? 'auto' : 'none',
-              zIndex: 10 }"
+              zIndex: 10,
+            }"
           ></div>
-            
-          <div 
+
+          <div
             v-if="highlightPreview.visible"
             class="highlight-preview"
             :style="{
               left: highlightPreview.x + 'px',
               top: highlightPreview.y + 'px',
               width: highlightPreview.width + 'px',
-              height: highlightPreview.height + 'px'
+              height: highlightPreview.height + 'px',
             }"
           ></div>
-          
-          <div 
-            v-for="(annotation) in visibleAnnotations"
+
+          <div
+            v-for="annotation in visibleAnnotations"
             :key="annotation.id"
             class="annotation-marker"
             :style="{
               left: annotation.markerX + 'px',
-              top: annotation.markerY + 'px'
+              top: annotation.markerY + 'px',
             }"
-            @mouseenter="showAnnotationPopup(annotation, $event);"
+            @mouseenter="showAnnotationPopup(annotation, $event)"
             @mouseleave="activePopup = null"
             @click="editingAnnoId = annotation.id, showAnnoEditDialog = true"
           >
@@ -84,12 +95,12 @@
           </div>
         </div>
 
-        <div 
+        <div
           v-if="activePopup"
           class="annotation-popup"
           :style="{
             left: popupPosition.x + 'px',
-            top: popupPosition.y + 'px'
+            top: popupPosition.y + 'px',
           }"
         >
           <!-- <button class="close-btn" @click="activePopup = null">
@@ -197,13 +208,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getPublicationFile } from '@/api/modules/publication'
 import { annotationAPI } from '@/api/modules/annotation'
 import { uploadFile } from '@/api/modules/abstract'
-import type { 
-  Annotation,
-  HighlightPreview,
-  PopupPosition,
-} from '@/api/types/annotation'
+import type { Annotation, HighlightPreview, PopupPosition } from '@/api/types/annotation'
 import { useUserStore } from '@/stores/user'
-
+import { useGlobalStore } from '@/stores/global'
 
 const selectedFile = ref<File | null>(null)
 const pdfUrl = ref<string>('')
@@ -214,7 +221,7 @@ const showDownload = ref(false)
 const pdfBlob = ref<Blob | null>(null)
 const pdfContainer = ref<HTMLElement | null>(null)
 const pdfLoaded = ref(false)
-const pdfViewer = ref<HTMLElement | null>(null);
+const pdfViewer = ref<HTMLElement | null>(null)
 const isPdfRendered = ref(false)
 const resizeObserver = ref<ResizeObserver | null>(null)
 
@@ -224,24 +231,24 @@ const allowEdit = ref(0)
 const route = useRoute()
 
 // 批注相关状态
-const annotationLayer = ref<HTMLElement | null>(null);
-const activeTool = ref<string | null>(null);
-const annotations = ref<Annotation[]>([]);
-const canvasContext = ref<CanvasRenderingContext2D | null>(null);
-const isDrawing = ref<boolean>(false);
-const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
+const annotationLayer = ref<HTMLElement | null>(null)
+const activeTool = ref<string | null>(null)
+const annotations = ref<Annotation[]>([])
+const canvasContext = ref<CanvasRenderingContext2D | null>(null)
+const isDrawing = ref<boolean>(false)
+const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 const highlightPreview = ref<HighlightPreview>({
   visible: false,
   x: 0,
   y: 0,
   width: 0,
-  height: 0
-});
-const activePopup = ref<Annotation | null>(null);
-const popupPosition = ref<PopupPosition>({ x: 0, y: 0 });
+  height: 0,
+})
+const activePopup = ref<Annotation | null>(null)
+const popupPosition = ref<PopupPosition>({ x: 0, y: 0 })
 const showCommentDialog = ref(false)
 const newAnno = reactive({
-  comment: ''
+  comment: '',
 })
 
 const showAnnoEditDialog = ref(false)
@@ -251,6 +258,7 @@ const showCommentEditDialog = ref(false)
 const uploading = ref<boolean>(false)
 
 const userStore = useUserStore()
+const globalStore = useGlobalStore()
 let userId = ''
 const initUserInfo = () => {
   if (userStore.user) {
@@ -281,7 +289,7 @@ const onPageLoaded = (page: any) => {
       console.warn('PDF 容器未找到')
       pdfContainer.value = document.querySelector('.pdf-container') as HTMLElement
     }
-    
+
     // 初始化批注层
     await initAnnotationCanvas()
     attachEventListeners()
@@ -330,25 +338,25 @@ onMounted(async () => {
       selectedFile.value = null
       if (blob && allowEdit.value == 1) {
         try {
-          console.log("开始读取云端批注了")
+          console.log('开始读取云端批注了')
           const res = await annotationAPI.getAnnotationList(userId, paperId.value.toString())
           console.log(res)
           annotations.value = res.data
         } catch (error) {
-          ElMessage.error("读取云端高亮批注失败")
+          ElMessage.error('读取云端高亮批注失败')
         }
         resizeObserver.value = new ResizeObserver(async () => {
           await initAnnotationCanvas()
           redrawAnnotations()
         })
-        if(pdfContainer.value) resizeObserver.value.observe(pdfContainer.value)
+        if (pdfContainer.value) resizeObserver.value.observe(pdfContainer.value)
       }
     } catch (e) {
       pdfUrl.value = ''
       pdfBlob.value = null
     }
   }
-});
+})
 
 const downloadPdf = () => {
   if (pdfBlob.value) {
@@ -361,7 +369,7 @@ const downloadPdf = () => {
     // 可选：释放URL对象
     setTimeout(() => URL.revokeObjectURL(link.href), 100)
   }
-};
+}
 
 const uploadToDify = async () => {
   if (!pdfUrl.value) {
@@ -390,7 +398,7 @@ const ensureAnnotationLayer = () => {
     console.error('PDF容器未初始化')
     return false
   }
-  
+
   // 不再动态创建，直接使用模板中的ref
   if (annotationLayer.value) {
     // 设置必要的样式
@@ -407,7 +415,7 @@ const ensureAnnotationLayer = () => {
     return true
   }
   return false
-};
+}
 
 // 初始化批注画布
 const initAnnotationCanvas = async () => {
@@ -416,48 +424,48 @@ const initAnnotationCanvas = async () => {
     console.error('批注层元素创建失败')
     return
   }
-  
+
   const rect = annotationLayer.value.getBoundingClientRect()
   // console.log('开始初始化画布了！')
   annotationLayer.value.innerHTML = ''
-  const canvas = document.createElement('canvas');
-  canvas.className = 'annotation-canvas';
-  canvas.style.position = 'absolute';
-  canvas.style.top = '0';
-  canvas.style.left = '0';
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  
+  const canvas = document.createElement('canvas')
+  canvas.className = 'annotation-canvas'
+  canvas.style.position = 'absolute'
+  canvas.style.top = '0'
+  canvas.style.left = '0'
+  canvas.style.width = '100%'
+  canvas.style.height = '100%'
+
   // 设置画布尺寸匹配元素
-  canvas.width = rect.width;
-  canvas.height = rect.height;
-  
+  canvas.width = rect.width
+  canvas.height = rect.height
+
   // 清除旧画布
   while (annotationLayer.value.firstChild) {
-    annotationLayer.value.removeChild(annotationLayer.value.firstChild);
+    annotationLayer.value.removeChild(annotationLayer.value.firstChild)
   }
   
   await annotationLayer.value.appendChild(canvas);
   const ctx = canvas.getContext('2d');
   if (ctx) {
-    canvasContext.value = ctx;
-    redrawAnnotations();
+    canvasContext.value = ctx
+    redrawAnnotations()
   } else {
-    console.error('无法获取Canvas上下文');
+    console.error('无法获取Canvas上下文')
   }
-};
+}
 
 const retryAnnotationInit = async () => {
   console.log('重试批注层设置')
   await initAnnotationCanvas()
   attachEventListeners()
-};
+}
 
 watch(currentPage, () => {
   nextTick(() => {
-    setTimeout(retryAnnotationInit, 300);
-  });
-});
+    setTimeout(retryAnnotationInit, 300)
+  })
+})
 
 // 重绘所有批注
 const redrawAnnotations = async () => {
@@ -479,17 +487,17 @@ const redrawAnnotations = async () => {
       if(anno.markerX<1) anno.markerX = percentToPx(anno.markerX, ctx.canvas.width)
       if(anno.markerY<1) anno.markerY = percentToPx(anno.markerY, ctx.canvas.height)
       // 绘制高亮区域
-      ctx.fillStyle = 'rgba(255, 255, 0, 0.25)';
+      ctx.fillStyle = 'rgba(255, 255, 0, 0.25)'
       // console.log(anno.x, anno.y, anno.width, anno.height)
-      ctx.fillRect(anno.x, anno.y, anno.width, anno.height);
-      
+      ctx.fillRect(anno.x, anno.y, anno.width, anno.height)
+
       // // 绘制高亮边框
       // ctx.strokeStyle = 'rgba(255, 193, 7, 0.8)';
       // ctx.lineWidth = 1;
       // ctx.strokeRect(anno.x, anno.y, anno.width, anno.height);
-    });
+    })
   // console.log('初始化画布完成了！')
-};
+}
 
 // 显示批注弹窗
 const showAnnotationPopup = (annotation: Annotation|{ id: string; page: number; x: number; y: number; 
@@ -498,22 +506,22 @@ const showAnnotationPopup = (annotation: Annotation|{ id: string; page: number; 
   activePopup.value = annotation;
   popupPosition.value = {
     x: event.pageX + 300 < window.innerWidth ? event.pageX + 20 : event.pageX - 300,
-    y: event.pageY + 10
-  };
-};
+    y: event.pageY + 10,
+  }
+}
 
 // 切换高亮模式
 const toggleHighlightMode = async () => {
   activeTool.value = activeTool.value === 'highlight' ? null : 'highlight';
   
   if (activeTool.value === 'highlight') {
-    await initAnnotationCanvas()
+    if (!annotationLayer) await initAnnotationCanvas()
     attachEventListeners()
-    ElMessage.success('已进入高亮批注模式，请拖动鼠标选择区域');
+    ElMessage.success('已进入高亮批注模式，请拖动鼠标选择区域')
   } else {
-    ElMessage.info('已退出高亮批注模式');
+    ElMessage.info('已退出高亮批注模式')
   }
-};
+}
 
 // 鼠标事件处理
 const getRelativeCoordinates = (e: MouseEvent) => {
@@ -527,56 +535,56 @@ const getRelativeCoordinates = (e: MouseEvent) => {
   // 计算相对于PDF容器的坐标
   const x = e.clientX - rect.left
   const y = e.clientY - rect.top
-  
+
   // 确保坐标在PDF容器范围内
   return {
     x: Math.max(0, Math.min(x, rect.width)),
-    y: Math.max(0, Math.min(y, rect.height))
+    y: Math.max(0, Math.min(y, rect.height)),
   }
-};
+}
 
 const handleMouseDown = (e: MouseEvent) => {
   if (activeTool.value !== 'highlight') return
-  
+
   isDrawing.value = true
   const { x, y } = getRelativeCoordinates(e)
   startPos.value = { x, y }
-  
+
   highlightPreview.value = {
     visible: true,
     x,
     y,
     width: 0,
-    height: 0
+    height: 0,
   }
-};
+}
 
 const handleMouseMove = (e: MouseEvent) => {
   if (!isDrawing.value) return
-  
+
   const { x, y } = getRelativeCoordinates(e)
   highlightPreview.value = {
     visible: true,
     x: Math.min(startPos.value.x, x),
     y: Math.min(startPos.value.y, y),
     width: Math.abs(x - startPos.value.x),
-    height: Math.abs(y - startPos.value.y)
+    height: Math.abs(y - startPos.value.y),
   }
-};
+}
 
 const handleMouseUp = async () => {
-  if (!isDrawing.value) return;
-  isDrawing.value = false;
+  if (!isDrawing.value) return
+  isDrawing.value = false
   console.log('绘制结束了！')
   // 添加有效区域判断
   if (highlightPreview.value.width > 5 && highlightPreview.value.height > 5) {
     showCommentDialog.value = true
   }
-};
+}
 
 const uploadAnnotation = async () => {
   if (annotationLayer.value) {
-    const rect = annotationLayer.value.getBoundingClientRect();
+    const rect = annotationLayer.value.getBoundingClientRect()
     console.log(highlightPreview.value.y, rect.height)
     const newAnnotationUpload = {
       // id: Date.now().toString(),
@@ -590,7 +598,7 @@ const uploadAnnotation = async () => {
       markerX: pxToPercent(highlightPreview.value.x + highlightPreview.value.width, rect.width),
       markerY: pxToPercent(highlightPreview.value.y, rect.height),
       // paperId: paperId
-    };
+    }
     const newAnnotation = {
       id: '0',
       // type: 'highlight',
@@ -602,38 +610,42 @@ const uploadAnnotation = async () => {
       comment: newAnno.comment,
       markerX: highlightPreview.value.x + highlightPreview.value.width,
       markerY: highlightPreview.value.y,
-      paperId: paperId.value
-    };
+      paperId: paperId.value,
+    }
 
     try {
-      const res = await annotationAPI.uploadAnnotation(userId, paperId.value.toString(), newAnnotationUpload)
+      const res = await annotationAPI.uploadAnnotation(
+        userId,
+        paperId.value.toString(),
+        newAnnotationUpload
+      )
       newAnnotation.id = res.data.toString()
     } catch (error) {
-      ElMessage.error("云端批注添加失败")
+      ElMessage.error('云端批注添加失败')
     }
-    annotations.value.push(newAnnotation);
-    ElMessage.success("批注添加成功");
+    annotations.value.push(newAnnotation)
+    ElMessage.success('批注添加成功')
   } else {
-    ElMessage.error("批注添加出现了一个问题")
+    ElMessage.error('批注添加出现了一个问题')
   }
-  redrawAnnotations();
-  highlightPreview.value.visible = false;
+  redrawAnnotations()
+  highlightPreview.value.visible = false
   newAnno.comment = ''
-  showCommentDialog.value = false;
-};
+  showCommentDialog.value = false
+}
 
 const cancelNewAnnotation = () => {
-  highlightPreview.value.visible = false;
-  ElMessage.info("取消高亮批注了")
+  highlightPreview.value.visible = false
+  ElMessage.info('取消高亮批注了')
   newAnno.comment = ''
-  showCommentDialog.value = false;
-};
+  showCommentDialog.value = false
+}
 
 // 清除当前页批注
 const clearAnnotations = async () => {
   if (annotations.value.length === 0) {
-    ElMessage.warning('当前没有可清除的批注');
-    return;
+    ElMessage.warning('当前没有可清除的批注')
+    return
   }
   try {
     await ElMessageBox.confirm('确定清除当页所有批注吗？', '确认删除', {
@@ -644,19 +656,17 @@ const clearAnnotations = async () => {
         try {
           await annotationAPI.deleteAnnotation(anno.id)
         } catch (error) {
-          ElMessage.error("有一个批注云端删除失败了")
+          ElMessage.error('有一个批注云端删除失败了')
         }
       }
     })
-    annotations.value = annotations.value.filter(
-      anno => anno.page !== currentPage.value
-    );
-    redrawAnnotations();
-    ElMessage.success('已清除当前页所有批注');
+    annotations.value = annotations.value.filter(anno => anno.page !== currentPage.value)
+    redrawAnnotations()
+    ElMessage.success('已清除当前页所有批注')
   } catch (error) {
     // 用户取消
   }
-};
+}
 
 // 删除单个批注
 const deleteAnnotation = async (id: string) => {
@@ -664,18 +674,18 @@ const deleteAnnotation = async (id: string) => {
     await ElMessageBox.confirm('确定要删除这个笔记吗？', '确认删除', {
       type: 'warning',
     })
-    try{
+    try {
       await annotationAPI.deleteAnnotation(id)
-      annotations.value = annotations.value.filter(anno => anno.id !== id);
-      redrawAnnotations();
-      ElMessage.success('批注已删除');
-    } catch(error) {
-      ElMessage.error('删除失败');
+      annotations.value = annotations.value.filter(anno => anno.id !== id)
+      redrawAnnotations()
+      ElMessage.success('批注已删除')
+    } catch (error) {
+      ElMessage.error('删除失败')
     }
   } catch (error) {
     // 用户取消
   }
-};
+}
 
 // 编辑批注
 const editAnnotation = () => {
@@ -702,62 +712,62 @@ const editAnnotationComment = async () => {
 // 导出批注
 const downloadAnnotations = () => {
   if (annotations.value.length === 0) {
-    ElMessage.warning('没有批注可导出');
-    return;
+    ElMessage.warning('没有批注可导出')
+    return
   }
-  
-  const dataStr = JSON.stringify(annotations.value, null, 2);
-  const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-  
-  const exportFileDefaultName = `pdf-annotations-${new Date().toISOString().slice(0, 10)}.json`;
-  
-  const linkElement = document.createElement('a');
-  linkElement.setAttribute('href', dataUri);
-  linkElement.setAttribute('download', exportFileDefaultName);
-  linkElement.click();
-  
-  ElMessage.success('批注导出成功');
-};
+
+  const dataStr = JSON.stringify(annotations.value, null, 2)
+  const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`
+
+  const exportFileDefaultName = `pdf-annotations-${new Date().toISOString().slice(0, 10)}.json`
+
+  const linkElement = document.createElement('a')
+  linkElement.setAttribute('href', dataUri)
+  linkElement.setAttribute('download', exportFileDefaultName)
+  linkElement.click()
+
+  ElMessage.success('批注导出成功')
+}
 
 // 跳转到指定页
 const goToPage = (page: number) => {
-  currentPage.value = page;
-};
+  currentPage.value = page
+}
 
 // 添加事件监听
 const attachEventListeners = () => {
   // 先移除旧的事件监听器
-  detachEventListeners();
+  detachEventListeners()
 
   if (!annotationLayer.value) {
     console.error('无法附加事件监听器：批注层不存在')
-    return;
+    return
   }
-  
-  annotationLayer.value.addEventListener('mousedown', handleMouseDown);
-  annotationLayer.value.addEventListener('mousemove', handleMouseMove);
-  annotationLayer.value.addEventListener('mouseup', handleMouseUp);
-};
+
+  annotationLayer.value.addEventListener('mousedown', handleMouseDown)
+  annotationLayer.value.addEventListener('mousemove', handleMouseMove)
+  annotationLayer.value.addEventListener('mouseup', handleMouseUp)
+}
 
 // 添加移除事件监听的方法
 const detachEventListeners = () => {
-  if (!annotationLayer.value) return;
-  
-  annotationLayer.value.removeEventListener('mousedown', handleMouseDown);
-  annotationLayer.value.removeEventListener('mousemove', handleMouseMove);
-  annotationLayer.value.removeEventListener('mouseup', handleMouseUp);
-};
+  if (!annotationLayer.value) return
+
+  annotationLayer.value.removeEventListener('mousedown', handleMouseDown)
+  annotationLayer.value.removeEventListener('mousemove', handleMouseMove)
+  annotationLayer.value.removeEventListener('mouseup', handleMouseUp)
+}
 
 onUnmounted(() => {
-  detachEventListeners();
+  detachEventListeners()
   resizeObserver.value?.disconnect()
-});
+})
 
 // 计算当前页可见批注
 const visibleAnnotations = computed<Annotation[]>(() => {
   const annos = annotations.value.filter(anno => anno.page === currentPage.value)
-  return annos;
-});
+  return annos
+})
 
 // 监听当前页变化
 watch(currentPage, () => {
@@ -766,7 +776,7 @@ watch(currentPage, () => {
     await initAnnotationCanvas()
     attachEventListeners()
   })
-});
+})
 
 const listAllAnnotations = () => {
   router.push({
@@ -788,14 +798,17 @@ onMounted(() => {
 
 // 像素值转百分比
 const pxToPercent = (px: number, total: number) => {
-  return total > 0 ? (px / total) : 0;
-};
+  return total > 0 ? px / total : 0
+}
 
 // 百分比转像素值
 const percentToPx = (percent: number, total: number) => {
-  return percent * total;
-};
+  return percent * total
+}
 
+const showGenerateAbstractBtn = computed(() => {
+  return globalStore.lastRoute === '/library'
+})
 </script>
 
 
@@ -817,245 +830,245 @@ const percentToPx = (percent: number, total: number) => {
 }
 
 .card {
-background: white;
-border-radius: 12px;
-box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-padding: 25px;
-margin-bottom: 30px;
-transition: transform 0.3s ease;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  padding: 25px;
+  margin-bottom: 30px;
+  transition: transform 0.3s ease;
 }
 
 .toolbar {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 15px 0;
-border-bottom: 1px solid #eee;
-margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
 }
 
 .toolbar h3 {
-font-size: 1.4rem;
-color: #3498db;
+  font-size: 1.4rem;
+  color: #3498db;
 }
 
 .tools {
-display: flex;
-gap: 12px;
+  display: flex;
+  gap: 12px;
 }
 
 .tool-btn {
-padding: 10px 18px;
-border: none;
-border-radius: 8px;
-background: #3498db;
-color: white;
-font-weight: 500;
-cursor: pointer;
-display: flex;
-align-items: center;
-gap: 8px;
-transition: all 0.3s ease;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #3498db;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
 }
 
 .tool-btn:hover {
-background: #2980b9;
-transform: scale(1.05);
+  background: #2980b9;
+  transform: scale(1.05);
 }
 
 .tool-btn i {
-font-size: 16px;
+  font-size: 16px;
 }
 
 .tool-btn.active {
-background: green;
-box-shadow: 0 4px 12px rgba(0, 128, 0, 0.3);
+  background: green;
+  box-shadow: 0 4px 12px rgba(0, 128, 0, 0.3);
 }
 
 .annotation-layer {
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-pointer-events: auto;
-z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  z-index: 1;
 }
 
 .pagination {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 15px 0;
-border-top: 1px solid #eee;
-margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-top: 1px solid #eee;
+  margin-top: 20px;
 }
 
 .page-info {
-font-size: 1rem;
-color: #7f8c8d;
+  font-size: 1rem;
+  color: #7f8c8d;
 }
 
 .annotation-list {
-margin-top: 20px;
-padding: 20px;
-background: #f8f9fa;
-border-radius: 8px;
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
 }
 
 .annotation-list h4 {
-margin-bottom: 15px;
-color: #2c3e50;
-font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  font-size: 1.2rem;
 }
 
 .annotation-item {
-padding: 15px;
-background: white;
-border-radius: 8px;
-margin-bottom: 15px;
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-border-left: 4px solid #3498db;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #3498db;
 }
 
 .annotation-content {
-display: flex;
-justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 }
 
 .annotation-text {
-flex: 1;
+  flex: 1;
 }
 
 .annotation-page {
-color: #7f8c8d;
-font-size: 0.9rem;
-}
-
-.annotation-actions {
-display: flex;
-gap: 10px;
-}
-
-.annotation-actions button {
-background: none;
-border: none;
-color: #7f8c8d;
-cursor: pointer;
-transition: color 0.3s;
-}
-
-.annotation-actions button:hover {
-color: yellow;
-}
-
-.highlight-preview {
-position: absolute;
-border: 2px dashed yellow;
-background: rgba(255, 255, 0, 0.25);
-z-index: 7;
-}
-
-.annotation-marker {
-position: absolute;
-width: 24px;
-height: 24px;
-background: blue;
-color: blue;
-border-radius: 50%;
-display: flex;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-z-index: 10;
-transform: translate(-50%, -50%);
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-.annotation-marker:hover {
-background: red;
-color:white;
-}
-
-.annotation-marker i {
-color: white;
-font-size: 12px;
-}
-
-.annotation-popup {
-position: absolute;
-background: white;
-border-radius: 8px;
-padding: 15px;
-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-z-index: 12;
-width: 280px;
-max-width: 90vw;
-}
-
-.annotation-popup h4 {
-margin-bottom: 10px;
-color: #2c3e50;
-}
-
-.annotation-popup p {
-color: #555;
-line-height: 1.5;
-}
-
-.annotation-popup .close-btn {
-position: absolute;
-top: 10px;
-right: 10px;
-background: none;
-border: none;
-color: #7f8c8d;
-cursor: pointer;
-font-size: 16px;
-}
-
-footer {
-text-align: center;
-margin-top: 40px;
-padding: 20px;
-color: #7f8c8d;
-border-top: 1px solid #eee;
-}
-
-.instructions {
-background: #e3f2fd;
-padding: 20px;
-border-radius: 8px;
-margin-bottom: 25px;
-border-left: 4px solid #3498db;
-}
-
-.instructions h3 {
-color: #2c3e50;
-margin-bottom: 15px;
-}
-
-.instructions ol {
-padding-left: 20px;
-}
-
-.instructions li {
-margin-bottom: 10px;
-line-height: 1.6;
-}
-
-@media (max-width: 768px) {
-.tools {
-  flex-wrap: wrap;
-}
-
-.tool-btn {
-  padding: 8px 12px;
+  color: #7f8c8d;
   font-size: 0.9rem;
 }
 
-.pdf-container {
-  min-height: 400px;
+.annotation-actions {
+  display: flex;
+  gap: 10px;
 }
+
+.annotation-actions button {
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.annotation-actions button:hover {
+  color: yellow;
+}
+
+.highlight-preview {
+  position: absolute;
+  border: 2px dashed yellow;
+  background: rgba(255, 255, 0, 0.25);
+  z-index: 7;
+}
+
+.annotation-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: blue;
+  color: blue;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.annotation-marker:hover {
+  background: red;
+  color: white;
+}
+
+.annotation-marker i {
+  color: white;
+  font-size: 12px;
+}
+
+.annotation-popup {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 12;
+  width: 280px;
+  max-width: 90vw;
+}
+
+.annotation-popup h4 {
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.annotation-popup p {
+  color: #555;
+  line-height: 1.5;
+}
+
+.annotation-popup .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  padding: 20px;
+  color: #7f8c8d;
+  border-top: 1px solid #eee;
+}
+
+.instructions {
+  background: #e3f2fd;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border-left: 4px solid #3498db;
+}
+
+.instructions h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.instructions ol {
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .tools {
+    flex-wrap: wrap;
+  }
+
+  .tool-btn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .pdf-container {
+    min-height: 400px;
+  }
 }
 
 /* 确保 PDF 容器有相对定位 */
@@ -1087,5 +1100,4 @@ line-height: 1.6;
 .annotation-layer.active {
   pointer-events: auto; /* 批注模式时捕获事件 */
 }
-
 </style>

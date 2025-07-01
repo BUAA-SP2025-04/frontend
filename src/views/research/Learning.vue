@@ -5,7 +5,7 @@
       <div class="flex justify-between items-center mb-8">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-            <svg
+            <!-- <svg
               class="w-8 h-8 mr-3 text-indigo-600"
               fill="none"
               stroke="currentColor"
@@ -19,16 +19,17 @@
                 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 
                 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
               />
-            </svg>
+            </svg> -->
             学习档案
           </h1>
+          <p class="text-gray-600 mt-2">云端存储，管理您的学习笔记</p>
         </div>
       </div>
 
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- 左侧分类树 -->
         <div class="lg:w-1/4">
-          <div class="bg-white rounded-lg shadow p-6 sticky top-8">
+          <div class="bg-white rounded-lg shadow p-6">
             <div
               :class="[
                 'text-lg font-medium mb-4 flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
@@ -100,6 +101,12 @@
                   </svg>
                   <span class="text-sm font-medium">{{ paper.title.length<15 ? paper.title : paper.title.slice(0,14)+'...' }}</span>
                 </div>
+                <div class="flex items-center space-x-1" v-if="selectedPaper === paper.id">
+                  <svg class="w-4 h-4 mr-2" fill="none" viewBox="-5 0 20 20" stroke="currentColor" stroke-width="1"
+                    @click="toPdfReader(paper.id)">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 15l5-5-5-5" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -125,11 +132,15 @@
                 label="隐藏无批注笔记"
                 />
               </div>
+              <el-select v-model="sortBy" placeholder="排序方式" size="large" style="width: 150px">
+                <el-option label="时间" value="id" />
+                <el-option label="页码" value="page"/>
+              </el-select>
             </div>
           </div>
 
           <!-- 笔记列表 -->
-          <div v-if="viewMode === 'list'" class="bg-white rounded-lg shadow">
+          <div v-if="viewMode === 'list' && filteredAnnos.length>0" class="bg-white rounded-lg shadow">
             <div
               v-for="anno in filteredAnnos"
               :key="anno.id"
@@ -238,6 +249,35 @@
             </div>
           </div>
 
+          <!-- 空状态 -->
+          <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"> 
+            <svg
+              class="w-16 h-16 text-gray-300 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 
+                1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 
+                3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"
+              ></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">暂无笔记</h3>
+            <p v-if="annotations.length===0" class="text-gray-500 mb-4">你还没有上传任何笔记</p>
+            <p v-else class="text-gray-500 mb-4">这篇文献没有任何笔记</p>
+            <button
+              @click="toPdfReader(selectedPaper)"
+              v-if="selectedPaper>0"
+              class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              去阅读这篇文献
+            </button>
+          </div>
+
           <!-- 分页 -->
           <div class="mt-8 flex justify-center">
             <el-pagination
@@ -286,6 +326,7 @@ const selectedAnnos = ref<string[]>([])
 const viewMode = ref('list')
 const currentPage = ref(1)
 const pageSize = 20
+const sortBy = ref('id')
 
 const papers = ref<FavoritePaper[]>([])
 const annotations = ref<Annotation[]>([])
@@ -362,6 +403,7 @@ onMounted(async () => {
       } catch (error) {
         ElMessage.error('有一篇文献出现了读取问题')
       }
+      // console.log(annotations.value)
     })
   } catch (error) {
     ElMessage.error('读取文献列表失败')
@@ -379,6 +421,17 @@ const filteredAnnos = computed(() => {
         anno.comment.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
+  fAnnos.sort((a, b) => {
+    switch (sortBy.value) {
+      case 'id':
+        return parseInt(b.id) - parseInt(a.id)
+      case 'page':
+        if (a.paperId != b.paperId) return a.paperId - b.paperId
+        return a.page - b.page
+      default:
+        return parseInt(b.id) - parseInt(a.id)
+    }
+  })
   return fAnnos
 })
 
@@ -397,12 +450,12 @@ const toggleAnnoSelection = (annoId: string) => {
 }
 
 const handleAnnoAction = async (command: string) => {
-  console.log(command)
+  // console.log(command)
   const [action, annoId] = command.split('-')
 
   switch (action) {
     case 'read':
-      const anno = annotations.value.find(a => a.id === annoId)
+      const anno = annotations.value.find(a => parseInt(a.id) === parseInt(annoId))
       if (anno) {
         const paper = papers.value.find(p => p.id === anno.paperId)
         if (paper) {
@@ -434,7 +487,7 @@ const handleAnnoAction = async (command: string) => {
 const editAnno = (annoId: string) => {
   editingAnnoId.value = annoId
   newAnno.comment = ''
-  const anno = annotations.value.find(a => a.id === annoId)
+  const anno = annotations.value.find(a => parseInt(a.id) === parseInt(annoId))
   if(anno){
     newAnno.comment = anno.comment
     console.log(anno.comment)
@@ -448,9 +501,9 @@ const deleteAnno = async (annoId: string) => {
       type: 'warning',
     })
     try {
-      const anno = annotations.value.find(a => a.id === annoId)
+      const anno = annotations.value.find(a => parseInt(a.id) === parseInt(annoId))
       if (anno) await annotationAPI.deleteAnnotation(anno.id)
-      annotations.value = annotations.value.filter(a => a.id !== annoId)
+      annotations.value = annotations.value.filter(a => parseInt(a.id) !== parseInt(annoId))
       ElMessage.success('删除成功')
     } catch (error) {
       ElMessage.error('删除失败，请稍后重试')
@@ -464,7 +517,7 @@ const deleteAnno = async (annoId: string) => {
 const editAnnotationComment = async () => {
   try {
     await annotationAPI.editAnnotation(editingAnnoId.value, newAnno.comment)
-    let anno = annotations.value.find(a => a.id === editingAnnoId.value)
+    let anno = annotations.value.find(a => parseInt(a.id) === parseInt(editingAnnoId.value))
     if (anno) anno.comment = newAnno.comment
     showCommentEditDialog.value = false
     newAnno.comment = ''
@@ -473,6 +526,20 @@ const editAnnotationComment = async () => {
     ElMessage.error("编辑失败")
   }
 };
+
+const toPdfReader = (paperId: number) => {
+  let paper = papers.value.find(p => p.id === paperId)
+  if (paper) {
+    router.push({
+      path: '/pdf-reader',
+      query: {
+        url: paper.pdfUrl,
+        paperId: paperId,
+        allowEdit: 1,
+      },
+    })
+  }
+}
 
 const paperId2Title = (paperId: number) => {
   const paper = papers.value.find(p => p.id === paperId)
