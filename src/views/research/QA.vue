@@ -11,6 +11,12 @@
         </div>
         <div class="flex space-x-3">
           <button
+            @click="router.push('/research/my-questions')"
+            class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors border border-gray-200 hover:bg-gray-50"
+          >
+            我的问答
+          </button>
+          <button
             @click="showPublishDialog = true"
             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
           >
@@ -27,7 +33,7 @@
                 d="M12 4v16m8-8H4"
               ></path>
             </svg>
-            发布问题
+            发布新问题
           </button>
         </div>
       </div>
@@ -380,7 +386,7 @@
                           d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                         ></path>
                       </svg>
-                      {{ question.answerNum }} 浏览
+                      {{ question.readNum || 0 }} 浏览
                     </span>
                     <span class="flex items-center">
                       <svg
@@ -418,7 +424,7 @@
                           d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
                         ></path>
                       </svg>
-                      分享
+                      分享问题
                     </button>
 
                     <button
@@ -495,7 +501,7 @@
             <h3 class="text-lg font-semibold text-gray-900 mb-4">热门标签</h3>
             <div class="space-y-2">
               <button
-                v-for="tag in popularTags"
+                v-for="tag in popularTags.slice(0, 10)"
                 :key="tag.name"
                 @click="searchByTag(tag.name)"
                 :class="[
@@ -536,7 +542,7 @@
               </div>
 
               <div
-                v-for="user in activeUsers"
+                v-for="user in activeUsers.slice(0, 10)"
                 :key="user.id"
                 class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
                 @click="goToUserDetail(user.id)"
@@ -550,7 +556,7 @@
                   >
                     {{ user.name }}
                   </p>
-                  <p class="text-xs text-gray-500">{{ user.publishNum }} 回答 · {{ user.institution }}</p>
+                  <p class="text-xs text-gray-500">{{ user.answerCount }} 回答 · {{ user.institution }}</p>
                 </div>
                 <svg 
                   class="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100" 
@@ -643,93 +649,8 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
-              <option value="">请选择分类</option>
-              <optgroup label="计算机科学与技术">
-                <option value="人工智能">人工智能</option>
-              <option value="机器学习">机器学习</option>
-                <option value="深度学习">深度学习</option>
-                <option value="计算机视觉">计算机视觉</option>
-                <option value="自然语言处理">自然语言处理</option>
-                <option value="数据科学">数据科学</option>
-                <option value="大数据分析">大数据分析</option>
-                <option value="算法与数据结构">算法与数据结构</option>
-                <option value="软件工程">软件工程</option>
-                <option value="系统架构">系统架构</option>
-                <option value="网络安全">网络安全</option>
-                <option value="数据库">数据库</option>
-                <option value="云计算">云计算</option>
-                <option value="物联网">物联网</option>
-                <option value="区块链">区块链</option>
-              </optgroup>
-              <optgroup label="数学与统计学">
-                <option value="数学建模">数学建模</option>
-                <option value="统计学">统计学</option>
-                <option value="优化理论">优化理论</option>
-                <option value="图论">图论</option>
-                <option value="数值分析">数值分析</option>
-              </optgroup>
-              <optgroup label="物理学与量子科学">
-                <option value="理论物理">理论物理</option>
-                <option value="实验物理">实验物理</option>
-                <option value="量子计算">量子计算</option>
-              </optgroup>
-              <optgroup label="生命科学与医学">
-                <option value="生物信息学">生物信息学</option>
-                <option value="生物医学">生物医学</option>
-                <option value="基因组学">基因组学</option>
-                <option value="药物发现">药物发现</option>
-                <option value="医学影像">医学影像</option>
-                <option value="临床研究">临床研究</option>
-                <option value="公共卫生">公共卫生</option>
-                <option value="生物技术">生物技术</option>
-                <option value="再生医学">再生医学</option>
-                <option value="精准医疗">精准医疗</option>
-              </optgroup>
-              <optgroup label="工程与技术">
-                <option value="机械工程">机械工程</option>
-                <option value="电子工程">电子工程</option>
-                <option value="通信工程">通信工程</option>
-                <option value="控制理论">控制理论</option>
-                <option value="机器人学">机器人学</option>
-                <option value="航空航天">航空航天</option>
-                <option value="土木工程">土木工程</option>
-              </optgroup>
-              <optgroup label="新兴技术">
-                <option value="纳米技术">纳米技术</option>
-                <option value="数字孪生">数字孪生</option>
-                <option value="边缘计算">边缘计算</option>
-                <option value="5G/6G技术">5G/6G技术</option>
-                <option value="虚拟现实">虚拟现实</option>
-                <option value="增强现实">增强现实</option>
-                <option value="元宇宙">元宇宙</option>
-              </optgroup>
-              <optgroup label="学术方法">
-              <option value="论文写作">论文写作</option>
-                <option value="学术规范">学术规范</option>
-                <option value="研究方法">研究方法</option>
-                <option value="实验设计">实验设计</option>
-                <option value="数据分析方法">数据分析方法</option>
-              </optgroup>
-              <optgroup label="其他领域">
-                <option value="材料科学">材料科学</option>
-                <option value="化学工程">化学工程</option>
-                <option value="环境科学">环境科学</option>
-                <option value="气候变化">气候变化</option>
-                <option value="能源技术">能源技术</option>
-                <option value="经济学">经济学</option>
-                <option value="金融科技">金融科技</option>
-                <option value="社会科学">社会科学</option>
-                <option value="心理学">心理学</option>
-                <option value="认知科学">认知科学</option>
-                <option value="教育学">教育学</option>
-                <option value="农业科技">农业科技</option>
-                <option value="食品科学">食品科学</option>
-                <option value="海洋科学">海洋科学</option>
-                <option value="地球科学">地球科学</option>
-                <option value="天文学">天文学</option>
-                <option value="空间科学">空间科学</option>
-                <option value="其他">其他</option>
-              </optgroup>
+              <option value="">请选择研究领域</option>
+              <option v-for="area in RESEARCH_AREAS" :key="area" :value="area">{{ area }}</option>
             </select>
           </div>
 
@@ -818,6 +739,83 @@
         </form>
       </div>
     </div>
+
+    <!-- 分享问题对话框 -->
+    <div v-if="showShareDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">分享问题</h3>
+            <button
+              @click="showShareDialog = false"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <!-- 分享格式选择，只保留简洁和详细 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">选择分享格式</label>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input
+                  v-model="shareFormat"
+                  type="radio"
+                  value="simple"
+                  class="mr-3"
+                />
+                <span class="text-sm">简洁格式（仅链接）</span>
+              </label>
+              <label class="flex items-center">
+                <input
+                  v-model="shareFormat"
+                  type="radio"
+                  value="detailed"
+                  class="mr-3"
+                />
+                <span class="text-sm">详细格式（包含问题信息）</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 预览 -->
+          <div v-if="selectedQuestionForShare">
+            <label class="block text-sm font-medium text-gray-700 mb-2">预览</label>
+            <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto">
+              {{ getShareText(selectedQuestionForShare, shareFormat) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 分享问题对话框底部美化按钮区域 -->
+        <div class="flex justify-end gap-4 pt-6 pb-2 px-2 border-t border-gray-200">
+          <button
+            @click="showShareDialog = false"
+            class="px-5 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors shadow-sm"
+            style="min-width: 80px;"
+          >
+            取消
+          </button>
+          <button
+            @click="copyShareText"
+            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            style="min-width: 110px;"
+          >
+            复制到剪贴板
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -856,6 +854,9 @@ const answering = ref(false)
 const showPublishDialog = ref(false)
 const showAnswerForm = ref(false)
 const selectedQuestion = ref<Question | null>(null)
+const showShareDialog = ref(false)
+const selectedQuestionForShare = ref<Question | null>(null)
+const shareFormat = ref('simple')
 
 // 发布问题表单
 const newQuestion = ref<{
@@ -884,6 +885,11 @@ const popularTags = ref<{ name: string; count: number }[]>([])
 
 const activeUsers = ref<any[]>([])
 const loadingActiveUsers = ref(false)
+
+// 新增：科研领域常量数组，保持与Profile.vue一致
+const RESEARCH_AREAS = [
+  "计算机科学", "人工智能", "机器学习", "数据科学", "生物信息学", "物理学", "化学", "数学", "材料科学", "环境科学", "地球科学", "天文学", "医学", "药学", "心理学", "社会学", "经济学", "管理学", "法学", "教育学", "历史学", "哲学", "语言学", "政治学", "艺术学", "农学", "工程学", "电子科学", "自动化", "交通运输", "能源科学", "海洋科学", "统计学", "信息科学", "新闻传播学", "体育学", "其他"
+]
 
 // 计算属性
 const filteredQuestions = computed(() => {
@@ -916,7 +922,7 @@ const filteredQuestions = computed(() => {
       filtered.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
       break
     case 'hot':
-      filtered.sort((a, b) => b.answerNum + parseInt(b.likeNum) - (a.answerNum + parseInt(a.likeNum)))
+      filtered.sort((a, b) => b.answerNum + b.likeNum - (a.answerNum + a.likeNum))
       break
     case 'unanswered':
       filtered.sort((a, b) => a.answerNum - b.answerNum)
@@ -1034,8 +1040,9 @@ const loadQuestions = async () => {
           createAt: item.question.createdAt,
           researchArea: item.question.researchArea || '未分类',
           answerNum: item.question.answerNum,
-          likeNum: item.question.likeNum.toString(),
+          likeNum: item.question.likeNum,
           followNum: item.question.followNum,
+          readNum: item.question.readNum,
           followed: item.followed, // 添加关注状态
           bestAnswer: item.question.bestAnswer ? {
             id: item.question.bestAnswer.id.toString(),
@@ -1056,25 +1063,25 @@ const loadQuestions = async () => {
               likeNum: 0,
               readerNum: 0,
             },
-            content: item.question.bestAnswer.content,
-            createdAt: item.question.bestAnswer.createdAt,
-            likeNum: item.question.bestAnswer.likeNum.toString(),
+            content: item.question.bestAnswer.content || '',
+            createdAt: item.question.bestAnswer.createdAt || '',
+            likeNum: item.question.bestAnswer.likeNum || 0,
           } : undefined,
           answers: item.answerWithReplies ? item.answerWithReplies.map(reply => ({
-            id: reply.answer.id.toString(),
+            id: (reply.answer.id || 0).toString(),
             user: reply.answer.user,
-            content: reply.answer.content,
-            createdAt: reply.answer.createdAt,
-            likeNum: reply.answer.likeNum.toString(),
-            liked: reply.liked,
+            content: reply.answer.content || '',
+            createdAt: reply.answer.createdAt || '',
+            likeNum: reply.answer.likeNum || 0,
+            liked: reply.liked || false,
             childAnswers: reply.replies.map(childReply => ({
-              id: childReply.id.toString(),
+              id: (childReply.id || 0).toString(),
               user: childReply.user,
-              content: childReply.content,
-              parentUserId: reply.answer.userId.toString(),
-              parentUserName: reply.answer.user.name,
-              createdAt: childReply.createdAt,
-              likeNum: childReply.likeNum.toString(),
+              content: childReply.content || '',
+              parentUserId: (reply.answer.userId || 0).toString(),
+              parentUserName: reply.answer.user?.name || '未知用户',
+              createdAt: childReply.createdAt || '',
+              likeNum: childReply.likeNum || 0,
               liked: false, // 2级回答暂时使用默认状态
             })),
           })) : [],
@@ -1111,20 +1118,21 @@ const loadMyFollowedQuestions = async () => {
       if (Array.isArray(response.data)) {
         // 新的格式：response.data是QuestionListItem数组
         myFollowedQuestions.value = response.data.map((item: QuestionListItem) => ({
-          id: item.question.id.toString(),
+          id: (item.question.id || 0).toString(),
           user: item.question.user,
-          title: item.question.title,
-          content: item.question.content,
-          createAt: item.question.createdAt,
+          title: item.question.title || '',
+          content: item.question.content || '',
+          createAt: item.question.createdAt || '',
           researchArea: item.question.researchArea || '未分类',
-          answerNum: item.question.answerNum,
-          likeNum: item.question.likeNum.toString(),
-          followNum: item.question.followNum,
-          followed: item.followed, // 添加关注状态
+          answerNum: item.question.answerNum || 0,
+          likeNum: Number(item.question.likeNum) || 0,
+          followNum: item.question.followNum || 0,
+          readNum: item.question.readNum || 0,
+          followed: item.followed || false, // 添加关注状态
           bestAnswer: item.question.bestAnswer ? {
-            id: item.question.bestAnswer.id.toString(),
+            id: (item.question.bestAnswer.id || 0).toString(),
             user: item.question.bestAnswer.user || {
-              id: item.question.bestAnswer.userId,
+              id: item.question.bestAnswer.userId || 0,
               name: '未知用户',
               email: '',
               gender: '',
@@ -1140,25 +1148,25 @@ const loadMyFollowedQuestions = async () => {
               likeNum: 0,
               readerNum: 0,
             },
-            content: item.question.bestAnswer.content,
-            createdAt: item.question.bestAnswer.createdAt,
-            likeNum: item.question.bestAnswer.likeNum.toString(),
+            content: item.question.bestAnswer.content || '',
+            createdAt: item.question.bestAnswer.createdAt || '',
+            likeNum: Number(item.question.bestAnswer.likeNum) || 0,
           } : undefined,
           answers: item.answerWithReplies ? item.answerWithReplies.map(reply => ({
-            id: reply.answer.id.toString(),
+            id: (reply.answer.id || 0).toString(),
             user: reply.answer.user,
-            content: reply.answer.content,
-            createdAt: reply.answer.createdAt,
-            likeNum: reply.answer.likeNum.toString(),
-            liked: reply.liked,
+            content: reply.answer.content || '',
+            createdAt: reply.answer.createdAt || '',
+            likeNum: Number(reply.answer.likeNum) || 0,
+            liked: reply.liked || false,
             childAnswers: reply.replies.map(childReply => ({
-              id: childReply.id.toString(),
+              id: (childReply.id || 0).toString(),
               user: childReply.user,
-              content: childReply.content,
-              parentUserId: reply.answer.userId.toString(),
-              parentUserName: reply.answer.user.name,
-              createdAt: childReply.createdAt,
-              likeNum: childReply.likeNum.toString(),
+              content: childReply.content || '',
+              parentUserId: (reply.answer.userId || 0).toString(),
+              parentUserName: reply.answer.user?.name || '未知用户',
+              createdAt: childReply.createdAt || '',
+              likeNum: Number(childReply.likeNum) || 0,
               liked: false, // 2级回答暂时使用默认状态
             })),
           })) : [],
@@ -1370,15 +1378,70 @@ const viewQuestion = (questionId: string) => {
 }
 
 const shareQuestion = (question: Question) => {
+  selectedQuestionForShare.value = question
+  showShareDialog.value = true
+}
+
+const getShareText = (question: Question, format: string) => {
   const url = `${window.location.origin}/research/qa/${question.id}`
-  navigator.clipboard
-    .writeText(url)
-    .then(() => {
-      ElMessage.success('问题链接已复制到剪贴板')
-    })
-    .catch(() => {
-      ElMessage.error('复制失败，请手动复制链接')
-    })
+  switch (format) {
+    case 'simple':
+      return url
+    case 'detailed':
+    default:
+      return `📝 问题：${question.title}
+📋 分类：${question.researchArea || '未分类'}
+💬 回答数：${question.answerNum} 个
+👤 提问者：${question.user?.name || '未知用户'}
+🏫 机构：${question.user?.institution || '未知机构'}
+🔗 查看详情：${url}
+#科研问答 #${question.researchArea || '科研'} #KnoWeb`
+  }
+}
+
+const copyShareText = () => {
+  const text = getShareText(selectedQuestionForShare.value!, shareFormat.value)
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        ElMessage.success('分享文本已复制到剪贴板')
+        showShareDialog.value = false
+      })
+      .catch(() => fallbackCopyTextToClipboard(text))
+  } else {
+    fallbackCopyTextToClipboard(text)
+  }
+}
+
+function fallbackCopyTextToClipboard(text: string) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  textArea.style.position = 'fixed'
+  textArea.style.top = '0'
+  textArea.style.left = '0'
+  textArea.style.width = '2em'
+  textArea.style.height = '2em'
+  textArea.style.padding = '0'
+  textArea.style.border = 'none'
+  textArea.style.outline = 'none'
+  textArea.style.boxShadow = 'none'
+  textArea.style.background = 'transparent'
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  try {
+    const successful = document.execCommand('copy')
+    if (successful) {
+      ElMessage.success('分享文本已复制到剪贴板')
+      showShareDialog.value = false
+    } else {
+      ElMessage.error('复制失败，请手动复制文本')
+    }
+  } catch (err) {
+    ElMessage.error('复制失败，请手动复制文本')
+  }
+  document.body.removeChild(textArea)
 }
 
 const goToUserDetail = (userId: number) => {
@@ -1391,25 +1454,26 @@ const loadActiveUsers = async () => {
     loadingActiveUsers.value = true
     const response = await getTopAnswerUsers()
     if (response && response.code === '200' && response.data) {
-      // 过滤掉 null 值并处理数据
+      // 处理新的数据格式：每个元素包含 answerCount 和 user 对象
       activeUsers.value = response.data
-        .filter((user: any) => user !== null)
-        .map((user: any) => ({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          gender: user.gender,
-          bio: user.bio,
-          researchArea: user.researchArea,
-          institution: user.institution,
-          title: user.title,
-          imgUrl: user.imgUrl,
-          createdAt: user.createdAt,
-          followerNum: user.followerNum,
-          subjectNum: user.subjectNum,
-          publishNum: user.publishNum,
-          likeNum: user.likeNum,
-          readerNum: user.readerNum,
+        .filter((item: any) => item !== null && item.user !== null)
+        .map((item: any) => ({
+          id: item.user.id,
+          name: item.user.name,
+          email: item.user.email,
+          gender: item.user.gender,
+          bio: item.user.bio,
+          researchArea: item.user.researchArea,
+          institution: item.user.institution,
+          title: item.user.title,
+          imgUrl: item.user.imgUrl,
+          createdAt: item.user.createdAt,
+          followerNum: item.user.followerNum,
+          subjectNum: item.user.subjectNum,
+          publishNum: item.user.publishNum,
+          likeNum: item.user.likeNum || 0,
+          readerNum: item.user.readerNum,
+          answerCount: item.answerCount, // 添加回答数
         }))
     } else {
       activeUsers.value = []

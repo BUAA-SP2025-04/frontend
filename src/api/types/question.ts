@@ -25,7 +25,7 @@ export interface QuestionAnswer {
   user: QuestionUser
   content: string
   createdAt: string
-  likeNum: string
+  likeNum: number
   liked?: boolean // 添加点赞状态
   childAnswers?: QuestionChildAnswer[]
 }
@@ -38,7 +38,7 @@ export interface QuestionChildAnswer {
   parentUserId: string
   parentUserName: string
   createdAt: string
-  likeNum: string
+  likeNum: number
   liked?: boolean // 添加点赞状态
 }
 
@@ -78,8 +78,9 @@ export interface Question {
   createAt: string
   researchArea: string
   answerNum: number
-  likeNum: string
+  likeNum: number
   followNum: number
+  readNum?: number // 新增浏览量字段
   bestAnswer?: QuestionAnswer
   answers?: QuestionAnswer[]
   followed?: boolean // 添加关注状态字段
@@ -98,6 +99,7 @@ export interface QuestionListItem {
     answerNum: number
     likeNum: number
     followNum: number
+    readNum?: number // 新增浏览量字段
     bestAnswerId: number
     bestAnswer: {
       id: number
@@ -127,6 +129,33 @@ export interface QuestionListApiResponse {
   data: QuestionListItem[]
 }
 
+// 相关问题类型
+export interface RelatedQuestion {
+  id: number
+  userId: number
+  user: QuestionUser
+  title: string
+  content: string
+  researchArea: string
+  createdAt: string
+  answerNum: number
+  likeNum: number
+  followNum: number
+  readNum?: number // 新增浏览量字段
+  bestAnswerId: number
+  bestAnswer: {
+    id: number
+    questionId: number
+    answerId: number
+    userId: number
+    user: QuestionUser
+    content: string
+    createdAt: string
+    likeNum: number
+    isSelected: number
+  } | null
+}
+
 // 问题详情响应 - 实际API返回的结构
 export interface QuestionDetailApiResponse {
   question: {
@@ -140,6 +169,7 @@ export interface QuestionDetailApiResponse {
     answerNum: number
     likeNum: number
     followNum: number
+    readNum?: number // 新增浏览量字段
     bestAnswerId: number
     bestAnswer: {
       id: number
@@ -154,6 +184,7 @@ export interface QuestionDetailApiResponse {
     } | null
   }
   answerWithReplies: AnswerWithReplies[]
+  relatedQuestions: RelatedQuestion[]
   followed: boolean
 }
 
@@ -166,8 +197,9 @@ export interface QuestionDetailResponse {
   createAt: string
   researchArea: string
   answerNum: number
-  likeNum: string
+  likeNum: number
   followNum: number
+  readNum?: number // 新增浏览量字段
   bestAnswer?: QuestionAnswer
   answers: QuestionAnswer[]
   followed?: boolean
@@ -229,6 +261,12 @@ export interface ApiResponse<T = any> {
 }
 
 // 活跃用户类型
+// API返回的活跃用户数据格式
+export interface ActiveUserApiItem {
+  answerCount: number
+  user: QuestionUser
+}
+
 export interface ActiveUser {
   id: number
   name: string
@@ -245,4 +283,5 @@ export interface ActiveUser {
   publishNum: number
   likeNum: number
   readerNum: number
+  answerCount: number // 添加回答数
 } 

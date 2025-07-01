@@ -739,8 +739,8 @@ const markAllAsRead = async () => {
   try {
     // 统一传参格式
     let apiCategory = activeCategory.value
-    if (activeCategory.value === 'chat') {
-      apiCategory = 'conversation '
+    if (activeCategory.value === 'chat' || activeCategory.value === 'conversation') {
+      apiCategory = 'conversation'
     }
 
     await messagesAPI.markAllAsRead(apiCategory)
@@ -1066,6 +1066,8 @@ const loadCurrentCategory = async () => {
           },
           lastMessageTime: conv.lastMessageTime || new Date().toISOString()
         }))
+
+        conversations.value.sort((a, b) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime())
 
         // 计算未读消息总数
         messageCategories.value[0].unreadCount = convList.reduce(

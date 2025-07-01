@@ -101,3 +101,4 @@ export type GetFileUrlResponse = {data: string}
 export type GetUpdateResponse = {
   data: RPaper[]
 };
+

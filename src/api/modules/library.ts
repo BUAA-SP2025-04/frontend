@@ -27,7 +27,7 @@ export const libraryAPI = {
 
   // 更新文献收藏夹
   changeCategory: (userId: string, paperId: string, categoryId: string) =>
-    request.post('/favorite-categories/list', null, {
+    request.post('/favorites/update', null, {
       params: { userId, paperId, categoryId },
     }),
 
