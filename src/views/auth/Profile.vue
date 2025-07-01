@@ -371,7 +371,7 @@
         </div>
       </div>
     </div>
-    <FollowersDialog v-model:visible="ifShowFollowList" :id="userStore.user.id" />
+    <FollowersDialog v-model:visible="ifShowFollowList" :id="userStore.user?.id || 0" />
   </div>
 </template>
 

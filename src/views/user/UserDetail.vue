@@ -54,7 +54,7 @@
                   type="primary"
                   size="small"
                   class="ml-4 message-btn"
-                  @click="handleMessageSend(route.params.id)"
+                  @click="handleMessageSend(Number(route.params.id))"
                 >
                   <el-icon style="margin-right: 4px">
                     <Message />
