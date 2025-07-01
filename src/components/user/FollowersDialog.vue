@@ -11,14 +11,20 @@
       <div class="followers-section">
         <div class="followers-title">粉丝列表</div>
         <ul class="followers-list">
-          <li v-for="f in followers" :key="f.id" class="follower-item">
+          <li
+            v-for="f in followers"
+            :key="f.id"
+            class="follower-item"
+            @click="handleClick(f)"
+            :title="`点击查看 ${f.name} 的个人资料`"
+          >
             <img :src="'/api' + f.imgUrl || '/default-avatar.png'" class="follower-avatar" />
             <div class="follower-info">
               <div class="follower-name">{{ f.name }}</div>
               <div class="follower-institution">{{ f.institution || '未知机构' }}</div>
               <div class="follower-research-area">
                 <template v-if="f.researchArea && f.researchArea.trim() !== ''">
-                  <div style="display: inline-block; cursor: pointer">
+                  <div style="display: inline-block">
                     <el-tag
                       v-for="area in f.researchArea
                         .split(',')
@@ -73,14 +79,20 @@
       <div class="followers-section">
         <div class="followers-title">关注列表</div>
         <ul class="followers-list">
-          <li v-for="f in following" :key="f.id" class="follower-item">
+          <li
+            v-for="f in following"
+            :key="f.id"
+            class="follower-item"
+            @click="handleClick(f)"
+            :title="`点击查看 ${f.name} 的个人资料`"
+          >
             <img :src="'/api' + f.imgUrl || '/default-avatar.png'" class="follower-avatar" />
             <div class="follower-info">
               <div class="follower-name">{{ f.name }}</div>
               <div class="follower-institution">{{ f.institution || '未知机构' }}</div>
               <div class="follower-research-area">
                 <template v-if="f.researchArea && f.researchArea.trim() !== ''">
-                  <div style="display: inline-block; cursor: pointer">
+                  <div style="display: inline-block">
                     <el-tag
                       v-for="area in f.researchArea
                         .split(',')
@@ -139,6 +151,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, onMounted, ref } from 'vue'
 import { getFollowers, getFollowing } from '@/api/modules/user'
+import { useRouter } from 'vue-router'
 // import { UserDetail } from '@/api/types/user'
 
 const props = defineProps({
@@ -148,8 +161,8 @@ const props = defineProps({
     required: true,
   },
 })
-defineEmits(['update:visible'])
-
+const emit = defineEmits(['update:visible'])
+const router = useRouter()
 const followers = ref<any[]>([])
 const following = ref<any[]>([])
 
@@ -159,6 +172,15 @@ onMounted(async () => {
   followers.value = followersRes.data
   following.value = followingRes.data
 })
+
+const handleClick = (f: any) => {
+  try {
+    emit('update:visible', false)
+    router.push(`/user/${f.id}`)
+  } catch (error) {
+    console.error('路由跳转失败:', error)
+  }
+}
 </script>
 
 <style scoped>
@@ -195,12 +217,21 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 0;
+  padding: 8px 12px;
   border-bottom: 1px solid #f1f1f1;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-bottom: 2px;
 }
 .follower-item:last-child {
   border-bottom: none;
+}
+.follower-item:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+  border-color: #c7d2fe;
 }
 .follower-avatar {
   width: 36px;
@@ -209,6 +240,11 @@ onMounted(async () => {
   object-fit: cover;
   background: #e5e7eb;
   border: 1px solid #e0e7ff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.follower-item:hover .follower-avatar {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 .follower-info {
   display: flex;
@@ -219,6 +255,10 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 500;
   color: #22223b;
+  transition: color 0.2s ease;
+}
+.follower-item:hover .follower-name {
+  color: #6366f1;
 }
 .follower-institution {
   font-size: 12px;

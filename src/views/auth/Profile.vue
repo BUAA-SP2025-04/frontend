@@ -109,9 +109,20 @@
               </div>
               <!-- 统计信息卡片 -->
               <div class="grid grid-cols-3 gap-4 mt-6 max-w-xs mx-auto">
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-indigo-600">{{ userInfo.followerNum }}</div>
-                  <div class="text-xs text-gray-500">关注数</div>
+                <div
+                  class="text-center cursor-pointer transition-all duration-200 hover:scale-105"
+                  @click="handleShowFollowList"
+                >
+                  <div
+                    class="text-2xl font-bold text-indigo-600 transition-colors duration-200 hover:text-indigo-700"
+                  >
+                    {{ userInfo.followerNum }}
+                  </div>
+                  <div
+                    class="text-xs text-gray-500 transition-colors duration-200 hover:text-gray-600"
+                  >
+                    关注数
+                  </div>
                 </div>
                 <div class="text-center">
                   <div class="text-2xl font-bold text-green-600">{{ userInfo.publishNum }}</div>
@@ -360,6 +371,7 @@
         </div>
       </div>
     </div>
+    <FollowersDialog v-model:visible="ifShowFollowList" :id="userStore.user.id" />
   </div>
 </template>
 
@@ -375,6 +387,7 @@ import {
   setShowFollow,
 } from '@/api/modules/user'
 import { useUserStore } from '@/stores/user'
+import FollowersDialog from '@/components/user/FollowersDialog.vue'
 
 // 图标组件
 const UserIcon = () =>
@@ -438,11 +451,12 @@ const activeTab = ref('basic')
 const saving = ref(false)
 
 const userStore = useUserStore()
+const ifShowFollowList = ref(false)
 
 const tabs = [
   { id: 'basic', name: '基本信息', icon: UserIcon },
   { id: 'security', name: '账户安全', icon: SecurityIcon },
-  { id: 'privacy', name: '隐私设置', icon: PrivacyIcon },
+  // { id: 'privacy', name: '隐私设置', icon: PrivacyIcon },
 ]
 
 const genderMap = {
@@ -640,5 +654,9 @@ const handleFollowInfoClick = () => {
     setShowFollow(true)
     showFollowInfo.value = true
   }
+}
+
+const handleShowFollowList = () => {
+  ifShowFollowList.value = true
 }
 </script>

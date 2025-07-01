@@ -50,6 +50,17 @@
                   </el-icon>
                   {{ isFollowing ? '不再关注' : '关注' }}
                 </el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  class="ml-4 message-btn"
+                  @click="handleMessageSend(route.params.id)"
+                >
+                  <el-icon style="margin-right: 4px">
+                    <Message />
+                  </el-icon>
+                  发送消息
+                </el-button>
               </h1>
               <p class="text-xl text-gray-600 mt-1">{{ user.title || '暂无职称' }}</p>
               <p class="text-lg text-gray-500 mt-1">{{ user.institution || '未知机构' }}</p>
@@ -335,7 +346,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   follow,
@@ -347,16 +358,27 @@ import {
 } from '@/api/modules/user'
 import type { Paper, UserDetail } from '@/api/types/user'
 import type { Author } from '@/api/types/publication'
-import { CircleCheckFilled, Close, Female, Male, Plus, UserFilled } from '@element-plus/icons-vue'
+import {
+  CircleCheckFilled,
+  Close,
+  Female,
+  Male,
+  Plus,
+  UserFilled,
+  Message,
+} from '@element-plus/icons-vue'
 import { ElIcon, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import type { Project } from '@/api/types/project'
 import { getUserProjects } from '@/api/modules/project'
-import * as ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
-import * as ApplyProjectDialog from '@/components/project/ApplyProjectDialog.vue'
+import ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
+import ApplyProjectDialog from '@/components/project/ApplyProjectDialog.vue'
 import { ref as vueRef } from 'vue'
 import { getFollowers, getFollowing } from '@/api/modules/user'
 import FollowersDialog from '@/components/user/FollowersDialog.vue'
+import { messagesAPI } from '@/api/modules/messages'
+import { chatAPI } from '@/api/modules/chat'
+import { wsService } from '@/utils/websocketChat'
 
 interface DetailProject {
   id: number
@@ -407,6 +429,7 @@ const showFollow = ref(false)
 const showFollowersDialog = ref(false)
 const followersList = ref<any[]>([])
 const followingList = ref<any[]>([])
+const conversations = ref<any[]>([])
 
 const loadProjects = async () => {
   const projectRes = await getUserProjects(user.value?.id?.toString() || '')
@@ -417,10 +440,10 @@ const loadProjects = async () => {
   }
 }
 
-onMounted(async () => {
-  const userId = route.params.id
+// 加载用户数据的函数
+const loadUserData = async (userId: string) => {
   try {
-    const response = await getUserDetail(userId as string)
+    const response = await getUserDetail(userId)
     if (response.data) {
       user.value = response.data
       // 获取是否关注
@@ -470,6 +493,27 @@ onMounted(async () => {
     user.value = null
     papers.value = []
   }
+}
+
+onMounted(async () => {
+  const userId = route.params.id
+  await loadUserData(userId as string)
+  await handleChat()
+})
+
+// 监听路由参数变化，当用户ID改变时重新加载数据
+watch(
+  () => route.params.id,
+  async (newUserId, oldUserId) => {
+    if (newUserId !== oldUserId) {
+      await loadUserData(newUserId as string)
+    }
+  }
+)
+
+const currentUserId = computed(() => {
+  const userId = userStore.user?.id
+  return typeof userId === 'string' ? parseInt(userId) : userId || 1
 })
 
 const handleApplicationSuccess = () => {
@@ -669,7 +713,68 @@ const handleShowFollowers = async () => {
     followingList.value = []
     showFollowersDialog.value = true
   } else {
-    ElMessage.warning('该用户设置了隐私，无法查看关注信息')
+    ElMessage.warning('由于改用户的隐私设置，无法查看其关注信息')
+  }
+}
+
+const handleChat = async () => {
+  const res = await messagesAPI.getConversations()
+
+  // 适配新的数据结构：data.list
+  const convList = Array.isArray(res.data?.list) ? res.data.list : []
+
+  if (convList.length > 0) {
+    conversations.value = convList.map(conv => ({
+      id: conv.userId,
+      userId: conv.userId,
+      conversationId:
+        conv.conversationId ||
+        `conv_${Math.min(currentUserId.value, conv.userId)}_${Math.max(
+          currentUserId.value,
+          conv.userId
+        )}`,
+      name: conv.name || '未知用户',
+      avatar: '/api' + conv.avatar,
+      institution: conv.institution || '',
+      online: conv.online ?? false,
+      isRead: conv.isRead ?? conv.unreadCount === 0,
+      unreadCount: conv.unreadCount || 0,
+      lastMessage: {
+        content: conv.lastMessage?.content || '',
+        type: conv.lastMessage?.type || 'text',
+        isMe: conv.lastMessage?.isMe || false,
+      },
+      lastMessageTime: conv.lastMessageTime || new Date().toISOString(),
+    }))
+  } else {
+    conversations.value = []
+  }
+}
+
+const handleMessageSend = async (userId: number) => {
+  // 生成标准格式的 conversationId
+  const myId = currentUserId.value
+  const conversationId = `conv_${Math.min(myId, userId)}_${Math.max(myId, userId)}`
+  wsService.connect(currentUserId.value.toString())
+
+  // 检查是否已经存在该会话
+  const existingConversation = conversations.value.find(
+    conv => conv.conversationId === conversationId
+  )
+
+  if (existingConversation) {
+    router.push(`/chat/${userId}`)
+  } else {
+    try {
+      // 创建新会话
+      const response = await chatAPI.createConversation({ participantId: userId })
+      // 跳转到聊天页面
+      router.push(`/chat/${userId}`)
+      // 可选：更新本地会话列表
+    } catch (error) {
+      console.error('创建对话失败:', error)
+      ElMessage.error('无法开始聊天，请重试')
+    }
   }
 }
 </script>
@@ -731,6 +836,25 @@ const handleShowFollowers = async () => {
 .follow-btn.el-button--danger:hover {
   background: linear-gradient(90deg, #f87171 0%, #ef4444 100%);
   box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25);
+}
+.message-btn {
+  background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+  border: none;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 154, 86, 0.15);
+  border-radius: 999px;
+  padding: 0 22px;
+  font-weight: 600;
+  font-size: 1rem;
+  height: 34px;
+  min-height: 34px;
+  line-height: 34px;
+  transition: all 0.3s ease;
+}
+.message-btn:hover {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff9a56 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 154, 86, 0.3);
 }
 /* 右侧信息区关键词纵向排列和隐藏样式 */
 .md\:w-64 .flex-col {
