@@ -76,21 +76,62 @@
                 </svg>
                 已认证
               </div>
-
+              <!-- 只在一侧显示文字的关注信息按钮，不控制统计数据显示 -->
+              <div class="mt-4 flex items-center justify-center gap-2">
+                <div
+                  class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 hover:bg-green-200"
+                  v-if="showFollowInfo"
+                  @click="handleFollowInfoClick"
+                >
+                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  展示关注信息
+                </div>
+                <div
+                  class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 hover:bg-red-200"
+                  v-else
+                  @click="handleFollowInfoClick"
+                >
+                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.53-10.47a.75.75 0 00-1.06-1.06L10 8.94 7.53 6.47a.75.75 0 10-1.06 1.06L8.94 10l-2.47 2.47a.75.75 0 101.06 1.06L10 11.06l2.47 2.47a.75.75 0 101.06-1.06L11.06 10l2.47-2.47z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  隐藏关注信息
+                </div>
+              </div>
               <!-- 统计信息卡片 -->
-              <div class="grid grid-cols-2 gap-4 mt-6 max-w-xs mx-auto">
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-indigo-600">{{ userInfo.followerNum }}</div>
-                  <div class="text-xs text-gray-500">关注数</div>
+              <div class="grid grid-cols-3 gap-4 mt-6 max-w-xs mx-auto">
+                <div
+                  class="text-center cursor-pointer transition-all duration-200 hover:scale-105"
+                  @click="handleShowFollowList"
+                >
+                  <div
+                    class="text-2xl font-bold text-indigo-600 transition-colors duration-200 hover:text-indigo-700"
+                  >
+                    {{ userInfo.followerNum }}
+                  </div>
+                  <div
+                    class="text-xs text-gray-500 transition-colors duration-200 hover:text-gray-600"
+                  >
+                    关注数
+                  </div>
                 </div>
                 <div class="text-center">
                   <div class="text-2xl font-bold text-green-600">{{ userInfo.publishNum }}</div>
                   <div class="text-xs text-gray-500">论文数</div>
                 </div>
-                <!-- <div class="text-center">
+                <div class="text-center">
                   <div class="text-2xl font-bold text-purple-600">{{ userInfo.subjectNum }}</div>
                   <div class="text-xs text-gray-500">项目数</div>
-                </div> -->
+                </div>
               </div>
             </div>
           </div>
@@ -330,6 +371,7 @@
         </div>
       </div>
     </div>
+    <FollowersDialog v-model:visible="ifShowFollowList" :id="userStore.user?.id || 0" />
   </div>
 </template>
 
@@ -341,8 +383,11 @@ import {
   uploadUserImg,
   changeUserPassword,
   getUserInfo,
+  getShowFollow,
+  setShowFollow,
 } from '@/api/modules/user'
 import { useUserStore } from '@/stores/user'
+import FollowersDialog from '@/components/user/FollowersDialog.vue'
 
 // 图标组件
 const UserIcon = () =>
@@ -406,11 +451,12 @@ const activeTab = ref('basic')
 const saving = ref(false)
 
 const userStore = useUserStore()
+const ifShowFollowList = ref(false)
 
 const tabs = [
   { id: 'basic', name: '基本信息', icon: UserIcon },
   { id: 'security', name: '账户安全', icon: SecurityIcon },
-  { id: 'privacy', name: '隐私设置', icon: PrivacyIcon },
+  // { id: 'privacy', name: '隐私设置', icon: PrivacyIcon },
 ]
 
 const genderMap = {
@@ -465,6 +511,8 @@ const titleOptions = [
   { label: '其他', value: '其他' },
 ]
 
+const showFollowInfo = ref(true)
+
 // 初始化用户信息
 const initUserInfo = async () => {
   const res = await getUserInfo()
@@ -483,6 +531,9 @@ const initUserInfo = async () => {
     userInfo.publishNum = res.data.publishNum || 0
     userInfo.subjectNum = res.data.subjectNum || 0
   }
+  getShowFollow(res.data.id).then(res => {
+    showFollowInfo.value = res.data
+  })
 }
 
 onMounted(() => {
@@ -592,5 +643,20 @@ const handleAvatarChange = async (e: Event) => {
   } catch (error) {
     ElMessage.error('头像上传失败')
   }
+}
+
+// 点击关注信息按钮的处理函数
+const handleFollowInfoClick = () => {
+  if (showFollowInfo.value) {
+    setShowFollow(false)
+    showFollowInfo.value = false
+  } else {
+    setShowFollow(true)
+    showFollowInfo.value = true
+  }
+}
+
+const handleShowFollowList = () => {
+  ifShowFollowList.value = true
 }
 </script>
