@@ -582,7 +582,7 @@
                     </div>
                     <div class="text-xs text-gray-500">发表数</div>
                   </div>
-                  <!-- <div class="divider-vertical"></div>
+                  <div class="divider-vertical"></div>
                   <div class="group metric-block">
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors"
@@ -590,7 +590,7 @@
                       {{ formatNumber(user.subjectNum) }}
                     </div>
                     <div class="text-xs text-gray-500">项目数</div>
-                  </div> -->
+                  </div>
                 </div>
               </div>
             </div>
