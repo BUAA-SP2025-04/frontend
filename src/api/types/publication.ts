@@ -98,11 +98,13 @@ export interface SavePublicationRequest {
 }
 
 export interface PublicationStatsResponse {
+  code: string
   message: string
   data: PublicationStats
 }
 
 export interface PublicationListResponse {
+  code: string
   message: string
   data: {
     authors: Author[]

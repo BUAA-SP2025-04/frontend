@@ -563,6 +563,7 @@
               </div>
             </div>
           </div>
+          <discover-literature v-if="selectedFolder === -10" />
 
           <!-- 分页 -->
           <div class="mt-8 flex justify-center">
@@ -801,10 +802,7 @@
         </el-form>
         <template #footer>
           <span class="dialog-footer">
-            <el-button
-              @click="clearFavoritePaper()"
-              >取消</el-button
-            >
+            <el-button @click="clearFavoritePaper()">取消</el-button>
             <el-button type="primary" @click="favoritePaper()">收藏</el-button>
           </span>
         </template>
@@ -820,6 +818,7 @@ import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { libraryAPI } from '@/api/modules/library'
 import type { FavoritePaper, Folder, Record } from '@/api/types/library'
+import DiscoverLiterature from '@/components/DiscoverLiterature.vue'
 
 const searchQuery = ref('')
 const selectedFolder = ref(0)
