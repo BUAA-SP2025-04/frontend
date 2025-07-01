@@ -75,3 +75,25 @@ export function getUserInfo(): Promise<any> {
 export function logoutUser(): Promise<any> {
   return request.post('/user/logout')
 }
+
+export function getShowFollow(id: string | number) {
+  return request.get('/researcher/getShowFollow', {
+    params: { id },
+  })
+}
+
+export function setShowFollow(showFollow: boolean) {
+  return request.post('/researcher/setShowFollow', { showFollow: showFollow })
+}
+
+export function getFollowers(id: string | number) {
+  return request.get('/researcher/getFollowedList', {
+    params: { id },
+  })
+}
+
+export function getFollowing(id: string | number) {
+  return request.get('/researcher/getFollowList', {
+    params: { id },
+  })
+}
