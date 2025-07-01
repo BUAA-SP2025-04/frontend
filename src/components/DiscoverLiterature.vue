@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import type { DiscoverTerm, DiscoverTermGroup } from '@/api/types/discoverLiterature'
-import { getDiscoverTerm, updateDiscoverTerm } from '@/api/modules/discoverLiterature'
+import type {
+  DiscoverLiterature,
+  DiscoverTerm,
+  DiscoverTermGroup,
+} from '@/api/types/discoverLiterature'
+import {
+  getDiscoverLiterature,
+  getDiscoverTerm,
+  updateDiscoverTerm,
+} from '@/api/modules/discoverLiterature'
 import { ElMessage } from 'element-plus'
+import Markdown from './Markdown.vue'
+import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
 const titleInput = ref('')
 const authorInput = ref('')
@@ -15,6 +25,10 @@ const fieldTerms = ref<DiscoverTerm[]>([])
 const isEditing = ref(false)
 
 const discoverTermGroup = ref<DiscoverTermGroup>()
+
+const literatureList = ref<DiscoverLiterature[]>([])
+const currentLiteratureIndex = ref(0)
+const literatureType = ref<'title' | 'author' | 'field'>('title')
 
 onMounted(() => {
   getDiscoverTerm()
@@ -30,6 +44,16 @@ onMounted(() => {
       titleTerms.value = []
       authorTerms.value = []
       fieldTerms.value = []
+    })
+
+  // 获取文献数据
+  getDiscoverLiterature()
+    .then(res => {
+      literatureList.value = res.data[literatureType.value] || []
+      console.log(literatureList.value[0])
+    })
+    .catch(err => {
+      ElMessage.error('获取文献失败', err.message)
     })
 })
 
@@ -93,6 +117,25 @@ function handleSave() {
       ElMessage.error(err.message)
     })
 }
+
+function changeLiteratureType(type: 'title' | 'author' | 'field') {
+  literatureType.value = type
+  getDiscoverLiterature().then(res => {
+    literatureList.value = res.data[literatureType.value] || []
+    currentLiteratureIndex.value = 0
+  })
+}
+
+function prevLiterature() {
+  if (literatureList.value.length === 0) return
+  currentLiteratureIndex.value =
+    (currentLiteratureIndex.value - 1 + literatureList.value.length) % literatureList.value.length
+}
+
+function nextLiterature() {
+  if (literatureList.value.length === 0) return
+  currentLiteratureIndex.value = (currentLiteratureIndex.value + 1) % literatureList.value.length
+}
 </script>
 
 <template>
@@ -106,11 +149,11 @@ function handleSave() {
           size="default"
           class="text-base"
           @click="isEditing = true"
-          >编辑</el-button
-        >
+          >编辑
+        </el-button>
         <el-button v-else type="success" size="default" class="text-base" @click="handleSave"
-          >保存</el-button
-        >
+          >保存
+        </el-button>
       </div>
     </div>
     <div class="mb-0 space-y-3">
@@ -207,6 +250,86 @@ function handleSave() {
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="border-t my-4"></div>
+    <div class="flex gap-2 justify-center mb-4">
+      <el-button
+        :type="literatureType === 'title' ? 'primary' : 'default'"
+        @click="changeLiteratureType('title')"
+      >
+        按标题查询
+      </el-button>
+      <el-button
+        :type="literatureType === 'author' ? 'primary' : 'default'"
+        @click="changeLiteratureType('author')"
+      >
+        按作者查询
+      </el-button>
+      <el-button
+        :type="literatureType === 'field' ? 'primary' : 'default'"
+        @click="changeLiteratureType('field')"
+        >按领域查询
+      </el-button>
+    </div>
+    <!-- 新增文献展示区 -->
+    <div v-if="literatureList.length" class="mt-8 flex flex-col items-center pt-6">
+      <div class="flex items-center gap-4">
+        <el-button :disabled="literatureList.length <= 1" circle @click="prevLiterature">
+          <el-icon>
+            <ArrowLeft />
+          </el-icon>
+        </el-button>
+        <div
+          class="w-[700px] min-h-[380px] h-auto max-w-full bg-gray-50 rounded-lg p-8 shadow flex flex-col items-start justify-between"
+        >
+          <div class="text-lg font-bold mb-2 truncate w-full">
+            {{ literatureList[currentLiteratureIndex].title }}
+          </div>
+          <div class="text-sm text-gray-600 mb-1">
+            作者：{{ literatureList[currentLiteratureIndex].authors }}
+          </div>
+          <div class="text-xs text-gray-500 mb-1">
+            分类：{{ literatureList[currentLiteratureIndex].categories }}
+          </div>
+          <div class="text-xs text-gray-400 mb-2">
+            发布时间：{{ literatureList[currentLiteratureIndex].published }}
+          </div>
+
+          <div
+            v-if="
+              literatureList[currentLiteratureIndex].publicationId &&
+              literatureList[currentLiteratureIndex].publicationId !== '0'
+            "
+            class="mb-2 text-green-600 text-xs font-bold"
+          >
+            已上传本站
+          </div>
+          <div class="text-sm text-gray-700 mb-2 w-full">
+            <Markdown :source="literatureList[currentLiteratureIndex].summary" />
+          </div>
+          <div class="flex gap-2 mt-2">
+            原文链接：
+            <a
+              :href="literatureList[currentLiteratureIndex].link"
+              target="_blank"
+              class="text-blue-500 underline"
+              >{{ literatureList[currentLiteratureIndex].link }}</a
+            >
+          </div>
+        </div>
+        <el-button :disabled="literatureList.length <= 1" circle @click="nextLiterature">
+          <el-icon>
+            <ArrowRight />
+          </el-icon>
+        </el-button>
+      </div>
+      <div class="mt-2 text-xs text-gray-400">
+        {{ currentLiteratureIndex + 1 }} / {{ literatureList.length }}
+      </div>
+    </div>
+    <div v-else class="mt-8 flex flex-col items-center border-t pt-6 text-gray-400 text-base">
+      暂无文献数据
     </div>
   </div>
 </template>

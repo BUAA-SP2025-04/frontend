@@ -15,12 +15,11 @@ export interface DiscoverLiterature {
   arxivId: string
   title: string
   summary: string
-  authors: string[]
+  authors: string
   link: string
-  pdf: string
-  primaryCategory: string
-  categories: string[]
+  categories: string
   published: string
+  publicationId: string
 }
 
 export interface DiscoverLiteratureGroup {

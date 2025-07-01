@@ -130,7 +130,9 @@
                       d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
                     />
                   </svg>
-                  <span class="text-sm font-medium">{{ folder.name.length<11 ? folder.name : folder.name.slice(0,10)+'...' }}</span>
+                  <span class="text-sm font-medium">{{
+                    folder.name.length < 11 ? folder.name : folder.name.slice(0, 10) + '...'
+                  }}</span>
                 </div>
                 <div class="flex items-center space-x-1">
                   <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
@@ -154,8 +156,8 @@
                       <el-dropdown-menu>
                         <el-dropdown-item :command="`edit-${folder.id}`">重命名</el-dropdown-item>
                         <el-dropdown-item :command="`delete-${folder.id}`" divided
-                          >删除</el-dropdown-item
-                        >
+                          >删除
+                        </el-dropdown-item>
                       </el-dropdown-menu>
                     </template>
                   </el-dropdown>
@@ -583,7 +585,7 @@
           <discover-literature v-if="selectedFolder === -10" />
 
           <!-- 分页 -->
-          <div class="mt-8 flex justify-center">
+          <div v-if="selectedFolder !== -10" class="mt-8 flex justify-center">
             <el-pagination
               v-model:current-page="currentPage"
               :page-size="pageSize"
@@ -1659,6 +1661,7 @@ function addInputToArray(inputRef: string, array: string[]) {
   gap: 8px;
   margin-top: 8px;
 }
+
 .tag {
   background: #4299e1;
   color: white;
@@ -1670,10 +1673,12 @@ function addInputToArray(inputRef: string, array: string[]) {
   gap: 6px;
   transition: all 0.2s;
 }
+
 .tag:hover {
   background: #3182ce;
   transform: translateY(-1px);
 }
+
 .tag-remove {
   cursor: pointer;
   font-weight: bold;
@@ -1691,9 +1696,11 @@ function addInputToArray(inputRef: string, array: string[]) {
   gap: 12px;
   position: relative;
 }
+
 .file-info-content {
   flex-grow: 1;
 }
+
 .action-btn.delete {
   position: central;
   top: 8px;
@@ -1703,6 +1710,7 @@ function addInputToArray(inputRef: string, array: string[]) {
   font-size: 18px;
   transition: transform 0.2s;
 }
+
 .file-delete-btn:hover {
   transform: scale(1.2);
 }
@@ -1711,6 +1719,7 @@ function addInputToArray(inputRef: string, array: string[]) {
   padding: 0;
   margin: 20px 0;
 }
+
 .upload-icon {
   width: 70px;
   height: 70px;
@@ -1722,6 +1731,7 @@ function addInputToArray(inputRef: string, array: string[]) {
   border-radius: 50%;
   color: #4299e1;
 }
+
 .upload-area {
   border: 2px dashed #cbd5e0;
   border-radius: 8px;
@@ -1731,16 +1741,19 @@ function addInputToArray(inputRef: string, array: string[]) {
   cursor: pointer;
   background: #f7fafc;
 }
+
 .upload-text {
   margin: 15px 0;
   color: #4a5568;
   font-size: 16px;
 }
+
 .upload-text em {
   color: #4299e1;
   font-style: normal;
   font-weight: 600;
 }
+
 .upload-tip {
   color: #718096;
   font-size: 14px;
