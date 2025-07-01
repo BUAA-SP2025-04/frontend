@@ -57,11 +57,11 @@
             class="bg-white rounded-xl shadow-lg border border-gray-200 mb-6 overflow-hidden"
           >
             <div class="p-8">
-              <!-- 问题标题和操作 -->
+              <!-- 页面标题和操作按钮 -->
               <div class="flex items-start justify-between mb-6">
                 <div class="flex-1">
                   <h1
-                    class="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4"
+                    class="text-3xl font-bold text-gray-900 mb-4"
                   >
                     {{ question.title }}
                   </h1>
@@ -177,7 +177,12 @@
                   <button
                     v-if="isQuestionAuthor"
                     @click="handleSetSolvedStatus"
-                    class="px-3 py-1.5 text-xs bg-gradient-to-r from-gray-600 to-gray-400 text-white rounded-lg hover:from-gray-700 hover:to-gray-500 transition-all font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    :class="[
+                      'px-3 py-1.5 text-xs rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
+                      question.solved
+                        ? 'bg-gradient-to-r from-gray-200 to-gray-100 text-gray-800 hover:from-gray-300 hover:to-gray-200'
+                        : 'bg-gradient-to-r from-gray-700 to-gray-500 text-white hover:from-gray-800 hover:to-gray-600'
+                    ]"
                   >
                     <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -610,7 +615,7 @@
         <div class="lg:col-span-1">
           <!-- 问题统计 -->
           <div
-            class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6 overflow-hidden"
+            class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl shadow-lg border border-gray-200 p-6 mb-6 overflow-hidden"
           >
             <h3
               class="text-lg font-semibold text-gray-900 mb-4 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent"
@@ -655,7 +660,7 @@
           </div>
 
           <!-- 相关问题 -->
-          <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 overflow-hidden">
+          <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl shadow-lg border border-gray-200 p-6 overflow-hidden">
             <h3
               class="text-lg font-semibold text-gray-900 mb-4 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent"
             >
