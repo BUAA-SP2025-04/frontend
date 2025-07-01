@@ -5,14 +5,14 @@
       <div class="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-cyan-50 to-blue-50">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
-            <h3 class="text-xl font-bold text-slate-900">{{ project.title }}</h3>
+            <h3 class="text-xl font-bold text-slate-900">{{ props.project.title }}</h3>
             <span
               :class="[
                 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
-                getStatusColor(project.status),
+                getStatusColor(props.project.status),
               ]"
             >
-              {{ getStatusText(project.status) }}
+              {{ getStatusText(props.project.status) }}
             </span>
           </div>
           <button
@@ -61,28 +61,32 @@
                   <h5 class="text-sm font-medium text-slate-700 mb-2">项目负责人</h5>
                   <div class="flex items-center space-x-3">
                     <img
-                      :src="getAvatarUrl(project.owner?.imgUrl || '')"
-                      :alt="project.owner?.name || '负责人'"
+                      :src="getAvatarUrl(props.project.owner?.imgUrl || '')"
+                      :alt="props.project.owner?.name || '负责人'"
                       class="w-10 h-10 rounded-full object-cover border-2 border-slate-200"
                     />
                     <div>
-                      <p class="font-medium text-slate-900">{{ project.owner?.name || '未知' }}</p>
-                      <p class="text-sm text-slate-500">
-                        {{ project.owner?.institution || '未知机构' }}
+                      <p class="font-medium text-slate-900">
+                        {{ props.project.owner?.name || '未知' }}
                       </p>
-                      <p class="text-xs text-slate-400">{{ project.owner?.title || '未知职位' }}</p>
+                      <p class="text-sm text-slate-500">
+                        {{ props.project.owner?.institution || '未知机构' }}
+                      </p>
+                      <p class="text-xs text-slate-400">
+                        {{ props.project.owner?.title || '未知职位' }}
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <!-- 合作者列表 -->
-                <div v-if="project.collaborators && project.collaborators.length > 0">
+                <div v-if="props.project.collaborators && props.project.collaborators.length > 0">
                   <h5 class="text-sm font-medium text-slate-700 mb-2">
-                    合作者 ({{ project.collaborators.length }})
+                    合作者 ({{ props.project.collaborators.length }})
                   </h5>
                   <div class="space-y-3 max-h-48 overflow-y-auto">
                     <div
-                      v-for="collaborator in project.collaborators"
+                      v-for="collaborator in props.project.collaborators"
                       :key="collaborator.id"
                       class="flex items-center space-x-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200"
                     >
@@ -133,20 +137,26 @@
                 <div class="border-t border-slate-100 pt-3">
                   <div class="flex justify-between items-center mb-2">
                     <span class="text-slate-600">当前成员</span>
-                    <span class="font-semibold text-slate-900">{{ project.memberCount }} 人</span>
+                    <span class="font-semibold text-slate-900"
+                      >{{ props.project.memberCount }} 人</span
+                    >
                   </div>
                   <div class="flex justify-between items-center mb-2">
                     <span class="text-slate-600">最大规模</span>
-                    <span class="font-semibold text-slate-900">{{ project.maxMembers }} 人</span>
+                    <span class="font-semibold text-slate-900"
+                      >{{ props.project.maxMembers }} 人</span
+                    >
                   </div>
                   <div class="w-full bg-slate-200 rounded-full h-2 mb-2">
                     <div
                       class="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-300"
-                      :style="{ width: `${(project.memberCount / project.maxMembers) * 100}%` }"
+                      :style="{
+                        width: `${(props.project.memberCount / props.project.maxMembers) * 100}%`,
+                      }"
                     ></div>
                   </div>
                   <div class="text-center text-sm text-slate-500">
-                    还需 {{ project.maxMembers - project.memberCount }} 人
+                    还需 {{ props.project.maxMembers - props.project.memberCount }} 人
                   </div>
                 </div>
               </div>
@@ -173,19 +183,24 @@
               <div class="space-y-4">
                 <div class="flex justify-between items-center">
                   <span class="text-slate-600">申请人数</span>
-                  <span class="font-semibold text-slate-900">{{ project.applicationCount }}</span>
+                  <span class="font-semibold text-slate-900">{{
+                    props.project.applicationCount
+                  }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-slate-600">发布时间</span>
                   <span class="font-semibold text-slate-900">{{
-                    formatTime(project.createdAt)
+                    formatTime(props.project.createdAt)
                   }}</span>
                 </div>
               </div>
             </div>
 
             <!-- 项目时间线 -->
-            <div v-if="project.startDate" class="bg-white rounded-xl border border-slate-200 p-6">
+            <div
+              v-if="props.project.startDate"
+              class="bg-white rounded-xl border border-slate-200 p-6"
+            >
               <h4 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
                 <svg
                   class="w-5 h-5 mr-2 text-indigo-600"
@@ -206,13 +221,13 @@
                 <div class="flex justify-between items-center">
                   <span class="text-slate-600">开始时间</span>
                   <span class="font-semibold text-slate-900">{{
-                    formatDate(project.startDate)
+                    formatDate(props.project.startDate || '')
                   }}</span>
                 </div>
-                <div v-if="project.endDate" class="flex justify-between items-center">
+                <div v-if="props.project.endDate" class="flex justify-between items-center">
                   <span class="text-slate-600">预期结束</span>
                   <span class="font-semibold text-slate-900">{{
-                    formatDate(project.endDate)
+                    formatDate(props.project.endDate)
                   }}</span>
                 </div>
               </div>
@@ -239,7 +254,7 @@
                 </svg>
                 项目描述
               </h4>
-              <p class="text-slate-700 leading-relaxed">{{ project.description || '无' }}</p>
+              <p class="text-slate-700 leading-relaxed">{{ props.project.description || '无' }}</p>
             </div>
 
             <!-- 研究领域 -->
@@ -262,13 +277,15 @@
               </h4>
               <div class="flex flex-wrap gap-2">
                 <span
-                  v-for="field in project.fields"
+                  v-for="field in props.project.fields"
                   :key="field"
                   class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
                 >
                   {{ field }}
                 </span>
-                <span v-if="project.fields.length === 0" class="text-slate-500 italic">无</span>
+                <span v-if="props.project.fields.length === 0" class="text-slate-500 italic"
+                  >无</span
+                >
               </div>
             </div>
 
@@ -291,9 +308,9 @@
                 合作需求
               </h4>
               <div class="space-y-2">
-                <template v-if="project.requirements.length > 0">
+                <template v-if="props.project.requirements.length > 0">
                   <span
-                    v-for="requirement in project.requirements"
+                    v-for="requirement in props.project.requirements"
                     :key="requirement"
                     class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 mr-2 mb-2"
                   >
@@ -331,7 +348,7 @@
               </h4>
               <div class="bg-white rounded-lg p-4 border border-amber-200">
                 <pre class="text-slate-700 whitespace-pre-wrap font-mono text-sm">{{
-                  project.contactInfo || '无'
+                  props.project.contactInfo || '无'
                 }}</pre>
               </div>
             </div>
@@ -340,12 +357,34 @@
 
         <!-- 底部操作按钮 -->
         <div class="flex justify-end space-x-3 pt-6 border-t border-slate-200">
-          <button
-            class="px-6 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-            @click="$emit('close')"
-          >
-            关闭
-          </button>
+          <template v-if="props.isInvite">
+            <button
+              class="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+              @click="acceptInvite"
+            >
+              接受申请
+            </button>
+            <button
+              class="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+              @click="rejectInvite"
+            >
+              拒绝申请
+            </button>
+            <button
+              class="px-6 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+              @click="$emit('close')"
+            >
+              关闭
+            </button>
+          </template>
+          <template v-else>
+            <button
+              class="px-6 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+              @click="$emit('close')"
+            >
+              关闭
+            </button>
+          </template>
         </div>
       </div>
     </div>
@@ -382,13 +421,16 @@ interface Project {
   }[]
 }
 
-defineProps<{
+const props = defineProps<{
   project: Project
   isMyProject?: boolean
+  isInvite?: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   close: []
+  accept: [number]
+  reject: [number]
 }>()
 
 const getStatusColor = (status: string) => {
@@ -463,5 +505,12 @@ const getAvatarUrl = (imgUrl: string) => {
     return imgUrl
   }
   return import.meta.env.VITE_API_BASE_URL + imgUrl
+}
+
+const acceptInvite = () => {
+  emit('accept', props.project.id)
+}
+const rejectInvite = () => {
+  emit('reject', props.project.id)
 }
 </script>
