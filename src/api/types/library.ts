@@ -101,3 +101,20 @@ export type GetFileUrlResponse = {data: string}
 export type GetUpdateResponse = {
   data: RPaper[]
 };
+
+//发现文献
+export interface DiscoverTerm {
+  title: string[]
+  author: string[]
+  field: string[]
+}
+
+export interface UpdateTermRequest {
+  addedTerm: DiscoverTerm
+  deletedTerm: DiscoverTerm
+}
+export interface GetDiscoverTermResponse {
+  code: string
+  message: string
+  data: DiscoverTerm
+}
