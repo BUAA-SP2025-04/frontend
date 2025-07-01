@@ -769,6 +769,7 @@ interface DetailProject {
   endDate?: string
   contactInfo?: string
   owner?: {
+    id: number
     name: string
     institution: string
     title: string
@@ -1132,6 +1133,7 @@ const viewProjectDetail = (projectId: number) => {
         applicationCount: parseInt(myProject.applyNum),
         createdAt: myProject.createdAt,
         owner: {
+          id: 0,
           name: '我',
           imgUrl: '',
           institution: '',
@@ -1164,6 +1166,7 @@ const viewProjectDetail = (projectId: number) => {
         applicationCount: parseInt(application.project.applyNum),
         createdAt: application.project.createAt, // 使用正确的字段名
         owner: {
+          id: application.project.owner.id,
           name: application.project.owner.name,
           imgUrl: application.project.owner.imgUrl,
           institution: application.project.owner.institution,
@@ -1196,6 +1199,7 @@ const viewProjectDetail = (projectId: number) => {
         applicationCount: parseInt(joinedProject.applyNum),
         createdAt: joinedProject.createdAt,
         owner: {
+          id: joinedProject.owner.id,
           name: joinedProject.owner.name,
           imgUrl: joinedProject.owner.imgUrl,
           institution: joinedProject.owner.institution,

@@ -221,10 +221,16 @@
                     <img
                       :src="getAvatarUrl(project.owner.imgUrl)"
                       :alt="project.owner.name"
-                      class="w-8 h-8 rounded-full mr-3"
+                      class="w-8 h-8 rounded-full mr-3 cursor-pointer"
+                      @click="goToUser(project.owner.id)"
                     />
                     <div>
-                      <p class="text-sm font-medium text-gray-900">{{ project.owner.name }}</p>
+                      <span
+                        class="text-sm font-medium text-blue-600 cursor-pointer hover:underline"
+                        @click="goToUser(project.owner.id)"
+                      >
+                        {{ project.owner.name }}
+                      </span>
                       <p class="text-xs text-gray-500">{{ project.owner.institution }}</p>
                     </div>
                   </div>
@@ -913,6 +919,10 @@ const checkInviteProject = (project: Project) => {
     return false
   }
   return true
+}
+
+const goToUser = (userId: number) => {
+  router.push(`/user/${userId}`)
 }
 
 onMounted(() => {

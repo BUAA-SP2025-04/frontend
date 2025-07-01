@@ -98,8 +98,8 @@
         <!-- 右侧用户菜单和通知 -->
         <div class="flex items-center space-x-4">
           <!-- 通知按钮 -->
-          <div 
-            v-if="isAuthenticated" 
+          <div
+            v-if="isAuthenticated"
             class="relative"
             @mouseenter="handleNotificationHover(true)"
             @mouseleave="handleNotificationHover(false)"
@@ -147,7 +147,10 @@
                   <div
                     v-for="notification in notificationStore.notifications"
                     :key="notification.id"
-                    :class="['p-4 border-b hover:bg-gray-50 cursor-pointer', { 'bg-blue-50': !notification.isRead }]"
+                    :class="[
+                      'p-4 border-b hover:bg-gray-50 cursor-pointer',
+                      { 'bg-blue-50': !notification.isRead },
+                    ]"
                     @click="handleNotificationClick(notification)"
                   >
                     <div class="flex items-start space-x-3">
@@ -165,7 +168,9 @@
                       <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-gray-900">{{ notification.name }}</p>
                         <p class="text-sm text-gray-500">{{ notification.content }}</p>
-                        <p class="text-xs text-gray-400">{{ formatTime(notification.createdAt) }}</p>
+                        <p class="text-xs text-gray-400">
+                          {{ formatTime(notification.createdAt) }}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -180,8 +185,8 @@
           </div>
 
           <!-- 用户菜单 -->
-          <div 
-            v-if="isAuthenticated" 
+          <div
+            v-if="isAuthenticated"
             class="relative"
             @mouseenter="handleUserMenuHover(true)"
             @mouseleave="handleUserMenuHover(false)"
@@ -245,6 +250,22 @@
                   </router-link>
 
                   <router-link
+                    to="/messages"
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    @click="closeUserMenu"
+                  >
+                    <svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                    消息中心
+                  </router-link>
+
+                  <router-link
                     to="/achievements"
                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     @click="closeUserMenu"
@@ -291,7 +312,6 @@
                     </svg>
                     我的问答
                   </router-link>
-
 
                   <button
                     class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -441,7 +461,7 @@ const isAuthenticated = computed(() => userStore.isAuthenticated)
 // 通知相关的 hover 处理
 const handleNotificationHover = (isHovering: boolean) => {
   isHoveringNotification.value = isHovering
-  
+
   if (notificationTimer) {
     clearTimeout(notificationTimer)
     notificationTimer = null
@@ -460,7 +480,7 @@ const handleNotificationHover = (isHovering: boolean) => {
 
 const handleNotificationMenuHover = (isHovering: boolean) => {
   isHoveringNotificationMenu.value = isHovering
-  
+
   if (notificationTimer) {
     clearTimeout(notificationTimer)
     notificationTimer = null
@@ -482,7 +502,7 @@ const toggleNotifications = () => {
 // 用户菜单相关的 hover 处理
 const handleUserMenuHover = (isHovering: boolean) => {
   isHoveringUserMenu.value = isHovering
-  
+
   if (userMenuTimer) {
     clearTimeout(userMenuTimer)
     userMenuTimer = null
@@ -501,7 +521,7 @@ const handleUserMenuHover = (isHovering: boolean) => {
 
 const handleUserMenuDropdownHover = (isHovering: boolean) => {
   isHoveringUserMenuDropdown.value = isHovering
-  
+
   if (userMenuTimer) {
     clearTimeout(userMenuTimer)
     userMenuTimer = null
@@ -571,7 +591,7 @@ const logout = async () => {
     userStore.clearToken()
     notificationStore.clearNotifications()
     wsService.disconnect()
-    
+
     showUserMenu.value = false
     ElMessage.success('已退出登录')
     router.push('/login')
