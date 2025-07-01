@@ -10,6 +10,7 @@ import type {
   ProjectsResponse,
   ProjectWithApplicationsResponse,
   UpdateProjectRequest,
+  InviteLinkResponse,
 } from '../types/project'
 
 // 添加项目
@@ -62,11 +63,6 @@ export function getMyApplications(): Promise<ApplicationsResponse> {
   return request.get('/application/getAll')
 }
 
-// 检索项目
-export function searchProjects(data: { title: string }): Promise<ProjectsResponse> {
-  return request.post('/project/getByTitle', data)
-}
-
 // 退出项目
 export function cancelJoinProject(data: { projectId: number }): Promise<EmptyResponse> {
   return request.post('/project/cancelJoin', data)
@@ -80,4 +76,9 @@ export function getMyJoinedProjects(): Promise<ProjectsResponse> {
 // 获取我的项目（包含申请信息）
 export function getMyProjects(): Promise<ProjectWithApplicationsResponse> {
   return request.get('/project/myProject')
+}
+
+// 获取项目邀请链接
+export const getInviteLink = (projectId: number) => {
+  return request.get<InviteLinkResponse>(`/project/inviteOthers?projectId=${projectId}`)
 }

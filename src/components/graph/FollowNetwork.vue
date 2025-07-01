@@ -78,6 +78,7 @@ import { useUserStore } from '@/stores/user'
 interface Props {
   layoutType?: string
   isDarkMode?: boolean
+  selectedNode: any
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -246,7 +247,6 @@ const loadUserGraph = async (userId: string) => {
   console.log('FollowNetwork: 加载用户图谱，用户ID:', userId)
 
   if (!chart) return
-
   try {
     loading.value = true
 
@@ -321,7 +321,10 @@ const prepareChartData = (nodes: any[], links: any[]) => {
   const chartNodes = nodes.map(node => ({
     id: node.id,
     name: node.name,
-    symbolSize: 45,
+    symbolSize: Math.min(
+      50,
+      30 + (Number(node.publicationNum) || 0) * 1.5 + (Number(node.projectNum) || 0) * 2.5
+    ),
     itemStyle: {
       color: '#8b5cf6',
     },
@@ -331,12 +334,12 @@ const prepareChartData = (nodes: any[], links: any[]) => {
   }))
 
   const chartLinks = links.map(link => ({
-    source: link.source,
-    target: link.target,
+    source: link.fromId ? link.fromId.toString() : link.source,
+    target: link.toId ? link.toId.toString() : link.target,
     value: 1,
     lineStyle: {
       color: '#8b5cf6',
-      width: 2,
+      width: link.attr && !isNaN(Number(link.attr.count)) ? Math.max(2, Number(link.attr.count)) : 2,
       type: 'solid',
     },
     label: link.label,
@@ -442,11 +445,18 @@ const updateChart = (chartInstance: echarts.ECharts, data: any) => {
 const formatNodeTooltip = (node: any) => {
   return `
     <div class="font-bold text-lg">${node.name}</div>
-    <div class="text-sm opacity-75">${node.title || '未知职位'}</div>
-    <div class="text-sm opacity-75">${node.gender === 'male' ? '男' : '女'}</div>
-    ${node.institution ? `<div class="text-sm opacity-75">${node.institution}</div>` : ''}
-    ${node.publishNum ? `<div class="text-sm opacity-75">论文: ${node.publishNum}篇</div>` : ''}
-    ${node.followerNum ? `<div class="text-sm opacity-75">关注者: ${node.followerNum}人</div>` : ''}
+    <div class="text-sm opacity-75 mt-1">${
+      node.title == 'null' || node.title == null ? '未知职位' : node.title
+    } ${node.gender === 'male' ? '男' : '女'}</div>
+    ${node.institution ? `<div class=\"text-sm opacity-75\">${node.institution}</div>` : ''}
+    <div class=\"text-sm opacity-75 mt-1\">论文: ${node.publicationNum ?? 0} 篇，项目: ${
+    node.projectNum ?? 0
+  } 个</div>
+    ${
+      node.followerNum
+        ? `<div class=\"text-sm opacity-75\">关注者: ${node.followerNum}人</div>`
+        : ''
+    }
   `
 }
 
@@ -454,14 +464,16 @@ const formatNodeTooltip = (node: any) => {
 const formatEdgeTooltip = (edge: any) => {
   const sourceNode = graphNodes.value.find(node => node.id.toString() === edge.source)
   const targetNode = graphNodes.value.find(node => node.id.toString() === edge.target)
+  let attrValue = edge.attr ?? '无'
+  let widthValue = edge.attr && !isNaN(Number(edge.attr)) ? Math.max(2, Number(edge.attr)) : 2
 
   if (sourceNode && targetNode) {
     return `
       <div>
-        <div style="font-size: 12px; color: #64748b; line-height: 1.4;">
-          <span style="color: #334155; font-weight: 500;">${sourceNode.name}</span>
-          <span style="margin: 0 4px; color: #8b5cf6; font-weight: bold;">关注</span>
-          <span style="color: #334155; font-weight: 500;">${targetNode.name}</span>
+        <div style=\"font-size: 12px; color: #64748b; line-height: 1.4;\">
+          <span style=\"color: #334155; font-weight: 500;\">${sourceNode.name}</span>
+          <span style=\"margin: 0 4px; color: #8b5cf6; font-weight: bold;\">关注</span>
+          <span style=\"color: #334155; font-weight: 500;\">${targetNode.name}</span>
         </div>
       </div>
     `
@@ -503,9 +515,13 @@ const handleResize = debounce(() => {
 
 // 生命周期
 onMounted(async () => {
-  await nextTick()
   initializeChart()
   window.addEventListener('resize', handleResize)
+  await nextTick()
+  if (props.selectedNode && props.selectedNode.type === 'user') {
+    // 不执行初始化
+    return
+  }
   await loadGraphData()
 })
 

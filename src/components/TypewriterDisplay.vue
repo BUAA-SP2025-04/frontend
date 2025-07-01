@@ -46,8 +46,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  autoStart: false,
-  typingSpeed: 50,
+  autoStart: true,
+  typingSpeed: 100,
 })
 
 const emit = defineEmits<{
@@ -195,10 +195,15 @@ defineExpose({
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-
+  background: #e7d3b1;
+  border-radius: 12px;
   min-height: 300px;
+  box-shadow: 0 2px 8px 0 rgba(180, 160, 120, 0.1), 0 1.5px 4px 0 rgba(180, 160, 120, 0.08);
+  border: 1.5px solid #d1bfa3;
+  position: relative;
+  /* 牛皮纸噪点纹理 */
+  background-image: url('data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="8" r="1" fill="%23cbb994"/><circle cx="30" cy="30" r="0.7" fill="%23bfa77a"/><circle cx="20" cy="15" r="0.5" fill="%23d6c09e"/><circle cx="35" cy="5" r="0.6" fill="%23cbb994"/><circle cx="10" cy="30" r="0.8" fill="%23bfa77a"/></svg>');
+  background-blend-mode: multiply;
 }
 
 .loading-indicator {

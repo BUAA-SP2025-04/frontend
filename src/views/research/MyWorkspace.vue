@@ -20,26 +20,32 @@
         <el-tabs v-model="activeTab" class="project-tabs" @tab-click="handleTabClick">
           <el-tab-pane label="我创建的项目" name="created">
             <div class="p-6">
+              <!-- 搜索与筛选合并一栏 -->
+              <div
+                class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-6"
+              >
+                <input
+                  v-model="createdSearch"
+                  type="text"
+                  placeholder="搜索项目标题、描述、领域..."
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <select
+                  v-model="projectStatusFilter"
+                  class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">全部状态</option>
+                  <option value="recruiting">招募中</option>
+                  <option value="ongoing">进行中</option>
+                  <option value="completed">已完成</option>
+                  <option value="pending">待开始</option>
+                </select>
+              </div>
               <!-- 我创建的项目内容 -->
               <div class="mb-6">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-lg font-semibold text-gray-900">我创建的项目</h3>
                   <span class="text-sm text-gray-500">共 {{ myProjects.length }} 个项目</span>
-                </div>
-
-                <!-- 筛选工具栏 -->
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                  <div class="flex items-center space-x-4">
-                    <select
-                      v-model="projectStatusFilter"
-                      class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">全部状态</option>
-                      <option value="recruiting">招募中</option>
-                      <option value="ongoing">进行中</option>
-                      <option value="completed">已完成</option>
-                    </select>
-                  </div>
                 </div>
 
                 <!-- 项目列表 -->
@@ -127,7 +133,7 @@
                         <div class="flex space-x-2">
                           <button
                             class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                            @click="editProject"
+                            @click="editProject(project)"
                           >
                             编辑
                           </button>
@@ -212,6 +218,26 @@
                             </svg>
                             管理申请 ({{ project.applyNum }})
                           </button>
+                          <button
+                            v-if="getProjectStatus(project) === 'recruiting'"
+                            class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                            @click="getProjectInviteLink(project.id)"
+                          >
+                            <svg
+                              class="w-4 h-4 mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+                              ></path>
+                            </svg>
+                            邀请他人
+                          </button>
                         </div>
                         <div class="text-sm text-gray-500">
                           发布于 {{ formatTime(project.createdAt) }}
@@ -226,26 +252,31 @@
 
           <el-tab-pane label="我的申请" name="applied">
             <div class="p-6">
+              <!-- 搜索与筛选合并一栏 -->
+              <div
+                class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-6"
+              >
+                <input
+                  v-model="appliedSearch"
+                  type="text"
+                  placeholder="搜索项目标题、描述、领域..."
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <select
+                  v-model="applicationStatusFilter"
+                  class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">全部状态</option>
+                  <option value="unhandled">待处理</option>
+                  <option value="accepted">已通过</option>
+                  <option value="rejected">已拒绝</option>
+                </select>
+              </div>
               <!-- 我申请的项目内容 -->
               <div class="mb-6">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-lg font-semibold text-gray-900">我的申请</h3>
                   <span class="text-sm text-gray-500">共 {{ myApplications.length }} 个申请</span>
-                </div>
-
-                <!-- 筛选工具栏 -->
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                  <div class="flex items-center space-x-4">
-                    <select
-                      v-model="applicationStatusFilter"
-                      class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">全部状态</option>
-                      <option value="unhandled">待处理</option>
-                      <option value="accepted">已通过</option>
-                      <option value="rejected">已拒绝</option>
-                    </select>
-                  </div>
                 </div>
 
                 <!-- 申请列表 -->
@@ -401,26 +432,32 @@
 
           <el-tab-pane label="我加入的项目" name="joined">
             <div class="p-6">
+              <!-- 搜索与筛选合并一栏 -->
+              <div
+                class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-6"
+              >
+                <input
+                  v-model="joinedSearch"
+                  type="text"
+                  placeholder="搜索项目标题、描述、领域..."
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <select
+                  v-model="joinedProjectStatusFilter"
+                  class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">全部状态</option>
+                  <option value="recruiting">招募中</option>
+                  <option value="ongoing">进行中</option>
+                  <option value="completed">已完成</option>
+                  <option value="pending">待开始</option>
+                </select>
+              </div>
               <!-- 我加入的项目内容 -->
               <div class="mb-6">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-lg font-semibold text-gray-900">我加入的项目</h3>
                   <span class="text-sm text-gray-500">共 {{ myJoinedProjects.length }} 个项目</span>
-                </div>
-
-                <!-- 筛选工具栏 -->
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                  <div class="flex items-center space-x-4">
-                    <select
-                      v-model="joinedProjectStatusFilter"
-                      class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">全部状态</option>
-                      <option value="recruiting">招募中</option>
-                      <option value="ongoing">进行中</option>
-                      <option value="completed">已完成</option>
-                    </select>
-                  </div>
                 </div>
 
                 <!-- 项目列表 -->
@@ -575,7 +612,9 @@
     <!-- 发布项目对话框 -->
     <PublishProjectDialog
       :visible="showPublishDialog"
-      @close="showPublishDialog = false"
+      :edit-project="projectToEdit"
+      :is-edit="isEditMode"
+      @close="handleClosePublishDialog"
       @success="handlePublishSuccess"
     />
 
@@ -646,6 +685,38 @@
       @close="showApplicationsDialog = false"
       @refresh="handleApplicationsRefresh"
     />
+
+    <!-- 通用确认弹窗 -->
+    <div
+      v-if="confirmDialog.visible"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
+      <div class="bg-white rounded-lg max-w-md w-full shadow-xl">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">{{ confirmDialog.title }}</h3>
+          <p class="text-sm text-gray-500 mt-1">{{ confirmDialog.message }}</p>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+          <button
+            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+            @click="confirmDialog.visible = false"
+          >
+            取消
+          </button>
+          <button
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+            @click="
+              () => {
+                confirmDialog.onConfirm()
+                confirmDialog.visible = false
+              }
+            "
+          >
+            确认
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -660,6 +731,7 @@ import {
   getMyApplications,
   getMyJoinedProjects,
   getMyProjects,
+  getInviteLink,
 } from '@/api/modules/project'
 import type { ApplicationDetail, Project, ProjectWithApplications } from '@/api/types/project'
 import PublishProjectDialog from '@/components/project/PublishProjectDialog.vue'
@@ -717,6 +789,22 @@ const projectStatusFilter = ref('')
 const applicationStatusFilter = ref('')
 const joinedProjectStatusFilter = ref('')
 
+// 新增响应式变量
+const createdSearch = ref('')
+const appliedSearch = ref('')
+const joinedSearch = ref('')
+
+// 新增通用确认弹窗
+const confirmDialog = ref({
+  visible: false,
+  title: '',
+  message: '',
+  onConfirm: () => {},
+})
+
+const isEditMode = ref(false)
+const projectToEdit = ref<ProjectWithApplications | null>(null)
+
 // 数据
 const myProjects = ref<ProjectWithApplications[]>([])
 const myApplications = ref<ApplicationDetail[]>([])
@@ -728,6 +816,15 @@ const filteredMyProjects = computed(() => {
   if (projectStatusFilter.value) {
     filtered = filtered.filter(p => getProjectStatus(p) === projectStatusFilter.value)
   }
+  if (createdSearch.value.trim()) {
+    const keyword = createdSearch.value.trim().toLowerCase()
+    filtered = filtered.filter(
+      p =>
+        p.title.toLowerCase().includes(keyword) ||
+        p.description.toLowerCase().includes(keyword) ||
+        (p.researchArea || '').toLowerCase().includes(keyword)
+    )
+  }
   return filtered
 })
 
@@ -736,6 +833,15 @@ const filteredMyApplications = computed(() => {
   if (applicationStatusFilter.value) {
     filtered = filtered.filter(app => app.status === applicationStatusFilter.value)
   }
+  if (appliedSearch.value.trim()) {
+    const keyword = appliedSearch.value.trim().toLowerCase()
+    filtered = filtered.filter(
+      app =>
+        app.project.title.toLowerCase().includes(keyword) ||
+        app.project.description.toLowerCase().includes(keyword) ||
+        (app.project.researchArea || '').toLowerCase().includes(keyword)
+    )
+  }
   return filtered
 })
 
@@ -743,6 +849,15 @@ const filteredMyJoinedProjects = computed(() => {
   let filtered = myJoinedProjects.value
   if (joinedProjectStatusFilter.value) {
     filtered = filtered.filter(p => getProjectStatus(p) === joinedProjectStatusFilter.value)
+  }
+  if (joinedSearch.value.trim()) {
+    const keyword = joinedSearch.value.trim().toLowerCase()
+    filtered = filtered.filter(
+      p =>
+        p.title.toLowerCase().includes(keyword) ||
+        p.description.toLowerCase().includes(keyword) ||
+        (p.researchArea || '').toLowerCase().includes(keyword)
+    )
   }
   return filtered
 })
@@ -903,8 +1018,10 @@ const handleApplicationsRefresh = () => {
   loadMyProjects()
 }
 
-const editProject = () => {
-  ElMessage.info('编辑功能开发中...')
+const editProject = (project: ProjectWithApplications) => {
+  projectToEdit.value = project
+  isEditMode.value = true
+  showPublishDialog.value = true
 }
 
 const deleteProject = (projectId: number) => {
@@ -934,31 +1051,43 @@ const confirmDelete = () => {
   }
 }
 
-const cancelApplication = async (applicationId: number) => {
-  try {
-    await cancelApplicationApi({ applicationId })
-    const index = myApplications.value.findIndex(app => app.id === applicationId)
-    if (index > -1) {
-      myApplications.value.splice(index, 1)
-    }
-    ElMessage.success('申请已取消')
-  } catch (error) {
-    console.error('取消申请失败:', error)
-    ElMessage.error('取消申请失败，请稍后重试')
+const cancelApplication = (applicationId: number) => {
+  confirmDialog.value = {
+    visible: true,
+    title: '确认取消申请',
+    message: '确定要取消该申请吗？',
+    onConfirm: async () => {
+      try {
+        await cancelApplicationApi({ applicationId })
+        const index = myApplications.value.findIndex(app => app.id === applicationId)
+        if (index > -1) {
+          myApplications.value.splice(index, 1)
+        }
+        ElMessage.success('申请已取消')
+      } catch (error) {
+        ElMessage.error('取消申请失败，请稍后重试')
+      }
+    },
   }
 }
 
-const quitProject = async (projectId: number) => {
-  try {
-    await cancelJoinProject({ projectId })
-    const index = myJoinedProjects.value.findIndex(p => p.id === projectId)
-    if (index > -1) {
-      myJoinedProjects.value.splice(index, 1)
-    }
-    ElMessage.success('已退出项目')
-  } catch (error) {
-    console.error('退出项目失败:', error)
-    ElMessage.error('退出项目失败，请稍后重试')
+const quitProject = (projectId: number) => {
+  confirmDialog.value = {
+    visible: true,
+    title: '确认退出项目',
+    message: '确定要退出该项目吗？',
+    onConfirm: async () => {
+      try {
+        await cancelJoinProject({ projectId })
+        const index = myJoinedProjects.value.findIndex(p => p.id === projectId)
+        if (index > -1) {
+          myJoinedProjects.value.splice(index, 1)
+        }
+        ElMessage.success('已退出项目')
+      } catch (error) {
+        ElMessage.error('退出项目失败，请稍后重试')
+      }
+    },
   }
 }
 
@@ -1075,8 +1204,28 @@ const viewProjectDetail = (projectId: number) => {
 
 const handlePublishSuccess = () => {
   showPublishDialog.value = false
-  ElMessage.success('项目发布成功！')
   loadMyProjects()
+}
+
+const handleClosePublishDialog = () => {
+  showPublishDialog.value = false
+  isEditMode.value = false
+  projectToEdit.value = null
+}
+
+// 获取项目邀请链接
+const getProjectInviteLink = async (projectId: number) => {
+  try {
+    const res = await getInviteLink(projectId)
+    if (res?.data?.data) {
+      // 复制链接到剪贴板
+      await navigator.clipboard.writeText(res.data.data)
+      ElMessage.success('邀请链接已复制到剪贴板')
+    }
+  } catch (error) {
+    console.error('获取邀请链接失败:', error)
+    ElMessage.error('获取邀请链接失败')
+  }
 }
 
 // 监听路由变化，设置默认标签页
