@@ -721,6 +721,13 @@
         </div>
       </div>
     </div>
+
+    <!-- 邀请链接弹窗 -->
+    <InviteLinkDialog
+      v-if="showInviteDialog"
+      :link="inviteLink"
+      @close="showInviteDialog = false"
+    />
   </div>
 </template>
 
@@ -741,6 +748,7 @@ import type { ApplicationDetail, Project, ProjectWithApplications } from '@/api/
 import PublishProjectDialog from '@/components/project/PublishProjectDialog.vue'
 import ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
 import ApplicationsDialog from '@/components/project/ApplicationsDialog.vue'
+import InviteLinkDialog from '@/components/project/InviteLinkDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -787,6 +795,8 @@ const showProjectDetail = ref(false)
 const selectedProjectForDetail = ref<DetailProject | null>(null)
 const showApplicationsDialog = ref(false)
 const selectedProjectForApplications = ref<ProjectWithApplications | null>(null)
+const showInviteDialog = ref(false)
+const inviteLink = ref('')
 
 // 筛选器
 const projectStatusFilter = ref('')
@@ -1222,13 +1232,11 @@ const getProjectInviteLink = async (projectId: number) => {
   try {
     const res = await getInviteLink({ projectId })
     if (res.data) {
-      // 复制链接到剪贴板
-      await navigator.clipboard.writeText(res.data)
-      ElMessage.success('邀请链接已复制到剪贴板')
+      inviteLink.value = res.data
+      showInviteDialog.value = true
     }
   } catch (error) {
     console.error('获取邀请链接失败:', error)
-    ElMessage.error('获取邀请链接失败')
   }
 }
 
