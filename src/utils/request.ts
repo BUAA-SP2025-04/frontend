@@ -54,8 +54,6 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
-    //console.log('原始响应:', response) // 调试日志
-
     // 检查响应数据是否存在
     if (!response.data) {
       console.error('响应数据为空')
@@ -67,15 +65,14 @@ request.interceptors.response.use(
     if (typeof response.data === 'object' && 'code' in response.data) {
       const { code, message } = response.data as ApiResponse
 
-      //console.log('API响应:', { code, message, data }) // 调试日志
-
       // 根据业务状态码处理
-      if (code == '200' || code == 'true') {
+      if (code == '200' || code == 'true' || String(code) === '200') {
         return response.data
       } else {
         const errorMsg = message || '请求失败'
         console.error('业务错误:', errorMsg)
         ElMessage.error(errorMsg)
+
         return Promise.reject(new Error(errorMsg))
       }
     } else {
@@ -85,7 +82,7 @@ request.interceptors.response.use(
     }
   },
   error => {
-    console.error('响应错误:', error) // 调试日志
+    console.error('响应错误:', error)
 
     // 网络错误处理
     if (error.response) {

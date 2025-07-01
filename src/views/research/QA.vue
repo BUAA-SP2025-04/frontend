@@ -889,22 +889,6 @@
               {{ getShareText(selectedQuestionForShare, shareFormat) }}
             </div>
           </div>
-
-          <!-- 操作按钮 -->
-          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <button
-              @click="showShareDialog = false"
-              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              取消
-            </button>
-            <button
-              @click="copyShareText"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              复制到剪贴板
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -1009,7 +993,7 @@ const filteredQuestions = computed(() => {
       filtered.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
       break
     case 'hot':
-      filtered.sort((a, b) => b.answerNum + parseInt(b.likeNum) - (a.answerNum + parseInt(a.likeNum)))
+      filtered.sort((a, b) => b.answerNum + b.likeNum - (a.answerNum + a.likeNum))
       break
     case 'unanswered':
       filtered.sort((a, b) => a.answerNum - b.answerNum)
@@ -1152,14 +1136,14 @@ const loadQuestions = async () => {
             },
             content: item.question.bestAnswer.content || '',
             createdAt: item.question.bestAnswer.createdAt || '',
-            likeNum: (item.question.bestAnswer.likeNum || 0).toString(),
+            likeNum: item.question.bestAnswer.likeNum || 0,
           } : undefined,
           answers: item.answerWithReplies ? item.answerWithReplies.map(reply => ({
             id: (reply.answer.id || 0).toString(),
             user: reply.answer.user,
             content: reply.answer.content || '',
             createdAt: reply.answer.createdAt || '',
-            likeNum: (reply.answer.likeNum || 0).toString(),
+            likeNum: reply.answer.likeNum || 0,
             liked: reply.liked || false,
             childAnswers: reply.replies.map(childReply => ({
               id: (childReply.id || 0).toString(),
@@ -1168,7 +1152,7 @@ const loadQuestions = async () => {
               parentUserId: (reply.answer.userId || 0).toString(),
               parentUserName: reply.answer.user?.name || '未知用户',
               createdAt: childReply.createdAt || '',
-              likeNum: (childReply.likeNum || 0).toString(),
+              likeNum: childReply.likeNum || 0,
               liked: false, // 2级回答暂时使用默认状态
             })),
           })) : [],
@@ -1212,7 +1196,7 @@ const loadMyFollowedQuestions = async () => {
           createAt: item.question.createdAt || '',
           researchArea: item.question.researchArea || '未分类',
           answerNum: item.question.answerNum || 0,
-          likeNum: (item.question.likeNum || 0).toString(),
+          likeNum: Number(item.question.likeNum) || 0,
           followNum: item.question.followNum || 0,
           readNum: item.question.readNum || 0,
           followed: item.followed || false, // 添加关注状态
@@ -1237,14 +1221,14 @@ const loadMyFollowedQuestions = async () => {
             },
             content: item.question.bestAnswer.content || '',
             createdAt: item.question.bestAnswer.createdAt || '',
-            likeNum: (item.question.bestAnswer.likeNum || 0).toString(),
+            likeNum: Number(item.question.bestAnswer.likeNum) || 0,
           } : undefined,
           answers: item.answerWithReplies ? item.answerWithReplies.map(reply => ({
             id: (reply.answer.id || 0).toString(),
             user: reply.answer.user,
             content: reply.answer.content || '',
             createdAt: reply.answer.createdAt || '',
-            likeNum: (reply.answer.likeNum || 0).toString(),
+            likeNum: Number(reply.answer.likeNum) || 0,
             liked: reply.liked || false,
             childAnswers: reply.replies.map(childReply => ({
               id: (childReply.id || 0).toString(),
@@ -1253,7 +1237,7 @@ const loadMyFollowedQuestions = async () => {
               parentUserId: (reply.answer.userId || 0).toString(),
               parentUserName: reply.answer.user?.name || '未知用户',
               createdAt: childReply.createdAt || '',
-              likeNum: (childReply.likeNum || 0).toString(),
+              likeNum: Number(childReply.likeNum) || 0,
               liked: false, // 2级回答暂时使用默认状态
             })),
           })) : [],
@@ -1505,16 +1489,49 @@ const getShareText = (question: Question, format: string) => {
 
 const copyShareText = () => {
   const text = getShareText(selectedQuestionForShare.value!, shareFormat.value)
-  
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        ElMessage.success('分享文本已复制到剪贴板')
+        showShareDialog.value = false
+      })
+      .catch(() => {
+        fallbackCopyTextToClipboard(text)
+      })
+  } else {
+    fallbackCopyTextToClipboard(text)
+  }
+}
+
+function fallbackCopyTextToClipboard(text: string) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  textArea.style.position = 'fixed'
+  textArea.style.top = '0'
+  textArea.style.left = '0'
+  textArea.style.width = '2em'
+  textArea.style.height = '2em'
+  textArea.style.padding = '0'
+  textArea.style.border = 'none'
+  textArea.style.outline = 'none'
+  textArea.style.boxShadow = 'none'
+  textArea.style.background = 'transparent'
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  try {
+    const successful = document.execCommand('copy')
+    if (successful) {
       ElMessage.success('分享文本已复制到剪贴板')
       showShareDialog.value = false
-    })
-    .catch(() => {
+    } else {
       ElMessage.error('复制失败，请手动复制文本')
-    })
+    }
+  } catch (err) {
+    ElMessage.error('复制失败，请手动复制文本')
+  }
+  document.body.removeChild(textArea)
 }
 
 const goToUserDetail = (userId: number) => {
@@ -1544,7 +1561,7 @@ const loadActiveUsers = async () => {
           followerNum: item.user.followerNum,
           subjectNum: item.user.subjectNum,
           publishNum: item.user.publishNum,
-          likeNum: item.user.likeNum,
+          likeNum: item.user.likeNum || 0,
           readerNum: item.user.readerNum,
           answerCount: item.answerCount, // 添加回答数
         }))

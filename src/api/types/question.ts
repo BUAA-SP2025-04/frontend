@@ -25,7 +25,7 @@ export interface QuestionAnswer {
   user: QuestionUser
   content: string
   createdAt: string
-  likeNum: string
+  likeNum: number
   liked?: boolean // 添加点赞状态
   childAnswers?: QuestionChildAnswer[]
 }
@@ -38,7 +38,7 @@ export interface QuestionChildAnswer {
   parentUserId: string
   parentUserName: string
   createdAt: string
-  likeNum: string
+  likeNum: number
   liked?: boolean // 添加点赞状态
 }
 
@@ -78,7 +78,7 @@ export interface Question {
   createAt: string
   researchArea: string
   answerNum: number
-  likeNum: string
+  likeNum: number
   followNum: number
   readNum?: number // 新增浏览量字段
   bestAnswer?: QuestionAnswer
@@ -197,7 +197,7 @@ export interface QuestionDetailResponse {
   createAt: string
   researchArea: string
   answerNum: number
-  likeNum: string
+  likeNum: number
   followNum: number
   readNum?: number // 新增浏览量字段
   bestAnswer?: QuestionAnswer
