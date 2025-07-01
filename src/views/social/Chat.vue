@@ -1,8 +1,8 @@
 <!-- filepath: c:\Users\Windows11\Desktop\小学期\frontend\src\views\social\Chat.vue -->
 <template>
-  <div class="h-screen bg-gray-100 flex justify-center">
+  <div class="chat-wrapper">
     <!-- 聊天容器 - 限制最大宽度，居中显示 -->
-    <div class="w-full max-w-4xl bg-white shadow-lg flex flex-col">
+    <div class="w-full max-w-4xl bg-white shadow-lg flex flex-col h-full">
       <!-- 聊天头部 -->
       <div class="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
         <div class="flex items-center justify-between">
@@ -57,7 +57,7 @@
                     </span>
                   </template>
                   <template v-else
-                    >ba
+                    >
                     <span class="inline-flex items-center">
                       <span class="w-2 h-2 bg-gray-400 rounded-full mr-1"></span>
                       {{ getLastSeenText() }}
@@ -1334,6 +1334,8 @@ onMounted(async () => {
   nextTick(() => {
     markAsRead()
   })
+    document.body.style.overflow = 'hidden'
+  document.documentElement.style.overflow = 'hidden'
 
   window.addEventListener('dragover', handleDragOver)
   window.addEventListener('dragleave', handleDragLeave)
@@ -1347,7 +1349,8 @@ onUnmounted(() => {
   if (typingTimer.value) {
     clearTimeout(typingTimer.value)
   }
-
+  document.body.style.overflow = ''
+  document.documentElement.style.overflow = ''
   // 断开 WebSocket 连接
   wsService.disconnect()
 })
@@ -1592,13 +1595,7 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
-const startVoiceCall = () => {
-  ElMessage.info('语音通话功能开发中...')
-}
 
-const startVideoCall = () => {
-  ElMessage.info('视频通话功能开发中...')
-}
 
 const handleMoreAction = (command: string) => {
   switch (command) {
@@ -1655,6 +1652,21 @@ watch(
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+.chat-wrapper {
+  height: 94vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  padding: 0;
+  margin: 0;
+  background-color: #f3f4f6;
+}
+
+/* 确保没有额外的边距和填充 */
+.chat-wrapper * {
+  box-sizing: border-box;
 }
 
 /* 响应式设计 */

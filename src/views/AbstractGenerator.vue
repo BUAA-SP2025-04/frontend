@@ -30,7 +30,7 @@
           :upload-file-id="uploadFileId"
           :user="String(currentUser)"
           :auto-start="false"
-          :typing-speed="30"
+          :typing-speed="6"
           @complete="handleComplete"
           @error="handleError"
         />
@@ -169,20 +169,20 @@ onMounted(() => {
 .typewriter-wrapper-large {
   width: 100%;
   max-width: 800px;
-  min-height: 520px;
+  /* min-height: 520px; */
   background: #f8f9fa;
   border-radius: 12px;
   border: 1.5px solid #e9ecef;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.04);
-  padding: 2.5rem 2rem;
+  /* padding: 2.5rem 2rem; */
   display: flex;
   align-items: flex-start;
   justify-content: center;
 }
 @media (max-width: 900px) {
-  .typewriter-wrapper-large {
+  /* .typewriter-wrapper-large {
     padding: 1.2rem 0.5rem;
-  }
+  } */
   .abstract-generator-new {
     padding: 1rem 0.2rem;
   }

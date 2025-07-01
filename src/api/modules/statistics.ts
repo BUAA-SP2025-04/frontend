@@ -35,3 +35,7 @@ export function getLikePublication(): Promise<publication> {
 export function getHotFields(): Promise<any> {
   return request.get('/researcher/getHotFields')
 }
+
+export function getProjectCount(): Promise<CountResponse> {
+  return request.get('/project/geTotalCount')
+}

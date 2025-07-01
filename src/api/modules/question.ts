@@ -127,4 +127,9 @@ export function getMyAnsweredQuestions(): Promise<ApiResponse<QuestionListRespon
 // 获取活跃用户
 export function getTopAnswerUsers(): Promise<ApiResponse<any[]>> {
   return request.get('/question/top-answer-users')
+}
+
+// 获取科研问答热门标签统计
+export function getResearchAreaStats(): Promise<ApiResponse<any>> {
+  return request.get('/question/research-area-stats')
 } 

@@ -506,6 +506,7 @@ import {
   getMessageCount,
   getPaperCount,
   getResearcherCount,
+  getProjectCount,
 } from '@/api/modules/statistics'
 
 const router = useRouter()
@@ -649,11 +650,12 @@ const isLoggedIn = computed(() => userStore.isAuthenticated)
 
 onMounted(async () => {
   try {
-    const [res1, res2, res3, res4] = await Promise.all([
+    const [res1, res2, res3, res4, res5] = await Promise.all([
       getResearcherCount(),
       getPaperCount(),
       getMessageCount(),
       getHotFields(),
+      getProjectCount(),
     ])
     if (res1 && typeof res1.data === 'number') {
       researcherCount.value = (res1.data as any) || 0
@@ -673,7 +675,9 @@ onMounted(async () => {
         .map((item, idx) => ({ ...item, color: top6Colors[idx] || 'bg-gray-400' }))
     }
     // 启动合作项目动画
-    projectCount.value = 12834
+    if (res5 && typeof res5.data === 'number') {
+      projectCount.value = (res5.data as any) || 0
+    }
   } catch (e) {
     console.log(e)
   }

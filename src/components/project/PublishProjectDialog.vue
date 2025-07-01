@@ -21,7 +21,7 @@
         </div>
       </div>
 
-      <form class="p-6 space-y-6" @submit.prevent="publishProject">
+      <form class="p-6 space-y-6" @submit.prevent="saveProject">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- 左侧：基本信息 -->
           <div class="space-y-6">
@@ -143,12 +143,16 @@
                 {{ formErrors.maxMembers }}
               </p>
             </div>
+          </div>
+
+          <!-- 右侧：详细信息 -->
+          <div class="space-y-6">
             <!-- 联系方式 -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">联系方式</label>
               <textarea
                 v-model="newProject.contactInfo"
-                rows="3"
+                rows="1"
                 placeholder="提供邮箱、微信、QQ等联系方式..."
                 :class="[
                   'w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
@@ -163,10 +167,49 @@
                 <p class="text-xs text-gray-500 ml-auto">{{ newProject.contactInfo.length }}/200</p>
               </div>
             </div>
-          </div>
 
-          <!-- 右侧：详细信息 -->
-          <div class="space-y-6">
+            <!-- 合作需求 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">合作需求</label>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span
+                  v-for="requirement in newProject.requirements"
+                  :key="requirement"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                >
+                  {{ requirement }}
+                  <button
+                    type="button"
+                    class="ml-1 text-green-600 hover:text-green-800"
+                    @click="removeRequirement(requirement)"
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
+              <div class="flex gap-2">
+                <input
+                  v-model="requirementInput"
+                  type="text"
+                  placeholder="输入合作需求后点击添加"
+                  :class="[
+                    'flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                    formErrors.requirements ? 'border-red-300' : 'border-gray-300',
+                  ]"
+                  @keyup.enter="addRequirement"
+                />
+                <button
+                  type="button"
+                  class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  @click="addRequirement"
+                >
+                  添加
+                </button>
+              </div>
+              <p v-if="formErrors.requirements" class="mt-1 text-sm text-red-600">
+                {{ formErrors.requirements }}
+              </p>
+            </div>
             <!-- 项目时间 -->
             <div class="grid grid-cols-2 gap-4">
               <div>
@@ -200,66 +243,73 @@
                 </p>
               </div>
             </div>
-            <!-- 合作需求 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">合作需求</label>
-              <div class="flex flex-wrap gap-2 mb-2">
-                <span
-                  v-for="requirement in newProject.requirements"
-                  :key="requirement"
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                >
-                  {{ requirement }}
-                  <button
-                    type="button"
-                    class="ml-1 text-green-600 hover:text-green-800"
-                    @click="removeRequirement(requirement)"
-                  >
-                    ×
-                  </button>
-                </span>
-              </div>
-              <div class="flex gap-2">
-                <input
-                  v-model="requirementInput"
-                  type="text"
-                  placeholder="输入合作需求后按回车添加"
-                  :class="[
-                    'flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                    formErrors.requirements ? 'border-red-300' : 'border-gray-300',
-                  ]"
-                  @keyup.enter="addRequirement"
-                />
+          </div>
+        </div>
+
+        <!-- 底部区域：项目描述 -->
+        <div class="grid grid-cols-1 gap-6">
+          <!-- 合作者列表 -->
+          <div v-if="props.isEdit">
+            <label class="block text-sm font-medium text-gray-700 mb-2">项目合作者</label>
+            <div class="space-y-2">
+              <div
+                v-for="cooperator in newProject.collaborators"
+                :key="cooperator.id"
+                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <div class="flex items-center space-x-3">
+                  <img
+                    :src="getAvatarUrl(cooperator.imgUrl)"
+                    :alt="cooperator.name"
+                    class="w-8 h-8 rounded-full object-cover"
+                  />
+                  <div>
+                    <div class="text-sm font-medium text-gray-900">{{ cooperator.name }}</div>
+                    <div class="text-xs text-gray-500">
+                      {{ cooperator.institution }} · {{ cooperator.title }}
+                    </div>
+                  </div>
+                </div>
                 <button
                   type="button"
-                  class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                  @click="addRequirement"
+                  class="text-red-600 hover:text-red-800"
+                  @click="removeCooperator(cooperator.id)"
                 >
-                  添加
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
                 </button>
               </div>
-              <p v-if="formErrors.requirements" class="mt-1 text-sm text-red-600">
-                {{ formErrors.requirements }}
-              </p>
-            </div>
-            <!-- 项目描述 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">项目描述</label>
-              <textarea
-                v-model="newProject.description"
-                rows="6"
-                placeholder="详细描述项目背景、目标、研究内容等..."
-                :class="[
-                  'w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                  formErrors.description ? 'border-red-300' : 'border-gray-300',
-                ]"
-              ></textarea>
-              <div class="flex justify-between items-center mt-1">
-                <p v-if="formErrors.description" class="text-sm text-red-600">
-                  {{ formErrors.description }}
-                </p>
-                <p class="text-xs text-gray-500 ml-auto">{{ newProject.description.length }}/300</p>
+              <div
+                v-if="newProject.collaborators.length === 0"
+                class="text-center py-4 text-gray-500"
+              >
+                暂无合作者
               </div>
+            </div>
+          </div>
+          <!-- 项目描述 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">项目描述</label>
+            <textarea
+              v-model="newProject.description"
+              rows="6"
+              placeholder="详细描述项目背景、目标、研究内容等..."
+              :class="[
+                'w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                formErrors.description ? 'border-red-300' : 'border-gray-300',
+              ]"
+            ></textarea>
+            <div class="flex justify-between items-center mt-1">
+              <p v-if="formErrors.description" class="text-sm text-red-600">
+                {{ formErrors.description }}
+              </p>
+              <p class="text-xs text-gray-500 ml-auto">{{ newProject.description.length }}/300</p>
             </div>
           </div>
         </div>
@@ -277,7 +327,7 @@
             type="submit"
             class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            发布项目
+            {{ isEdit ? '保存' : '发布项目' }}
           </button>
         </div>
       </form>
@@ -286,13 +336,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { addProject } from '@/api/modules/project'
+import { addProject, updateProject } from '@/api/modules/project'
+import type { ProjectWithApplications, ProjectUser } from '@/api/types/project'
 
 // Props
 interface Props {
   visible: boolean
+  editProject?: ProjectWithApplications | null
+  isEdit?: boolean
 }
 
 const props = defineProps<Props>()
@@ -313,6 +366,7 @@ const newProject = ref({
   endDate: '',
   maxMembers: 5,
   contactInfo: '',
+  collaborators: [] as ProjectUser[],
 })
 const fieldInput = ref('')
 const requirementInput = ref('')
@@ -371,6 +425,17 @@ const validateFields = () => {
   return true
 }
 
+// 获取头像URL
+const getAvatarUrl = (imgUrl: string) => {
+  if (!imgUrl || imgUrl === '') {
+    return '/default-avatar.png'
+  }
+  if (imgUrl.startsWith('http')) {
+    return imgUrl
+  }
+  return import.meta.env.VITE_API_BASE_URL + imgUrl
+}
+
 // 验证团队规模
 const validateMaxMembers = () => {
   const value = newProject.value.maxMembers
@@ -384,6 +449,15 @@ const validateMaxMembers = () => {
     ElMessage.warning('团队规模最大为50人，已自动调整')
     return false
   }
+
+  // 编辑模式下，检查是否小于已招募人数
+  if (props.isEdit && props.editProject) {
+    if (value < props.editProject.recruitedNum) {
+      formErrors.value.maxMembers = `团队规模不能小于已招募人数(${props.editProject.recruitedNum}人)`
+      return false
+    }
+  }
+
   formErrors.value.maxMembers = ''
   return true
 }
@@ -539,54 +613,109 @@ const removeRequirement = (requirement: string) => {
   }
 }
 
+// 引入getProjectStatus工具函数（可复制自MyWorkspace.vue）
+function getProjectStatus(project: ProjectWithApplications): string {
+  const now = new Date()
+  const startTime = new Date(project.startTime)
+  const endTime = new Date(project.endTime)
+  if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) return 'recruiting'
+  if (now > endTime) return 'completed'
+  if (now >= startTime && now <= endTime) return 'ongoing'
+  if (now < startTime && project.recruitedNum >= project.recruitNum) return 'pending'
+  return 'recruiting'
+}
+
 // 发布项目
-const publishProject = async () => {
-  // 表单验证
-  if (!validateForm()) {
-    ElMessage.error('请检查表单填写是否正确')
-    return
+const saveProject = async () => {
+  if (!validateForm()) return
+
+  // 编辑模式下额外验证
+  if (props.isEdit && props.editProject) {
+    if (newProject.value.maxMembers < props.editProject.recruitedNum) {
+      ElMessage.error(`团队规模不能小于已招募人数(${props.editProject.recruitedNum}人)`)
+      return
+    }
   }
 
   try {
-    // 准备API请求数据
-    const projectData = {
-      title: newProject.value.title.trim(),
-      description: newProject.value.description.trim(),
-      collaborationCondition: newProject.value.requirements.join(','), // 转换为逗号分隔的字符串
-      researchArea: newProject.value.fields.join(','), // 转换为逗号分隔的字符串
-      startTime: newProject.value.startDate + ' 00:00:00', // 添加时分秒
-      endTime: newProject.value.endDate + ' 00:00:00', // 添加时分秒
-      recruitNum: newProject.value.maxMembers,
-      contact: newProject.value.contactInfo.trim(),
+    if (props.isEdit && props.editProject) {
+      await updateProject({
+        id: props.editProject.id,
+        title: newProject.value.title,
+        description: newProject.value.description,
+        collaborationCondition: newProject.value.requirements.join(','),
+        researchArea: newProject.value.fields.join(','),
+        startTime: newProject.value.startDate + ' 00:00:00',
+        endTime: newProject.value.endDate + ' 00:00:00',
+        recruitNum: newProject.value.maxMembers,
+        status: getProjectStatus(props.editProject),
+        contact: newProject.value.contactInfo,
+        cooperatorIds: newProject.value.collaborators.map(c => c.id),
+      })
+      ElMessage.success('保存成功')
+      emit('success')
+      emit('close')
+    } else {
+      await addProject({
+        title: newProject.value.title,
+        description: newProject.value.description,
+        collaborationCondition: newProject.value.requirements.join(','),
+        researchArea: newProject.value.fields.join(','),
+        startTime: newProject.value.startDate + ' 00:00:00',
+        endTime: newProject.value.endDate + ' 00:00:00',
+        recruitNum: newProject.value.maxMembers,
+        contact: newProject.value.contactInfo,
+      })
+      ElMessage.success('发布成功')
+      emit('success')
+      emit('close')
     }
-
-    // 调用API
-    await addProject(projectData)
-
-    // 重置表单
-    newProject.value = {
-      title: '',
-      description: '',
-      fields: [],
-      requirements: [],
-      startDate: '',
-      endDate: '',
-      maxMembers: 5,
-      contactInfo: '',
-    }
-
-    // 清空输入框
-    fieldInput.value = ''
-    requirementInput.value = ''
-
-    // 清除错误信息
-    clearErrors()
-
-    // 触发成功事件
-    emit('success')
-  } catch (error) {
-    console.error('发布项目失败:', error)
-    ElMessage.error('发布项目失败，请稍后重试')
+  } catch (e) {
+    ElMessage.error('保存失败')
   }
+}
+
+const emptyProject = {
+  title: '',
+  description: '',
+  fields: [],
+  requirements: [],
+  startDate: '',
+  endDate: '',
+  maxMembers: 5,
+  contactInfo: '',
+  collaborators: [] as ProjectUser[],
+}
+
+watch(
+  [() => props.editProject, () => props.isEdit, () => props.visible],
+  ([editProject, isEdit, visible]) => {
+    if (isEdit && visible && editProject) {
+      newProject.value = {
+        title: editProject.title || '',
+        description: editProject.description || '',
+        fields: (editProject.researchArea || '')
+          .split(',')
+          .map((f: string) => f.trim())
+          .filter((f: string) => f),
+        requirements: (editProject.collaborationCondition || '')
+          .split(',')
+          .map((r: string) => r.trim())
+          .filter((r: string) => r),
+        startDate: (editProject.startTime || '').slice(0, 10),
+        endDate: (editProject.endTime || '').slice(0, 10),
+        maxMembers: editProject.recruitNum || 5,
+        contactInfo: editProject.contact || '',
+        collaborators: editProject.cooperators || [],
+      }
+    } else if (!isEdit && visible) {
+      newProject.value = { ...emptyProject }
+    }
+  },
+  { immediate: true }
+)
+
+const removeCooperator = (id: number) => {
+  newProject.value.collaborators = newProject.value.collaborators.filter(c => c.id !== id)
 }
 </script>

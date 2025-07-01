@@ -740,7 +740,7 @@ const markAllAsRead = async () => {
     // 统一传参格式
     let apiCategory = activeCategory.value
     if (activeCategory.value === 'chat') {
-      apiCategory = 'conversations'
+      apiCategory = 'conversation '
     }
 
     await messagesAPI.markAllAsRead(apiCategory)
@@ -1297,18 +1297,6 @@ const loadAllFriends = async () => {
   }
 }
 
-// 🔥 更新getActivityText函数，兼容新的活动类型
-const getActivityText = (type: string) => {
-  const texts: Record<string, string> = {
-    follow: '关注了你',
-    publish_paper: '发表了新论文',
-    start_project: '启动了新项目',
-    join_conference: '参加了会议',
-    like: '点赞了你的内容',
-    comment: '评论了你的内容',
-  }
-  return texts[type] || '有新动态'
-}
 
 // 🔥 更新getActivityLabel函数，兼容新的活动类型
 const getActivityLabel = (type: string) => {
