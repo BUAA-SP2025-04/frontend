@@ -64,7 +64,15 @@ onMounted(() => {
   // 一次性获取所有文献数据并缓存
   getDiscoverLiterature()
     .then(res => {
-      allLiterature.value = res.data || { title: [], author: [], field: [] }
+      // 对每条文献的 published 字段按空格截断，保留空格前
+      const data = res.data || { title: [], author: [], field: [] }
+      for (const key of ['title', 'author', 'field'] as const) {
+        data[key] = (data[key] || []).map(item => ({
+          ...item,
+          published: item.published.split(' ')[0],
+        }))
+      }
+      allLiterature.value = data
       literatureList.value = allLiterature.value[literatureType.value] || []
       currentLiteratureIndex.value = 0
     })
@@ -171,7 +179,7 @@ function handleAddToCategory() {
   let pdfUrl = literature.link
   addToLibrary(literature.id)
     .then(res => {
-      pdfUrl = res.data
+      pdfUrl = res.data.data
       const paper = {
         type: 'arXiv',
         title: literature.title,
@@ -206,7 +214,7 @@ function deleteLiterature() {
   const id = literatureList.value[currentLiteratureIndex.value].id
   deleteOldPaper(id)
     .then(() => {
-      ElMessage.success('已删除')
+      ElMessage.success('已移除')
       // 删除当前文献
       literatureList.value.splice(currentLiteratureIndex.value, 1)
       // 调整索引
@@ -215,14 +223,14 @@ function deleteLiterature() {
       }
     })
     .catch(() => {
-      ElMessage.error('删除失败')
+      ElMessage.error('移除失败')
     })
 }
 
 const showPaperDetail = (discoverLiterature: DiscoverLiterature) => {
-  if (discoverLiterature && discoverLiterature.id) {
+  if (discoverLiterature && discoverLiterature.publicationId) {
     router.push({
-      path: `/publication/${discoverLiterature.id}`,
+      path: `/publication/${discoverLiterature.publicationId}`,
       query: {
         receiverId: discoverLiterature.receiverId.toString() || '',
       },

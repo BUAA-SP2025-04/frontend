@@ -47,7 +47,9 @@ export interface DiscoverLiteratureResponse {
 }
 
 export interface addResponse {
-  code: string
-  message: string
-  data: string
+  data: {
+    code: string
+    message: string
+    data: string
+  }
 }
