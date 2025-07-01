@@ -132,4 +132,9 @@ export function getTopAnswerUsers(): Promise<ApiResponse<any[]>> {
 // 获取科研问答热门标签统计
 export function getResearchAreaStats(): Promise<ApiResponse<any>> {
   return request.get('/question/research-area-stats')
+}
+
+// 设置问题是否解决
+export function setSolvedStatus(data: { questionId: string; solved: boolean }): Promise<ApiResponse> {
+  return request.post('/question/setSolvedStatus', data)
 } 

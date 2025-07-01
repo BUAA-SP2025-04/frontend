@@ -39,3 +39,7 @@ export function getHotFields(): Promise<any> {
 export function getProjectCount(): Promise<CountResponse> {
   return request.get('/project/geTotalCount')
 }
+
+export function getQaCount(): Promise<CountResponse> {
+  return request.get('/question/count')
+}

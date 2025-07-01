@@ -799,10 +799,10 @@ import {
   cancelApplication as cancelApplicationApi,
   cancelJoinProject,
   deleteProject as deleteProjectApi,
+  getInviteLink,
   getMyApplications,
   getMyJoinedProjects,
   getMyProjects,
-  getInviteLink,
 } from '@/api/modules/project'
 import type { ApplicationDetail, Project, ProjectWithApplications } from '@/api/types/project'
 import PublishProjectDialog from '@/components/project/PublishProjectDialog.vue'

@@ -169,7 +169,8 @@
                 <div
                   v-for="question in filteredQuestions"
                   :key="question.id"
-                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative"
+                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative cursor-pointer"
+                  @click="viewQuestion(question.id)"
                 >
                   <!-- 右上角操作按钮区（查看详情、编辑、删除） -->
                   <div class="flex space-x-2 absolute top-4 right-4 z-10">
@@ -224,7 +225,8 @@
                   </div>
                   <!-- 标题和状态标签 -->
                   <div class="flex items-center mb-2">
-                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">
+                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1 hover:text-blue-600 transition-colors"
+                        @click.stop="viewQuestion(question.id)">
                       {{ question.title }}
                     </h2>
                     <!-- 是否回答状态 -->
@@ -238,16 +240,24 @@
                     >
                       {{ question.answerNum > 0 ? '已回答' : '未回答' }}
                     </span>
-                    <!-- 是否解决状态 -->
+                    <!-- @ts-ignore -->
                     <span
                       :class="[
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
-                        question.bestAnswer
+                        question.solved
                           ? 'bg-green-100 text-green-700'
                           : 'bg-yellow-100 text-yellow-700',
                       ]"
                     >
-                      {{ question.bestAnswer ? '已解决' : '未解决' }}
+                      <template v-if="question.solved">
+                        <svg class="w-4 h-4 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        已解决
+                      </template>
+                      <template v-else>
+                        未解决
+                      </template>
                     </span>
                   </div>
                   <!-- 研究领域标签（移动到标题下方） -->
@@ -318,7 +328,7 @@
                       </svg>
                       {{ question.readNum || 0 }} 浏览
                     </span>
-                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt) }}</span>
+                    <span class="ml-auto text-gray-400">发布于 {{ formatTime(question.createdAt) }}</span>
                   </div>
                   <!-- 最佳回答预览区 -->
                   <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-green-100">
@@ -426,7 +436,8 @@
                 <div
                   v-for="question in filteredAnswers"
                   :key="question.id"
-                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative"
+                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative cursor-pointer"
+                  @click="viewQuestion(question.id)"
                 >
                   <!-- 右上角操作按钮区（仅查看详情） -->
                   <div class="flex space-x-2 absolute top-4 right-4 z-10">
@@ -453,7 +464,8 @@
                   </div>
                   <!-- 标题和状态标签 -->
                   <div class="flex items-center mb-2">
-                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">
+                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1 hover:text-blue-600 transition-colors"
+                        @click.stop="viewQuestion(question.id)">
                       {{ question.title }}
                     </h2>
                     <span
@@ -466,15 +478,24 @@
                     >
                       {{ question.answerNum > 0 ? '已回答' : '未回答' }}
                     </span>
+                    <!-- @ts-ignore -->
                     <span
                       :class="[
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
-                        question.bestAnswer
+                        question.solved
                           ? 'bg-green-100 text-green-700'
                           : 'bg-yellow-100 text-yellow-700',
                       ]"
                     >
-                      {{ question.bestAnswer ? '已解决' : '未解决' }}
+                      <template v-if="question.solved">
+                        <svg class="w-4 h-4 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        已解决
+                      </template>
+                      <template v-else>
+                        未解决
+                      </template>
                     </span>
                   </div>
                   <!-- 研究领域标签 -->
@@ -545,7 +566,7 @@
                       </svg>
                       {{ question.readNum || 0 }} 浏览
                     </span>
-                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt) }}</span>
+                    <span class="ml-auto text-gray-400">发布于 {{ formatTime(question.createdAt) }}</span>
                   </div>
                   <!-- 最佳回答预览区 -->
                   <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-green-100">
@@ -632,7 +653,8 @@
                 <div
                   v-for="question in filteredFollowedQuestions"
                   :key="question.id"
-                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative"
+                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative cursor-pointer"
+                  @click="viewQuestion(question.id)"
                 >
                   <!-- 右上角操作按钮区（仅查看详情） -->
                   <div class="flex space-x-2 absolute top-4 right-4 z-10">
@@ -659,7 +681,8 @@
                   </div>
                   <!-- 标题和状态标签 -->
                   <div class="flex items-center mb-2">
-                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">
+                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1 hover:text-blue-600 transition-colors"
+                        @click.stop="viewQuestion(question.id)">
                       {{ question.title }}
                     </h2>
                     <span
@@ -672,15 +695,24 @@
                     >
                       {{ question.answerNum > 0 ? '已回答' : '未回答' }}
                     </span>
+                    <!-- @ts-ignore -->
                     <span
                       :class="[
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
-                        question.bestAnswer
+                        question.solved
                           ? 'bg-green-100 text-green-700'
                           : 'bg-yellow-100 text-yellow-700',
                       ]"
                     >
-                      {{ question.bestAnswer ? '已解决' : '未解决' }}
+                      <template v-if="question.solved">
+                        <svg class="w-4 h-4 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        已解决
+                      </template>
+                      <template v-else>
+                        未解决
+                      </template>
                     </span>
                   </div>
                   <!-- 研究领域标签 -->
@@ -751,7 +783,7 @@
                       </svg>
                       {{ question.readNum || 0 }} 浏览
                     </span>
-                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt) }}</span>
+                    <span class="ml-auto text-gray-400">发布于 {{ formatTime(question.createdAt) }}</span>
                   </div>
                   <!-- 最佳回答预览区 -->
                   <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-green-100">
@@ -1098,11 +1130,11 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
+  createQuestion,
   deleteQuestion as deleteQuestionApi,
+  getMyAnsweredQuestions,
   getMyAskedQuestions,
   getMyFollowedQuestions,
-  getMyAnsweredQuestions,
-  createQuestion,
   updateQuestion as updateQuestionApi,
 } from '@/api/modules/question'
 import type { Question } from '@/api/types/question'
@@ -1216,7 +1248,7 @@ const filteredQuestions = computed(() => {
   // 排序
   switch (sortBy.value) {
     case 'latest':
-      filtered.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
+      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       break
     case 'mostAnswered':
       filtered.sort((a, b) => b.answerNum - a.answerNum)
@@ -1229,8 +1261,10 @@ const filteredQuestions = computed(() => {
   return filtered
 })
 
-const solvedCount = computed(() => myQuestions.value.filter(q => q.bestAnswer).length)
-const openCount = computed(() => myQuestions.value.filter(q => !q.bestAnswer).length)
+// @ts-ignore
+const solvedCount = computed(() => myQuestions.value.filter(q => q.solved).length)
+// @ts-ignore
+const openCount = computed(() => myQuestions.value.filter(q => !q.solved).length)
 
 // 关注问题相关的计算属性
 const filteredFollowedQuestions = computed(() => {
@@ -1453,9 +1487,9 @@ const loadQuestions = async () => {
     const res = await getMyAskedQuestions()
     if (res.code === '200' && res.data) {
       if (Array.isArray(res.data)) {
-        myQuestions.value = res.data
+        myQuestions.value = res.data.map(q => ({ ...q, solved: typeof q.solved !== 'undefined' ? q.solved : null })) as any
       } else if (res.data.questions) {
-        myQuestions.value = res.data.questions
+        myQuestions.value = res.data.questions.map(q => ({ ...q, solved: typeof q.solved !== 'undefined' ? q.solved : null })) as any
       } else {
         myQuestions.value = []
       }
@@ -1490,7 +1524,7 @@ const loadFollowedQuestions = async () => {
   try {
     const res = await getMyFollowedQuestions()
     if (res.code === '200' && Array.isArray(res.data)) {
-      followedQuestions.value = res.data
+      followedQuestions.value = res.data.map(q => ({ ...q, solved: typeof q.solved !== 'undefined' ? q.solved : null })) as any
     } else {
       followedQuestions.value = []
     }
@@ -1507,15 +1541,15 @@ const filteredAnswers = computed(() => {
     case 'latest':
       filtered.sort(
         (a, b) =>
-          new Date(b.createAt || b.createdAt || 0).getTime() -
-          new Date(a.createAt || a.createdAt || 0).getTime()
+          new Date(b.createdAt || b.createdAt || 0).getTime() -
+          new Date(a.createdAt || a.createdAt || 0).getTime()
       )
       break
     case 'earliest':
       filtered.sort(
         (a, b) =>
-          new Date(a.createAt || a.createdAt || 0).getTime() -
-          new Date(b.createAt || b.createdAt || 0).getTime()
+          new Date(a.createdAt || a.createdAt || 0).getTime() -
+          new Date(b.createdAt || b.createdAt || 0).getTime()
       )
       break
   }

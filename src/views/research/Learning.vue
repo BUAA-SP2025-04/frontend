@@ -48,7 +48,7 @@
       <div class="flex justify-between items-center mb-8">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-            <!-- <svg
+            <svg
               class="w-8 h-8 mr-3 text-indigo-600"
               fill="none"
               stroke="currentColor"
@@ -62,7 +62,7 @@
                 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 
                 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
               />
-            </svg> -->
+            </svg>
             学习档案
           </h1>
           <p class="text-gray-600 mt-2">云端存储，管理您的学习笔记</p>
@@ -142,11 +142,19 @@
                       d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
                     />
                   </svg>
-                  <span class="text-sm font-medium">{{ paper.title.length<15 ? paper.title : paper.title.slice(0,14)+'...' }}</span>
+                  <span class="text-sm font-medium">{{
+                    paper.title.length < 15 ? paper.title : paper.title.slice(0, 14) + '...'
+                  }}</span>
                 </div>
                 <div class="flex items-center space-x-1" v-if="selectedPaper === paper.id">
-                  <svg class="w-4 h-4 mr-2" fill="none" viewBox="-5 0 20 20" stroke="currentColor" stroke-width="1"
-                    @click="toPdfReader(paper.id)">
+                  <svg
+                    class="w-4 h-4 mr-2"
+                    fill="none"
+                    viewBox="-5 0 20 20"
+                    stroke="currentColor"
+                    stroke-width="1"
+                    @click="toPdfReader(paper.id)"
+                  >
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 15l5-5-5-5" />
                   </svg>
                 </div>
@@ -169,21 +177,20 @@
                 />
               </div>
               <div class="flex-shrink-0 flex items-center">
-                <el-checkbox 
-                v-model="noAnnoWithoutComment" 
-                size="large"
-                label="隐藏无批注笔记"
-                />
+                <el-checkbox v-model="noAnnoWithoutComment" size="large" label="隐藏无批注笔记" />
               </div>
               <el-select v-model="sortBy" placeholder="排序方式" size="large" style="width: 150px">
                 <el-option label="时间" value="id" />
-                <el-option label="页码" value="page"/>
+                <el-option label="页码" value="page" />
               </el-select>
             </div>
           </div>
 
           <!-- 笔记列表 -->
-          <div v-if="viewMode === 'list' && filteredAnnos.length>0" class="bg-white rounded-lg shadow">
+          <div
+            v-if="viewMode === 'list' && filteredAnnos.length > 0"
+            class="bg-white rounded-lg shadow"
+          >
             <div
               v-for="anno in filteredAnnos"
               :key="anno.id"
@@ -192,14 +199,18 @@
                 selectedAnnos.includes(anno.id) ? 'bg-blue-50' : '',
               ]"
               @click="toggleAnnoSelection(anno.id)"
-              v-show="anno.comment !== '' || (!noAnnoWithoutComment)"
+              v-show="anno.comment !== '' || !noAnnoWithoutComment"
             >
               <div class="flex items-start space-x-4">
                 <div class="flex-shrink-0">
                   <div class="w-12 h-16 bg-yellow-100 rounded flex items-center justify-center">
-                    <svg 
-                      class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="1 1 20 20"
-                      style="overflow: visible" >
+                    <svg
+                      class="w-6 h-6 text-yellow-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="1 1 20 20"
+                      style="overflow: visible"
+                    >
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -216,14 +227,12 @@
                     @click="handleAnnoAction(`read-${anno.id}`)"
                     class="text-lg font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
                   >
-                    {{ anno.comment.length>0 ? anno.comment : "（无内容笔记）"}}
+                    {{ anno.comment.length > 0 ? anno.comment : '（无内容笔记）' }}
                   </h3>
                   <p class="text-sm text-gray-600 mt-1">
                     {{ paperId2Title(anno.paperId) }}
                   </p>
-                  <p class="text-sm text-gray-500 mt-1">
-                    PAGE {{ anno.page }}
-                  </p>
+                  <p class="text-sm text-gray-500 mt-1">PAGE {{ anno.page }}</p>
                 </div>
 
                 <div class="flex-shrink-0">
@@ -264,10 +273,7 @@
                           </svg>
                           编辑
                         </el-dropdown-item>
-                        <el-dropdown-item
-                          :command="`delete-${anno.id}`"
-                          divided
-                        >
+                        <el-dropdown-item :command="`delete-${anno.id}`" divided>
                           <svg
                             class="w-4 h-4 mr-2"
                             fill="none"
@@ -293,7 +299,7 @@
           </div>
 
           <!-- 空状态 -->
-          <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"> 
+          <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
             <svg
               class="w-16 h-16 text-gray-300 mx-auto mb-4"
               fill="none"
@@ -310,11 +316,11 @@
               ></path>
             </svg>
             <h3 class="text-lg font-medium text-gray-900 mb-2">暂无笔记</h3>
-            <p v-if="annotations.length===0" class="text-gray-500 mb-4">你还没有上传任何笔记</p>
+            <p v-if="annotations.length === 0" class="text-gray-500 mb-4">你还没有上传任何笔记</p>
             <p v-else class="text-gray-500 mb-4">这篇文献没有任何笔记</p>
             <button
               @click="toPdfReader(selectedPaper)"
-              v-if="selectedPaper>0"
+              v-if="selectedPaper > 0"
               class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
             >
               去阅读这篇文献
@@ -343,12 +349,13 @@
         </el-form>
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="showCommentEditDialog = false, newAnno.comment = ''">取消</el-button>
+            <el-button @click=";(showCommentEditDialog = false), (newAnno.comment = '')"
+              >取消</el-button
+            >
             <el-button type="primary" @click="editAnnotationComment()">确定</el-button>
           </span>
         </template>
       </el-dialog>
-
     </div>
   </div>
 </template>
@@ -376,7 +383,7 @@ const annotations = ref<Annotation[]>([])
 
 const showCommentEditDialog = ref(false)
 const newAnno = reactive({
-  comment: ''
+  comment: '',
 })
 const editingAnnoId = ref('')
 
@@ -396,7 +403,7 @@ const route = useRoute()
 onMounted(async () => {
   initUserInfo()
   // console.log(userId)
-  if(route.query.paperId) selectedPaper.value = parseInt(route.query.paperId as string)
+  if (route.query.paperId) selectedPaper.value = parseInt(route.query.paperId as string)
   try {
     const res = await libraryAPI.getList(userId)
     // console.log(res.data.data)
@@ -436,12 +443,12 @@ onMounted(async () => {
         }
         papers.value.push(paper)
         try {
-          console.log("开始读取云端批注了")
+          console.log('开始读取云端批注了')
           const resanno = await annotationAPI.getAnnotationList(userId, resp.paperId.toString())
           // console.log(resanno)
           resanno.data.forEach(a => annotations.value.push(a))
         } catch (error) {
-          ElMessage.error("有一篇文献读取云端笔记失败")
+          ElMessage.error('有一篇文献读取云端笔记失败')
         }
       } catch (error) {
         ElMessage.error('有一篇文献出现了读取问题')
@@ -459,9 +466,8 @@ const filteredAnnos = computed(() => {
     fAnnos = fAnnos.filter(anno => anno.paperId === selectedPaper.value)
   }
   if (searchQuery.value) {
-    fAnnos = fAnnos.filter(
-      anno =>
-        anno.comment.toLowerCase().includes(searchQuery.value.toLowerCase())
+    fAnnos = fAnnos.filter(anno =>
+      anno.comment.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
   fAnnos.sort((a, b) => {
@@ -509,13 +515,14 @@ const handleAnnoAction = async (command: string) => {
               paperId: paper.id,
               allowEdit: 1,
               page: anno.page,
+              annoId: anno.id,
             },
           })
         } else {
-          ElMessage.error("阅读出错了！所属文献不存在")
+          ElMessage.error('阅读出错了！所属文献不存在')
         }
       } else {
-        ElMessage.error("阅读出错了！笔记不存在")
+        ElMessage.error('阅读出错了！笔记不存在')
       }
       break
     case 'edit':
@@ -531,10 +538,10 @@ const editAnno = (annoId: string) => {
   editingAnnoId.value = annoId
   newAnno.comment = ''
   const anno = annotations.value.find(a => parseInt(a.id) === parseInt(annoId))
-  if(anno){
+  if (anno) {
     newAnno.comment = anno.comment
     console.log(anno.comment)
-  } 
+  }
   showCommentEditDialog.value = true
 }
 
@@ -566,9 +573,9 @@ const editAnnotationComment = async () => {
     newAnno.comment = ''
     editingAnnoId.value = ''
   } catch (error) {
-    ElMessage.error("编辑失败")
+    ElMessage.error('编辑失败')
   }
-};
+}
 
 const toPdfReader = (paperId: number) => {
   let paper = papers.value.find(p => p.id === paperId)
@@ -586,10 +593,9 @@ const toPdfReader = (paperId: number) => {
 
 const paperId2Title = (paperId: number) => {
   const paper = papers.value.find(p => p.id === paperId)
-  if(paper) return paper.title
-  else return "[提取文献标题失败]"
+  if (paper) return paper.title
+  else return '[提取文献标题失败]'
 }
-
 </script>
 
 <style scoped>

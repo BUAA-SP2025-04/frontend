@@ -1,7 +1,7 @@
 <template>
   <div class="abstract-generator-new">
     <div class="header">
-      <h1>文章摘要</h1>
+      <h1>{{ title }}摘要</h1>
     </div>
     <div class="center-content">
       <div class="action-bar">
@@ -23,8 +23,12 @@
         <button @click="copyMarkdown" :disabled="isProcessing" class="action-btn copy-md-btn">
           复制Markdown
         </button>
-        <button @click="downloadPdf" :disabled="isProcessing" class="action-btn download-pdf-btn">
-          下载PDF
+        <button
+          @click="downloadPdf"
+          :disabled="isProcessing || downloadingPdf"
+          class="action-btn download-pdf-btn"
+        >
+          {{ downloadingPdf ? '下载中...' : '下载PDF' }}
         </button>
         <!-- <button
           @click="startGeneration"
@@ -43,8 +47,10 @@
           :auto-start="true"
           :typing-speed="6"
           :use-typewriter="false"
+          :title="title"
           @complete="handleComplete"
           @error="handleError"
+          @downloadingPdf="handleDownloadingPdf"
         />
       </div>
     </div>
@@ -53,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { uploadFile } from '@/api/modules/abstract'
@@ -70,8 +76,9 @@ const uploadFileId = ref('')
 const isProcessing = ref(false)
 const hasResult = ref(false)
 const errorMessage = ref('')
-
+const title = ref('')
 const currentUser = computed(() => userStore.user?.id || '1')
+const downloadingPdf = ref(false)
 
 // 新增：检查是否有可下载的内容
 const hasDownloadableContent = computed(() => {
@@ -158,10 +165,17 @@ const copyMarkdown = async () => {
   }
 }
 
+const handleDownloadingPdf = (downloading: boolean) => {
+  downloadingPdf.value = downloading
+}
+
 onMounted(() => {
   const urlParam = route.query.url as string
+  const titleParam = route.query.title as string
+  console.log(urlParam, titleParam)
   if (urlParam) {
     fileUrl.value = urlParam
+    title.value = titleParam || ''
     startGeneration()
   }
 })
@@ -325,4 +339,4 @@ onMounted(() => {
   border-radius: 2px;
 }
 */
-</style> 
+</style>
