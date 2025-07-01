@@ -74,22 +74,24 @@
                       {{ tag }}
                     </span>
                     <!-- 问题状态标签 -->
+                    <!-- @ts-ignore -->
                     <span
                       :class="[
                         'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
-                        hasBestAnswer
+                        question.solved
                           ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200'
                           : 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 border border-yellow-200',
                       ]"
                     >
-                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clip-rule="evenodd"
-                        ></path>
-                      </svg>
-                      {{ hasBestAnswer ? '已解决' : '待解决' }}
+                      <template v-if="question.solved">
+                        <svg class="w-4 h-4 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        已解决
+                      </template>
+                      <template v-else>
+                        未解决
+                      </template>
                     </span>
                   </div>
                 </div>
@@ -99,10 +101,10 @@
                   <!-- 回复问题按钮 -->
                   <button
                     @click="replyToQuestion"
-                    class="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    class="px-3 py-1.5 text-xs bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                   >
                     <svg
-                      class="w-5 h-5 inline-block mr-2"
+                      class="w-4 h-4 inline-block mr-1"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -122,14 +124,14 @@
                     v-if="!isQuestionAuthor"
                     @click="toggleFollow"
                     :class="[
-                      'px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
+                      'px-3 py-1.5 text-xs rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
                       isFollowing
                         ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700'
                         : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-gray-100 hover:to-gray-200 border border-gray-200',
                     ]"
                   >
                     <svg
-                      class="w-5 h-5 inline-block mr-2"
+                      class="w-4 h-4 inline-block mr-1"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -149,14 +151,14 @@
                     v-if="isQuestionAuthor"
                     @click="showBestAnswerDialog = true"
                     :class="[
-                      'px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
-                      hasBestAnswer
-                        ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700'
-                        : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700',
+                      'px-3 py-1.5 text-xs rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
+                      hasBestAnswer 
+                        ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700' 
+                        : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
                     ]"
                   >
                     <svg
-                      class="w-5 h-5 inline-block mr-2"
+                      class="w-4 h-4 inline-block mr-1"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -171,9 +173,21 @@
                     {{ hasBestAnswer ? '重新设置最佳回答' : '设置最佳回答' }}
                   </button>
 
+                  <!-- 设置问题是否解决按钮，仅作者可见，放在最佳回答和分享之间 -->
                   <button
-                    @click="shareQuestion"
-                    class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 rounded-lg hover:from-gray-100 hover:to-gray-200 transition-all border border-gray-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    v-if="isQuestionAuthor"
+                    @click="handleSetSolvedStatus"
+                    class="px-3 py-1.5 text-xs bg-gradient-to-r from-gray-600 to-gray-400 text-white rounded-lg hover:from-gray-700 hover:to-gray-500 transition-all font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  >
+                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {{ question.solved ? '标记为未解决' : '标记为已解决' }}
+                  </button>
+
+                  <button
+                    @click="showShareDialog = true"
+                    class="px-3 py-1.5 text-xs bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                   >
                     <svg
                       class="w-5 h-5 inline-block mr-2"
@@ -393,20 +407,15 @@
                       </button>
 
                       <!-- 分享 -->
-                      <button
+                      <!-- <button
                         @click="shareAnswer(answer.id)"
                         class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 hover:from-gray-100 hover:to-gray-200 transition-all border border-gray-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                          ></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
                         </svg>
                         分享
-                      </button>
+                      </button> -->
                     </div>
                   </div>
 
@@ -1032,6 +1041,7 @@ import {
   unfollowQuestion,
   unlikeAnswer,
   updateQuestion,
+  setSolvedStatus,
 } from '@/api/modules/question'
 import type {
   AnswerQuestionRequest,
@@ -1359,6 +1369,7 @@ const loadQuestionDetail = async () => {
             }
           : undefined,
         answers: mappedAnswers, // 直接使用映射后的答案数组
+        solved: typeof questionData.solved !== 'undefined' ? !!questionData.solved : false,
       }
 
       // 设置相关问题数据
@@ -1989,6 +2000,36 @@ function fallbackCopyTextToClipboard(text: string) {
     ElMessage.error('复制失败，请手动复制文本')
   }
   document.body.removeChild(textArea)
+}
+
+// 设置问题是否解决
+const toggleSolved = async () => {
+  // 这里应调用后端接口，前端先本地模拟
+  if (question.value.solved) {
+    question.value.solved = false
+    ElMessage.success('已标记为未解决')
+  } else {
+    question.value.solved = true
+    ElMessage.success('已标记为已解决')
+  }
+  // TODO: 调用后端接口同步状态
+}
+
+// 设置问题是否解决，调用后端接口
+const handleSetSolvedStatus = async () => {
+  if (!question.value) return
+  const newSolved = question.value.solved ? false : true
+  try {
+    const res = await setSolvedStatus({ questionId: question.value.id, solved: newSolved })
+    if (res && res.code === '200') {
+      question.value.solved = newSolved ? 'yes' : null
+      ElMessage.success(newSolved ? '已标记为已解决' : '已标记为未解决')
+    } else {
+      ElMessage.error(res?.message || '操作失败')
+    }
+  } catch (e) {
+    ElMessage.error('操作失败')
+  }
 }
 </script>
 
