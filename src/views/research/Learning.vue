@@ -100,6 +100,12 @@
                   </svg>
                   <span class="text-sm font-medium">{{ paper.title.length<15 ? paper.title : paper.title.slice(0,14)+'...' }}</span>
                 </div>
+                <div class="flex items-center space-x-1" v-if="selectedPaper === paper.id">
+                  <svg class="w-4 h-4 mr-2" fill="none" viewBox="-5 0 20 20" stroke="currentColor" stroke-width="1"
+                    @click="toPdfReader(paper.id)">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 15l5-5-5-5" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -125,6 +131,10 @@
                 label="隐藏无批注笔记"
                 />
               </div>
+              <el-select v-model="sortBy" placeholder="排序方式" size="large" style="width: 150px">
+                <el-option label="时间" value="id" />
+                <el-option label="页码" value="page"/>
+              </el-select>
             </div>
           </div>
 
@@ -286,6 +296,7 @@ const selectedAnnos = ref<string[]>([])
 const viewMode = ref('list')
 const currentPage = ref(1)
 const pageSize = 20
+const sortBy = ref('id')
 
 const papers = ref<FavoritePaper[]>([])
 const annotations = ref<Annotation[]>([])
@@ -362,6 +373,7 @@ onMounted(async () => {
       } catch (error) {
         ElMessage.error('有一篇文献出现了读取问题')
       }
+      // console.log(annotations.value)
     })
   } catch (error) {
     ElMessage.error('读取文献列表失败')
@@ -379,6 +391,17 @@ const filteredAnnos = computed(() => {
         anno.comment.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
+  fAnnos.sort((a, b) => {
+    switch (sortBy.value) {
+      case 'id':
+        return parseInt(b.id) - parseInt(a.id)
+      case 'page':
+        if (a.paperId != b.paperId) return a.paperId - b.paperId
+        return a.page - b.page
+      default:
+        return parseInt(b.id) - parseInt(a.id)
+    }
+  })
   return fAnnos
 })
 
@@ -397,12 +420,12 @@ const toggleAnnoSelection = (annoId: string) => {
 }
 
 const handleAnnoAction = async (command: string) => {
-  console.log(command)
+  // console.log(command)
   const [action, annoId] = command.split('-')
 
   switch (action) {
     case 'read':
-      const anno = annotations.value.find(a => a.id === annoId)
+      const anno = annotations.value.find(a => parseInt(a.id) === parseInt(annoId))
       if (anno) {
         const paper = papers.value.find(p => p.id === anno.paperId)
         if (paper) {
@@ -434,7 +457,7 @@ const handleAnnoAction = async (command: string) => {
 const editAnno = (annoId: string) => {
   editingAnnoId.value = annoId
   newAnno.comment = ''
-  const anno = annotations.value.find(a => a.id === annoId)
+  const anno = annotations.value.find(a => parseInt(a.id) === parseInt(annoId))
   if(anno){
     newAnno.comment = anno.comment
     console.log(anno.comment)
@@ -448,9 +471,9 @@ const deleteAnno = async (annoId: string) => {
       type: 'warning',
     })
     try {
-      const anno = annotations.value.find(a => a.id === annoId)
+      const anno = annotations.value.find(a => parseInt(a.id) === parseInt(annoId))
       if (anno) await annotationAPI.deleteAnnotation(anno.id)
-      annotations.value = annotations.value.filter(a => a.id !== annoId)
+      annotations.value = annotations.value.filter(a => parseInt(a.id) !== parseInt(annoId))
       ElMessage.success('删除成功')
     } catch (error) {
       ElMessage.error('删除失败，请稍后重试')
@@ -464,7 +487,7 @@ const deleteAnno = async (annoId: string) => {
 const editAnnotationComment = async () => {
   try {
     await annotationAPI.editAnnotation(editingAnnoId.value, newAnno.comment)
-    let anno = annotations.value.find(a => a.id === editingAnnoId.value)
+    let anno = annotations.value.find(a => parseInt(a.id) === parseInt(editingAnnoId.value))
     if (anno) anno.comment = newAnno.comment
     showCommentEditDialog.value = false
     newAnno.comment = ''
@@ -473,6 +496,20 @@ const editAnnotationComment = async () => {
     ElMessage.error("编辑失败")
   }
 };
+
+const toPdfReader = (paperId: number) => {
+  let paper = papers.value.find(p => p.id === paperId)
+  if (paper) {
+    router.push({
+      path: '/pdf-reader',
+      query: {
+        url: paper.pdfUrl,
+        paperId: paperId,
+        allowEdit: 1,
+      },
+    })
+  }
+}
 
 const paperId2Title = (paperId: number) => {
   const paper = papers.value.find(p => p.id === paperId)

@@ -507,7 +507,7 @@ const toggleHighlightMode = async () => {
   activeTool.value = activeTool.value === 'highlight' ? null : 'highlight';
   
   if (activeTool.value === 'highlight') {
-    await initAnnotationCanvas()
+    if (!annotationLayer) await initAnnotationCanvas()
     attachEventListeners()
     ElMessage.success('已进入高亮批注模式，请拖动鼠标选择区域');
   } else {
