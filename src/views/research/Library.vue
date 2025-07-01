@@ -1206,7 +1206,7 @@ const movePaperToFolder = async (paperId: number, folderId: number) => {
     try {
       const folder1 = folders.value.find(f => f.id === paper.folderId)
       if (folder1?.count != undefined) folder1.count -= 1
-      console.log(userId, paper.id.toString(), folderId.toString())
+      // console.log(userId, paper.id.toString(), folderId.toString())
       await libraryAPI.changeCategory(userId, paper.id.toString(), folderId.toString())
       paper.folderId = folderId
       const folder2 = folders.value.find(f => f.id === folderId)
@@ -1510,7 +1510,7 @@ const handleUpload = async () => {
           doi: newPaper.doi,
           abstract: newPaper.abstract,
         }
-        console.log('即将上传')
+        // console.log('即将上传')
         const res = await libraryAPI.createPaper(userId, folderId, paper)
         papers.value.push({
           type: newPaper.type,
