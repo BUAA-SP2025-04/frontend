@@ -168,12 +168,18 @@
                     </span>
                     <span class="flex items-center">
                       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      {{ question.followNum || 0 }} 关注
+                    </span>
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
-                      {{ question.followNum }} 浏览
+                      {{ question.readNum || 0 }} 浏览
                     </span>
-                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt) }}</span>
+                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt || question.createdAt) }}</span>
                   </div>
                   <!-- 最佳回答预览区 -->
                   <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-green-100">
@@ -247,7 +253,6 @@
                       >
                         <option value="latest">最近回答</option>
                         <option value="earliest">最早回答</option>
-                        <option value="mostLiked">点赞最多</option>
                       </select>
                     </div>
                     <div class="flex items-center space-x-6 text-sm text-gray-600">
@@ -325,10 +330,16 @@
                     </span>
                     <span class="flex items-center">
                       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      {{ question.followNum || 0 }} 关注
+                    </span>
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
-                      {{ question.followNum }} 浏览
+                      {{ question.readNum || 0 }} 浏览
                     </span>
                     <span class="ml-auto text-gray-400">{{ formatTime(question.createAt || question.createdAt) }}</span>
                   </div>
@@ -454,10 +465,16 @@
                     </span>
                     <span class="flex items-center">
                       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      {{ question.followNum || 0 }} 关注
+                    </span>
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
-                      {{ question.followNum }} 浏览
+                      {{ question.readNum || 0 }} 浏览
                     </span>
                     <span class="ml-auto text-gray-400">{{ formatTime(question.createAt || question.createdAt) }}</span>
                   </div>
@@ -491,12 +508,9 @@
       </div>
     </div>
 
-    <!-- 发布问题对话框 -->
-    <div
-      v-if="showPublishDialog"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    >
-      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+    <!-- 发布新问题对话框 -->
+    <div v-if="showPublishDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div class="px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">发布新问题</h3>
@@ -515,7 +529,6 @@
             </button>
           </div>
         </div>
-
         <form @submit.prevent="publishQuestion" class="p-6 space-y-6">
           <!-- 问题标题 -->
           <div>
@@ -524,119 +537,133 @@
               v-model="newQuestion.title"
               type="text"
               placeholder="简洁明确地描述你的问题..."
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
-
-          <!-- 问题分类 -->
+          <!-- 问题描述 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">详细描述</label>
+            <textarea
+              v-model="newQuestion.content"
+              rows="6"
+              placeholder="详细描述你的问题，包括背景、遇到的困难、期望的解决方案等..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            ></textarea>
+          </div>
+          <!-- 分类选择 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">问题分类</label>
             <select
               v-model="newQuestion.researchArea"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
-              <option value="">选择分类</option>
-              <option value="人工智能">人工智能</option>
-              <option value="机器学习">机器学习</option>
-              <option value="深度学习">深度学习</option>
-              <option value="计算机视觉">计算机视觉</option>
-              <option value="自然语言处理">自然语言处理</option>
-              <option value="数据科学">数据科学</option>
-              <option value="大数据分析">大数据分析</option>
-              <option value="算法与数据结构">算法与数据结构</option>
-              <option value="软件工程">软件工程</option>
-              <option value="系统架构">系统架构</option>
-              <option value="网络安全">网络安全</option>
-              <option value="数据库">数据库</option>
-              <option value="云计算">云计算</option>
-              <option value="物联网">物联网</option>
-              <option value="区块链">区块链</option>
-              <option value="数学建模">数学建模</option>
-              <option value="统计学">统计学</option>
-              <option value="优化理论">优化理论</option>
-              <option value="图论">图论</option>
-              <option value="数值分析">数值分析</option>
-              <option value="理论物理">理论物理</option>
-              <option value="实验物理">实验物理</option>
-              <option value="量子计算">量子计算</option>
-              <option value="材料科学">材料科学</option>
-              <option value="化学工程">化学工程</option>
-              <option value="生物信息学">生物信息学</option>
-              <option value="生物医学">生物医学</option>
-              <option value="基因组学">基因组学</option>
-              <option value="药物发现">药物发现</option>
-              <option value="环境科学">环境科学</option>
-              <option value="气候变化">气候变化</option>
-              <option value="能源技术">能源技术</option>
-              <option value="机械工程">机械工程</option>
-              <option value="电子工程">电子工程</option>
-              <option value="通信工程">通信工程</option>
-              <option value="控制理论">控制理论</option>
-              <option value="机器人学">机器人学</option>
-              <option value="航空航天">航空航天</option>
-              <option value="土木工程">土木工程</option>
-              <option value="经济学">经济学</option>
-              <option value="金融科技">金融科技</option>
-              <option value="社会科学">社会科学</option>
-              <option value="心理学">心理学</option>
-              <option value="认知科学">认知科学</option>
-              <option value="教育学">教育学</option>
-              <option value="医学影像">医学影像</option>
-              <option value="临床研究">临床研究</option>
-              <option value="公共卫生">公共卫生</option>
-              <option value="农业科技">农业科技</option>
-              <option value="食品科学">食品科学</option>
-              <option value="海洋科学">海洋科学</option>
-              <option value="地球科学">地球科学</option>
-              <option value="天文学">天文学</option>
-              <option value="空间科学">空间科学</option>
-              <option value="纳米技术">纳米技术</option>
-              <option value="生物技术">生物技术</option>
-              <option value="再生医学">再生医学</option>
-              <option value="精准医疗">精准医疗</option>
-              <option value="数字孪生">数字孪生</option>
-              <option value="边缘计算">边缘计算</option>
-              <option value="5G/6G技术">5G/6G技术</option>
-              <option value="虚拟现实">虚拟现实</option>
-              <option value="增强现实">增强现实</option>
-              <option value="元宇宙">元宇宙</option>
-              <option value="论文写作">论文写作</option>
-              <option value="学术规范">学术规范</option>
-              <option value="研究方法">研究方法</option>
-              <option value="实验设计">实验设计</option>
-              <option value="数据分析方法">数据分析方法</option>
-              <option value="其他">其他</option>
+              <option value="">请选择分类</option>
+              <optgroup label="计算机科学与技术">
+                <option value="人工智能">人工智能</option>
+                <option value="机器学习">机器学习</option>
+                <option value="深度学习">深度学习</option>
+                <option value="计算机视觉">计算机视觉</option>
+                <option value="自然语言处理">自然语言处理</option>
+                <option value="数据科学">数据科学</option>
+                <option value="大数据分析">大数据分析</option>
+                <option value="算法与数据结构">算法与数据结构</option>
+                <option value="软件工程">软件工程</option>
+                <option value="系统架构">系统架构</option>
+                <option value="网络安全">网络安全</option>
+                <option value="数据库">数据库</option>
+                <option value="云计算">云计算</option>
+                <option value="物联网">物联网</option>
+                <option value="区块链">区块链</option>
+              </optgroup>
+              <optgroup label="数学与统计学">
+                <option value="数学建模">数学建模</option>
+                <option value="统计学">统计学</option>
+                <option value="优化理论">优化理论</option>
+                <option value="图论">图论</option>
+                <option value="数值分析">数值分析</option>
+              </optgroup>
+              <optgroup label="物理学与量子科学">
+                <option value="理论物理">理论物理</option>
+                <option value="实验物理">实验物理</option>
+                <option value="量子计算">量子计算</option>
+              </optgroup>
+              <optgroup label="生命科学与医学">
+                <option value="生物信息学">生物信息学</option>
+                <option value="生物医学">生物医学</option>
+                <option value="基因组学">基因组学</option>
+                <option value="药物发现">药物发现</option>
+                <option value="医学影像">医学影像</option>
+                <option value="临床研究">临床研究</option>
+                <option value="公共卫生">公共卫生</option>
+                <option value="生物技术">生物技术</option>
+                <option value="再生医学">再生医学</option>
+                <option value="精准医疗">精准医疗</option>
+              </optgroup>
+              <optgroup label="工程与技术">
+                <option value="机械工程">机械工程</option>
+                <option value="电子工程">电子工程</option>
+                <option value="通信工程">通信工程</option>
+                <option value="控制理论">控制理论</option>
+                <option value="机器人学">机器人学</option>
+                <option value="航空航天">航空航天</option>
+                <option value="土木工程">土木工程</option>
+              </optgroup>
+              <optgroup label="新兴技术">
+                <option value="纳米技术">纳米技术</option>
+                <option value="数字孪生">数字孪生</option>
+                <option value="边缘计算">边缘计算</option>
+                <option value="5G/6G技术">5G/6G技术</option>
+                <option value="虚拟现实">虚拟现实</option>
+                <option value="增强现实">增强现实</option>
+                <option value="元宇宙">元宇宙</option>
+              </optgroup>
+              <optgroup label="学术方法">
+                <option value="论文写作">论文写作</option>
+                <option value="学术规范">学术规范</option>
+                <option value="研究方法">研究方法</option>
+                <option value="实验设计">实验设计</option>
+                <option value="数据分析方法">数据分析方法</option>
+              </optgroup>
+              <optgroup label="其他领域">
+                <option value="材料科学">材料科学</option>
+                <option value="化学工程">化学工程</option>
+                <option value="环境科学">环境科学</option>
+                <option value="气候变化">气候变化</option>
+                <option value="能源技术">能源技术</option>
+                <option value="经济学">经济学</option>
+                <option value="金融科技">金融科技</option>
+                <option value="社会科学">社会科学</option>
+                <option value="心理学">心理学</option>
+                <option value="认知科学">认知科学</option>
+                <option value="教育学">教育学</option>
+                <option value="农业科技">农业科技</option>
+                <option value="食品科学">食品科学</option>
+                <option value="海洋科学">海洋科学</option>
+                <option value="地球科学">地球科学</option>
+                <option value="天文学">天文学</option>
+                <option value="空间科学">空间科学</option>
+                <option value="其他">其他</option>
+              </optgroup>
             </select>
           </div>
-
-          <!-- 问题描述 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">问题描述（支持Markdown）</label>
-            <textarea
-              v-model="newQuestion.content"
-              rows="8"
-              placeholder="详细描述你的问题，包括背景、具体遇到的困难、已尝试的方法等..."
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-              required
-            ></textarea>
-          </div>
-
           <!-- 操作按钮 -->
           <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               @click="showPublishDialog = false"
               type="button"
-              class="px-6 py-2 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors border border-gray-300"
+              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
             >
               取消
             </button>
             <button
               type="submit"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              :disabled="loading"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              发布问题
+              {{ loading ? '发布中...' : '发布问题' }}
             </button>
           </div>
         </form>
@@ -792,6 +819,90 @@
         </form>
       </div>
     </div>
+
+    <!-- 分享问题对话框 -->
+    <div v-if="showShareDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">分享问题</h3>
+            <button
+              @click="showShareDialog = false"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <!-- 分享格式选择 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">选择分享格式</label>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input
+                  v-model="shareFormat"
+                  type="radio"
+                  value="simple"
+                  class="mr-3"
+                />
+                <span class="text-sm">简洁格式（仅链接）</span>
+              </label>
+              <label class="flex items-center">
+                <input
+                  v-model="shareFormat"
+                  type="radio"
+                  value="detailed"
+                  class="mr-3"
+                />
+                <span class="text-sm">详细格式（包含问题信息）</span>
+              </label>
+              <label class="flex items-center">
+                <input
+                  v-model="shareFormat"
+                  type="radio"
+                  value="social"
+                  class="mr-3"
+                />
+                <span class="text-sm">社交媒体格式（带标签）</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 预览 -->
+          <div v-if="selectedQuestionForShare">
+            <label class="block text-sm font-medium text-gray-700 mb-2">预览</label>
+            <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto">
+              {{ getShareText(selectedQuestionForShare, shareFormat) }}
+            </div>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <button
+              @click="showShareDialog = false"
+              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              取消
+            </button>
+            <button
+              @click="copyShareText"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              复制到剪贴板
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -827,6 +938,9 @@ const getAvatarUrl = (imgUrl: string) => {
 const sortBy = ref('latest')
 const showPublishDialog = ref(false)
 const showEditDialog = ref(false)
+const showShareDialog = ref(false)
+const selectedQuestionForShare = ref<Question | null>(null)
+const shareFormat = ref('simple')
 const loading = ref(false)
 const activeTab = ref('questions')
 
@@ -905,7 +1019,8 @@ const filteredFollowedQuestions = computed(() => {
       filtered.sort((a, b) => (b.answerNum || 0) - (a.answerNum || 0))
       break
     case 'mostViewed':
-      filtered.sort((a, b) => (b.viewNum || b.followNum || 0) - (a.viewNum || a.followNum || 0))
+      // 使用readNum字段进行浏览量排序
+      filtered.sort((a, b) => (b.readNum || 0) - (a.readNum || 0))
       break
     default:
       break
@@ -960,7 +1075,57 @@ const viewQuestion = (questionId: string) => {
 }
 
 const shareQuestion = (question: Question) => {
-  // 实现分享功能
+  selectedQuestionForShare.value = question
+  showShareDialog.value = true
+}
+
+const getShareText = (question: Question, format: string) => {
+  const url = `${window.location.origin}/research/qa/${question.id}`
+  
+  switch (format) {
+    case 'simple':
+      return url
+    case 'detailed':
+      return `📝 问题：${question.title}
+📋 分类：${question.researchArea || '未分类'}
+💬 回答数：${question.answerNum} 个
+👤 提问者：${question.user?.name || '未知用户'}
+🏫 机构：${question.user?.institution || '未知机构'}
+🔗 查看详情：${url}
+#科研问答 #${question.researchArea || '科研'} #KnoWeb`
+    case 'social':
+      return `🔬 科研问答分享
+
+📝 问题：${question.title}
+
+📋 分类：${question.researchArea || '未分类'}
+
+💬 回答数：${question.answerNum} 个
+
+👤 提问者：${question.user?.name || '未知用户'}
+🏫 机构：${question.user?.institution || '未知机构'}
+
+🔗 查看详情：${url}
+
+#科研问答 #${question.researchArea || '科研'} #KnoWeb`
+    default:
+      return url
+  }
+}
+
+const copyShareText = () => {
+  if (!selectedQuestionForShare.value) return
+  
+  const text = getShareText(selectedQuestionForShare.value, shareFormat.value)
+  navigator.clipboard
+    .writeText(text)
+    .then(() => {
+      ElMessage.success('分享文本已复制到剪贴板')
+      showShareDialog.value = false
+    })
+    .catch(() => {
+      ElMessage.error('复制失败，请手动复制文本')
+    })
 }
 
 const editQuestion = (question: Question) => {
@@ -986,8 +1151,35 @@ const deleteQuestion = async (questionId: string) => {
   loading.value = false
 }
 
-const publishQuestion = () => {
-  // 实现发布新问题功能
+const publishQuestion = async () => {
+  try {
+    loading.value = true
+    const requestData = {
+      title: newQuestion.value.title,
+      content: newQuestion.value.content,
+      researchArea: newQuestion.value.researchArea,
+    }
+    const response = await createQuestion(requestData)
+    if (response && response.code === '200') {
+      // 重置表单
+      newQuestion.value = {
+        title: '',
+        content: '',
+        researchArea: '',
+        tags: [],
+      }
+      showPublishDialog.value = false
+      ElMessage.success('问题发布成功！')
+      // 重新加载问题列表
+      await loadQuestions()
+    } else {
+      ElMessage.error(response?.message || '发布问题失败')
+    }
+  } catch (error) {
+    ElMessage.error('发布问题失败')
+  } finally {
+    loading.value = false
+  }
 }
 
 const updateQuestion = async () => {
@@ -1096,13 +1288,10 @@ const filteredAnswers = computed(() => {
   let filtered = [...myAnswers.value]
   switch (answerSortBy.value) {
     case 'latest':
-      filtered.sort((a, b) => new Date(b.answeredAt || b.createAt).getTime() - new Date(a.answeredAt || a.createAt).getTime())
+      filtered.sort((a, b) => new Date(b.createAt || b.createdAt || 0).getTime() - new Date(a.createAt || a.createdAt || 0).getTime())
       break
     case 'earliest':
-      filtered.sort((a, b) => new Date(a.answeredAt || a.createAt).getTime() - new Date(b.answeredAt || b.createAt).getTime())
-      break
-    case 'mostLiked':
-      filtered.sort((a, b) => (b.likeNum || 0) - (a.likeNum || 0))
+      filtered.sort((a, b) => new Date(a.createAt || a.createdAt || 0).getTime() - new Date(b.createAt || b.createdAt || 0).getTime())
       break
   }
   return filtered
