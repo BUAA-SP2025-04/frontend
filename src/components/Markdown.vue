@@ -1,8 +1,12 @@
 <template>
-  <div class="markdown-content" v-html="rendered" />
+  <div
+    class="markdown-content"
+    :class="$attrs.class"
+    v-html="rendered"
+  />
 </template>
-
 <script setup lang="ts">
+defineOptions({ inheritAttrs: false })
 import { computed, defineProps } from 'vue'
 import MarkdownIt from 'markdown-it'
 import katex from 'markdown-it-katex'
@@ -68,7 +72,6 @@ const rendered = computed(() => md.render(props.source || ''))
   line-height: 1.6;
   word-wrap: break-word;
   max-width: 100%;
-  background: #ffffff;
 }
 
 /* 标题样式 - Typora 风格 */

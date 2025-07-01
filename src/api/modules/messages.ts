@@ -5,7 +5,8 @@ import type {
   GetSystemNotificationsResponse,
   GetActivityNotificationsResponse,
   GetMessageSettingsResponse,
-  MessageSettings,
+  MessageSettingsRaw,
+  MessageSettings
 } from '@/api/types/messages'
 
 export const messagesAPI = {
@@ -33,7 +34,7 @@ export const messagesAPI = {
   getMessageSettings: (): Promise<GetMessageSettingsResponse> =>
     request.get('/user/message-settings'),
 
-  // 保存消息设置
-  saveMessageSettings: (settings: MessageSettings) =>
-    request.post('/user/message-settings', settings),
+// 保存消息设置（用后端结构）
+saveMessageSettings: (settings: MessageSettings) =>
+  request.post('/user/message-settings', settings),
 }

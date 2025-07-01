@@ -100,6 +100,17 @@ export interface ActivityNotification {
   }
 }
 
+// 后端原始消息设置结构
+export interface MessageSettingsRaw {
+  activity: boolean
+  conversation: boolean
+  system: boolean
+  email: boolean
+  stranger: boolean
+  online: boolean
+  uid?: number
+}
+
 // 消息设置
 export interface MessageSettings {
   newMessage: boolean
@@ -125,7 +136,8 @@ export interface GetSystemNotificationsResponse extends ApiResponse<SystemNotifi
 
 export interface GetActivityNotificationsResponse extends ApiResponse<ActivityNotification[] | { list: ActivityNotification[]; unreadCount: number }> {}
 
-export interface GetMessageSettingsResponse extends ApiResponse<{ settings: MessageSettings }> {}
+// 获取消息设置响应
+export interface GetMessageSettingsResponse extends ApiResponse<MessageSettingsRaw> {}
 
 export interface MarkAsReadResponse extends ApiResponse<{ success: boolean }> {}
 
