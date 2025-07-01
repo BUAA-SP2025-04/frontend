@@ -4,7 +4,24 @@
       <!-- 页面标题和操作按钮 -->
       <div class="flex justify-between items-center mb-8">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">项目管理</h1>
+          <div class="flex items-center space-x-3">
+            <svg
+              class="w-8 h-8 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 7a2 2 0 012-2h3.172a2 2 0 011.414.586l1.828 1.828A2 2 0 0012.828 8H19a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+              />
+              <circle cx="8.5" cy="17.5" r="1.5" fill="#3b82f6" />
+              <circle cx="15.5" cy="17.5" r="1.5" fill="#3b82f6" />
+            </svg>
+            <h1 class="text-3xl font-bold text-gray-900">项目管理</h1>
+          </div>
           <p class="mt-2 text-gray-600">管理你的项目、申请和参与情况</p>
         </div>
         <button
@@ -739,10 +756,10 @@ import {
   cancelApplication as cancelApplicationApi,
   cancelJoinProject,
   deleteProject as deleteProjectApi,
+  getInviteLink,
   getMyApplications,
   getMyJoinedProjects,
   getMyProjects,
-  getInviteLink,
 } from '@/api/modules/project'
 import type { ApplicationDetail, Project, ProjectWithApplications } from '@/api/types/project'
 import PublishProjectDialog from '@/components/project/PublishProjectDialog.vue'
@@ -769,6 +786,7 @@ interface DetailProject {
   endDate?: string
   contactInfo?: string
   owner?: {
+    id: number
     name: string
     institution: string
     title: string
@@ -1132,6 +1150,7 @@ const viewProjectDetail = (projectId: number) => {
         applicationCount: parseInt(myProject.applyNum),
         createdAt: myProject.createdAt,
         owner: {
+          id: 0,
           name: '我',
           imgUrl: '',
           institution: '',
@@ -1164,6 +1183,7 @@ const viewProjectDetail = (projectId: number) => {
         applicationCount: parseInt(application.project.applyNum),
         createdAt: application.project.createAt, // 使用正确的字段名
         owner: {
+          id: application.project.owner.id,
           name: application.project.owner.name,
           imgUrl: application.project.owner.imgUrl,
           institution: application.project.owner.institution,
@@ -1196,6 +1216,7 @@ const viewProjectDetail = (projectId: number) => {
         applicationCount: parseInt(joinedProject.applyNum),
         createdAt: joinedProject.createdAt,
         owner: {
+          id: joinedProject.owner.id,
           name: joinedProject.owner.name,
           imgUrl: joinedProject.owner.imgUrl,
           institution: joinedProject.owner.institution,

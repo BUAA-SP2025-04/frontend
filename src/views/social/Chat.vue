@@ -3,12 +3,27 @@
     <!-- 聊天容器 -->
     <div class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-lg flex flex-col h-full">
       <!-- 聊天头部 -->
-      <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex-shrink-0">
+      <div
+        class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex-shrink-0"
+      >
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
-            <button @click="goBack" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-              <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            <button
+              @click="goBack"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+            >
+              <svg
+                class="w-5 h-5 text-gray-600 dark:text-gray-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
 
@@ -55,7 +70,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="flex items-center space-x-4">
             <!-- 机构信息 - 卡片式 -->
             <div
@@ -63,12 +78,18 @@
               class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900 dark:to-indigo-900 border border-purple-200 dark:border-purple-700 rounded-lg px-3 py-2 shadow-sm"
             >
               <div class="flex items-center space-x-2">
-                <svg class="w-4 h-4 text-purple-500 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  class="w-4 h-4 text-purple-500 dark:text-purple-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.84L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.84l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"
                   />
                 </svg>
-                <span class="text-sm font-medium text-purple-700 dark:text-purple-300">{{ chatUser.institution }}</span>
+                <span class="text-sm font-medium text-purple-700 dark:text-purple-300">{{
+                  chatUser.institution
+                }}</span>
               </div>
             </div>
 
@@ -101,7 +122,9 @@
 
             <!-- 更多选项 -->
             <el-dropdown trigger="click" @command="handleMoreAction">
-              <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+              <button
+                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+              >
                 <svg
                   class="w-5 h-5 text-gray-600 dark:text-gray-300"
                   fill="none"
@@ -120,32 +143,79 @@
                 <el-dropdown-menu>
                   <el-dropdown-item command="search">
                     <div class="flex items-center">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      <svg
+                        class="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
                       </svg>
                       搜索消息
                     </div>
                   </el-dropdown-item>
                   <el-dropdown-item command="darkMode">
                     <div class="flex items-center">
-                      <svg v-if="!isDarkMode" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                      <svg
+                        v-if="!isDarkMode"
+                        class="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                        />
                       </svg>
-                      <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                      <svg
+                        v-else
+                        class="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
                       </svg>
                       {{ isDarkMode ? '浅色模式' : '深色模式' }}
                     </div>
                   </el-dropdown-item>
                   <el-dropdown-item command="profile" divided>
-                  <div class="flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1112 21a9 9 0 01-6.879-3.196z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    查看资料
-                  </div>
-                </el-dropdown-item>
+                    <div class="flex items-center">
+                      <svg
+                        class="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5.121 17.804A9 9 0 1112 21a9 9 0 01-6.879-3.196z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                      查看资料
+                    </div>
+                  </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -161,35 +231,53 @@
               placeholder="搜索消息内容..."
               class="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
             />
-            <div v-if="searchResults.length > 0" class="absolute right-3 top-2 text-sm text-gray-500 dark:text-gray-400">
+            <div
+              v-if="searchResults.length > 0"
+              class="absolute right-3 top-2 text-sm text-gray-500 dark:text-gray-400"
+            >
               {{ currentSearchIndex + 1 }} / {{ searchResults.length }}
             </div>
           </div>
           <div class="flex space-x-1">
-            <button 
-              @click="prevSearchResult" 
+            <button
+              @click="prevSearchResult"
               :disabled="searchResults.length === 0"
               class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-50"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 15l7-7 7 7"
+                />
               </svg>
             </button>
-            <button 
-              @click="nextSearchResult" 
+            <button
+              @click="nextSearchResult"
               :disabled="searchResults.length === 0"
               class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-50"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
-            <button 
-              @click="closeSearch" 
+            <button
+              @click="closeSearch"
               class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -215,7 +303,9 @@
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.768 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
             />
           </svg>
-          <span class="text-sm text-yellow-700 dark:text-yellow-300">连接异常，部分功能可能不可用。正在尝试重连...</span>
+          <span class="text-sm text-yellow-700 dark:text-yellow-300"
+            >连接异常，部分功能可能不可用。正在尝试重连...</span
+          >
         </div>
       </div>
 
@@ -248,7 +338,9 @@
             <div v-else-if="Object.keys(groupedFilteredMessages).length > 0">
               <div v-for="(group, date) in groupedFilteredMessages" :key="date">
                 <div class="flex justify-center my-4">
-                  <span class="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-3 py-1 rounded-full">
+                  <span
+                    class="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-3 py-1 rounded-full"
+                  >
                     {{ formatDateDivider(String(date)) }}
                   </span>
                 </div>
@@ -257,11 +349,17 @@
                 <div
                   v-for="message in group"
                   :key="message.id"
-                  :ref="(el) => { if (el) messageRefs[message.id] = el as HTMLElement }"
+                  :ref="
+                    el => {
+                      if (el) messageRefs[message.id] = el as HTMLElement
+                    }
+                  "
                   :class="[
                     'flex mb-4 transition-all duration-300',
                     message.senderId === currentUserId ? 'justify-end' : 'justify-start',
-                    highlightedMessageId === message.id ? 'bg-yellow-100 dark:bg-yellow-900 rounded-lg p-2' : ''
+                    highlightedMessageId === message.id
+                      ? 'bg-yellow-100 dark:bg-yellow-900 rounded-lg p-2'
+                      : '',
                   ]"
                 >
                   <div
@@ -293,7 +391,11 @@
                       >
                         <p
                           class="text-sm whitespace-pre-wrap"
-                          v-html="highlightSearchText(linkify(message.content, message.senderId === currentUserId))"
+                          v-html="
+                            highlightSearchText(
+                              linkify(message.content, message.senderId === currentUserId)
+                            )
+                          "
                         ></p>
                       </div>
 
@@ -319,12 +421,14 @@
                           'p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-sm',
                           message.senderId === currentUserId
                             ? 'bg-indigo-50 dark:bg-indigo-900 border-indigo-200 dark:border-indigo-700'
-                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600'
+                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600',
                         ]"
                         @click="downloadFile(message.fileInfo)"
                       >
                         <div class="flex items-center space-x-3">
-                          <div class="w-10 h-10 bg-gray-100 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+                          <div
+                            class="w-10 h-10 bg-gray-100 dark:bg-gray-600 rounded-lg flex items-center justify-center"
+                          >
                             <svg
                               class="w-5 h-5 text-gray-600 dark:text-gray-300"
                               fill="currentColor"
@@ -338,7 +442,9 @@
                             </svg>
                           </div>
                           <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            <p
+                              class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate"
+                            >
                               {{
                                 message.fileInfo?.name || message.fileInfo?.fileName || '未知文件'
                               }}
@@ -477,7 +583,9 @@
           </div>
 
           <!-- 输入区域 -->
-          <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
+          <div
+            class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 flex-shrink-0"
+          >
             <!-- 文件拖拽区域 -->
             <div
               v-if="isDragging"
@@ -500,7 +608,9 @@
                     d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                   />
                 </svg>
-                <p class="text-lg font-medium text-indigo-600 dark:text-indigo-400">拖拽文件到这里发送</p>
+                <p class="text-lg font-medium text-indigo-600 dark:text-indigo-400">
+                  拖拽文件到这里发送
+                </p>
                 <p class="text-sm text-gray-500 dark:text-gray-400">支持图片、文档等文件类型</p>
               </div>
             </div>
@@ -512,7 +622,9 @@
                 <!-- 表情 -->
                 <el-popover placement="top-start" :width="320" trigger="click">
                   <template #reference>
-                    <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                    <button
+                      class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    >
                       <svg
                         class="w-5 h-5 text-gray-600 dark:text-gray-300"
                         fill="none"
@@ -600,7 +712,9 @@
                 <!-- 快捷短语 -->
                 <el-popover placement="top-start" :width="200" trigger="click">
                   <template #reference>
-                    <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                    <button
+                      class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    >
                       <svg
                         class="w-5 h-5 text-gray-600 dark:text-gray-300"
                         fill="none"
@@ -679,8 +793,14 @@
                   class="flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-2 rounded-lg"
                 >
                   <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center">
-                      <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                    <div
+                      class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-4 h-4 text-gray-600 dark:text-gray-300"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
                         <path
                           fill-rule="evenodd"
                           d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
@@ -689,8 +809,12 @@
                       </svg>
                     </div>
                     <div>
-                      <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ file.name }}</p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatFileSize(file.size) }}</p>
+                      <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {{ file.name }}
+                      </p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ formatFileSize(file.size) }}
+                      </p>
                     </div>
                   </div>
 
@@ -861,9 +985,9 @@ const toggleDarkMode = () => {
 onMounted(() => {
   const savedTheme = localStorage.getItem('darkMode')
   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  
+
   isDarkMode.value = savedTheme ? savedTheme === 'true' : systemPrefersDark
-  
+
   if (isDarkMode.value) {
     document.documentElement.classList.add('dark')
   }
@@ -892,11 +1016,10 @@ const handleSearch = () => {
   }
 
   const query = searchQuery.value.toLowerCase()
-  searchResults.value = messages.value.filter(message => 
-    message.type === 'text' && 
-    message.content.toLowerCase().includes(query)
+  searchResults.value = messages.value.filter(
+    message => message.type === 'text' && message.content.toLowerCase().includes(query)
   )
-  
+
   currentSearchIndex.value = 0
   if (searchResults.value.length > 0) {
     highlightCurrentResult()
@@ -911,37 +1034,36 @@ const nextSearchResult = () => {
 
 const prevSearchResult = () => {
   if (searchResults.value.length === 0) return
-  currentSearchIndex.value = currentSearchIndex.value === 0 
-    ? searchResults.value.length - 1 
-    : currentSearchIndex.value - 1
+  currentSearchIndex.value =
+    currentSearchIndex.value === 0 ? searchResults.value.length - 1 : currentSearchIndex.value - 1
   highlightCurrentResult()
 }
 
 const highlightCurrentResult = () => {
   if (searchResults.value.length === 0) return
-  
+
   const currentMessage = searchResults.value[currentSearchIndex.value]
   highlightedMessageId.value = currentMessage.id
-  
+
   // 滚动到当前消息 - 修改这部分
   nextTick(() => {
     const messageElement = messageRefs.value[currentMessage.id]
     const container = messagesContainer.value
-    
+
     if (messageElement && container) {
       // 计算目标位置
       const containerRect = container.getBoundingClientRect()
       const messageRect = messageElement.getBoundingClientRect()
-      
+
       // 计算相对于容器的位置
       const relativeTop = messageRect.top - containerRect.top + container.scrollTop
-      
+
       // 滚动到目标位置，使消息在容器中央
       const targetScrollTop = relativeTop - container.clientHeight / 2 + messageRect.height / 2
-      
+
       container.scrollTo({
         top: Math.max(0, targetScrollTop),
-        behavior: 'smooth'
+        behavior: 'smooth',
       })
     }
   })
@@ -949,7 +1071,7 @@ const highlightCurrentResult = () => {
 
 const highlightSearchText = (text: string) => {
   if (!searchQuery.value.trim()) return text
-  
+
   const query = searchQuery.value.trim()
   const regex = new RegExp(`(${query})`, 'gi')
   return text.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-600">$1</mark>')
@@ -964,7 +1086,7 @@ const filteredMessages = computed(() => {
 // 分组过滤后的消息
 const groupedFilteredMessages = computed(() => {
   const grouped: Record<string, any[]> = {}
-  
+
   filteredMessages.value.forEach(message => {
     const date = new Date(message.createdAt).toDateString()
     if (!grouped[date]) {
@@ -972,7 +1094,7 @@ const groupedFilteredMessages = computed(() => {
     }
     grouped[date].push(message)
   })
-  
+
   return grouped
 })
 
@@ -982,16 +1104,13 @@ function linkify(text: string, isSelf = false) {
   const linkClass = isSelf
     ? 'text-blue-200 underline break-all hover:text-blue-100'
     : 'text-blue-600 dark:text-blue-400 underline break-all hover:text-blue-500 dark:hover:text-blue-300'
-  return text.replace(
-    /((https?:\/\/|www\.)[^\s<]+)/gi,
-    url => {
-      let link = url
-      if (!/^https?:\/\//i.test(url)) {
-        link = 'http://' + url
-      }
-      return `<a href="${link}" target="_blank" rel="noopener noreferrer" class="${linkClass}">${url}</a>`
+  return text.replace(/((https?:\/\/|www\.)[^\s<]+)/gi, url => {
+    let link = url
+    if (!/^https?:\/\//i.test(url)) {
+      link = 'http://' + url
     }
-  )
+    return `<a href="${link}" target="_blank" rel="noopener noreferrer" class="${linkClass}">${url}</a>`
+  })
 }
 
 // 计算属性 - 按日期分组消息
@@ -1122,7 +1241,6 @@ const initializeWebSocket = () => {
 const handleConnected = () => {
   isConnected.value = true
   isOfflineMode.value = false
-  ElMessage.success('连接成功')
   console.log('WebSocket 连接成功')
 }
 
@@ -1552,7 +1670,7 @@ onMounted(async () => {
   nextTick(() => {
     markAsRead()
   })
-    document.body.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden'
   document.documentElement.style.overflow = 'hidden'
 
   window.addEventListener('dragover', handleDragOver)
@@ -1812,8 +1930,6 @@ const formatFileSize = (bytes: number) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
-
-
 
 const handleMoreAction = (command: string) => {
   switch (command) {

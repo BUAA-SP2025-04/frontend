@@ -22,13 +22,14 @@
             </svg>
             学习档案
           </h1>
+          <p class="text-gray-600 mt-2">云端存储，管理您的学习笔记</p>
         </div>
       </div>
 
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- 左侧分类树 -->
         <div class="lg:w-1/4">
-          <div class="bg-white rounded-lg shadow p-6 sticky top-8">
+          <div class="bg-white rounded-lg shadow p-6">
             <div
               :class="[
                 'text-lg font-medium mb-4 flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
@@ -98,7 +99,21 @@
                       d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
                     />
                   </svg>
-                  <span class="text-sm font-medium">{{ paper.title.length<15 ? paper.title : paper.title.slice(0,14)+'...' }}</span>
+                  <span class="text-sm font-medium">{{
+                    paper.title.length < 15 ? paper.title : paper.title.slice(0, 14) + '...'
+                  }}</span>
+                </div>
+                <div class="flex items-center space-x-1" v-if="selectedPaper === paper.id">
+                  <svg
+                    class="w-4 h-4 mr-2"
+                    fill="none"
+                    viewBox="-5 0 20 20"
+                    stroke="currentColor"
+                    stroke-width="1"
+                    @click="toPdfReader(paper.id)"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 15l5-5-5-5" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -119,17 +134,20 @@
                 />
               </div>
               <div class="flex-shrink-0 flex items-center">
-                <el-checkbox 
-                v-model="noAnnoWithoutComment" 
-                size="large"
-                label="隐藏无批注笔记"
-                />
+                <el-checkbox v-model="noAnnoWithoutComment" size="large" label="隐藏无批注笔记" />
               </div>
+              <el-select v-model="sortBy" placeholder="排序方式" size="large" style="width: 150px">
+                <el-option label="时间" value="id" />
+                <el-option label="页码" value="page" />
+              </el-select>
             </div>
           </div>
 
           <!-- 笔记列表 -->
-          <div v-if="viewMode === 'list'" class="bg-white rounded-lg shadow">
+          <div
+            v-if="viewMode === 'list' && filteredAnnos.length > 0"
+            class="bg-white rounded-lg shadow"
+          >
             <div
               v-for="anno in filteredAnnos"
               :key="anno.id"
@@ -138,14 +156,18 @@
                 selectedAnnos.includes(anno.id) ? 'bg-blue-50' : '',
               ]"
               @click="toggleAnnoSelection(anno.id)"
-              v-show="anno.comment !== '' || (!noAnnoWithoutComment)"
+              v-show="anno.comment !== '' || !noAnnoWithoutComment"
             >
               <div class="flex items-start space-x-4">
                 <div class="flex-shrink-0">
                   <div class="w-12 h-16 bg-yellow-100 rounded flex items-center justify-center">
-                    <svg 
-                      class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="1 1 20 20"
-                      style="overflow: visible" >
+                    <svg
+                      class="w-6 h-6 text-yellow-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="1 1 20 20"
+                      style="overflow: visible"
+                    >
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -162,14 +184,12 @@
                     @click="handleAnnoAction(`read-${anno.id}`)"
                     class="text-lg font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
                   >
-                    {{ anno.comment.length>0 ? anno.comment : "（无内容笔记）"}}
+                    {{ anno.comment.length > 0 ? anno.comment : '（无内容笔记）' }}
                   </h3>
                   <p class="text-sm text-gray-600 mt-1">
                     {{ paperId2Title(anno.paperId) }}
                   </p>
-                  <p class="text-sm text-gray-500 mt-1">
-                    PAGE {{ anno.page }}
-                  </p>
+                  <p class="text-sm text-gray-500 mt-1">PAGE {{ anno.page }}</p>
                 </div>
 
                 <div class="flex-shrink-0">
@@ -210,10 +230,7 @@
                           </svg>
                           编辑
                         </el-dropdown-item>
-                        <el-dropdown-item
-                          :command="`delete-${anno.id}`"
-                          divided
-                        >
+                        <el-dropdown-item :command="`delete-${anno.id}`" divided>
                           <svg
                             class="w-4 h-4 mr-2"
                             fill="none"
@@ -238,6 +255,35 @@
             </div>
           </div>
 
+          <!-- 空状态 -->
+          <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+            <svg
+              class="w-16 h-16 text-gray-300 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 
+                1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 
+                3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"
+              ></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">暂无笔记</h3>
+            <p v-if="annotations.length === 0" class="text-gray-500 mb-4">你还没有上传任何笔记</p>
+            <p v-else class="text-gray-500 mb-4">这篇文献没有任何笔记</p>
+            <button
+              @click="toPdfReader(selectedPaper)"
+              v-if="selectedPaper > 0"
+              class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              去阅读这篇文献
+            </button>
+          </div>
+
           <!-- 分页 -->
           <div class="mt-8 flex justify-center">
             <el-pagination
@@ -260,12 +306,13 @@
         </el-form>
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="showCommentEditDialog = false, newAnno.comment = ''">取消</el-button>
+            <el-button @click=";(showCommentEditDialog = false), (newAnno.comment = '')"
+              >取消</el-button
+            >
             <el-button type="primary" @click="editAnnotationComment()">确定</el-button>
           </span>
         </template>
       </el-dialog>
-
     </div>
   </div>
 </template>
@@ -286,13 +333,14 @@ const selectedAnnos = ref<string[]>([])
 const viewMode = ref('list')
 const currentPage = ref(1)
 const pageSize = 20
+const sortBy = ref('id')
 
 const papers = ref<FavoritePaper[]>([])
 const annotations = ref<Annotation[]>([])
 
 const showCommentEditDialog = ref(false)
 const newAnno = reactive({
-  comment: ''
+  comment: '',
 })
 const editingAnnoId = ref('')
 
@@ -312,7 +360,7 @@ const route = useRoute()
 onMounted(async () => {
   initUserInfo()
   // console.log(userId)
-  if(route.query.paperId) selectedPaper.value = parseInt(route.query.paperId as string)
+  if (route.query.paperId) selectedPaper.value = parseInt(route.query.paperId as string)
   try {
     const res = await libraryAPI.getList(userId)
     // console.log(res.data.data)
@@ -352,16 +400,17 @@ onMounted(async () => {
         }
         papers.value.push(paper)
         try {
-          console.log("开始读取云端批注了")
+          console.log('开始读取云端批注了')
           const resanno = await annotationAPI.getAnnotationList(userId, resp.paperId.toString())
           // console.log(resanno)
           resanno.data.forEach(a => annotations.value.push(a))
         } catch (error) {
-          ElMessage.error("有一篇文献读取云端笔记失败")
+          ElMessage.error('有一篇文献读取云端笔记失败')
         }
       } catch (error) {
         ElMessage.error('有一篇文献出现了读取问题')
       }
+      // console.log(annotations.value)
     })
   } catch (error) {
     ElMessage.error('读取文献列表失败')
@@ -374,11 +423,21 @@ const filteredAnnos = computed(() => {
     fAnnos = fAnnos.filter(anno => anno.paperId === selectedPaper.value)
   }
   if (searchQuery.value) {
-    fAnnos = fAnnos.filter(
-      anno =>
-        anno.comment.toLowerCase().includes(searchQuery.value.toLowerCase())
+    fAnnos = fAnnos.filter(anno =>
+      anno.comment.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
+  fAnnos.sort((a, b) => {
+    switch (sortBy.value) {
+      case 'id':
+        return parseInt(b.id) - parseInt(a.id)
+      case 'page':
+        if (a.paperId != b.paperId) return a.paperId - b.paperId
+        return a.page - b.page
+      default:
+        return parseInt(b.id) - parseInt(a.id)
+    }
+  })
   return fAnnos
 })
 
@@ -397,12 +456,12 @@ const toggleAnnoSelection = (annoId: string) => {
 }
 
 const handleAnnoAction = async (command: string) => {
-  console.log(command)
+  // console.log(command)
   const [action, annoId] = command.split('-')
 
   switch (action) {
     case 'read':
-      const anno = annotations.value.find(a => a.id === annoId)
+      const anno = annotations.value.find(a => parseInt(a.id) === parseInt(annoId))
       if (anno) {
         const paper = papers.value.find(p => p.id === anno.paperId)
         if (paper) {
@@ -413,13 +472,14 @@ const handleAnnoAction = async (command: string) => {
               paperId: paper.id,
               allowEdit: 1,
               page: anno.page,
+              annoId: anno.id,
             },
           })
         } else {
-          ElMessage.error("阅读出错了！所属文献不存在")
+          ElMessage.error('阅读出错了！所属文献不存在')
         }
       } else {
-        ElMessage.error("阅读出错了！笔记不存在")
+        ElMessage.error('阅读出错了！笔记不存在')
       }
       break
     case 'edit':
@@ -434,11 +494,11 @@ const handleAnnoAction = async (command: string) => {
 const editAnno = (annoId: string) => {
   editingAnnoId.value = annoId
   newAnno.comment = ''
-  const anno = annotations.value.find(a => a.id === annoId)
-  if(anno){
+  const anno = annotations.value.find(a => parseInt(a.id) === parseInt(annoId))
+  if (anno) {
     newAnno.comment = anno.comment
     console.log(anno.comment)
-  } 
+  }
   showCommentEditDialog.value = true
 }
 
@@ -448,9 +508,9 @@ const deleteAnno = async (annoId: string) => {
       type: 'warning',
     })
     try {
-      const anno = annotations.value.find(a => a.id === annoId)
+      const anno = annotations.value.find(a => parseInt(a.id) === parseInt(annoId))
       if (anno) await annotationAPI.deleteAnnotation(anno.id)
-      annotations.value = annotations.value.filter(a => a.id !== annoId)
+      annotations.value = annotations.value.filter(a => parseInt(a.id) !== parseInt(annoId))
       ElMessage.success('删除成功')
     } catch (error) {
       ElMessage.error('删除失败，请稍后重试')
@@ -464,22 +524,35 @@ const deleteAnno = async (annoId: string) => {
 const editAnnotationComment = async () => {
   try {
     await annotationAPI.editAnnotation(editingAnnoId.value, newAnno.comment)
-    let anno = annotations.value.find(a => a.id === editingAnnoId.value)
+    let anno = annotations.value.find(a => parseInt(a.id) === parseInt(editingAnnoId.value))
     if (anno) anno.comment = newAnno.comment
     showCommentEditDialog.value = false
     newAnno.comment = ''
     editingAnnoId.value = ''
   } catch (error) {
-    ElMessage.error("编辑失败")
+    ElMessage.error('编辑失败')
   }
-};
+}
+
+const toPdfReader = (paperId: number) => {
+  let paper = papers.value.find(p => p.id === paperId)
+  if (paper) {
+    router.push({
+      path: '/pdf-reader',
+      query: {
+        url: paper.pdfUrl,
+        paperId: paperId,
+        allowEdit: 1,
+      },
+    })
+  }
+}
 
 const paperId2Title = (paperId: number) => {
   const paper = papers.value.find(p => p.id === paperId)
-  if(paper) return paper.title
-  else return "[提取文献标题失败]"
+  if (paper) return paper.title
+  else return '[提取文献标题失败]'
 }
-
 </script>
 
 <style scoped>

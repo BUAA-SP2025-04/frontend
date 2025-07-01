@@ -582,7 +582,7 @@
                     </div>
                     <div class="text-xs text-gray-500">发表数</div>
                   </div>
-                  <!-- <div class="divider-vertical"></div>
+                  <div class="divider-vertical"></div>
                   <div class="group metric-block">
                     <div
                       class="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors"
@@ -590,7 +590,7 @@
                       {{ formatNumber(user.subjectNum) }}
                     </div>
                     <div class="text-xs text-gray-500">项目数</div>
-                  </div> -->
+                  </div>
                 </div>
               </div>
             </div>
@@ -643,28 +643,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import request from '@/utils/request'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
-  searchResearchersByName,
-  searchResearchersByInstitution,
-  searchResearchersByArea,
-  searchResearchersByTitle,
   searchCasually,
+  searchResearchersByArea,
+  searchResearchersByInstitution,
+  searchResearchersByName,
+  searchResearchersByTitle,
 } from '@/api/modules/discover'
 import {
+  ElButton,
   ElCollapse,
   ElCollapseItem,
-  ElTag,
-  ElButton,
-  ElPagination,
-  ElTooltip,
-  ElSelect,
-  ElOption,
   ElIcon,
+  ElOption,
+  ElPagination,
+  ElSelect,
+  ElTag,
+  ElTooltip,
 } from 'element-plus'
-import { Male, Female, Search, Back } from '@element-plus/icons-vue'
+import { Back, Female, Male, Search } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()

@@ -6,3 +6,4 @@ export function getPaperDetail(id: number) {
     params: { id },
   })
 }
+

@@ -113,15 +113,6 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/timeline',
-    name: 'Timeline',
-    component: () => import('@/views/social/Timeline.vue'),
-    meta: {
-      title: '动态时间线',
-      requiresAuth: true,
-    },
-  },
-  {
     path: '/visualization',
     name: 'Visualization',
     component: () => import('@/views/Visualization.vue'),
@@ -197,11 +188,12 @@ const router = createRouter({
     }
     // 否则滚动到页面顶部
     return { top: 0 }
-  }
+  },
 })
 
 router.beforeEach((to, from, next) => {
   const globalStore = useGlobalStore()
+  globalStore.lastRoute = from.path
   const token = localStorage.getItem('token')
   const whiteList = ['/', '/discover', '/login', '/register']
 

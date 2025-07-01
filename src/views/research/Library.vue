@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div
+    class="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-blue-100 relative overflow-hidden"
+  >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 页面标题 -->
       <div class="flex justify-between items-center mb-8">
@@ -51,8 +53,8 @@
 
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- 左侧分类树 -->
-        <div class="lg:w-1/4">
-          <div class="bg-white rounded-lg shadow p-6 sticky top-8">
+        <div class="lg:w-1/4 sticky top-8 space-y-8">
+          <div class="bg-white rounded-lg shadow p-6">
             <div
               :class="[
                 'text-lg font-medium mb-4 flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
@@ -189,6 +191,9 @@
                 阅读历史
               </div>
             </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow px-6 py-4">
             <div
               :class="[
                 'text-lg font-medium mb-4 flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
@@ -265,7 +270,10 @@
           </div>
 
           <!-- 文献列表 -->
-          <div v-if="viewMode === 'list'" class="bg-white rounded-lg shadow">
+          <div
+            v-if="viewMode === 'list' && filteredPapers.length > 0"
+            class="bg-white rounded-lg shadow"
+          >
             <div
               v-for="paper in filteredPapers"
               :key="paper.id"
@@ -317,23 +325,6 @@
                   </div>
 
                   <div class="mt-3 flex items-center text-sm text-gray-500 space-x-4">
-                    <!-- <span class="flex items-center">
-                      <svg
-                        class="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m3 0a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 
-                          01-2-2V6a2 2 0 012-2h3z"
-                        />
-                      </svg>
-                      引用: {{ paper.citations }}
-                    </span> -->
                     <span class="flex items-center">
                       <svg
                         class="w-4 h-4 mr-1"
@@ -357,22 +348,6 @@
                       </svg>
                       阅读: {{ paper.readCount }}
                     </span>
-                    <!-- <span class="flex items-center">
-                      <svg
-                        class="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      {{ paper.publishDate }}
-                    </span> -->
                   </div>
                 </div>
 
@@ -512,6 +487,41 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- 空状态 -->
+          <div
+            v-else-if="filteredPapers.length === 0 && selectedFolder !== -10"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"
+          >
+            <svg
+              class="w-16 h-16 text-gray-300 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0
+                1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504
+                3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"
+              ></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">暂无文献</h3>
+            <p v-if="papers.length === 0" class="text-gray-500 mb-4">你还没有上传任何文献</p>
+            <p v-else-if="selectedFolder != -5" class="text-gray-500 mb-4">
+              这个收藏夹里没有任何文献
+            </p>
+            <p v-else class="text-gray-500 mb-4">你还没有阅读任何文献</p>
+            <button
+              @click="handleFirstPaper"
+              v-if="selectedFolder != -5 || papers.length === 0"
+              class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              上传第一篇文献
+            </button>
           </div>
 
           <!-- 卡片视图 -->
@@ -687,17 +697,6 @@
               />
             </el-form-item>
 
-            <!-- <el-form-item label="发表日期" required>
-              <el-date-picker
-                v-model="newPaper.publishDate"
-                type="date"
-                placeholder="选择日期"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                style="width: 100%"
-              ></el-date-picker>
-            </el-form-item> -->
-
             <el-form-item label="关键词">
               <el-input
                 v-model="tagInput"
@@ -824,7 +823,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox, type UploadFile, type UploadRawFile } from 'element-plus'
+import {
+  ElMessage,
+  ElMessageBox,
+  type UploadFile,
+  type UploadInstance,
+  type UploadRawFile,
+} from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { libraryAPI } from '@/api/modules/library'
@@ -921,7 +926,7 @@ let renameFolderId = -1
 let favoritePaperId = -1
 
 const currentFile = ref<UploadRawFile>()
-const uploadRef = ref(null)
+const uploadRef = ref<UploadInstance | null>(null)
 const pdfFile = ref<File | null>(null)
 const router = useRouter()
 
@@ -1245,6 +1250,7 @@ const handlePaperAction = async (command: string) => {
             url: paper.pdfUrl,
             paperId: paperId,
             allowEdit: 1,
+            title: paper.title,
           },
         })
         // window.open(`/pdf-readerpdfUrl=${paper.pdfUrl}`, '_blank')
@@ -1465,9 +1471,10 @@ const handleFileChange = async (file: UploadFile) => {
     }
   } catch (error) {
     if (uploadRef.value) {
-      uploadRef.value = null
+      uploadRef.value.clearFiles()
     }
     currentFile.value = undefined
+    pdfFile.value = null
     newPaper.pdfUrl = ''
     newPaper.title = ''
     ElMessage.error('创建URL失败')
@@ -1530,7 +1537,7 @@ const handleUpload = async () => {
         showUploadDialog.value = false
         resetNewPaper()
         if (uploadRef.value) {
-          uploadRef.value = null
+          uploadRef.value.clearFiles()
         }
         currentFile.value = undefined
         pdfFile.value = null
@@ -1554,7 +1561,7 @@ const removeFile = async () => {
   try {
     await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
     if (uploadRef.value) {
-      uploadRef.value = null
+      uploadRef.value.clearFiles()
     }
     pdfFile.value = null
     currentFile.value = undefined
@@ -1577,7 +1584,7 @@ const resetNewPaper = async () => {
   try {
     // await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
     if (uploadRef.value) {
-      uploadRef.value = null
+      uploadRef.value.clearFiles()
     }
     // ElMessage.info('已移除上传的文件');
   } catch (error) {
@@ -1611,9 +1618,24 @@ const handleCancelUpload = () => {
 }
 
 const cancelUpload = async () => {
-  if (newPaper.pdfUrl.trim()) await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
+  try {
+    if (newPaper.pdfUrl.trim()) await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
+    currentFile.value = undefined
+  } catch (error) {
+    console.log('云端删除失败')
+  }
   showUploadDialog.value = false
   resetNewPaper()
+}
+
+const handleFirstPaper = () => {
+  if (selectedFolder.value > 0) {
+    const folder = folders.value.find(f => f.id === selectedFolder.value)
+    if (folder) {
+      newPaper.folderName = folder.name
+    }
+  }
+  showUploadDialog.value = true
 }
 
 const cancelCreateFolder = () => {

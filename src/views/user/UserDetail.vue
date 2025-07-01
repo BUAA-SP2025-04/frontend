@@ -187,7 +187,7 @@
                 :key="paper.id"
                 class="py-3 px-2 hover:bg-indigo-50/40 transition cursor-pointer group flex flex-col md:flex-row md:items-center"
               >
-                <div class="flex-1 min-w-0">
+                <div class="flex-1 min-w-0" @click="showPaperDetail(paper)">
                   <!-- 标题行 -->
                   <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span
@@ -263,12 +263,25 @@
                         >阅读量:{{ formatNumber(paper.readerNum) }}</span
                       >
                     </span>
-                    <span
-                      class="ml-auto text-indigo-600 hover:underline cursor-pointer font-medium"
+
+                    <el-button
+                      class="ml-auto"
+                      type="primary"
+                      plain
+                      style="background: #fff; color: #333; border: 1px solid #dcdfe6"
+                      size="small"
                       @click="showPaperDetail(paper)"
+                      @mouseover="hoveredPaperId = paper.id"
+                      @mouseleave="hoveredPaperId = null"
+                      :style="{
+                        background: '#fff',
+                        color: hoveredPaperId === paper.id ? '#409EFF' : '#333',
+                        border:
+                          hoveredPaperId === paper.id ? '1px solid #409EFF' : '1px solid #dcdfe6',
+                      }"
                     >
                       查看详情
-                    </span>
+                    </el-button>
                   </div>
                 </div>
               </div>
@@ -346,10 +359,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch, computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   follow,
+  getFollowers,
+  getFollowing,
   getIfFollow,
   getShowFollow,
   getUserDetail,
@@ -363,9 +378,9 @@ import {
   Close,
   Female,
   Male,
+  Message,
   Plus,
   UserFilled,
-  Message,
 } from '@element-plus/icons-vue'
 import { ElIcon, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
@@ -373,8 +388,6 @@ import type { Project } from '@/api/types/project'
 import { getUserProjects } from '@/api/modules/project'
 import ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
 import ApplyProjectDialog from '@/components/project/ApplyProjectDialog.vue'
-import { ref as vueRef } from 'vue'
-import { getFollowers, getFollowing } from '@/api/modules/user'
 import FollowersDialog from '@/components/user/FollowersDialog.vue'
 import { messagesAPI } from '@/api/modules/messages'
 import { chatAPI } from '@/api/modules/chat'
@@ -430,6 +443,7 @@ const showFollowersDialog = ref(false)
 const followersList = ref<any[]>([])
 const followingList = ref<any[]>([])
 const conversations = ref<any[]>([])
+const hoveredPaperId = ref<number | null>(null)
 
 const loadProjects = async () => {
   const projectRes = await getUserProjects(user.value?.id?.toString() || '')
@@ -822,7 +836,9 @@ const handleMessageSend = async (userId: number) => {
   height: 34px;
   min-height: 34px;
   line-height: 34px;
-  transition: background 0.3s, transform 0.2s;
+  transition:
+    background 0.3s,
+    transform 0.2s;
 }
 .follow-btn:hover {
   background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);
@@ -889,7 +905,8 @@ const handleMessageSend = async (userId: number) => {
   margin-bottom: -1px;
   border-radius: 0.5rem 0.5rem 0 0;
   cursor: pointer;
-  transition: color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+  transition:
+    color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
   overflow: visible;
@@ -940,7 +957,10 @@ const handleMessageSend = async (userId: number) => {
   }
 }
 .follower-card {
-  transition: box-shadow 0.2s, background 0.2s, transform 0.2s;
+  transition:
+    box-shadow 0.2s,
+    background 0.2s,
+    transform 0.2s;
 }
 .follower-card:hover {
   /* background: #ede9fe;  不改变背景色 */

@@ -5,19 +5,34 @@
       <!-- 页面标题和操作按钮 -->
       <div class="flex justify-between items-center mb-8">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">我的问答</h1>
+          <div class="flex items-center space-x-3">
+            <svg
+              class="w-8 h-8 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+              />
+            </svg>
+            <h1 class="text-3xl font-bold text-gray-900">我的问答</h1>
+          </div>
           <p class="mt-2 text-gray-600">管理你的提问、回答和关注的问题</p>
         </div>
         <div class="flex space-x-4">
           <button
-            @click="router.push('/research/qa')"
             class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors border border-gray-200 hover:bg-gray-50"
+            @click="router.push('/research/qa')"
           >
             浏览问题
           </button>
           <button
-            @click="showPublishDialog = true"
             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
+            @click="showPublishDialog = true"
           >
             <svg
               class="w-5 h-5 inline-block mr-2"
@@ -63,9 +78,15 @@
                       </select>
                     </div>
                     <div class="flex items-center space-x-6 text-sm text-gray-600">
-                      <span>总计: <strong class="text-gray-800">{{ myQuestions.length }}</strong></span>
-                      <span>已解决: <strong class="text-green-600">{{ solvedCount }}</strong></span>
-                      <span>待解决: <strong class="text-orange-600">{{ openCount }}</strong></span>
+                      <span
+                        >总计: <strong class="text-gray-800">{{ myQuestions.length }}</strong></span
+                      >
+                      <span
+                        >已解决: <strong class="text-green-600">{{ solvedCount }}</strong></span
+                      >
+                      <span
+                        >待解决: <strong class="text-orange-600">{{ openCount }}</strong></span
+                      >
                     </div>
                   </div>
                 </div>
@@ -75,10 +96,28 @@
               <div class="space-y-4">
                 <!-- 加载状态 -->
                 <div v-if="loading" class="text-center py-12">
-                  <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-blue-500 hover:bg-blue-400 transition ease-in-out duration-150 cursor-not-allowed">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <div
+                    class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-blue-500 hover:bg-blue-400 transition ease-in-out duration-150 cursor-not-allowed"
+                  >
+                    <svg
+                      class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     加载中...
                   </div>
@@ -93,43 +132,65 @@
                   <div class="flex space-x-2 absolute top-4 right-4 z-10">
                     <button
                       class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
-                      @click="viewQuestion(question.id)"
                       title="查看详情"
+                      @click="viewQuestion(question.id)"
                     >
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
                       </svg>
                     </button>
                     <button
                       class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
-                      @click="editQuestion(question)"
                       title="编辑"
+                      @click="editQuestion(question)"
                     >
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6-6M3 17.25V21h3.75l11.06-11.06a2.121 2.121 0 00-3-3L3 17.25z" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15.232 5.232l3.536 3.536M9 13l6-6M3 17.25V21h3.75l11.06-11.06a2.121 2.121 0 00-3-3L3 17.25z"
+                        />
                       </svg>
                     </button>
                     <button
                       class="p-2 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 transition-colors"
-                      @click="deleteQuestion(question.id)"
                       title="删除"
+                      @click="deleteQuestion(question.id)"
                     >
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
                   <!-- 标题和状态标签 -->
                   <div class="flex items-center mb-2">
-                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">{{ question.title }}</h2>
+                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">
+                      {{ question.title }}
+                    </h2>
                     <!-- 是否回答状态 -->
                     <span
                       :class="[
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
                         question.answerNum > 0
                           ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                          : 'bg-yellow-100 text-yellow-700',
                       ]"
                     >
                       {{ question.answerNum > 0 ? '已回答' : '未回答' }}
@@ -140,7 +201,7 @@
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
                         question.bestAnswer
                           ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                          : 'bg-yellow-100 text-yellow-700',
                       ]"
                     >
                       {{ question.bestAnswer ? '已解决' : '未解决' }}
@@ -161,21 +222,56 @@
                   <!-- 统计信息+发布时间 -->
                   <div class="flex items-center space-x-6 text-sm text-gray-500 mb-4">
                     <span class="flex items-center">
-                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"
+                        />
                       </svg>
                       {{ question.answerNum }} 回答
                     </span>
                     <span class="flex items-center">
-                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
                       </svg>
                       {{ question.followNum || 0 }} 关注
                     </span>
                     <span class="flex items-center">
-                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
                       </svg>
                       {{ question.readNum || 0 }} 浏览
                     </span>
@@ -196,11 +292,15 @@
                         >
                           {{ question.bestAnswer.user.name }}
                         </span>
-                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span
+                          class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                        >
                           最佳答案
                         </span>
                       </div>
-                      <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ question.bestAnswer.content }}</p>
+                      <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                        {{ question.bestAnswer.content }}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -227,8 +327,8 @@
                 <h3 class="text-lg font-medium text-gray-900 mb-2">暂无问题</h3>
                 <p class="text-gray-500 mb-4">你还没有发布任何问题</p>
                 <button
-                  @click="showPublishDialog = true"
                   class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                  @click="showPublishDialog = true"
                 >
                   发布第一个问题
                 </button>
@@ -256,15 +356,29 @@
                       </select>
                     </div>
                     <div class="flex items-center space-x-6 text-sm text-gray-600">
-                      <span>总计: <strong class="text-gray-800">{{ myAnswers.length }}</strong></span>
-                      <span>已解决: <strong class="text-green-600">{{ myAnswers.filter(q => q.bestAnswer).length }}</strong></span>
-                      <span>待解决: <strong class="text-orange-600">{{ myAnswers.filter(q => !q.bestAnswer).length }}</strong></span>
+                      <span
+                        >总计: <strong class="text-gray-800">{{ myAnswers.length }}</strong></span
+                      >
+                      <span
+                        >已解决:
+                        <strong class="text-green-600">{{
+                          myAnswers.filter(q => q.bestAnswer).length
+                        }}</strong></span
+                      >
+                      <span
+                        >待解决:
+                        <strong class="text-orange-600">{{
+                          myAnswers.filter(q => !q.bestAnswer).length
+                        }}</strong></span
+                      >
                     </div>
                   </div>
                 </div>
               </div>
               <div v-if="loading" class="text-center py-12">加载中...</div>
-              <div v-else-if="myAnswers.length === 0" class="text-center py-12 text-gray-400">暂无回答</div>
+              <div v-else-if="myAnswers.length === 0" class="text-center py-12 text-gray-400">
+                暂无回答
+              </div>
               <div v-else class="space-y-4">
                 <div
                   v-for="question in filteredAnswers"
@@ -275,24 +389,36 @@
                   <div class="flex space-x-2 absolute top-4 right-4 z-10">
                     <button
                       class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
-                      @click="viewQuestion(question.id)"
                       title="查看详情"
+                      @click="viewQuestion(question.id)"
                     >
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
                       </svg>
                     </button>
                   </div>
                   <!-- 标题和状态标签 -->
                   <div class="flex items-center mb-2">
-                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">{{ question.title }}</h2>
+                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">
+                      {{ question.title }}
+                    </h2>
                     <span
                       :class="[
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
                         question.answerNum > 0
                           ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                          : 'bg-yellow-100 text-yellow-700',
                       ]"
                     >
                       {{ question.answerNum > 0 ? '已回答' : '未回答' }}
@@ -302,7 +428,7 @@
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
                         question.bestAnswer
                           ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                          : 'bg-yellow-100 text-yellow-700',
                       ]"
                     >
                       {{ question.bestAnswer ? '已解决' : '未解决' }}
@@ -323,21 +449,56 @@
                   <!-- 统计信息+发布时间 -->
                   <div class="flex items-center space-x-6 text-sm text-gray-500 mb-4">
                     <span class="flex items-center">
-                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"
+                        />
                       </svg>
                       {{ question.answerNum }} 回答
                     </span>
                     <span class="flex items-center">
-                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
                       </svg>
                       {{ question.followNum || 0 }} 关注
                     </span>
                     <span class="flex items-center">
-                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
                       </svg>
                       {{ question.readNum || 0 }} 浏览
                     </span>
@@ -358,11 +519,15 @@
                         >
                           {{ question.bestAnswer.user.name }}
                         </span>
-                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span
+                          class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                        >
                           最佳答案
                         </span>
                       </div>
-                      <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ question.bestAnswer.content }}</p>
+                      <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                        {{ question.bestAnswer.content }}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -376,7 +541,9 @@
               <div class="mb-6">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-lg font-semibold text-gray-900">我关注的问题</h3>
-                  <span class="text-sm text-gray-500">共 {{ followedQuestions.length }} 个问题</span>
+                  <span class="text-sm text-gray-500"
+                    >共 {{ followedQuestions.length }} 个问题</span
+                  >
                 </div>
                 <div class="bg-gray-50 rounded-lg p-4 mb-6">
                   <div class="flex items-center justify-between">
@@ -391,15 +558,33 @@
                       </select>
                     </div>
                     <div class="flex items-center space-x-6 text-sm text-gray-600">
-                      <span>总计: <strong class="text-gray-800">{{ followedQuestions.length }}</strong></span>
-                      <span>已解决: <strong class="text-green-600">{{ followedQuestions.filter(q => q.bestAnswer).length }}</strong></span>
-                      <span>待解决: <strong class="text-orange-600">{{ followedQuestions.filter(q => !q.bestAnswer).length }}</strong></span>
+                      <span
+                        >总计:
+                        <strong class="text-gray-800">{{ followedQuestions.length }}</strong></span
+                      >
+                      <span
+                        >已解决:
+                        <strong class="text-green-600">{{
+                          followedQuestions.filter(q => q.bestAnswer).length
+                        }}</strong></span
+                      >
+                      <span
+                        >待解决:
+                        <strong class="text-orange-600">{{
+                          followedQuestions.filter(q => !q.bestAnswer).length
+                        }}</strong></span
+                      >
                     </div>
                   </div>
                 </div>
               </div>
               <div v-if="loading" class="text-center py-12">加载中...</div>
-              <div v-else-if="followedQuestions.length === 0" class="text-center py-12 text-gray-400">暂无关注问题</div>
+              <div
+                v-else-if="followedQuestions.length === 0"
+                class="text-center py-12 text-gray-400"
+              >
+                暂无关注问题
+              </div>
               <div v-else class="space-y-4">
                 <div
                   v-for="question in filteredFollowedQuestions"
@@ -410,24 +595,36 @@
                   <div class="flex space-x-2 absolute top-4 right-4 z-10">
                     <button
                       class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition-colors"
-                      @click="viewQuestion(question.id)"
                       title="查看详情"
+                      @click="viewQuestion(question.id)"
                     >
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
                       </svg>
                     </button>
                   </div>
                   <!-- 标题和状态标签 -->
                   <div class="flex items-center mb-2">
-                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">{{ question.title }}</h2>
+                    <h2 class="text-lg font-bold text-gray-900 mr-3 line-clamp-1">
+                      {{ question.title }}
+                    </h2>
                     <span
                       :class="[
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
                         question.answerNum > 0
                           ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                          : 'bg-yellow-100 text-yellow-700',
                       ]"
                     >
                       {{ question.answerNum > 0 ? '已回答' : '未回答' }}
@@ -437,7 +634,7 @@
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-1',
                         question.bestAnswer
                           ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                          : 'bg-yellow-100 text-yellow-700',
                       ]"
                     >
                       {{ question.bestAnswer ? '已解决' : '未解决' }}
@@ -458,21 +655,56 @@
                   <!-- 统计信息+发布时间 -->
                   <div class="flex items-center space-x-6 text-sm text-gray-500 mb-4">
                     <span class="flex items-center">
-                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"
+                        />
                       </svg>
                       {{ question.answerNum }} 回答
                     </span>
                     <span class="flex items-center">
-                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
                       </svg>
                       {{ question.followNum || 0 }} 关注
                     </span>
                     <span class="flex items-center">
-                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <svg
+                        class="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
                       </svg>
                       {{ question.readNum || 0 }} 浏览
                     </span>
@@ -493,11 +725,15 @@
                         >
                           {{ question.bestAnswer.user.name }}
                         </span>
-                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span
+                          class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                        >
                           最佳答案
                         </span>
                       </div>
-                      <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ question.bestAnswer.content }}</p>
+                      <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                        {{ question.bestAnswer.content }}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -509,14 +745,17 @@
     </div>
 
     <!-- 发布新问题对话框 -->
-    <div v-if="showPublishDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div
+      v-if="showPublishDialog"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
       <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div class="px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">发布新问题</h3>
             <button
-              @click="showPublishDialog = false"
               class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showPublishDialog = false"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -529,7 +768,7 @@
             </button>
           </div>
         </div>
-        <form @submit.prevent="publishQuestion" class="p-6 space-y-6">
+        <form class="p-6 space-y-6" @submit.prevent="publishQuestion">
           <!-- 问题标题 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">问题标题</label>
@@ -560,101 +799,16 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
-              <option value="">请选择分类</option>
-              <optgroup label="计算机科学与技术">
-                <option value="人工智能">人工智能</option>
-                <option value="机器学习">机器学习</option>
-                <option value="深度学习">深度学习</option>
-                <option value="计算机视觉">计算机视觉</option>
-                <option value="自然语言处理">自然语言处理</option>
-                <option value="数据科学">数据科学</option>
-                <option value="大数据分析">大数据分析</option>
-                <option value="算法与数据结构">算法与数据结构</option>
-                <option value="软件工程">软件工程</option>
-                <option value="系统架构">系统架构</option>
-                <option value="网络安全">网络安全</option>
-                <option value="数据库">数据库</option>
-                <option value="云计算">云计算</option>
-                <option value="物联网">物联网</option>
-                <option value="区块链">区块链</option>
-              </optgroup>
-              <optgroup label="数学与统计学">
-                <option value="数学建模">数学建模</option>
-                <option value="统计学">统计学</option>
-                <option value="优化理论">优化理论</option>
-                <option value="图论">图论</option>
-                <option value="数值分析">数值分析</option>
-              </optgroup>
-              <optgroup label="物理学与量子科学">
-                <option value="理论物理">理论物理</option>
-                <option value="实验物理">实验物理</option>
-                <option value="量子计算">量子计算</option>
-              </optgroup>
-              <optgroup label="生命科学与医学">
-                <option value="生物信息学">生物信息学</option>
-                <option value="生物医学">生物医学</option>
-                <option value="基因组学">基因组学</option>
-                <option value="药物发现">药物发现</option>
-                <option value="医学影像">医学影像</option>
-                <option value="临床研究">临床研究</option>
-                <option value="公共卫生">公共卫生</option>
-                <option value="生物技术">生物技术</option>
-                <option value="再生医学">再生医学</option>
-                <option value="精准医疗">精准医疗</option>
-              </optgroup>
-              <optgroup label="工程与技术">
-                <option value="机械工程">机械工程</option>
-                <option value="电子工程">电子工程</option>
-                <option value="通信工程">通信工程</option>
-                <option value="控制理论">控制理论</option>
-                <option value="机器人学">机器人学</option>
-                <option value="航空航天">航空航天</option>
-                <option value="土木工程">土木工程</option>
-              </optgroup>
-              <optgroup label="新兴技术">
-                <option value="纳米技术">纳米技术</option>
-                <option value="数字孪生">数字孪生</option>
-                <option value="边缘计算">边缘计算</option>
-                <option value="5G/6G技术">5G/6G技术</option>
-                <option value="虚拟现实">虚拟现实</option>
-                <option value="增强现实">增强现实</option>
-                <option value="元宇宙">元宇宙</option>
-              </optgroup>
-              <optgroup label="学术方法">
-                <option value="论文写作">论文写作</option>
-                <option value="学术规范">学术规范</option>
-                <option value="研究方法">研究方法</option>
-                <option value="实验设计">实验设计</option>
-                <option value="数据分析方法">数据分析方法</option>
-              </optgroup>
-              <optgroup label="其他领域">
-                <option value="材料科学">材料科学</option>
-                <option value="化学工程">化学工程</option>
-                <option value="环境科学">环境科学</option>
-                <option value="气候变化">气候变化</option>
-                <option value="能源技术">能源技术</option>
-                <option value="经济学">经济学</option>
-                <option value="金融科技">金融科技</option>
-                <option value="社会科学">社会科学</option>
-                <option value="心理学">心理学</option>
-                <option value="认知科学">认知科学</option>
-                <option value="教育学">教育学</option>
-                <option value="农业科技">农业科技</option>
-                <option value="食品科学">食品科学</option>
-                <option value="海洋科学">海洋科学</option>
-                <option value="地球科学">地球科学</option>
-                <option value="天文学">天文学</option>
-                <option value="空间科学">空间科学</option>
-                <option value="其他">其他</option>
-              </optgroup>
+              <option value="">请选择研究领域</option>
+              <option v-for="area in RESEARCH_AREAS" :key="area" :value="area">{{ area }}</option>
             </select>
           </div>
           <!-- 操作按钮 -->
           <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
-              @click="showPublishDialog = false"
               type="button"
               class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              @click="showPublishDialog = false"
             >
               取消
             </button>
@@ -680,8 +834,8 @@
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">编辑问题</h3>
             <button
-              @click="showEditDialog = false"
               class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showEditDialog = false"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -695,7 +849,7 @@
           </div>
         </div>
 
-        <form @submit.prevent="updateQuestion" class="p-6 space-y-6">
+        <form class="p-6 space-y-6" @submit.prevent="updateQuestion">
           <!-- 问题标题 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">问题标题</label>
@@ -791,7 +945,9 @@
 
           <!-- 问题描述 -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">问题描述（支持Markdown）</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >问题描述（支持Markdown）</label
+            >
             <textarea
               v-model="editingQuestion.content"
               rows="8"
@@ -803,9 +959,9 @@
           <!-- 操作按钮 -->
           <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
-              @click="showEditDialog = false"
               type="button"
               class="px-6 py-2 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors border border-gray-300"
+              @click="showEditDialog = false"
             >
               取消
             </button>
@@ -821,14 +977,17 @@
     </div>
 
     <!-- 分享问题对话框 -->
-    <div v-if="showShareDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      v-if="showShareDialog"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
       <div class="bg-white rounded-lg max-w-md w-full mx-4">
         <div class="px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">分享问题</h3>
             <button
-              @click="showShareDialog = false"
               class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showShareDialog = false"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -843,36 +1002,17 @@
         </div>
 
         <div class="p-6 space-y-4">
-          <!-- 分享格式选择 -->
+          <!-- 分享格式选择，只保留简洁和详细 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-3">选择分享格式</label>
             <div class="space-y-2">
               <label class="flex items-center">
-                <input
-                  v-model="shareFormat"
-                  type="radio"
-                  value="simple"
-                  class="mr-3"
-                />
+                <input v-model="shareFormat" type="radio" value="simple" class="mr-3" />
                 <span class="text-sm">简洁格式（仅链接）</span>
               </label>
               <label class="flex items-center">
-                <input
-                  v-model="shareFormat"
-                  type="radio"
-                  value="detailed"
-                  class="mr-3"
-                />
+                <input v-model="shareFormat" type="radio" value="detailed" class="mr-3" />
                 <span class="text-sm">详细格式（包含问题信息）</span>
-              </label>
-              <label class="flex items-center">
-                <input
-                  v-model="shareFormat"
-                  type="radio"
-                  value="social"
-                  class="mr-3"
-                />
-                <span class="text-sm">社交媒体格式（带标签）</span>
               </label>
             </div>
           </div>
@@ -880,22 +1020,26 @@
           <!-- 预览 -->
           <div v-if="selectedQuestionForShare">
             <label class="block text-sm font-medium text-gray-700 mb-2">预览</label>
-            <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto">
+            <div
+              class="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto"
+            >
               {{ getShareText(selectedQuestionForShare, shareFormat) }}
             </div>
           </div>
 
           <!-- 操作按钮 -->
-          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div class="flex justify-end gap-4 pt-6 pb-2 px-2 border-t border-gray-200">
             <button
+              class="px-5 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors shadow-sm"
+              style="min-width: 80px"
               @click="showShareDialog = false"
-              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
             >
               取消
             </button>
             <button
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+              style="min-width: 110px"
               @click="copyShareText"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               复制到剪贴板
             </button>
@@ -909,18 +1053,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import {
+  createQuestion,
   deleteQuestion as deleteQuestionApi,
-  unfollowQuestion as unfollowQuestionApi,
+  getMyAnsweredQuestions,
   getMyAskedQuestions,
   getMyFollowedQuestions,
-  getMyAnsweredQuestions,
-  createQuestion,
   updateQuestion as updateQuestionApi,
 } from '@/api/modules/question'
-import type { Question, CreateQuestionRequest, UpdateQuestionRequest } from '@/api/types/question'
-import { RESEARCH_CATEGORIES } from '../../utils/categories'
+import type { Question } from '@/api/types/question'
 
 const router = useRouter()
 
@@ -947,8 +1089,6 @@ const activeTab = ref('questions')
 // 我的回答相关数据
 const myAnswers = ref<any[]>([])
 const answerSortBy = ref('latest')
-const acceptedAnswers = ref<any[]>([])
-const totalLikes = ref(0)
 
 // 关注问题相关数据
 const followedQuestions = ref<any[]>([])
@@ -984,6 +1124,47 @@ const editingQuestion = ref<{
 
 // 我的问题数据
 const myQuestions = ref<Question[]>([])
+
+// 新增：科研领域常量数组，保持与Profile.vue一致
+const RESEARCH_AREAS = [
+  '计算机科学',
+  '人工智能',
+  '机器学习',
+  '数据科学',
+  '生物信息学',
+  '物理学',
+  '化学',
+  '数学',
+  '材料科学',
+  '环境科学',
+  '地球科学',
+  '天文学',
+  '医学',
+  '药学',
+  '心理学',
+  '社会学',
+  '经济学',
+  '管理学',
+  '法学',
+  '教育学',
+  '历史学',
+  '哲学',
+  '语言学',
+  '政治学',
+  '艺术学',
+  '农学',
+  '工程学',
+  '电子科学',
+  '自动化',
+  '交通运输',
+  '能源科学',
+  '海洋科学',
+  '统计学',
+  '信息科学',
+  '新闻传播学',
+  '体育学',
+  '其他',
+]
 
 // 计算属性
 const filteredQuestions = computed(() => {
@@ -1028,16 +1209,6 @@ const filteredFollowedQuestions = computed(() => {
   return filtered
 })
 
-const newAnswersCount = computed(() => {
-  // 这里可以根据实际需求计算有新回答的问题数量
-  // 暂时返回有回答的问题数量
-  return followedQuestions.value.filter(q => q.answerNum > 0).length
-})
-
-const solvedFollowedCount = computed(() => {
-  return followedQuestions.value.filter(q => q.bestAnswer).length
-})
-
 // 方法
 const formatTime = (dateString: string) => {
   if (!dateString) return '-'
@@ -1062,30 +1233,17 @@ const formatTime = (dateString: string) => {
   }).format(date)
 }
 
-const getStatusStyle = (hasBestAnswer: boolean) => {
-  return hasBestAnswer ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-}
-
-const getStatusText = (hasBestAnswer: boolean) => {
-  return hasBestAnswer ? '已解决' : '待解决'
-}
-
 const viewQuestion = (questionId: string) => {
   router.push(`/research/qa/${questionId}`)
 }
 
-const shareQuestion = (question: Question) => {
-  selectedQuestionForShare.value = question
-  showShareDialog.value = true
-}
-
 const getShareText = (question: Question, format: string) => {
   const url = `${window.location.origin}/research/qa/${question.id}`
-  
   switch (format) {
     case 'simple':
       return url
     case 'detailed':
+    default:
       return `📝 问题：${question.title}
 📋 分类：${question.researchArea || '未分类'}
 💬 回答数：${question.answerNum} 个
@@ -1093,39 +1251,53 @@ const getShareText = (question: Question, format: string) => {
 🏫 机构：${question.user?.institution || '未知机构'}
 🔗 查看详情：${url}
 #科研问答 #${question.researchArea || '科研'} #KnoWeb`
-    case 'social':
-      return `🔬 科研问答分享
-
-📝 问题：${question.title}
-
-📋 分类：${question.researchArea || '未分类'}
-
-💬 回答数：${question.answerNum} 个
-
-👤 提问者：${question.user?.name || '未知用户'}
-🏫 机构：${question.user?.institution || '未知机构'}
-
-🔗 查看详情：${url}
-
-#科研问答 #${question.researchArea || '科研'} #KnoWeb`
-    default:
-      return url
   }
 }
 
 const copyShareText = () => {
   if (!selectedQuestionForShare.value) return
-  
   const text = getShareText(selectedQuestionForShare.value, shareFormat.value)
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        ElMessage.success('分享文本已复制到剪贴板')
+        showShareDialog.value = false
+      })
+      .catch(() => fallbackCopyTextToClipboard(text))
+  } else {
+    fallbackCopyTextToClipboard(text)
+  }
+}
+
+function fallbackCopyTextToClipboard(text: string) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  textArea.style.position = 'fixed'
+  textArea.style.top = '0'
+  textArea.style.left = '0'
+  textArea.style.width = '2em'
+  textArea.style.height = '2em'
+  textArea.style.padding = '0'
+  textArea.style.border = 'none'
+  textArea.style.outline = 'none'
+  textArea.style.boxShadow = 'none'
+  textArea.style.background = 'transparent'
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  try {
+    const successful = document.execCommand('copy')
+    if (successful) {
       ElMessage.success('分享文本已复制到剪贴板')
       showShareDialog.value = false
-    })
-    .catch(() => {
+    } else {
       ElMessage.error('复制失败，请手动复制文本')
-    })
+    }
+  } catch (err) {
+    ElMessage.error('复制失败，请手动复制文本')
+  }
+  document.body.removeChild(textArea)
 }
 
 const editQuestion = (question: Question) => {
@@ -1191,7 +1363,9 @@ const updateQuestion = async () => {
       title: editingQuestion.value.title,
       content: editingQuestion.value.content,
       researchArea: editingQuestion.value.researchArea,
-      ...(editingQuestion.value.bestAnswerId !== undefined ? { bestAnswerId: editingQuestion.value.bestAnswerId } : {})
+      ...(editingQuestion.value.bestAnswerId !== undefined
+        ? { bestAnswerId: editingQuestion.value.bestAnswerId }
+        : {}),
     }
     await updateQuestionApi(payload)
     ElMessage.success('修改成功')
@@ -1204,7 +1378,7 @@ const updateQuestion = async () => {
 }
 
 const goToUserDetail = (userId: string) => {
-  // 实现跳转到用户详情功能
+  router.push(`/user/${userId}`)
 }
 
 const questionsLoaded = ref(false)
@@ -1234,7 +1408,7 @@ const loadQuestions = async () => {
   loading.value = true
   try {
     const res = await getMyAskedQuestions()
-    if (res.code === "200" && res.data) {
+    if (res.code === '200' && res.data) {
       if (Array.isArray(res.data)) {
         myQuestions.value = res.data
       } else if (res.data.questions) {
@@ -1288,10 +1462,18 @@ const filteredAnswers = computed(() => {
   let filtered = [...myAnswers.value]
   switch (answerSortBy.value) {
     case 'latest':
-      filtered.sort((a, b) => new Date(b.createAt || b.createdAt || 0).getTime() - new Date(a.createAt || a.createdAt || 0).getTime())
+      filtered.sort(
+        (a, b) =>
+          new Date(b.createAt || b.createdAt || 0).getTime() -
+          new Date(a.createAt || a.createdAt || 0).getTime()
+      )
       break
     case 'earliest':
-      filtered.sort((a, b) => new Date(a.createAt || a.createdAt || 0).getTime() - new Date(b.createAt || b.createdAt || 0).getTime())
+      filtered.sort(
+        (a, b) =>
+          new Date(a.createAt || a.createdAt || 0).getTime() -
+          new Date(b.createAt || b.createdAt || 0).getTime()
+      )
       break
   }
   return filtered
