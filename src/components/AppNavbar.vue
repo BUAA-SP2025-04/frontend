@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+  <nav class="bg-gradient-to-r from-slate-50/90 via-white/95 to-neutral-100/90 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <!-- 左侧 Logo 和主导航 -->
@@ -19,15 +19,15 @@
             KnoWeb
           </router-link>
 
-          <!-- 主导航菜单 -->
+         <!-- 主导航菜单 -->
           <div class="hidden md:ml-6 md:flex md:space-x-8">
             <router-link
               to="/"
               :class="[
-                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
+                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-all duration-300 hover:scale-105',
                 $route.path === '/'
-                  ? 'border-indigo-500 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                  ? 'border-indigo-500 text-indigo-700 bg-indigo-50/50 rounded-t-lg'
+                  : 'border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300 hover:bg-slate-50/50 rounded-t-lg',
               ]"
             >
               首页
@@ -36,10 +36,10 @@
             <router-link
               to="/discover"
               :class="[
-                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
+                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-all duration-300 hover:scale-105',
                 $route.path === '/discover'
-                  ? 'border-indigo-500 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                  ? 'border-indigo-500 text-indigo-700 bg-indigo-50/50 rounded-t-lg'
+                  : 'border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300 hover:bg-slate-50/50 rounded-t-lg',
               ]"
             >
               科研发现
@@ -48,10 +48,10 @@
             <router-link
               to="/library"
               :class="[
-                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
+                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-all duration-300 hover:scale-105',
                 $route.path === '/library'
-                  ? 'border-indigo-500 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                  ? 'border-indigo-500 text-indigo-700 bg-indigo-50/50 rounded-t-lg'
+                  : 'border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300 hover:bg-slate-50/50 rounded-t-lg',
               ]"
             >
               文献库
@@ -60,10 +60,10 @@
             <router-link
               to="/research/projects"
               :class="[
-                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
+                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-all duration-300 hover:scale-105',
                 $route.path === '/research/projects'
-                  ? 'border-indigo-500 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                  ? 'border-indigo-500 text-indigo-700 bg-indigo-50/50 rounded-t-lg'
+                  : 'border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300 hover:bg-slate-50/50 rounded-t-lg',
               ]"
             >
               科研项目
@@ -72,10 +72,10 @@
             <router-link
               to="/research/qa"
               :class="[
-                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
+                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-all duration-300 hover:scale-105',
                 $route.path === '/research/qa'
-                  ? 'border-indigo-500 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                  ? 'border-indigo-500 text-indigo-700 bg-indigo-50/50 rounded-t-lg'
+                  : 'border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300 hover:bg-slate-50/50 rounded-t-lg',
               ]"
             >
               科研问答
@@ -84,10 +84,10 @@
             <router-link
               to="/research/knowledge-graph"
               :class="[
-                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200',
+                'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-all duration-300 hover:scale-105',
                 $route.path === '/research/knowledge-graph'
-                  ? 'border-indigo-500 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                  ? 'border-indigo-500 text-indigo-700 bg-indigo-50/50 rounded-t-lg'
+                  : 'border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300 hover:bg-slate-50/50 rounded-t-lg',
               ]"
             >
               知识图谱
@@ -192,17 +192,17 @@
             @mouseleave="handleUserMenuHover(false)"
           >
             <button
-              class="flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              class="flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 hover:scale-105 hover:shadow-md p-1"
               @click="toggleUserMenu"
             >
               <img
                 :src="currentUser?.imgUrl || `/default-avatar.png`"
                 :alt="currentUser?.name"
-                class="h-8 w-8 rounded-full object-cover"
+                class="h-8 w-8 rounded-full object-cover ring-2 ring-white shadow-sm"
               />
-              <span class="hidden md:block text-gray-700 font-medium">{{ currentUser?.name }}</span>
+              <span class="hidden md:block text-slate-700 font-medium">{{ currentUser?.name }}</span>
               <svg
-                class="h-4 w-4 text-gray-400 transition-transform duration-200"
+                class="h-4 w-4 text-slate-400 transition-transform duration-200"
                 :class="{ 'rotate-180': showUserMenu }"
                 fill="none"
                 stroke="currentColor"
@@ -701,4 +701,6 @@ nav {
 .rotate-180 {
   transform: rotate(180deg);
 }
+
+
 </style>
