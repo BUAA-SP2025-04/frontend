@@ -133,7 +133,7 @@
                       d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
                     />
                   </svg>
-                  <span class="text-sm font-medium">{{ folder.name }}</span>
+                  <span class="text-sm font-medium">{{ folder.name.length<11 ? folder.name : folder.name.slice(0,10)+'...' }}</span>
                 </div>
                 <div class="flex items-center space-x-1">
                   <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
@@ -422,6 +422,23 @@
                             />
                           </svg>
                           阅读
+                        </el-dropdown-item>
+                        <el-dropdown-item :command="`learn-${paper.id}`">
+                          <svg
+                            class="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 
+                              1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                            />
+                          </svg>
+                          学习
                         </el-dropdown-item>
                         <el-dropdown-item :command="`download-${paper.id}`">
                           <svg
@@ -1191,6 +1208,7 @@ const movePaperToFolder = async (paperId: number, folderId: number) => {
     try {
       const folder1 = folders.value.find(f => f.id === paper.folderId)
       if (folder1?.count != undefined) folder1.count -= 1
+      console.log(userId, paper.id.toString(), folderId.toString())
       await libraryAPI.changeCategory(userId, paper.id.toString(), folderId.toString())
       paper.folderId = folderId
       const folder2 = folders.value.find(f => f.id === folderId)
@@ -1263,6 +1281,14 @@ const handlePaperAction = async (command: string) => {
       break
     case 'favorite':
       favoritePaperShow(paperId)
+      break
+    case 'learn':
+      router.push({
+        path: '/learning',
+        query: {
+          paperId: paperId,
+        },
+      })
       break
   }
 }
