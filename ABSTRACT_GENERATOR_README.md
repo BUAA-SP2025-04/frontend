@@ -11,6 +11,8 @@
 - 📝 **Markdown 渲染**: 自动将生成的摘要渲染为美观的格式
 - 🔄 **错误处理**: 完善的错误处理和重试机制
 - 📱 **响应式设计**: 支持桌面和移动设备
+- 💾 **文档导出**: 支持下载PDF和Markdown格式的完整文档
+- 📋 **内容复制**: 支持一键复制Markdown内容到剪贴板
 
 ## 组件结构
 
@@ -20,6 +22,8 @@
 - 打字机效果的实现
 - Markdown 内容的渲染
 - 加载状态和错误状态的管理
+- 文档导出功能（PDF和Markdown）
+- 内容复制功能
 
 ### 2. AbstractGenerator.vue
 主页面组件，负责：
@@ -213,4 +217,185 @@ interface ChunkCompletionResponse {
 - v1.0.0: 初始版本，支持基本的文件上传和摘要生成
 - 支持流式响应和打字机效果
 - 添加 Markdown 渲染功能
-- 完善错误处理机制 
+- 完善错误处理机制
+
+## 暴露方法给父组件
+
+```typescript
+// 暴露方法给父组件
+defineExpose({
+  startWorkflow,
+  retry,
+  downloadPdf,
+  downloadMarkdown,
+  getMarkdownContent,
+  copyMarkdownToClipboard,
+})
+```
+
+## 新增功能
+
+### 1. Markdown文档下载
+
+```typescript
+// 下载Markdown文档
+const downloadMarkdown = (filename = '摘要.md') => {
+  const content = fullContent.value || displayedContent.value || '暂无摘要内容'
+  const markdownContent = generateMarkdownDocument(content)
+  
+  // 创建Blob对象并下载
+  const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+```
+
+### 2. 复制Markdown内容
+
+```typescript
+// 复制Markdown内容到剪贴板
+const copyMarkdownToClipboard = async () => {
+  try {
+    const markdownContent = getMarkdownContent()
+    await navigator.clipboard.writeText(markdownContent)
+    return true
+  } catch (error) {
+    // 降级方案
+    const textArea = document.createElement('textarea')
+    textArea.value = getMarkdownContent()
+    document.body.appendChild(textArea)
+    textArea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textArea)
+    return true
+  }
+}
+```
+
+### 3. 获取Markdown内容
+
+```typescript
+// 获取完整的Markdown内容（包含元数据）
+const getMarkdownContent = () => {
+  return generateMarkdownDocument(fullContent.value || displayedContent.value || '暂无摘要内容')
+}
+```
+
+### 4. 生成的Markdown文档格式
+
+下载的Markdown文档包含以下内容：
+
+```markdown
+# 文档摘要
+
+> **智能摘要生成器** - 基于AI的文档摘要服务
+
+## 文档信息
+
+| 项目         | 内容                |
+| ------------ | ------------------- |
+| **生成时间** | 2024-01-01 12:00:00 |
+| **文档类型** | 智能摘要            |
+| **生成工具** | 智能摘要生成器      |
+| **字符数**   | 1,234               |
+| **字数**     | 567                 |
+| **行数**     | 89                  |
+
+---
+
+## 摘要内容
+
+[这里是生成的摘要内容]
+
+---
+
+### 文档说明
+
+- 本文档由智能摘要生成器自动生成
+- 基于上传的原始文档内容进行分析和总结
+- 仅供参考，请结合原文进行理解和使用
+
+### 生成统计
+
+- **生成时间**: 2024-01-01 12:00:00
+- **文档大小**: 2.34 KB
+- **内容类型**: Markdown格式
+
+---
+
+*© 智能摘要生成器 | 生成时间: 2024-01-01 12:00:00*
+```
+
+## 使用示例
+
+### 基本使用
+
+```vue
+<template>
+  <div>
+    <TypewriterDisplay
+      ref="typewriterRef"
+      :upload-file-id="uploadFileId"
+      :user="userId"
+      :auto-start="true"
+      :use-typewriter="false"
+      @complete="handleComplete"
+      @error="handleError"
+    />
+    
+    <!-- 操作按钮 -->
+    <div class="action-buttons">
+      <button @click="downloadMarkdown">下载Markdown</button>
+      <button @click="copyMarkdown">复制Markdown</button>
+      <button @click="downloadPdf">下载PDF</button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import TypewriterDisplay from '@/components/TypewriterDisplay.vue'
+import { ElMessage } from 'element-plus'
+
+const typewriterRef = ref()
+
+const downloadMarkdown = () => {
+  if (typewriterRef.value) {
+    typewriterRef.value.downloadMarkdown('我的摘要.md')
+  }
+}
+
+const copyMarkdown = async () => {
+  if (typewriterRef.value) {
+    try {
+      const success = await typewriterRef.value.copyMarkdownToClipboard()
+      if (success) {
+        ElMessage.success('Markdown内容已复制到剪贴板')
+      } else {
+        ElMessage.error('复制失败')
+      }
+    } catch (error) {
+      ElMessage.error('复制失败')
+    }
+  }
+}
+
+const downloadPdf = () => {
+  if (typewriterRef.value) {
+    typewriterRef.value.downloadPdf('我的摘要.pdf')
+  }
+}
+
+const handleComplete = (content) => {
+  console.log('摘要生成完成:', content)
+}
+
+const handleError = (error) => {
+  console.error('生成失败:', error)
+}
+</script>
+``` 
