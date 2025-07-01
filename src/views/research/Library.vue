@@ -188,11 +188,32 @@
                 </svg>
                 阅读历史
               </div>
-              <!-- <div class="flex items-center space-x-1 end">
-                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 mr-8 rounded-full">
-                  {{ papers.length }}
-                </span>
-              </div> -->
+            </div>
+            <div
+              :class="[
+                'text-lg font-medium mb-4 flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
+                selectedFolder === -10 ? 'bg-indigo-100 text-indigo-700' : 'text-gray-900',
+              ]"
+              @click="selectFolder(-10)"
+            >
+              <div class="flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 ml-1 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75
+                    7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823
+                    1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+                  />
+                </svg>
+                发现文献
+              </div>
             </div>
 
             <!-- 标签云 -->
@@ -214,35 +235,6 @@
                 </span>
               </div>
             </div> -->
-          </div>
-
-          <div class="bg-white rounded-lg shadow px-6 py-4 sticky top-8 mt-10">
-            <div
-              :class="[
-                'text-lg font-medium flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
-                selectedFolder === -10 ? 'bg-indigo-100 text-indigo-700' : 'text-gray-900',
-              ]"
-              @click="selectFolder(-10)"
-            >
-              <div class="flex items-center">
-                <svg
-                  class="w-5 h-5 mr-2 ml-1 text-indigo-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 
-                    7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 
-                    1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
-                  />
-                </svg>
-                发现文献
-              </div>
-            </div>
           </div>
         </div>
 
@@ -582,7 +574,7 @@
               </div>
             </div>
           </div>
-          <discover-literature v-if="selectedFolder === -10" />
+          <discover-literature v-if="selectedFolder === -10" :folders="folders" />
 
           <!-- 分页 -->
           <div v-if="selectedFolder !== -10" class="mt-8 flex justify-center">

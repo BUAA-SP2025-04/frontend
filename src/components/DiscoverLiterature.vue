@@ -6,6 +6,8 @@ import type {
   DiscoverTermGroup,
 } from '@/api/types/discoverLiterature'
 import {
+  addToLibrary,
+  deleteOldPaper,
   getDiscoverLiterature,
   getDiscoverTerm,
   updateDiscoverTerm,
@@ -13,6 +15,10 @@ import {
 import { ElMessage } from 'element-plus'
 import Markdown from './Markdown.vue'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import { libraryAPI } from '@/api/modules/library'
+import { useUserStore } from '@/stores/user'
+import type { Folder } from '@/api/types/library'
+import router from '@/router'
 
 const titleInput = ref('')
 const authorInput = ref('')
@@ -30,6 +36,15 @@ const literatureList = ref<DiscoverLiterature[]>([])
 const currentLiteratureIndex = ref(0)
 const literatureType = ref<'title' | 'author' | 'field'>('title')
 
+const allLiterature = ref<{ [key in 'title' | 'author' | 'field']: DiscoverLiterature[] }>({
+  title: [],
+  author: [],
+  field: [],
+})
+
+const userStore = useUserStore()
+const props = defineProps<{ folders: Folder[] }>()
+
 onMounted(() => {
   getDiscoverTerm()
     .then(res => {
@@ -46,11 +61,12 @@ onMounted(() => {
       fieldTerms.value = []
     })
 
-  // 获取文献数据
+  // 一次性获取所有文献数据并缓存
   getDiscoverLiterature()
     .then(res => {
-      literatureList.value = res.data[literatureType.value] || []
-      console.log(literatureList.value[0])
+      allLiterature.value = res.data || { title: [], author: [], field: [] }
+      literatureList.value = allLiterature.value[literatureType.value] || []
+      currentLiteratureIndex.value = 0
     })
     .catch(err => {
       ElMessage.error('获取文献失败', err.message)
@@ -90,6 +106,17 @@ function deleteTerm(type: 'title' | 'author' | 'field', idx: number) {
     termsRef = fieldTerms
   }
   termsRef.value.splice(idx, 1)
+  // 删除后重新获取信息
+  getDiscoverTerm()
+    .then(res => {
+      discoverTermGroup.value = res.data
+      titleTerms.value = JSON.parse(JSON.stringify(discoverTermGroup.value.title))
+      authorTerms.value = JSON.parse(JSON.stringify(discoverTermGroup.value.author))
+      fieldTerms.value = JSON.parse(JSON.stringify(discoverTermGroup.value.field))
+    })
+    .catch(err => {
+      ElMessage.error('获取检索词失败', err.message)
+    })
 }
 
 function handleSave() {
@@ -120,10 +147,8 @@ function handleSave() {
 
 function changeLiteratureType(type: 'title' | 'author' | 'field') {
   literatureType.value = type
-  getDiscoverLiterature().then(res => {
-    literatureList.value = res.data[literatureType.value] || []
-    currentLiteratureIndex.value = 0
-  })
+  literatureList.value = allLiterature.value[type] || []
+  currentLiteratureIndex.value = 0
 }
 
 function prevLiterature() {
@@ -136,10 +161,78 @@ function nextLiterature() {
   if (literatureList.value.length === 0) return
   currentLiteratureIndex.value = (currentLiteratureIndex.value + 1) % literatureList.value.length
 }
+
+const showFolderDialog = ref(false)
+const selectedFolderId = ref<number>(props.folders[0]?.id)
+
+function handleAddToCategory() {
+  const userId = userStore.user?.id
+  const literature = literatureList.value[currentLiteratureIndex.value]
+  let pdfUrl = literature.link
+  addToLibrary(literature.id)
+    .then(res => {
+      pdfUrl = res.data
+      const paper = {
+        type: 'arXiv',
+        title: literature.title,
+        authors: literature.authors.join(','),
+        year: literature.published,
+        abstract: literature.summary,
+        keywords: literature.fields.join(','),
+        pdfUrl: pdfUrl,
+        status: '0',
+        isPublic: '0',
+      }
+      return libraryAPI.createPaper(String(userId), selectedFolderId.value, paper)
+    })
+    .then(() => {
+      ElMessage.success('已添加到收藏夹')
+      showFolderDialog.value = false
+      return deleteLiterature()
+    })
+    .catch(e => {
+      ElMessage.error(e?.message || '添加失败')
+    })
+}
+
+function openFolderDialog() {
+  // 自动选中“默认收藏夹”
+  const defaultFolder = props.folders.find(f => f.name === '默认收藏夹')
+  selectedFolderId.value = defaultFolder ? defaultFolder.id : (props.folders[0]?.id ?? null)
+  showFolderDialog.value = true
+}
+
+function deleteLiterature() {
+  const id = literatureList.value[currentLiteratureIndex.value].id
+  deleteOldPaper(id)
+    .then(() => {
+      ElMessage.success('已删除')
+      // 删除当前文献
+      literatureList.value.splice(currentLiteratureIndex.value, 1)
+      // 调整索引
+      if (currentLiteratureIndex.value >= literatureList.value.length) {
+        currentLiteratureIndex.value = Math.max(0, literatureList.value.length - 1)
+      }
+    })
+    .catch(() => {
+      ElMessage.error('删除失败')
+    })
+}
+
+const showPaperDetail = (discoverLiterature: DiscoverLiterature) => {
+  if (discoverLiterature && discoverLiterature.id) {
+    router.push({
+      path: `/publication/${discoverLiterature.id}`,
+      query: {
+        receiverId: discoverLiterature.receiverId.toString() || '',
+      },
+    })
+  }
+}
 </script>
 
 <template>
-  <div class="bg-white p-4 rounded-xl shadow max-w-3xl mx-auto mt-0">
+  <div v-if="literatureList.length" class="bg-white p-4 rounded-xl shadow max-w-3xl mx-auto mt-0">
     <div class="flex justify-between items-center">
       <h2 class="text-2xl font-bold mb-2">文献发现</h2>
       <div class="flex gap-4">
@@ -273,63 +366,169 @@ function nextLiterature() {
       </el-button>
     </div>
     <!-- 新增文献展示区 -->
-    <div v-if="literatureList.length" class="mt-8 flex flex-col items-center pt-6">
-      <div class="flex items-center gap-4">
-        <el-button :disabled="literatureList.length <= 1" circle @click="prevLiterature">
-          <el-icon>
-            <ArrowLeft />
-          </el-icon>
-        </el-button>
-        <div
-          class="w-[700px] min-h-[380px] h-auto max-w-full bg-gray-50 rounded-lg p-8 shadow flex flex-col items-start justify-between"
-        >
-          <div class="text-lg font-bold mb-2 truncate w-full">
-            {{ literatureList[currentLiteratureIndex].title }}
-          </div>
-          <div class="text-sm text-gray-600 mb-1">
-            作者：{{ literatureList[currentLiteratureIndex].authors }}
-          </div>
-          <div class="text-xs text-gray-500 mb-1">
-            分类：{{ literatureList[currentLiteratureIndex].categories }}
-          </div>
-          <div class="text-xs text-gray-400 mb-2">
-            发布时间：{{ literatureList[currentLiteratureIndex].published }}
-          </div>
-
-          <div
-            v-if="
-              literatureList[currentLiteratureIndex].publicationId &&
-              literatureList[currentLiteratureIndex].publicationId !== '0'
-            "
-            class="mb-2 text-green-600 text-xs font-bold"
-          >
-            已上传本站
-          </div>
-          <div class="text-sm text-gray-700 mb-2 w-full">
-            <Markdown :source="literatureList[currentLiteratureIndex].summary" />
-          </div>
-          <div class="flex gap-2 mt-2">
-            原文链接：
-            <a
-              :href="literatureList[currentLiteratureIndex].link"
-              target="_blank"
-              class="text-blue-500 underline"
-              >{{ literatureList[currentLiteratureIndex].link }}</a
-            >
-          </div>
+    <div v-if="literatureList.length" class="mt-8 flex flex-row items-stretch pt-6">
+      <el-button
+        :disabled="literatureList.length <= 1"
+        class="flex items-center justify-center !rounded-none self-stretch"
+        style="
+          width: 48px;
+          min-width: 48px;
+          height: 64px;
+          border-radius: 8px 0 0 8px;
+          padding: 0;
+          align-self: stretch;
+        "
+        @click="prevLiterature"
+      >
+        <el-icon style="font-size: 36px">
+          <ArrowLeft />
+        </el-icon>
+      </el-button>
+      <div
+        ref="literatureDisplay"
+        class="w-[700px] min-h-[380px] h-auto max-w-full bg-gray-50 rounded-lg p-8 shadow flex flex-col items-start justify-between"
+      >
+        <div class="flex items-center justify-end w-full mb-4 gap-4">
+          <el-button type="primary" size="large" style="font-size: 18px" @click="openFolderDialog"
+            >添加到收藏夹
+          </el-button>
+          <el-button type="danger" size="large" style="font-size: 18px" @click="deleteLiterature"
+            >不感兴趣
+          </el-button>
         </div>
-        <el-button :disabled="literatureList.length <= 1" circle @click="nextLiterature">
-          <el-icon>
-            <ArrowRight />
-          </el-icon>
-        </el-button>
+        <div class="text-lg font-bold mb-2 w-full break-words whitespace-pre-line">
+          {{ literatureList[currentLiteratureIndex].title }}
+        </div>
+        <!-- 标签tags展示区 -->
+        <div class="mb-2 flex items-center">
+          <template v-if="literatureList.length">
+            <span class="font-bold text-base mr-2">相关标签：</span>
+            <el-tag
+              v-if="literatureType === 'title'"
+              type="info"
+              size="large"
+              effect="plain"
+              class="mr-2 text-base bg-blue-500 text-white"
+              :disable-transitions="true"
+            >
+              {{
+                titleTerms.find(term => term.id == literatureList[currentLiteratureIndex].sid)
+                  ?.value || '无'
+              }}
+            </el-tag>
+            <el-tag
+              v-else-if="literatureType === 'author'"
+              type="success"
+              size="large"
+              effect="plain"
+              class="mr-2 text-base bg-green-500 text-white"
+              :disable-transitions="true"
+            >
+              {{
+                authorTerms.find(term => term.id == literatureList[currentLiteratureIndex].sid)
+                  ?.value || '无'
+              }}
+            </el-tag>
+            <el-tag
+              v-else-if="literatureType === 'field'"
+              type="warning"
+              size="large"
+              effect="plain"
+              class="mr-2 text-base bg-yellow-500 text-white"
+              :disable-transitions="true"
+            >
+              {{
+                fieldTerms.find(term => term.id == literatureList[currentLiteratureIndex].sid)
+                  ?.value || '无'
+              }}
+            </el-tag>
+          </template>
+        </div>
+        <div class="font-bold text-base mb-1">
+          作者：{{ literatureList[currentLiteratureIndex].authors.join(', ') }}
+        </div>
+        <div class="font-bold text-base mb-1">
+          分类：{{ literatureList[currentLiteratureIndex].fields.join(', ') }}
+        </div>
+        <div class="font-bold text-base mb-2">
+          发布时间：{{ literatureList[currentLiteratureIndex].published }}
+        </div>
+        <div class="font-bold text-base mb-2 flex items-center">
+          <span class="mr-2">原文链接：</span>
+          <a
+            :href="literatureList[currentLiteratureIndex].link"
+            target="_blank"
+            class="text-blue-500 underline break-all text-base font-normal"
+            >{{ literatureList[currentLiteratureIndex].link }}</a
+          >
+        </div>
+        <div
+          v-if="
+            literatureList[currentLiteratureIndex].publicationId &&
+            literatureList[currentLiteratureIndex].publicationId !== '0'
+          "
+          class="mb-2 text-green-600 text-base font-bold flex items-center"
+        >
+          已上传本站
+          <span
+            class="ml-2 text-blue-500 underline text-base font-normal"
+            @click="showPaperDetail(literatureList[currentLiteratureIndex])"
+            >查看详情</span
+          >
+        </div>
+        <div class="font-bold text-base mb-2">文献简介:</div>
+        <div class="text-sm text-gray-700 mb-2 w-full">
+          <Markdown :source="literatureList[currentLiteratureIndex].summary" />
+        </div>
       </div>
-      <div class="mt-2 text-xs text-gray-400">
-        {{ currentLiteratureIndex + 1 }} / {{ literatureList.length }}
+      <el-button
+        :disabled="literatureList.length <= 1"
+        class="flex items-center justify-center !rounded-none self-stretch"
+        style="
+          width: 48px;
+          min-width: 48px;
+          height: 64px;
+          border-radius: 0 8px 8px 0;
+          padding: 0;
+          align-self: stretch;
+        "
+        @click="nextLiterature"
+      >
+        <el-icon style="font-size: 36px">
+          <ArrowRight />
+        </el-icon>
+      </el-button>
+    </div>
+    <el-dialog
+      v-model="showFolderDialog"
+      title="选择收藏夹"
+      width="400px"
+      :style="{ top: '120px' }"
+      @close="selectedFolderId = props.folders[0]?.id"
+    >
+      <div class="text-center">
+        <span class="text-gray-500 text-sm">将文献添加到以下收藏夹之一：</span>
       </div>
+      <div class="mt-8">
+        <el-select v-model="selectedFolderId" placeholder="请选择收藏夹" class="w-full">
+          <el-option
+            v-for="folder in folders"
+            :key="folder.id"
+            :label="folder.name"
+            :value="folder.id"
+          />
+        </el-select>
+      </div>
+      <div class="mt-6 flex justify-center gap-4">
+        <el-button @click="showFolderDialog = false">取 消</el-button>
+        <el-button type="primary" @click="handleAddToCategory">确 定</el-button>
+      </div>
+    </el-dialog>
+    <div class="mt-2 text-xs text-gray-400">
+      {{ currentLiteratureIndex + 1 }} / {{ literatureList.length }}
     </div>
-    <div v-else class="mt-8 flex flex-col items-center border-t pt-6 text-gray-400 text-base">
-      暂无文献数据
-    </div>
+  </div>
+  <div v-else class="mt-8 flex flex-col items-center border-t pt-6 text-gray-400 text-base">
+    暂无文献数据
   </div>
 </template>
