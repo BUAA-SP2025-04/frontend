@@ -5,7 +5,7 @@
       <div class="flex justify-between items-center mb-8">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-            <!-- <svg
+            <svg
               class="w-8 h-8 mr-3 text-indigo-600"
               fill="none"
               stroke="currentColor"
@@ -18,7 +18,7 @@
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 
                 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
-            </svg> -->
+            </svg>
             文献库
           </h1>
           <p class="text-gray-600 mt-2">管理和组织您的研究文献资料</p>

@@ -5,7 +5,7 @@
       <div class="flex justify-between items-center mb-8">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-            <!-- <svg
+            <svg
               class="w-8 h-8 mr-3 text-indigo-600"
               fill="none"
               stroke="currentColor"
@@ -19,7 +19,7 @@
                 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 
                 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
               />
-            </svg> -->
+            </svg>
             学习档案
           </h1>
           <p class="text-gray-600 mt-2">云端存储，管理您的学习笔记</p>
