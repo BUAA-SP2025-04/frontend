@@ -69,18 +69,7 @@
             </router-link>
           </div>
 
-          <!-- 滚动提示 -->
-          <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <div class="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-              <div class="w-1 h-3 bg-white/60 rounded-full mt-2 animate-pulse"></div>
-            </div>
-          </div>
-          <div>
-            <div class="text-4xl md:text-5xl font-extrabold text-red-600 mb-2">
-              {{ formatNumber(animatedQaCount) }}
-            </div>
-            <div class="text-base md:text-xl font-semibold text-gray-700">科研问答</div>
-          </div>
+
         </div>
       </div>
     </section>
@@ -89,7 +78,8 @@
     <section class="py-20 bg-white relative">
       <div class="absolute inset-0 bg-gradient-to-b from-indigo-50/50 to-transparent"></div>
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-8">
+          <!-- 注册研究者 -->
           <div class="text-center group">
             <div class="relative">
               <div class="text-5xl md:text-6xl font-black text-indigo-600 mb-3 transition-all duration-300 group-hover:scale-110">
@@ -100,7 +90,7 @@
               <div class="w-16 h-1 bg-gradient-to-r from-indigo-400 to-purple-400 mx-auto mt-2 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
             </div>
           </div>
-          
+          <!-- 发表论文 -->
           <div class="text-center group">
             <div class="relative">
               <div class="text-5xl md:text-6xl font-black text-green-600 mb-3 transition-all duration-300 group-hover:scale-110">
@@ -111,7 +101,7 @@
               <div class="w-16 h-1 bg-gradient-to-r from-green-400 to-emerald-400 mx-auto mt-2 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
             </div>
           </div>
-          
+          <!-- 学术动态 -->
           <div class="text-center group">
             <div class="relative">
               <div class="text-5xl md:text-6xl font-black text-purple-600 mb-3 transition-all duration-300 group-hover:scale-110">
@@ -122,7 +112,7 @@
               <div class="w-16 h-1 bg-gradient-to-r from-purple-400 to-pink-400 mx-auto mt-2 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
             </div>
           </div>
-          
+          <!-- 合作项目 -->
           <div class="text-center group">
             <div class="relative">
               <div class="text-5xl md:text-6xl font-black text-orange-600 mb-3 transition-all duration-300 group-hover:scale-110">
@@ -131,6 +121,17 @@
               </div>
               <div class="text-lg font-bold text-gray-700 group-hover:text-orange-600 transition-colors">合作项目</div>
               <div class="w-16 h-1 bg-gradient-to-r from-orange-400 to-yellow-400 mx-auto mt-2 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            </div>
+          </div>
+          <!-- 科研问答（移动到统计区） -->
+          <div class="text-center group">
+            <div class="relative">
+              <div class="text-5xl md:text-6xl font-black text-red-600 mb-3 transition-all duration-300 group-hover:scale-110">
+                {{ formatNumber(animatedQaCount) }}
+                <div class="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-red-400 to-yellow-400 rounded-full animate-pulse"></div>
+              </div>
+              <div class="text-lg font-bold text-gray-700 group-hover:text-red-600 transition-colors">科研问答</div>
+              <div class="w-16 h-1 bg-gradient-to-r from-red-400 to-yellow-400 mx-auto mt-2 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
             </div>
           </div>
         </div>
