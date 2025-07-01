@@ -819,22 +819,6 @@
               {{ getShareText(shareFormat) }}
             </div>
           </div>
-
-          <!-- 操作按钮 -->
-          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <button
-              @click="showShareDialog = false"
-              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              取消
-            </button>
-            <button
-              @click="copyShareText"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              复制到剪贴板
-            </button>
-          </div>
         </div>
       </div>
     </div>
