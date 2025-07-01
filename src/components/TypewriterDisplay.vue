@@ -32,7 +32,7 @@
 
       <div v-else class="empty-state">
         <div class="empty-icon">📄</div>
-        <p>点击开始生成摘要</p>
+        <p>等待摘要生成</p>
       </div>
     </div>
 
@@ -57,17 +57,20 @@ interface Props {
   autoStart?: boolean
   typingSpeed?: number
   useTypewriter?: boolean
+  title?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   autoStart: true,
   typingSpeed: 100,
   useTypewriter: false,
+  title: '',
 })
 
 const emit = defineEmits<{
   complete: [content: string]
   error: [error: string]
+  downloadingPdf: [downloading: boolean]
 }>()
 
 const contentRef = ref<HTMLElement>()
@@ -79,6 +82,7 @@ const error = ref('')
 const currentIndex = ref(0)
 const isStreaming = ref(false)
 const streamStartTime = ref(0)
+const downloadingPdf = ref(false)
 
 const renderedContent = computed(() => {
   if (!displayedContent.value) return ''
@@ -237,6 +241,9 @@ const pdfOptions = {
 
 // 优化现有下载方法
 const downloadPdf = async (filename = '摘要.pdf') => {
+  if (downloadingPdf.value) return
+  emit('downloadingPdf', true)
+  downloadingPdf.value = true
   const content = fullContent.value || displayedContent.value || '暂无摘要内容'
 
   // 检查是否有有效内容
@@ -284,6 +291,9 @@ const downloadPdf = async (filename = '摘要.pdf') => {
     console.error('PDF下载失败:', error)
     ElMessage.error('PDF下载失败，请重试')
     return false
+  } finally {
+    downloadingPdf.value = false
+    emit('downloadingPdf', false)
   }
 }
 
@@ -333,7 +343,7 @@ const generateMarkdownDocument = (content: string) => {
 
   // 生成文档头部信息
   const header = `
-
+# ${props.title}摘要
 ## KnoWeb服务:基于AI的文档摘要
 
 ## 文档信息
