@@ -693,17 +693,6 @@
               />
             </el-form-item>
 
-            <!-- <el-form-item label="发表日期" required>
-              <el-date-picker
-                v-model="newPaper.publishDate"
-                type="date"
-                placeholder="选择日期"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                style="width: 100%"
-              ></el-date-picker>
-            </el-form-item> -->
-
             <el-form-item label="关键词">
               <el-input
                 v-model="tagInput"
@@ -830,7 +819,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox, type UploadFile, type UploadRawFile } from 'element-plus'
+import { ElMessage, ElMessageBox, type UploadFile, type UploadRawFile, type UploadInstance } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { libraryAPI } from '@/api/modules/library'
@@ -927,7 +916,7 @@ let renameFolderId = -1
 let favoritePaperId = -1
 
 const currentFile = ref<UploadRawFile>()
-const uploadRef = ref(null)
+const uploadRef = ref<UploadInstance | null>(null)
 const pdfFile = ref<File | null>(null)
 const router = useRouter()
 
@@ -1471,9 +1460,10 @@ const handleFileChange = async (file: UploadFile) => {
     }
   } catch (error) {
     if (uploadRef.value) {
-      uploadRef.value = null
+      uploadRef.value.clearFiles()
     }
     currentFile.value = undefined
+    pdfFile.value = null
     newPaper.pdfUrl = ''
     newPaper.title = ''
     ElMessage.error('创建URL失败')
@@ -1536,7 +1526,7 @@ const handleUpload = async () => {
         showUploadDialog.value = false
         resetNewPaper()
         if (uploadRef.value) {
-          uploadRef.value = null
+          uploadRef.value.clearFiles()
         }
         currentFile.value = undefined
         pdfFile.value = null
@@ -1560,7 +1550,7 @@ const removeFile = async () => {
   try {
     await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
     if (uploadRef.value) {
-      uploadRef.value = null
+      uploadRef.value.clearFiles()
     }
     pdfFile.value = null
     currentFile.value = undefined
@@ -1583,7 +1573,7 @@ const resetNewPaper = async () => {
   try {
     // await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
     if (uploadRef.value) {
-      uploadRef.value = null
+      uploadRef.value.clearFiles()
     }
     // ElMessage.info('已移除上传的文件');
   } catch (error) {
@@ -1617,7 +1607,12 @@ const handleCancelUpload = () => {
 }
 
 const cancelUpload = async () => {
-  if (newPaper.pdfUrl.trim()) await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
+  try {
+    if (newPaper.pdfUrl.trim()) await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
+    currentFile.value = undefined
+  } catch (error) {
+    console.log("云端删除失败")
+  }
   showUploadDialog.value = false
   resetNewPaper()
 }
