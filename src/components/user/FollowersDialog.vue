@@ -18,7 +18,7 @@
             @click="handleClick(f)"
             :title="`点击查看 ${f.name} 的个人资料`"
           >
-            <img :src="'/api' + f.imgUrl || '/default-avatar.png'" class="follower-avatar" />
+            <img :src="f.imgUrl ? '/api' + f.imgUrl : '/default-avatar.png'" class="follower-avatar" />
             <div class="follower-info">
               <div class="follower-name">{{ f.name }}</div>
               <div class="follower-institution">{{ f.institution || '未知机构' }}</div>
@@ -86,7 +86,7 @@
             @click="handleClick(f)"
             :title="`点击查看 ${f.name} 的个人资料`"
           >
-            <img :src="'/api' + f.imgUrl || '/default-avatar.png'" class="follower-avatar" />
+            <img :src=" f.imgUrl ? '/api' + f.imgUrl : '/default-avatar.png'" class="follower-avatar" />
             <div class="follower-info">
               <div class="follower-name">{{ f.name }}</div>
               <div class="follower-institution">{{ f.institution || '未知机构' }}</div>

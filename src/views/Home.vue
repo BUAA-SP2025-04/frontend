@@ -280,13 +280,13 @@
                   />
                 </svg>
               </div>
-              <h3 class="text-2xl font-bold text-gray-900 mb-3">学术社交</h3>
-              <p class="text-gray-600 mb-6">连接志同道合的研究者，分享学术动态，建立合作关系</p>
+              <h3 class="text-2xl font-bold text-gray-900 mb-3">科研问答</h3>
+              <p class="text-gray-600 mb-6">连接志同道合的研究者，提出问题，分享经验</p>
               <router-link
-                to="/timeline"
+                to="/research/qa"
                 class="text-green-600 hover:text-green-700 font-semibold flex items-center"
               >
-                查看动态
+                前往问答
                 <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
@@ -315,13 +315,13 @@
                   />
                 </svg>
               </div>
-              <h3 class="text-2xl font-bold text-gray-900 mb-3">PDF阅读器</h3>
-              <p class="text-gray-600 mb-6">智能PDF阅读工具，支持文本提取、标注和坐标定位</p>
+              <h3 class="text-2xl font-bold text-gray-900 mb-3">知识图谱</h3>
+              <p class="text-gray-600 mb-6">智能图谱展示关系网络，可视化人员关系</p>
               <router-link
-                to="/pdf-reader"
+                to="/research/knowledge-graph"
                 class="text-teal-600 hover:text-teal-700 font-semibold flex items-center"
               >
-                开始阅读
+                查看图谱
                 <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
@@ -338,7 +338,7 @@
     </section>
 
     <!-- 热门动态 -->
-    <section class="py-20 bg-white">
+    <!-- <section class="py-20 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
           <h2 class="text-4xl font-bold text-gray-900 mb-4">学术动态</h2>
@@ -434,7 +434,7 @@
           </router-link>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <!-- 研究领域 -->
     <section class="py-20 bg-gray-50">
