@@ -1,7 +1,6 @@
 // 批注类型
 export interface Annotation {
     id: string;
-    // type: string;
     page: number;
     x: number;
     y: number;
@@ -10,13 +9,12 @@ export interface Annotation {
     comment: string;
     markerX: number;
     markerY: number;
-    paperId?: number;    // 论文信息
+    paperId: number;    // 论文信息
 }
 
 // API传出存储的批注
 export interface AnnotationUpload {
     // id: string;
-    // type: string;
     page: number;
     x: number;
     y: number;

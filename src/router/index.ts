@@ -86,6 +86,15 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/learning',
+    name: 'Learning',
+    component: () => import('@/views/research/Learning.vue'),
+    meta: {
+      title: '学习档案',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/messages',
     name: 'Messages',
     component: () => import('@/views/social/Messages.vue'),

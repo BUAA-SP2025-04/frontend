@@ -889,22 +889,6 @@
               {{ getShareText(selectedQuestionForShare, shareFormat) }}
             </div>
           </div>
-
-          <!-- 操作按钮 -->
-          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <button
-              @click="showShareDialog = false"
-              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              取消
-            </button>
-            <button
-              @click="copyShareText"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              复制到剪贴板
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -1505,16 +1489,49 @@ const getShareText = (question: Question, format: string) => {
 
 const copyShareText = () => {
   const text = getShareText(selectedQuestionForShare.value!, shareFormat.value)
-  
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        ElMessage.success('分享文本已复制到剪贴板')
+        showShareDialog.value = false
+      })
+      .catch(() => {
+        fallbackCopyTextToClipboard(text)
+      })
+  } else {
+    fallbackCopyTextToClipboard(text)
+  }
+}
+
+function fallbackCopyTextToClipboard(text: string) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  textArea.style.position = 'fixed'
+  textArea.style.top = '0'
+  textArea.style.left = '0'
+  textArea.style.width = '2em'
+  textArea.style.height = '2em'
+  textArea.style.padding = '0'
+  textArea.style.border = 'none'
+  textArea.style.outline = 'none'
+  textArea.style.boxShadow = 'none'
+  textArea.style.background = 'transparent'
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  try {
+    const successful = document.execCommand('copy')
+    if (successful) {
       ElMessage.success('分享文本已复制到剪贴板')
       showShareDialog.value = false
-    })
-    .catch(() => {
+    } else {
       ElMessage.error('复制失败，请手动复制文本')
-    })
+    }
+  } catch (err) {
+    ElMessage.error('复制失败，请手动复制文本')
+  }
+  document.body.removeChild(textArea)
 }
 
 const goToUserDetail = (userId: number) => {
