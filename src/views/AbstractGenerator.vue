@@ -1,7 +1,7 @@
 <template>
   <div class="abstract-generator-new">
     <div class="header">
-      <h1>{{title}}摘要</h1>
+      <h1>{{ title }}摘要</h1>
     </div>
     <div class="center-content">
       <div class="action-bar">
@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { uploadFile } from '@/api/modules/abstract'
@@ -338,4 +338,4 @@ onMounted(() => {
   border-radius: 2px;
 }
 */
-</style> 
+</style>

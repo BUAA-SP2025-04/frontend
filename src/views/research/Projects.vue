@@ -460,9 +460,9 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getAllProjects, acceptInvite } from '@/api/modules/project'
+import { acceptInvite, getAllProjects } from '@/api/modules/project'
 import type { Project } from '@/api/types/project'
 import ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
 import ApplyProjectDialog from '@/components/project/ApplyProjectDialog.vue'

@@ -883,19 +883,19 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import {
-  createQuestion,
   answerQuestion,
+  createQuestion,
   followQuestion,
-  unfollowQuestion,
-  getQuestionList,
   getMyFollowedQuestions,
-  getTopAnswerUsers,
+  getQuestionList,
   getResearchAreaStats,
+  getTopAnswerUsers,
+  unfollowQuestion,
 } from '@/api/modules/question'
 import type {
-  Question,
-  CreateQuestionRequest,
   AnswerQuestionRequest,
+  CreateQuestionRequest,
+  Question,
   QuestionListItem,
 } from '@/api/types/question'
 
