@@ -20,6 +20,9 @@
               <el-button size="small" @click="resetZoom">重置</el-button>
             </div> -->
           <div class="tools" v-if="allowEdit">
+            <button class="tool-btn" @click="listAllAnnotations">
+              <i class="fas fa-trash-alt">学习档案</i>
+            </button>
             <button 
               class="tool-btn" 
               :class="{ active: activeTool === 'highlight' }"
@@ -74,9 +77,9 @@
             }"
             @mouseenter="showAnnotationPopup(annotation, $event);"
             @mouseleave="activePopup = null"
-            @click="deleteAnnotation(annotation.id)"
+            @click="editingAnnoId = annotation.id, showAnnoEditDialog = true"
           >
-            <div class="cancel-marker">×</div>
+            // <div class="cancel-marker">×</div>
             <i class="fas fa-comment"></i>
           </div>
         </div>
@@ -154,6 +157,33 @@
           </span>
         </template>
       </el-dialog>
+
+      <!-- 批注操作选择对话框 -->
+      <el-dialog v-model="showAnnoEditDialog" title="笔记操作" width="30%">
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="showAnnoEditDialog = false">取消</el-button>
+            <el-button type="primary" @click="editAnnotation()">编辑</el-button>
+            <el-button type="primary" @click="deleteAnnotation(editingAnnoId), showAnnoEditDialog = false">删除</el-button>
+          </span>
+        </template>
+      </el-dialog>
+
+      <!-- 编辑批注对话框 -->
+      <el-dialog v-model="showCommentEditDialog" title="编辑批注" width="30%">
+        <el-form :model="newAnno" label-width="80px">
+          <el-form-item label="批注内容">
+            <el-input v-model="newAnno.comment" placeholder="请输入批注内容（选填）" />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="showCommentEditDialog = false, newAnno.comment = ''">取消</el-button>
+            <el-button type="primary" @click="editAnnotationComment()">确定</el-button>
+          </span>
+        </template>
+      </el-dialog>
+
     </div>
   </div>
 </template>
@@ -214,8 +244,11 @@ const newAnno = reactive({
   comment: ''
 })
 
+const showAnnoEditDialog = ref(false)
+const editingAnnoId = ref('')
+const showCommentEditDialog = ref(false)
+
 const uploading = ref<boolean>(false)
-const router = useRouter()
 
 const userStore = useUserStore()
 let userId = ''
@@ -224,6 +257,8 @@ const initUserInfo = () => {
     userId = String(userStore.user.id)
   }
 }
+
+const router = useRouter()
 
 const handleFileChange = (file: UploadFile) => {
   if (file.raw) {
@@ -240,7 +275,7 @@ const onPdfLoaded = (pdf: any) => {
 
 const onPageLoaded = (page: any) => {
   console.log('页面加载完成:', page)
-  requestAnimationFrame(() => {
+  requestAnimationFrame(async () => {
     // 确保 PDF 容器已渲染
     if (!pdfContainer.value) {
       console.warn('PDF 容器未找到')
@@ -248,7 +283,7 @@ const onPageLoaded = (page: any) => {
     }
     
     // 初始化批注层
-    initAnnotationCanvas()
+    await initAnnotationCanvas()
     attachEventListeners()
   })
 }
@@ -280,8 +315,10 @@ const nextPage = () => {
 // 支持通过参数传递url并请求pdf
 onMounted(async () => {
   initUserInfo()
+  currentPage.value = 1
   if(route.query.paperId) paperId.value = parseInt(route.query.paperId as string)
   if(route.query.allowEdit) allowEdit.value = parseInt(route.query.allowEdit as string)
+  if(route.query.page) currentPage.value = parseInt(route.query.page as string)
   const urlParam = route.query.url as string | undefined
   if (urlParam) {
     showDownload.value = true
@@ -290,7 +327,6 @@ onMounted(async () => {
       const blob: Blob = await getPublicationFile(urlParam)
       pdfBlob.value = blob
       pdfUrl.value = URL.createObjectURL(blob)
-      currentPage.value = 1
       selectedFile.value = null
       if (blob && allowEdit.value == 1) {
         try {
@@ -298,23 +334,11 @@ onMounted(async () => {
           const res = await annotationAPI.getAnnotationList(userId, paperId.value.toString())
           console.log(res)
           annotations.value = res.data
-          // if(annotationLayer.value){
-          //   console.log("初始化数据值")
-          //   const rect = annotationLayer.value.getBoundingClientRect()
-          //   annotations.value.forEach(anno => {
-          //     anno.x = percentToPx(anno.x, rect.width)
-          //     anno.y = percentToPx(anno.y, rect.height)
-          //     anno.width = percentToPx(anno.width, rect.width)
-          //     anno.height = percentToPx(anno.height, rect.height)
-          //     anno.markerX = percentToPx(anno.markerX, rect.width)
-          //     anno.markerY = percentToPx(anno.markerY, rect.height)
-          //   })
-          // }
         } catch (error) {
           ElMessage.error("读取云端高亮批注失败")
         }
-        resizeObserver.value = new ResizeObserver(() => {
-          initAnnotationCanvas()
+        resizeObserver.value = new ResizeObserver(async () => {
+          await initAnnotationCanvas()
           redrawAnnotations()
         })
         if(pdfContainer.value) resizeObserver.value.observe(pdfContainer.value)
@@ -386,8 +410,8 @@ const ensureAnnotationLayer = () => {
 };
 
 // 初始化批注画布
-const initAnnotationCanvas = () => {
-  ensureAnnotationLayer()
+const initAnnotationCanvas = async () => {
+  await ensureAnnotationLayer()
   if (!annotationLayer.value) {
     console.error('批注层元素创建失败')
     return
@@ -413,7 +437,7 @@ const initAnnotationCanvas = () => {
     annotationLayer.value.removeChild(annotationLayer.value.firstChild);
   }
   
-  annotationLayer.value.appendChild(canvas);
+  await annotationLayer.value.appendChild(canvas);
   const ctx = canvas.getContext('2d');
   if (ctx) {
     canvasContext.value = ctx;
@@ -423,9 +447,9 @@ const initAnnotationCanvas = () => {
   }
 };
 
-const retryAnnotationInit = () => {
+const retryAnnotationInit = async () => {
   console.log('重试批注层设置')
-  initAnnotationCanvas()
+  await initAnnotationCanvas()
   attachEventListeners()
 };
 
@@ -436,27 +460,24 @@ watch(currentPage, () => {
 });
 
 // 重绘所有批注
-const redrawAnnotations = () => {
+const redrawAnnotations = async () => {
+  await new Promise(resolve => setTimeout(resolve, 500));
   const ctx = canvasContext.value;
   if (!ctx) return;
-  
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  
   // console.log(ctx.canvas.width, ctx.canvas.height)
   // console.log(annotationLayer.value?.getBoundingClientRect().height, innerHeight)
   annotations.value
     .filter(anno => anno.page === currentPage.value)
     .forEach(anno => {
-      if (annotationLayer.value?.getBoundingClientRect().height !== 498.75) {
-        console.log("初始化数据值")
-        // const rect = ctx.getBoundingClientRect()
-        if(anno.x<1) anno.x = percentToPx(anno.x, ctx.canvas.width)
-        if(anno.y<1) anno.y = percentToPx(anno.y, ctx.canvas.height)
-        if(anno.width<1) anno.width = percentToPx(anno.width, ctx.canvas.width)
-        if(anno.height<1) anno.height = percentToPx(anno.height, ctx.canvas.height)
-        if(anno.markerX<1) anno.markerX = percentToPx(anno.markerX, ctx.canvas.width)
-        if(anno.markerY<1) anno.markerY = percentToPx(anno.markerY, ctx.canvas.height)
-      }
+      console.log("初始化数据值")
+      // const rect = ctx.getBoundingClientRect()
+      if(anno.x<1) anno.x = percentToPx(anno.x, ctx.canvas.width)
+      if(anno.y<1) anno.y = percentToPx(anno.y, ctx.canvas.height)
+      if(anno.width<1) anno.width = percentToPx(anno.width, ctx.canvas.width)
+      if(anno.height<1) anno.height = percentToPx(anno.height, ctx.canvas.height)
+      if(anno.markerX<1) anno.markerX = percentToPx(anno.markerX, ctx.canvas.width)
+      if(anno.markerY<1) anno.markerY = percentToPx(anno.markerY, ctx.canvas.height)
       // 绘制高亮区域
       ctx.fillStyle = 'rgba(255, 255, 0, 0.25)';
       // console.log(anno.x, anno.y, anno.width, anno.height)
@@ -472,7 +493,7 @@ const redrawAnnotations = () => {
 
 // 显示批注弹窗
 const showAnnotationPopup = (annotation: Annotation|{ id: string; page: number; x: number; y: number; 
-    width: number; height: number; comment: string; markerX: number; markerY: number }, 
+    width: number; height: number; comment: string; markerX: number; markerY: number; paperId: number }, 
     event: MouseEvent) => {
   activePopup.value = annotation;
   popupPosition.value = {
@@ -482,11 +503,11 @@ const showAnnotationPopup = (annotation: Annotation|{ id: string; page: number; 
 };
 
 // 切换高亮模式
-const toggleHighlightMode = () => {
+const toggleHighlightMode = async () => {
   activeTool.value = activeTool.value === 'highlight' ? null : 'highlight';
   
   if (activeTool.value === 'highlight') {
-    initAnnotationCanvas()
+    await initAnnotationCanvas()
     attachEventListeners()
     ElMessage.success('已进入高亮批注模式，请拖动鼠标选择区域');
   } else {
@@ -640,7 +661,7 @@ const clearAnnotations = async () => {
 // 删除单个批注
 const deleteAnnotation = async (id: string) => {
   try {
-    await ElMessageBox.confirm('确定要删除这个批注吗？', '确认删除', {
+    await ElMessageBox.confirm('确定要删除这个笔记吗？', '确认删除', {
       type: 'warning',
     })
     try{
@@ -653,6 +674,28 @@ const deleteAnnotation = async (id: string) => {
     }
   } catch (error) {
     // 用户取消
+  }
+};
+
+// 编辑批注
+const editAnnotation = () => {
+  showAnnoEditDialog.value = false
+  newAnno.comment = ''
+  let anno = annotations.value.find(a => a.id === editingAnnoId.value)
+  if (anno) newAnno.comment = anno.comment
+  showCommentEditDialog.value = true
+};
+
+// 编辑批注内容
+const editAnnotationComment = async () => {
+  try {
+    await annotationAPI.editAnnotation(editingAnnoId.value, newAnno.comment)
+    let anno = annotations.value.find(a => a.id === editingAnnoId.value)
+    if (anno) anno.comment = newAnno.comment
+    newAnno.comment = ''
+    editingAnnoId.value = ''
+  } catch (error) {
+    ElMessage.error("编辑失败")
   }
 };
 
@@ -719,19 +762,28 @@ const visibleAnnotations = computed<Annotation[]>(() => {
 // 监听当前页变化
 watch(currentPage, () => {
   if (!isPdfRendered.value) return
-  nextTick(() => {
-    initAnnotationCanvas()
+  nextTick(async () => {
+    await initAnnotationCanvas()
     attachEventListeners()
   })
 });
 
+const listAllAnnotations = () => {
+  router.push({
+    path: '/learning',
+    query: {
+      paperId: paperId.value,
+    },
+  })
+}
+
 // 初始化
 onMounted(() => {
   // 初始加载完成后设置批注层
-  setTimeout(() => {
-    initAnnotationCanvas();
+  setTimeout(async () => {
+    await initAnnotationCanvas();
     attachEventListeners();
-  }, 2000);
+  }, 1000);
 });
 
 // 像素值转百分比
