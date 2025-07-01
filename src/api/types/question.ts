@@ -75,7 +75,7 @@ export interface Question {
   user: QuestionUser
   title: string
   content: string
-  createAt: string
+  createdAt: string
   researchArea: string
   answerNum: number
   likeNum: number
@@ -184,6 +184,7 @@ export interface QuestionDetailApiResponse {
       likeNum: number
       isSelected: number
     } | null
+    solved?: boolean
   }
   answerWithReplies: AnswerWithReplies[]
   relatedQuestions: RelatedQuestion[]
@@ -196,7 +197,7 @@ export interface QuestionDetailResponse {
   user: QuestionUser
   title: string
   content: string
-  createAt: string
+  createdAt: string
   researchArea: string
   answerNum: number
   likeNum: number

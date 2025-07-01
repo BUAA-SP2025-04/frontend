@@ -233,7 +233,7 @@
                     </div>
                   </div>
                   <div class="text-sm text-gray-500">
-                    发布于 {{ formatTime(question.createAt) }}
+                    发布于 {{ formatTime(question.createdAt) }}
                   </div>
                 </div>
 
@@ -648,7 +648,7 @@
                 <span class="text-gray-600">发布时间</span>
                 <span
                   class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg text-xs shadow-sm"
-                  >{{ formatDate(question.createAt) }}</span
+                  >{{ formatDate(question.createdAt) }}</span
                 >
               </div>
             </div>
@@ -1092,7 +1092,7 @@ const question = ref<QuestionDetailResponse>({
   },
   title: '',
   content: '',
-  createAt: '',
+  createdAt: '',
   researchArea: '',
   answerNum: 0,
   likeNum: 0,
@@ -1335,7 +1335,7 @@ const loadQuestionDetail = async () => {
         },
         title: questionData.title || '',
         content: questionData.content || '',
-        createAt: questionData.createdAt || new Date().toISOString(), // API返回的是createdAt
+        createdAt: questionData.createdAt || new Date().toISOString(), // API返回的是createdAt
         researchArea: questionData.researchArea || '未分类',
         answerNum: questionData.answerNum || 0,
         likeNum: Number(questionData.likeNum) || 0,
@@ -1895,7 +1895,7 @@ watch(
         },
         title: '',
         content: '',
-        createAt: '',
+        createdAt: '',
         researchArea: '',
         answerNum: 0,
         likeNum: 0,
@@ -2022,7 +2022,7 @@ const handleSetSolvedStatus = async () => {
   try {
     const res = await setSolvedStatus({ questionId: question.value.id, solved: newSolved })
     if (res && res.code === '200') {
-      question.value.solved = newSolved ? 'yes' : null
+      question.value.solved = newSolved
       ElMessage.success(newSolved ? '已标记为已解决' : '已标记为未解决')
     } else {
       ElMessage.error(res?.message || '操作失败')
