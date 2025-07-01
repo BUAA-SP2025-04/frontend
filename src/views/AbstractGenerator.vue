@@ -29,7 +29,7 @@
           ref="typewriterRef"
           :upload-file-id="uploadFileId"
           :user="String(currentUser)"
-          :auto-start="false"
+          :auto-start="true"
           :typing-speed="6"
           @complete="handleComplete"
           @error="handleError"

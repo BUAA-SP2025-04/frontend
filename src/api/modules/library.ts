@@ -5,12 +5,15 @@ import type {
   CreateRecordResponse,
   GetByIDResponse,
   GetCategoryListResponse,
+  GetDiscoverTermResponse,
   GetFileUrlResponse,
   GetListResponse,
   GetRecordListResponse,
   GetUpdateResponse,
   Paper,
+  UpdateTermRequest,
 } from '@/api/types/library'
+import type { EmptyResponse } from '@/api/types/utils'
 
 export const libraryAPI = {
   // 获取所有文献
@@ -27,7 +30,7 @@ export const libraryAPI = {
 
   // 更新文献收藏夹
   changeCategory: (userId: string, paperId: string, categoryId: string) =>
-    request.post('/favorite-categories/list', null, {
+    request.post('/favorites/update', null, {
       params: { userId, paperId, categoryId },
     }),
 
@@ -113,4 +116,17 @@ export const libraryAPI = {
     request.post('/favorites/add', null, {
       params: { userId: userId, paperId: paperId, categoryId: categoryId },
     }),
+}
+
+//发现文献
+export function getDiscoverTerm(): Promise<GetDiscoverTermResponse> {
+  return request.get('/publication/getDiscoverTerm')
+}
+
+export function updateDiscoverTerm(data: UpdateTermRequest): Promise<EmptyResponse> {
+  return request.post('/publication/updateDiscoverTerm', data)
+}
+
+export function getDiscoverLiterature(): Promise<GetListResponse> {
+  return request.get('/publication/getDiscoverLiterature')
 }

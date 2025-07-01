@@ -53,7 +53,7 @@ export interface Question {
   createAt: string
   researchArea: string
   answerNum: number
-  likeNum: string
+  likeNum: number
   followNum: number
   bestAnswer?: QuestionAnswer
   answers?: QuestionAnswer[]

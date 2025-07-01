@@ -19,9 +19,15 @@ export const annotationAPI = {
     }),
 
   // 删除高亮批注
-  deleteAnnotation: (annotationId: string): Promise<UploadAnnotationResponse> =>
+  deleteAnnotation: (annotationId: string)=>
     request.post('/annotation/delete', null, {
       params: { annotationId },
+    }),
+
+  // 编辑批注内容
+  editAnnotation: (annotationId: string, comment: string) =>
+    request.post('/annotation/edit', null, {
+      params: { annotationId, comment },
     }),
   
 }

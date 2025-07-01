@@ -225,7 +225,7 @@
                         d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                       ></path>
                     </svg>
-                    {{ question.answerNum }} 浏览
+                    {{ question.readNum || 0 }} 浏览
                   </span>
                   <span class="flex items-center px-3 py-1 bg-gray-100 rounded-full">
                     <svg
@@ -561,12 +561,18 @@
           <!-- 相关问题 -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">相关问题</h3>
-            <div class="space-y-4">
+            <div v-if="filteredRelatedQuestions.length === 0" class="text-center py-8">
+              <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="text-sm text-gray-500">暂无相关问题</p>
+            </div>
+            <div v-else class="space-y-4">
               <div
-                v-for="relatedQ in relatedQuestions"
+                v-for="relatedQ in filteredRelatedQuestions"
                 :key="relatedQ.id"
                 class="group cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
-                @click="goToQuestion(relatedQ.id)"
+                @click="goToQuestion(relatedQ.id.toString())"
               >
                 <h4
                   class="text-sm font-medium text-gray-800 group-hover:text-blue-600 line-clamp-2 mb-2 transition-colors"
@@ -583,7 +589,7 @@
                         d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.98-5.874A8.955 8.955 0 013 12a8 8 0 018-8c4.418 0 8 3.582 8 8z"
                       ></path>
                     </svg>
-                    {{ relatedQ.answerCount }} 回答
+                    {{ relatedQ.answerNum }} 回答
                   </span>
                   <span class="flex items-center">
                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -600,7 +606,18 @@
                         d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                       ></path>
                     </svg>
-                    {{ relatedQ.viewCount }} 浏览
+                    {{ relatedQ.readNum || 0 }} 浏览
+                  </span>
+                  <span class="flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      ></path>
+                    </svg>
+                    {{ relatedQ.followNum }} 关注
                   </span>
                 </div>
               </div>
@@ -737,11 +754,79 @@
         </div>
       </div>
     </div>
+
+    <!-- 分享问题对话框 -->
+    <div v-if="showShareDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">分享问题</h3>
+            <button
+              @click="showShareDialog = false"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <!-- 分享格式选择 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">选择分享格式</label>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input
+                  v-model="shareFormat"
+                  type="radio"
+                  value="simple"
+                  class="mr-3"
+                />
+                <span class="text-sm">简洁格式（仅链接）</span>
+              </label>
+              <label class="flex items-center">
+                <input
+                  v-model="shareFormat"
+                  type="radio"
+                  value="detailed"
+                  class="mr-3"
+                />
+                <span class="text-sm">详细格式（包含问题信息）</span>
+              </label>
+              <label class="flex items-center">
+                <input
+                  v-model="shareFormat"
+                  type="radio"
+                  value="social"
+                  class="mr-3"
+                />
+                <span class="text-sm">社交媒体格式（带标签）</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 预览 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">预览</label>
+            <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto">
+              {{ getShareText(shareFormat) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, nextTick } from 'vue'
+import { computed, onMounted, ref, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import hljs from 'highlight.js'
@@ -757,7 +842,7 @@ import {
   updateQuestion,
   answerQuestion,
 } from '@/api/modules/question'
-import type { QuestionDetailResponse, QuestionAnswer, QuestionDetailApiResponse, AnswerQuestionRequest } from '@/api/types/question'
+import type { QuestionDetailResponse, QuestionAnswer, QuestionDetailApiResponse, AnswerQuestionRequest, RelatedQuestion } from '@/api/types/question'
 
 const route = useRoute()
 const router = useRouter()
@@ -777,6 +862,8 @@ const isReplyingToQuestion = ref(false)
 const isFollowing = ref(false)
 const originalScrollPosition = ref(0) // 记录原始滚动位置
 const showBestAnswerDialog = ref(false) // 控制最佳回答选择对话框
+const showShareDialog = ref(false) // 控制分享问题对话框
+const shareFormat = ref('simple') // 分享格式
 
 // 问题数据
 const question = ref<QuestionDetailResponse>({
@@ -803,13 +890,16 @@ const question = ref<QuestionDetailResponse>({
   createAt: '',
   researchArea: '',
   answerNum: 0,
-  likeNum: '0',
+  likeNum: 0,
   followNum: 0,
   answers: [],
 })
 
 // 添加tags属性用于模板
 const questionTags = ref<string[]>([])
+
+// 相关问题数据
+const relatedQuestions = ref<RelatedQuestion[]>([])
 
 // 计算属性
 const renderedDescription = computed(() => {
@@ -828,7 +918,7 @@ const sortedAnswers = computed(() => {
       sorted.sort((a, b) => {
         if (a.id === question.value.bestAnswer?.id && b.id !== question.value.bestAnswer?.id) return -1
         if (a.id !== question.value.bestAnswer?.id && b.id === question.value.bestAnswer?.id) return 1
-        return parseInt(b.likeNum) - parseInt(a.likeNum)
+        return b.likeNum - a.likeNum
       })
       break
     case 'latest':
@@ -844,6 +934,11 @@ const sortedAnswers = computed(() => {
 
 const hasBestAnswer = computed(() => {
   return !!question.value.bestAnswer
+})
+
+// 过滤掉当前问题的相关问题
+const filteredRelatedQuestions = computed(() => {
+  return relatedQuestions.value.filter(q => q.id.toString() !== route.params.id).slice(0, 5)
 })
 
 // 方法
@@ -866,6 +961,7 @@ const loadQuestionDetail = async () => {
       const apiData = response.data
       const questionData = apiData.question // API返回的是嵌套的question对象
       const answersData = apiData.answerWithReplies || [] // API返回的是answerWithReplies数组
+      const relatedQuestionsData = apiData.relatedQuestions || [] // API返回的相关问题数组
       
       // 设置关注状态
       isFollowing.value = apiData.followed || false
@@ -899,7 +995,7 @@ const loadQuestionDetail = async () => {
           },
           content: answer.content || '',
           createdAt: answer.createdAt || new Date().toISOString(),
-          likeNum: answer.likeNum?.toString() || '0',
+          likeNum: Number(answer.likeNum) || 0,
           liked: item.liked || false, // 添加点赞状态
           childAnswers: (item.replies || []).map((reply: any) => ({
             id: reply.id?.toString() || '',
@@ -924,8 +1020,8 @@ const loadQuestionDetail = async () => {
             parentUserId: answer.user.id?.toString() || '',
             parentUserName: answer.user.name || '',
             createdAt: reply.createdAt || new Date().toISOString(),
-            likeNum: reply.likeNum?.toString() || '0',
-            liked: false, // 2级回答暂时使用默认状态，因为API没有提供单独的liked字段
+            likeNum: Number(reply.likeNum) || 0,
+            liked: false, // 2级回答暂时使用默认状态
           })),
         }
       })
@@ -954,8 +1050,9 @@ const loadQuestionDetail = async () => {
         createAt: questionData.createdAt || new Date().toISOString(), // API返回的是createdAt
         researchArea: questionData.researchArea || '未分类',
         answerNum: questionData.answerNum || 0,
-        likeNum: questionData.likeNum?.toString() || '0',
+        likeNum: Number(questionData.likeNum) || 0,
         followNum: questionData.followNum || 0,
+        readNum: questionData.readNum || 0, // 添加浏览量字段
         followed: apiData.followed || false, // 添加关注状态
         bestAnswer: questionData.bestAnswer ? {
           ...questionData.bestAnswer,
@@ -979,21 +1076,21 @@ const loadQuestionDetail = async () => {
           },
           content: questionData.bestAnswer.content || '',
           createdAt: questionData.bestAnswer.createdAt || new Date().toISOString(),
-          likeNum: questionData.bestAnswer.likeNum?.toString() || '0',
+          likeNum: Number(questionData.bestAnswer.likeNum) || 0,
         } : undefined,
         answers: mappedAnswers, // 直接使用映射后的答案数组
       }
       
+      // 设置相关问题数据
+      relatedQuestions.value = relatedQuestionsData
+      
       // 从研究领域生成标签
       questionTags.value = question.value.researchArea ? [question.value.researchArea] : ['未分类']
       
-      console.log('解析后的问题详情:', question.value)
-      console.log('回答数量:', question.value.answers.length)
-      console.log('回答列表:', question.value.answers)
-      console.log('最佳回答:', question.value.bestAnswer)
-      console.log('问题标签:', questionTags.value)
-      console.log('关注状态:', isFollowing.value)
-      console.log('是否为问题作者:', isQuestionAuthor.value)
+      // 滚动到页面顶部
+      window.scrollTo(0, 0)
+      
+
       
     } else {
       console.warn('API响应格式异常:', response)
@@ -1101,15 +1198,7 @@ const toggleFollow = async () => {
 }
 
 const shareQuestion = () => {
-  const url = window.location.href
-  navigator.clipboard
-    .writeText(url)
-    .then(() => {
-      ElMessage.success('链接已复制到剪贴板')
-    })
-    .catch(() => {
-      ElMessage.error('复制失败，请手动复制链接')
-    })
+  showShareDialog.value = true
 }
 
 const toggleLike = async (answerId: string) => {
@@ -1143,7 +1232,7 @@ const toggleLike = async (answerId: string) => {
       const response = await unlikeAnswer({ answerId })
       if (response && response.code === '200') {
         answer.liked = false
-        answer.likeNum = (parseInt(answer.likeNum) - 1).toString()
+        answer.likeNum = Math.max(0, answer.likeNum - 1)
         ElMessage.success('取消点赞成功')
       } else {
         ElMessage.error(response?.message || '取消点赞失败')
@@ -1153,7 +1242,7 @@ const toggleLike = async (answerId: string) => {
       const response = await likeAnswer({ answerId })
       if (response && response.code === '200') {
         answer.liked = true
-        answer.likeNum = (parseInt(answer.likeNum) + 1).toString()
+        answer.likeNum = answer.likeNum + 1
         ElMessage.success('点赞成功')
       } else {
         ElMessage.error(response?.message || '点赞失败')
@@ -1249,13 +1338,51 @@ const selectBestAnswer = async (answerId: string) => {
 
 const shareAnswer = (answerId: string) => {
   const url = `${window.location.href}#answer-${answerId}`
+  
+  // 查找对应的回答
+  let answer = question.value.answers?.find(a => a.id === answerId)
+  let isChildAnswer = false
+  
+  // 如果没找到1级回答，查找2级回答
+  if (!answer) {
+    for (const parentAnswer of question.value.answers || []) {
+      const childAnswer = parentAnswer.childAnswers?.find(ca => ca.id === answerId)
+      if (childAnswer) {
+        answer = childAnswer
+        isChildAnswer = true
+        break
+      }
+    }
+  }
+  
+  if (!answer) {
+    ElMessage.error('找不到对应的回答')
+    return
+  }
+  
+  // 构建分享文本
+  const shareText = `💡 科研问答 - 精彩回答分享
+
+📝 问题：${question.value.title}
+
+💬 ${isChildAnswer ? '回复' : '回答'}：${answer.content.substring(0, 100)}${answer.content.length > 100 ? '...' : ''}
+
+👤 ${isChildAnswer ? '回复者' : '回答者'}：${answer.user?.name || '未知用户'}
+🏫 机构：${answer.user?.institution || '未知机构'}
+
+👍 点赞数：${answer.likeNum} 个
+
+🔗 查看详情：${url}
+
+#科研问答 #${question.value.researchArea || '科研'} #KnoWeb`
+
   navigator.clipboard
-    .writeText(url)
+    .writeText(shareText)
     .then(() => {
-      ElMessage.success('答案链接已复制')
+      ElMessage.success('回答详情已复制到剪贴板')
     })
     .catch(() => {
-      ElMessage.error('复制失败')
+      ElMessage.error('复制失败，请手动复制链接')
     })
 }
 
@@ -1421,6 +1548,12 @@ const getReplyType = () => {
 }
 
 const goToQuestion = (questionId: string) => {
+  // 检查是否跳转到当前问题
+  if (questionId === route.params.id) {
+    ElMessage.info('这是当前正在查看的问题')
+    return
+  }
+  
   router.push(`/research/qa/${questionId}`)
 }
 
@@ -1428,39 +1561,110 @@ const goToUserDetail = (userId: number) => {
   router.push(`/user/${userId}`)
 }
 
-// 相关问题
-const relatedQuestions = ref([
-  {
-    id: '2',
-    title: '深度学习模型在小样本数据集上的过拟合问题如何解决？',
-    answerCount: 8,
-    viewCount: 256,
-  },
-  {
-    id: '3',
-    title: 'CNN和Vision Transformer在图像分类任务上的性能对比',
-    answerCount: 5,
-    viewCount: 178,
-  },
-  {
-    id: '4',
-    title: '如何处理医学图像分类中的类别不平衡问题？',
-    answerCount: 12,
-    viewCount: 389,
-  },
-  {
-    id: '5',
-    title: '迁移学习在小数据集上的最佳实践',
-    answerCount: 7,
-    viewCount: 203,
-  },
-])
+// 相关问题数据已在上面定义
 
 onMounted(() => {
   // 滚动到页面顶部
   window.scrollTo(0, 0)
   loadQuestionDetail()
 })
+
+// 监听路由参数变化，当问题ID变化时重新加载数据
+watch(
+  () => route.params.id,
+  (newId, oldId) => {
+    if (newId !== oldId) {
+      console.log('路由参数变化，重新加载问题详情:', newId)
+      // 重置状态
+      loading.value = true
+      question.value = {
+        id: '',
+        user: {
+          id: 0,
+          name: '',
+          email: '',
+          gender: '',
+          bio: '',
+          researchArea: '',
+          title: '',
+          imgUrl: '',
+          institution: '',
+          createdAt: '',
+          followerNum: 0,
+          subjectNum: 0,
+          publishNum: 0,
+          likeNum: 0,
+          readerNum: 0,
+        },
+        title: '',
+        content: '',
+        createAt: '',
+        researchArea: '',
+        answerNum: 0,
+        likeNum: 0,
+        followNum: 0,
+        answers: [],
+      }
+      relatedQuestions.value = []
+      questionTags.value = []
+      isFollowing.value = false
+      isQuestionAuthor.value = false
+      newAnswerContent.value = ''
+      newComments.value = {}
+      replyingTo.value = {}
+      replyContents.value = {}
+      replyTargets.value = {}
+      replyingToAnswerId.value = null
+      // 重新加载数据
+      loadQuestionDetail()
+    }
+  }
+)
+
+const getShareText = (format: string) => {
+  switch (format) {
+    case 'simple':
+      return `🔗 查看详情：${window.location.href}`
+    case 'detailed':
+      return `🔬 科研问答分享
+
+📝 问题：${question.value.title}
+
+📋 分类：${question.value.researchArea || '未分类'}
+
+💬 回答数：${question.value.answerNum} 个
+
+👤 提问者：${question.value.user?.name || '未知用户'}
+🏫 机构：${question.value.user?.institution || '未知机构'}
+
+🔗 查看详情：${window.location.href}
+
+#科研问答 #${question.value.researchArea || '科研'} #KnoWeb`
+    case 'social':
+      return `🔬 科研问答分享
+
+📝 问题：${question.value.title}
+
+📋 分类：${question.value.researchArea || '未分类'}
+
+💬 回答数：${question.value.answerNum} 个
+
+👤 提问者：${question.value.user?.name || '未知用户'}
+🏫 机构：${question.value.user?.institution || '未知机构'}
+
+🔗 查看详情：${window.location.href}
+
+#科研问答 #${question.value.researchArea || '科研'} #KnoWeb`
+    default:
+      return ''
+  }
+}
+
+const copyShareText = () => {
+  navigator.clipboard.writeText(getShareText(shareFormat.value))
+  ElMessage.success('分享文本已复制到剪贴板')
+  showShareDialog.value = false
+}
 </script>
 
 <style scoped>

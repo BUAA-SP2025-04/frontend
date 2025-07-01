@@ -271,26 +271,6 @@
                   </div>
 
                   <div class="flex space-x-3">
-                    <button
-                      class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-                      @click="shareProject(project)"
-                    >
-                      <svg
-                        class="w-4 h-4 inline-block mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                        ></path>
-                      </svg>
-                      分享
-                    </button>
-
                     <!-- 根据projBelongings显示不同按钮 -->
                     <button
                       v-if="project.projBelongings === 3"
@@ -448,20 +428,26 @@
     <ProjectDetailCard
       v-if="showProjectDetail && selectedProjectForDetail"
       :project="selectedProjectForDetail"
+      :is-invite="isInviteMode"
       :is-my-project="selectedProjectForDetail && selectedProjectForDetail.projBelongings === 3"
       @close="showProjectDetail = false"
+      @accept="handleAcceptInvite"
+      @reject="handleRejectInvite"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getAllProjects } from '@/api/modules/project'
+import { getAllProjects, acceptInvite } from '@/api/modules/project'
 import type { Project } from '@/api/types/project'
 import ProjectDetailCard from '@/components/project/ProjectDetailCard.vue'
 import ApplyProjectDialog from '@/components/project/ApplyProjectDialog.vue'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 // 为ProjectDetailCard组件定义项目类型
 interface DetailProject {
@@ -496,6 +482,7 @@ interface DetailProject {
 }
 
 const router = useRouter()
+const route = useRoute()
 
 // 响应式数据
 const searchQuery = ref('')
@@ -511,6 +498,7 @@ const showApplicationDialog = ref(false)
 const showProjectDetail = ref(false)
 const selectedProjectForApplication = ref<Project | null>(null)
 const selectedProjectForDetail = ref<DetailProject | null>(null)
+const isInviteMode = ref(false)
 
 // 申请表单
 
@@ -809,20 +797,10 @@ const quitProject = async () => {
   })
 }
 
-const shareProject = (project: Project) => {
-  // 复制项目链接到剪贴板
-  const projectUrl = `${window.location.origin}/research/projects/${project.id}`
-  navigator.clipboard
-    .writeText(projectUrl)
-    .then(() => {
-      ElMessage.success('项目链接已复制到剪贴板')
-    })
-    .catch(() => {
-      ElMessage.error('复制失败，请手动复制链接')
-    })
-}
-
-const viewProjectDetail = (project: Project) => {
+const viewProjectDetail = (project: Project, invite = false) => {
+  if (invite && !checkInviteProject(project)) {
+    return
+  }
   // 转换API的Project类型为ProjectDetailCard组件期望的格式
   const adaptedProject: DetailProject = {
     id: project.id,
@@ -863,6 +841,7 @@ const viewProjectDetail = (project: Project) => {
 
   selectedProjectForDetail.value = adaptedProject
   showProjectDetail.value = true
+  isInviteMode.value = invite
 }
 
 // 监听筛选条件变化，重置分页
@@ -880,9 +859,75 @@ const manageProject = () => {
   router.push('/research/my-workspace')
 }
 
+const handleAcceptInvite = async () => {
+  try {
+    // 假设token和InvId从url query获取
+    const token = route.query.token as string
+    const invId = Number(route.query.invId)
+    if (!token || !invId) {
+      ElMessage.error('邀请参数缺失')
+      return
+    }
+    await acceptInvite({ token, invId })
+    ElMessage.success('已加入项目')
+    showProjectDetail.value = false
+    // 可选：清空url参数
+    router.replace({
+      query: { ...route.query, projectId: undefined, token: undefined, InvId: undefined },
+    })
+    // 可选：刷新项目列表
+    loadProjects()
+  } catch (e) {
+    ElMessage.error('加入失败')
+  }
+}
+
+const handleRejectInvite = () => {
+  // 复制当前 query
+  const newQuery = { ...route.query }
+  // 删除不需要的参数
+  delete newQuery.projectId
+  delete newQuery.token
+  delete newQuery.invId
+  // 替换路由
+  router.replace({ query: newQuery })
+  showProjectDetail.value = false
+  ElMessage.info('已拒绝邀请')
+}
+
+const checkInviteProject = (project: Project) => {
+  if (!project) {
+    ElMessage.error('项目不存在')
+    return false
+  }
+  if (project.owner.id === userStore.user?.id) {
+    ElMessage.error('不能邀请自己加入自己的项目')
+    return false
+  }
+  if (project.recruitedNum >= project.recruitNum) {
+    ElMessage.error('项目已招满')
+    return false
+  }
+  if (getProjectStatus(project) === 'completed') {
+    ElMessage.error('项目已完成')
+    return false
+  }
+  return true
+}
+
 onMounted(() => {
   // 页面初始化时加载项目列表
-  loadProjects()
+  loadProjects().then(() => {
+    // 检查是否有 projectId 参数
+    const projectId = route.query.projectId
+    if (projectId) {
+      // 查找对应项目
+      const project = projects.value.find(p => p.id === Number(projectId))
+      if (project) {
+        viewProjectDetail(project, true) // 传递一个 isInvite = true
+      }
+    }
+  })
 })
 </script>
 
