@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-blue-100 relative overflow-hidden">
+  <div
+    class="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-blue-100 relative overflow-hidden"
+  >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 页面标题 -->
       <div class="flex justify-between items-center mb-8">
@@ -130,7 +132,9 @@
                       d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
                     />
                   </svg>
-                  <span class="text-sm font-medium">{{ folder.name.length<11 ? folder.name : folder.name.slice(0,10)+'...' }}</span>
+                  <span class="text-sm font-medium">{{
+                    folder.name.length < 11 ? folder.name : folder.name.slice(0, 10) + '...'
+                  }}</span>
                 </div>
                 <div class="flex items-center space-x-1">
                   <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
@@ -154,8 +158,8 @@
                       <el-dropdown-menu>
                         <el-dropdown-item :command="`edit-${folder.id}`">重命名</el-dropdown-item>
                         <el-dropdown-item :command="`delete-${folder.id}`" divided
-                          >删除</el-dropdown-item
-                        >
+                          >删除
+                        </el-dropdown-item>
                       </el-dropdown-menu>
                     </template>
                   </el-dropdown>
@@ -186,18 +190,13 @@
                 </svg>
                 阅读历史
               </div>
-              <!-- <div class="flex items-center space-x-1 end">
-                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 mr-8 rounded-full">
-                  {{ papers.length }}
-                </span>
-              </div> -->
             </div>
           </div>
 
           <div class="bg-white rounded-lg shadow px-6 py-4">
             <div
               :class="[
-                'text-lg font-medium flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
+                'text-lg font-medium mb-4 flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
                 selectedFolder === -10 ? 'bg-indigo-100 text-indigo-700' : 'text-gray-900',
               ]"
               @click="selectFolder(-10)"
@@ -213,14 +212,34 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 
-                    7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 
+                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75
+                    7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823
                     1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
                   />
                 </svg>
                 发现文献
               </div>
             </div>
+
+            <!-- 标签云 -->
+            <!-- <div class="mt-6 pt-6 border-t border-gray-200">
+              <h4 class="text-sm font-medium text-gray-900 mb-3">热门标签</h4>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  v-for="tag in popularTags"
+                  :key="tag.name"
+                  :class="[
+                    'px-2 py-1 text-xs rounded-full cursor-pointer transition-colors',
+                    selectedTags.includes(tag.name)
+                      ? 'bg-indigo-100 text-indigo-800'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                  ]"
+                  @click="toggleTag(tag.name)"
+                >
+                  {{ tag.name }} ({{ tag.count }})
+                </span>
+              </div>
+            </div> -->
           </div>
         </div>
 
@@ -251,7 +270,10 @@
           </div>
 
           <!-- 文献列表 -->
-          <div v-if="viewMode === 'list' && filteredPapers.length>0" class="bg-white rounded-lg shadow">
+          <div
+            v-if="viewMode === 'list' && filteredPapers.length > 0"
+            class="bg-white rounded-lg shadow"
+          >
             <div
               v-for="paper in filteredPapers"
               :key="paper.id"
@@ -468,7 +490,10 @@
           </div>
 
           <!-- 空状态 -->
-          <div v-else-if="filteredPapers.length===0 && selectedFolder!==-10" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"> 
+          <div
+            v-else-if="filteredPapers.length === 0 && selectedFolder !== -10"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"
+          >
             <svg
               class="w-16 h-16 text-gray-300 mx-auto mb-4"
               fill="none"
@@ -479,18 +504,20 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 
-                1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 
+                d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0
+                1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504
                 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"
               ></path>
             </svg>
             <h3 class="text-lg font-medium text-gray-900 mb-2">暂无文献</h3>
-            <p v-if="papers.length===0" class="text-gray-500 mb-4">你还没有上传任何文献</p>
-            <p v-else-if="selectedFolder!=-5" class="text-gray-500 mb-4">这个收藏夹里没有任何文献</p>
+            <p v-if="papers.length === 0" class="text-gray-500 mb-4">你还没有上传任何文献</p>
+            <p v-else-if="selectedFolder != -5" class="text-gray-500 mb-4">
+              这个收藏夹里没有任何文献
+            </p>
             <p v-else class="text-gray-500 mb-4">你还没有阅读任何文献</p>
             <button
               @click="handleFirstPaper"
-              v-if="selectedFolder!=-5 || papers.length===0"
+              v-if="selectedFolder != -5 || papers.length === 0"
               class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
             >
               上传第一篇文献
@@ -557,10 +584,10 @@
               </div>
             </div>
           </div>
-          <discover-literature v-if="selectedFolder === -10" />
+          <discover-literature v-if="selectedFolder === -10" :folders="folders" />
 
           <!-- 分页 -->
-          <div class="mt-8 flex justify-center">
+          <div v-if="selectedFolder !== -10" class="mt-8 flex justify-center">
             <el-pagination
               v-model:current-page="currentPage"
               :page-size="pageSize"
@@ -796,7 +823,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox, type UploadFile, type UploadRawFile, type UploadInstance } from 'element-plus'
+import {
+  ElMessage,
+  ElMessageBox,
+  type UploadFile,
+  type UploadInstance,
+  type UploadRawFile,
+} from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { libraryAPI } from '@/api/modules/library'
@@ -1589,7 +1622,7 @@ const cancelUpload = async () => {
     if (newPaper.pdfUrl.trim()) await libraryAPI.deleteUrlFile(newPaper.pdfUrl)
     currentFile.value = undefined
   } catch (error) {
-    console.log("云端删除失败")
+    console.log('云端删除失败')
   }
   showUploadDialog.value = false
   resetNewPaper()
@@ -1642,6 +1675,7 @@ function addInputToArray(inputRef: string, array: string[]) {
   gap: 8px;
   margin-top: 8px;
 }
+
 .tag {
   background: #4299e1;
   color: white;
@@ -1653,10 +1687,12 @@ function addInputToArray(inputRef: string, array: string[]) {
   gap: 6px;
   transition: all 0.2s;
 }
+
 .tag:hover {
   background: #3182ce;
   transform: translateY(-1px);
 }
+
 .tag-remove {
   cursor: pointer;
   font-weight: bold;
@@ -1674,9 +1710,11 @@ function addInputToArray(inputRef: string, array: string[]) {
   gap: 12px;
   position: relative;
 }
+
 .file-info-content {
   flex-grow: 1;
 }
+
 .action-btn.delete {
   position: central;
   top: 8px;
@@ -1686,6 +1724,7 @@ function addInputToArray(inputRef: string, array: string[]) {
   font-size: 18px;
   transition: transform 0.2s;
 }
+
 .file-delete-btn:hover {
   transform: scale(1.2);
 }
@@ -1694,6 +1733,7 @@ function addInputToArray(inputRef: string, array: string[]) {
   padding: 0;
   margin: 20px 0;
 }
+
 .upload-icon {
   width: 70px;
   height: 70px;
@@ -1705,6 +1745,7 @@ function addInputToArray(inputRef: string, array: string[]) {
   border-radius: 50%;
   color: #4299e1;
 }
+
 .upload-area {
   border: 2px dashed #cbd5e0;
   border-radius: 8px;
@@ -1714,16 +1755,19 @@ function addInputToArray(inputRef: string, array: string[]) {
   cursor: pointer;
   background: #f7fafc;
 }
+
 .upload-text {
   margin: 15px 0;
   color: #4a5568;
   font-size: 16px;
 }
+
 .upload-text em {
   color: #4299e1;
   font-style: normal;
   font-weight: 600;
 }
+
 .upload-tip {
   color: #718096;
   font-size: 14px;

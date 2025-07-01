@@ -18,7 +18,10 @@
             @click="handleClick(f)"
             :title="`点击查看 ${f.name} 的个人资料`"
           >
-            <img :src="f.imgUrl ? '/api' + f.imgUrl : '/default-avatar.png'" class="follower-avatar" />
+            <img
+              :src="f.imgUrl ? '/api' + f.imgUrl : '/default-avatar.png'"
+              class="follower-avatar"
+            />
             <div class="follower-info">
               <div class="follower-name">{{ f.name }}</div>
               <div class="follower-institution">{{ f.institution || '未知机构' }}</div>
@@ -86,7 +89,10 @@
             @click="handleClick(f)"
             :title="`点击查看 ${f.name} 的个人资料`"
           >
-            <img :src=" f.imgUrl ? '/api' + f.imgUrl : '/default-avatar.png'" class="follower-avatar" />
+            <img
+              :src="f.imgUrl ? '/api' + f.imgUrl : '/default-avatar.png'"
+              class="follower-avatar"
+            />
             <div class="follower-info">
               <div class="follower-name">{{ f.name }}</div>
               <div class="follower-institution">{{ f.institution || '未知机构' }}</div>
@@ -149,7 +155,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, onMounted, ref } from 'vue'
+import { defineEmits, defineProps, onMounted, ref } from 'vue'
 import { getFollowers, getFollowing } from '@/api/modules/user'
 import { useRouter } from 'vue-router'
 // import { UserDetail } from '@/api/types/user'
@@ -240,7 +246,9 @@ const handleClick = (f: any) => {
   object-fit: cover;
   background: #e5e7eb;
   border: 1px solid #e0e7ff;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .follower-item:hover .follower-avatar {
   transform: scale(1.05);
@@ -278,4 +286,4 @@ const handleClick = (f: any) => {
   cursor: pointer;
   vertical-align: top;
 }
-</style> 
+</style>

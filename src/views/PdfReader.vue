@@ -178,7 +178,7 @@
             <el-button type="primary" @click="editAnnotation()">编辑</el-button>
             <el-button
               type="primary"
-              @click="deleteAnnotation(editingAnnoId), (showAnnoEditDialog = false)"
+              @click="(deleteAnnotation(editingAnnoId), (showAnnoEditDialog = false))"
               >删除</el-button
             >
           </span>
@@ -206,14 +206,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch, computed, onUnmounted, reactive } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import VuePdfEmbed from 'vue-pdf-embed'
 import type { UploadFile } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getPublicationFile } from '@/api/modules/publication'
 import { annotationAPI } from '@/api/modules/annotation'
-import { uploadFile } from '@/api/modules/abstract'
 import type { Annotation, HighlightPreview, PopupPosition } from '@/api/types/annotation'
 import { useUserStore } from '@/stores/user'
 import { useGlobalStore } from '@/stores/global'
@@ -851,7 +850,6 @@ const showGenerateAbstractBtn = computed(() => {
   return globalStore.lastRoute !== '/publication'
 })
 </script>
-
 
 <style>
 /* 添加一些基本样式 */

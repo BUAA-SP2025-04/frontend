@@ -1055,11 +1055,11 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
+  createQuestion,
   deleteQuestion as deleteQuestionApi,
+  getMyAnsweredQuestions,
   getMyAskedQuestions,
   getMyFollowedQuestions,
-  getMyAnsweredQuestions,
-  createQuestion,
   updateQuestion as updateQuestionApi,
 } from '@/api/modules/question'
 import type { Question } from '@/api/types/question'
