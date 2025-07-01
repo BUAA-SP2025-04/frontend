@@ -670,6 +670,7 @@ const clearAnnotations = async () => {
 
 // 删除单个批注
 const deleteAnnotation = async (id: string) => {
+  showAnnoEditDialog.value = false
   try {
     await ElMessageBox.confirm('确定要删除这个笔记吗？', '确认删除', {
       type: 'warning',
@@ -702,6 +703,7 @@ const editAnnotationComment = async () => {
     await annotationAPI.editAnnotation(editingAnnoId.value, newAnno.comment)
     let anno = annotations.value.find(a => a.id === editingAnnoId.value)
     if (anno) anno.comment = newAnno.comment
+    showCommentEditDialog.value = false
     newAnno.comment = ''
     editingAnnoId.value = ''
   } catch (error) {
