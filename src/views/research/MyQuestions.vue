@@ -179,7 +179,7 @@
                       </svg>
                       {{ question.readNum || 0 }} 浏览
                     </span>
-                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt || question.createdAt) }}</span>
+                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt) }}</span>
                   </div>
                   <!-- 最佳回答预览区 -->
                   <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-green-100">
@@ -341,7 +341,7 @@
                       </svg>
                       {{ question.readNum || 0 }} 浏览
                     </span>
-                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt || question.createdAt) }}</span>
+                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt) }}</span>
                   </div>
                   <!-- 最佳回答预览区 -->
                   <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-green-100">
@@ -476,7 +476,7 @@
                       </svg>
                       {{ question.readNum || 0 }} 浏览
                     </span>
-                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt || question.createdAt) }}</span>
+                    <span class="ml-auto text-gray-400">{{ formatTime(question.createAt) }}</span>
                   </div>
                   <!-- 最佳回答预览区 -->
                   <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-green-100">

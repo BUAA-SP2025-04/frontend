@@ -906,7 +906,7 @@ const question = ref<QuestionDetailResponse>({
   createAt: '',
   researchArea: '',
   answerNum: 0,
-  likeNum: '0',
+  likeNum: 0,
   followNum: 0,
   answers: [],
 })
@@ -934,7 +934,7 @@ const sortedAnswers = computed(() => {
       sorted.sort((a, b) => {
         if (a.id === question.value.bestAnswer?.id && b.id !== question.value.bestAnswer?.id) return -1
         if (a.id !== question.value.bestAnswer?.id && b.id === question.value.bestAnswer?.id) return 1
-        return parseInt(b.likeNum) - parseInt(a.likeNum)
+        return b.likeNum - a.likeNum
       })
       break
     case 'latest':
@@ -1011,7 +1011,7 @@ const loadQuestionDetail = async () => {
           },
           content: answer.content || '',
           createdAt: answer.createdAt || new Date().toISOString(),
-          likeNum: answer.likeNum?.toString() || '0',
+          likeNum: Number(answer.likeNum) || 0,
           liked: item.liked || false, // 添加点赞状态
           childAnswers: (item.replies || []).map((reply: any) => ({
             id: reply.id?.toString() || '',
@@ -1036,8 +1036,8 @@ const loadQuestionDetail = async () => {
             parentUserId: answer.user.id?.toString() || '',
             parentUserName: answer.user.name || '',
             createdAt: reply.createdAt || new Date().toISOString(),
-            likeNum: reply.likeNum?.toString() || '0',
-            liked: false, // 2级回答暂时使用默认状态，因为API没有提供单独的liked字段
+            likeNum: Number(reply.likeNum) || 0,
+            liked: false, // 2级回答暂时使用默认状态
           })),
         }
       })
@@ -1066,7 +1066,7 @@ const loadQuestionDetail = async () => {
         createAt: questionData.createdAt || new Date().toISOString(), // API返回的是createdAt
         researchArea: questionData.researchArea || '未分类',
         answerNum: questionData.answerNum || 0,
-        likeNum: questionData.likeNum?.toString() || '0',
+        likeNum: Number(questionData.likeNum) || 0,
         followNum: questionData.followNum || 0,
         readNum: questionData.readNum || 0, // 添加浏览量字段
         followed: apiData.followed || false, // 添加关注状态
@@ -1092,7 +1092,7 @@ const loadQuestionDetail = async () => {
           },
           content: questionData.bestAnswer.content || '',
           createdAt: questionData.bestAnswer.createdAt || new Date().toISOString(),
-          likeNum: questionData.bestAnswer.likeNum?.toString() || '0',
+          likeNum: Number(questionData.bestAnswer.likeNum) || 0,
         } : undefined,
         answers: mappedAnswers, // 直接使用映射后的答案数组
       }
@@ -1248,7 +1248,7 @@ const toggleLike = async (answerId: string) => {
       const response = await unlikeAnswer({ answerId })
       if (response && response.code === '200') {
         answer.liked = false
-        answer.likeNum = (parseInt(answer.likeNum) - 1).toString()
+        answer.likeNum = Math.max(0, answer.likeNum - 1)
         ElMessage.success('取消点赞成功')
       } else {
         ElMessage.error(response?.message || '取消点赞失败')
@@ -1258,7 +1258,7 @@ const toggleLike = async (answerId: string) => {
       const response = await likeAnswer({ answerId })
       if (response && response.code === '200') {
         answer.liked = true
-        answer.likeNum = (parseInt(answer.likeNum) + 1).toString()
+        answer.likeNum = answer.likeNum + 1
         ElMessage.success('点赞成功')
       } else {
         ElMessage.error(response?.message || '点赞失败')
@@ -1617,7 +1617,7 @@ watch(
         createAt: '',
         researchArea: '',
         answerNum: 0,
-        likeNum: '0',
+        likeNum: 0,
         followNum: 0,
         answers: [],
       }

@@ -1009,7 +1009,7 @@ const filteredQuestions = computed(() => {
       filtered.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
       break
     case 'hot':
-      filtered.sort((a, b) => b.answerNum + parseInt(b.likeNum) - (a.answerNum + parseInt(a.likeNum)))
+      filtered.sort((a, b) => b.answerNum + b.likeNum - (a.answerNum + a.likeNum))
       break
     case 'unanswered':
       filtered.sort((a, b) => a.answerNum - b.answerNum)
@@ -1152,14 +1152,14 @@ const loadQuestions = async () => {
             },
             content: item.question.bestAnswer.content || '',
             createdAt: item.question.bestAnswer.createdAt || '',
-            likeNum: (item.question.bestAnswer.likeNum || 0).toString(),
+            likeNum: item.question.bestAnswer.likeNum || 0,
           } : undefined,
           answers: item.answerWithReplies ? item.answerWithReplies.map(reply => ({
             id: (reply.answer.id || 0).toString(),
             user: reply.answer.user,
             content: reply.answer.content || '',
             createdAt: reply.answer.createdAt || '',
-            likeNum: (reply.answer.likeNum || 0).toString(),
+            likeNum: reply.answer.likeNum || 0,
             liked: reply.liked || false,
             childAnswers: reply.replies.map(childReply => ({
               id: (childReply.id || 0).toString(),
@@ -1168,7 +1168,7 @@ const loadQuestions = async () => {
               parentUserId: (reply.answer.userId || 0).toString(),
               parentUserName: reply.answer.user?.name || '未知用户',
               createdAt: childReply.createdAt || '',
-              likeNum: (childReply.likeNum || 0).toString(),
+              likeNum: childReply.likeNum || 0,
               liked: false, // 2级回答暂时使用默认状态
             })),
           })) : [],
@@ -1212,7 +1212,7 @@ const loadMyFollowedQuestions = async () => {
           createAt: item.question.createdAt || '',
           researchArea: item.question.researchArea || '未分类',
           answerNum: item.question.answerNum || 0,
-          likeNum: (item.question.likeNum || 0).toString(),
+          likeNum: Number(item.question.likeNum) || 0,
           followNum: item.question.followNum || 0,
           readNum: item.question.readNum || 0,
           followed: item.followed || false, // 添加关注状态
@@ -1237,14 +1237,14 @@ const loadMyFollowedQuestions = async () => {
             },
             content: item.question.bestAnswer.content || '',
             createdAt: item.question.bestAnswer.createdAt || '',
-            likeNum: (item.question.bestAnswer.likeNum || 0).toString(),
+            likeNum: Number(item.question.bestAnswer.likeNum) || 0,
           } : undefined,
           answers: item.answerWithReplies ? item.answerWithReplies.map(reply => ({
             id: (reply.answer.id || 0).toString(),
             user: reply.answer.user,
             content: reply.answer.content || '',
             createdAt: reply.answer.createdAt || '',
-            likeNum: (reply.answer.likeNum || 0).toString(),
+            likeNum: Number(reply.answer.likeNum) || 0,
             liked: reply.liked || false,
             childAnswers: reply.replies.map(childReply => ({
               id: (childReply.id || 0).toString(),
@@ -1253,7 +1253,7 @@ const loadMyFollowedQuestions = async () => {
               parentUserId: (reply.answer.userId || 0).toString(),
               parentUserName: reply.answer.user?.name || '未知用户',
               createdAt: childReply.createdAt || '',
-              likeNum: (childReply.likeNum || 0).toString(),
+              likeNum: Number(childReply.likeNum) || 0,
               liked: false, // 2级回答暂时使用默认状态
             })),
           })) : [],
@@ -1544,7 +1544,7 @@ const loadActiveUsers = async () => {
           followerNum: item.user.followerNum,
           subjectNum: item.user.subjectNum,
           publishNum: item.user.publishNum,
-          likeNum: item.user.likeNum,
+          likeNum: item.user.likeNum || 0,
           readerNum: item.user.readerNum,
           answerCount: item.answerCount, // 添加回答数
         }))
