@@ -264,8 +264,8 @@ export const runWorkflow = async (
         const lines = buffer.split('\n');
         buffer = lines.pop() || ''; // 保留不完整的行
 
+        // 立即处理每一行，减少缓冲
         for (const line of lines) {
-
           if (line.trim() === '') {
             continue;
           }
@@ -289,6 +289,7 @@ export const runWorkflow = async (
                 console.log('收到text_chunk事件:', chunk);
                 if (chunk.data && chunk.data.text) {
                   console.log('发送text_chunk文本:', chunk.data.text);
+                  // 立即调用回调，不等待
                   onMessage?.(chunk.data.text);
                 }
               } else if (chunk.event === 'workflow_finished') {
@@ -298,6 +299,7 @@ export const runWorkflow = async (
                 return;
               } else if (chunk.event === 'workflow_started') {
                 console.log('收到workflow_started事件:', chunk);
+                // 可以在这里添加工作流开始的回调
               } else if (chunk.event === 'node_started') {
                 console.log('收到node_started事件:', chunk);
               } else if (chunk.event === 'node_finished') {
@@ -523,68 +525,14 @@ export const runWorkflowSyncSimple = async (
   return runWorkflowSync(workflowId, uploadFileId, user, options);
 }
 
-/**
- * 使用示例:
- * 
- * // 1. 上传文件
- * // 基本使用
- * const result = await uploadFile('https://example.com/file.pdf');
- * 
- * // 带选项的使用
- * const result = await uploadFile('https://example.com/file.pdf', {
- *   timeout: 120000, // 2分钟超时
- *   customHeaders: {
- *     'X-Custom-Header': 'value'
- *   }
- * });
- * 
- * // 错误处理
- * try {
- *   const result = await uploadFile('https://example.com/file.pdf');
- *   console.log('上传成功:', result);
- * } catch (error) {
- *   console.error('上传失败:', error.message);
- * }
- * 
- * // 2. 运行工作流（流式传输）
- * const workflowInputs = {
- *   inputs: {
- *     "article": {
- *       "type": "document",
- *       "transfer_method": "local_file",
- *       "upload_file_id": "c3cbb05b-cdc3-4518-a504-2b16e0f12308"
- *     }
- *   },
- *   response_mode: "streaming",
- *   user: "1"
- * };
- * 
- * // 流式运行工作流
- * await runWorkflow('workflow_123', workflowInputs, {
- *   onMessage: (message) => {
- *     console.log('收到消息:', message);
- *   },
- *   onError: (error) => {
- *     console.error('工作流错误:', error);
- *   },
- *   onComplete: () => {
- *     console.log('工作流完成');
- *   }
- * });
- * 
- * // 3. 运行工作流（非流式）
- * const result = await runWorkflowSync('workflow_123', workflowInputs);
- * console.log('工作流结果:', result);
- * 
- * // 4. 便捷版本使用（推荐）
- * // 只需要传入变化的参数
- * await runWorkflowSimple('workflow_123', 'c3cbb05b-cdc3-4518-a504-2b16e0f12308', '1', {
- *   onMessage: (message) => console.log('收到消息:', message),
- *   onError: (error) => console.error('工作流错误:', error),
- *   onComplete: () => console.log('工作流完成')
- * });
- * 
- * // 非流式便捷版本
- * const result = await runWorkflowSyncSimple('workflow_123', 'c3cbb05b-cdc3-4518-a504-2b16e0f12308', '1');
- * console.log('工作流结果:', result);
- */
+export function md2pdfstream(markdown: string) {
+  return request.post('/paper/abstract/md2pdfstream', {
+    markdown,
+  })
+}
+
+export function md2pdf(markdown: FormData) {
+  return request.post('/paper/abstract/md2pdf', markdown, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}

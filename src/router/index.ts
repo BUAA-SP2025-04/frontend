@@ -193,6 +193,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const globalStore = useGlobalStore()
+  globalStore.lastRoute = from.path
   const token = localStorage.getItem('token')
   const whiteList = ['/', '/discover', '/login', '/register']
 
