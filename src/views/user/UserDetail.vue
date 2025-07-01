@@ -187,7 +187,7 @@
                 :key="paper.id"
                 class="py-3 px-2 hover:bg-indigo-50/40 transition cursor-pointer group flex flex-col md:flex-row md:items-center"
               >
-                <div class="flex-1 min-w-0">
+                <div class="flex-1 min-w-0" @click="showPaperDetail(paper)">
                   <!-- 标题行 -->
                   <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span
@@ -263,12 +263,25 @@
                         >阅读量:{{ formatNumber(paper.readerNum) }}</span
                       >
                     </span>
-                    <span
-                      class="ml-auto text-indigo-600 hover:underline cursor-pointer font-medium"
+                    
+                    <el-button
+                      class="ml-auto"
+                      type="primary"
+                      plain
+                      style="background: #fff; color: #333; border: 1px solid #dcdfe6"
+                      size="small"
                       @click="showPaperDetail(paper)"
+                      @mouseover="hoveredPaperId = paper.id"
+                      @mouseleave="hoveredPaperId = null"
+                      :style="{
+                        background: '#fff',
+                        color: hoveredPaperId === paper.id ? '#409EFF' : '#333',
+                        border:
+                          hoveredPaperId === paper.id ? '1px solid #409EFF' : '1px solid #dcdfe6',
+                      }"
                     >
                       查看详情
-                    </span>
+                    </el-button>
                   </div>
                 </div>
               </div>
@@ -430,6 +443,7 @@ const showFollowersDialog = ref(false)
 const followersList = ref<any[]>([])
 const followingList = ref<any[]>([])
 const conversations = ref<any[]>([])
+const hoveredPaperId = ref<number | null>(null)
 
 const loadProjects = async () => {
   const projectRes = await getUserProjects(user.value?.id?.toString() || '')

@@ -227,7 +227,7 @@ const resizeObserver = ref<ResizeObserver | null>(null)
 
 const paperId = ref(0)
 const allowEdit = ref(0)
-
+const title = ref('')
 const route = useRoute()
 
 // 批注相关状态
@@ -327,6 +327,7 @@ onMounted(async () => {
   if(route.query.paperId) paperId.value = parseInt(route.query.paperId as string)
   if(route.query.allowEdit) allowEdit.value = parseInt(route.query.allowEdit as string)
   if(route.query.page) currentPage.value = parseInt(route.query.page as string)
+  if(route.query.title) title.value = route.query.title as string
   const urlParam = route.query.url as string | undefined
   if (urlParam) {
     showDownload.value = true
@@ -383,7 +384,7 @@ const uploadToDify = async () => {
 
     router.push({
       name: 'AbstractGenerator',
-      query: { url: fileUrl },
+      query: { url: fileUrl, title: title.value },
     })
   } catch (error: any) {
     console.error('跳转失败:', error)
