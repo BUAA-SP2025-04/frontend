@@ -51,7 +51,7 @@
     <!-- 平台统计 -->
     <section class="py-16 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-4 gap-8 text-center">
+        <div class="grid grid-cols-5 gap-8 text-center">
           <div>
             <div class="text-4xl md:text-5xl font-extrabold text-indigo-600 mb-2">
               {{ formatNumber(animatedResearcherCount) }}
@@ -75,6 +75,12 @@
               {{ formatNumber(animatedProjectCount) }}
             </div>
             <div class="text-base md:text-xl font-semibold text-gray-700">合作项目</div>
+          </div>
+          <div>
+            <div class="text-4xl md:text-5xl font-extrabold text-red-600 mb-2">
+              {{ formatNumber(animatedQaCount) }}
+            </div>
+            <div class="text-base md:text-xl font-semibold text-gray-700">科研问答</div>
           </div>
         </div>
       </div>
@@ -507,6 +513,7 @@ import {
   getPaperCount,
   getResearcherCount,
   getProjectCount,
+  getQaCount,
 } from '@/api/modules/statistics'
 
 const router = useRouter()
@@ -540,35 +547,7 @@ const hotPapers = ref([
   },
 ])
 
-const recentActivities = ref([
-  {
-    id: 1,
-    author: '王芳',
-    avatar: 'https://via.placeholder.com/100',
-    content: '刚刚发表了关于深度学习在蛋白质结构预测中应用的最新研究成果',
-    createdAt: new Date(Date.now() - 1000 * 60 * 30),
-    likes: 89,
-    comments: 23,
-  },
-  {
-    id: 2,
-    author: '李华',
-    avatar: 'https://via.placeholder.com/100',
-    content: '参加了ICML 2024大会，分享了我们在联邦学习方面的工作',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    likes: 156,
-    comments: 45,
-  },
-  {
-    id: 3,
-    author: '陈明',
-    avatar: 'https://via.placeholder.com/100',
-    content: '启动了新的量子计算研究项目，欢迎感兴趣的同行联系合作',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5),
-    likes: 234,
-    comments: 67,
-  },
-])
+const recentActivities = ref([])
 
 // 颜色列表，前六个依次使用
 const top6Colors = [
@@ -611,12 +590,14 @@ const searchField = (fieldName: string) => {
 const researcherCount = ref(0)
 const paperCount = ref(0)
 const messageCount = ref(0)
+const qaCount = ref(0)
 
 // 动画显示用的数字
 const animatedResearcherCount = ref(0)
 const animatedPaperCount = ref(0)
 const animatedMessageCount = ref(0)
 const animatedProjectCount = ref(0)
+const animatedQaCount = ref(0)
 
 function animateNumber(target: number, animatedRef: any) {
   const duration = 800 // ms
@@ -640,6 +621,7 @@ function animateNumber(target: number, animatedRef: any) {
 watch(researcherCount, val => animateNumber(val, animatedResearcherCount))
 watch(paperCount, val => animateNumber(val, animatedPaperCount))
 watch(messageCount, val => animateNumber(val, animatedMessageCount))
+watch(qaCount, val => animateNumber(val, animatedQaCount))
 
 // 合作项目静态数值
 const projectCount = ref(12834)
@@ -650,12 +632,13 @@ const isLoggedIn = computed(() => userStore.isAuthenticated)
 
 onMounted(async () => {
   try {
-    const [res1, res2, res3, res4, res5] = await Promise.all([
+    const [res1, res2, res3, res4, res5, res6] = await Promise.all([
       getResearcherCount(),
       getPaperCount(),
       getMessageCount(),
       getHotFields(),
       getProjectCount(),
+      getQaCount(),
     ])
     if (res1 && typeof res1.data === 'number') {
       researcherCount.value = (res1.data as any) || 0
@@ -677,6 +660,9 @@ onMounted(async () => {
     // 启动合作项目动画
     if (res5 && typeof res5.data === 'number') {
       projectCount.value = (res5.data as any) || 0
+    }
+    if (res6 && typeof res6.data === 'number') {
+      qaCount.value = (res6.data as any) || 0
     }
   } catch (e) {
     console.log(e)
