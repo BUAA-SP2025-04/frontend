@@ -1,4 +1,5 @@
 <template>
+  <div class="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-blue-100 relative overflow-hidden">
   <div class="chat-wrapper bg-gray-100 dark:bg-gray-900">
     <!-- 聊天容器 -->
     <div class="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-lg flex flex-col h-full">
@@ -849,6 +850,7 @@
       <img :src="previewImageUrl" class="w-full h-auto" @error="handleImageError" />
     </el-dialog>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">
