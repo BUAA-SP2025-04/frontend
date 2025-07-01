@@ -219,7 +219,11 @@
                             管理申请 ({{ project.applyNum }})
                           </button>
                           <button
-                            v-if="getProjectStatus(project) === 'recruiting'"
+                            v-if="
+                              getProjectStatus(project) === 'recruiting' ||
+                              (getProjectStatus(project) === 'ongoing' &&
+                                project.recruitedNum < project.recruitNum)
+                            "
                             class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
                             @click="getProjectInviteLink(project.id)"
                           >
@@ -1216,10 +1220,10 @@ const handleClosePublishDialog = () => {
 // 获取项目邀请链接
 const getProjectInviteLink = async (projectId: number) => {
   try {
-    const res = await getInviteLink(projectId)
-    if (res?.data?.data) {
+    const res = await getInviteLink({ projectId })
+    if (res.data) {
       // 复制链接到剪贴板
-      await navigator.clipboard.writeText(res.data.data)
+      await navigator.clipboard.writeText(res.data)
       ElMessage.success('邀请链接已复制到剪贴板')
     }
   } catch (error) {

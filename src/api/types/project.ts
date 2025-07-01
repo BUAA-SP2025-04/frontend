@@ -1,5 +1,4 @@
 // 项目相关类型定义
-
 // 用户信息类型
 export interface ProjectUser {
   id: number
@@ -223,4 +222,10 @@ export interface InviteLinkResponse {
   code: string
   message: string
   data: string
+}
+
+//接受邀请请求体
+export interface AcceptInviteRequest {
+  token: string
+  invId: number
 }

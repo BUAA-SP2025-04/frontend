@@ -11,6 +11,7 @@ import type {
   ProjectWithApplicationsResponse,
   UpdateProjectRequest,
   InviteLinkResponse,
+  AcceptInviteRequest,
 } from '../types/project'
 
 // 添加项目
@@ -79,6 +80,11 @@ export function getMyProjects(): Promise<ProjectWithApplicationsResponse> {
 }
 
 // 获取项目邀请链接
-export const getInviteLink = (projectId: number) => {
-  return request.get<InviteLinkResponse>(`/project/inviteOthers?projectId=${projectId}`)
+export function getInviteLink(params: { projectId: number }): Promise<InviteLinkResponse> {
+  return request.get('/project/inviteOthers', { params })
+}
+
+//接受项目邀请
+export function acceptInvite(data: AcceptInviteRequest): Promise<EmptyResponse> {
+  return request.get('/project/join', { params: data })
 }
