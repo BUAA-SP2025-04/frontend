@@ -1,34 +1,32 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import type { DiscoverTerm } from '@/api/types/library'
-import { getDiscoverTerm, updateDiscoverTerm } from '@/api/modules/library'
+import type { DiscoverTerm, DiscoverTermGroup } from '@/api/types/discoverLiterature'
+import { getDiscoverTerm, updateDiscoverTerm } from '@/api/modules/discoverLiterature'
 import { ElMessage } from 'element-plus'
 
 const titleInput = ref('')
 const authorInput = ref('')
 const fieldInput = ref('')
 
-const titleTerms = ref<string[]>([])
-const authorTerms = ref<string[]>([])
-const fieldTerms = ref<string[]>([])
+const titleTerms = ref<DiscoverTerm[]>([])
+const authorTerms = ref<DiscoverTerm[]>([])
+const fieldTerms = ref<DiscoverTerm[]>([])
 
 const isEditing = ref(false)
 
-// 新增：用于保存当前用户的检索词
-const discoverTerm = ref<DiscoverTerm>()
+const discoverTermGroup = ref<DiscoverTermGroup>()
 
-// 页面加载时获取当前用户的检索词
 onMounted(() => {
   getDiscoverTerm()
     .then(res => {
-      discoverTerm.value = res.data
-      titleTerms.value = discoverTerm.value.title
-      authorTerms.value = discoverTerm.value.author
-      fieldTerms.value = discoverTerm.value.field
+      discoverTermGroup.value = res.data
+      titleTerms.value = JSON.parse(JSON.stringify(discoverTermGroup.value.title))
+      authorTerms.value = JSON.parse(JSON.stringify(discoverTermGroup.value.author))
+      fieldTerms.value = JSON.parse(JSON.stringify(discoverTermGroup.value.field))
     })
     .catch(err => {
       ElMessage.error('获取检索词失败', err.message)
-      discoverTerm.value = { title: [], author: [], field: [] }
+      discoverTermGroup.value = { title: [], author: [], field: [] }
       titleTerms.value = []
       authorTerms.value = []
       fieldTerms.value = []
@@ -36,7 +34,8 @@ onMounted(() => {
 })
 
 function addTerm(type: 'title' | 'author' | 'field') {
-  let inputRef, termsRef
+  let inputRef: typeof titleInput
+  let termsRef: typeof titleTerms
   if (type === 'title') {
     inputRef = titleInput
     termsRef = titleTerms
@@ -47,8 +46,12 @@ function addTerm(type: 'title' | 'author' | 'field') {
     inputRef = fieldInput
     termsRef = fieldTerms
   }
-  if (inputRef.value && !termsRef.value.includes(inputRef.value)) {
-    termsRef.value.push(inputRef.value)
+  if (termsRef.value.length >= 3) {
+    ElMessage.warning('最多只能添加3个标签')
+    return
+  }
+  if (inputRef.value && !termsRef.value.some(term => term.value === inputRef.value)) {
+    termsRef.value.push({ id: '0', value: inputRef.value })
     inputRef.value = ''
   }
 }
@@ -66,28 +69,25 @@ function deleteTerm(type: 'title' | 'author' | 'field', idx: number) {
 }
 
 function handleSave() {
-  const oldTerms = discoverTerm.value || { title: [], author: [], field: [] }
-
+  const oldTerms = discoverTermGroup.value || { title: [], author: [], field: [] }
   const added = {
-    title: titleTerms.value.filter(t => !oldTerms.title.includes(t)),
-    author: authorTerms.value.filter(t => !oldTerms.author.includes(t)),
-    field: fieldTerms.value.filter(t => !oldTerms.field.includes(t)),
+    title: titleTerms.value.filter(t => !oldTerms.title.some(ot => ot.value === t.value)),
+    author: authorTerms.value.filter(t => !oldTerms.author.some(ot => ot.value === t.value)),
+    field: fieldTerms.value.filter(t => !oldTerms.field.some(ot => ot.value === t.value)),
   }
   const deleted = {
-    title: oldTerms.title.filter(t => !titleTerms.value.includes(t)),
-    author: oldTerms.author.filter(t => !authorTerms.value.includes(t)),
-    field: oldTerms.field.filter(t => !fieldTerms.value.includes(t)),
+    title: oldTerms.title.filter(ot => !titleTerms.value.some(t => t.value === ot.value)),
+    author: oldTerms.author.filter(ot => !authorTerms.value.some(t => t.value === ot.value)),
+    field: oldTerms.field.filter(ot => !fieldTerms.value.some(t => t.value === ot.value)),
   }
 
   updateDiscoverTerm({ addedTerm: added, deletedTerm: deleted })
-    .then(() => {
+    .then(res => {
       isEditing.value = false
-      // 更新原始数据
-      discoverTerm.value = {
-        title: [...titleTerms.value],
-        author: [...authorTerms.value],
-        field: [...fieldTerms.value],
-      }
+      discoverTermGroup.value = res.data
+      titleTerms.value = JSON.parse(JSON.stringify(discoverTermGroup.value.title))
+      authorTerms.value = JSON.parse(JSON.stringify(discoverTermGroup.value.author))
+      fieldTerms.value = JSON.parse(JSON.stringify(discoverTermGroup.value.field))
     })
     .catch(err => {
       ElMessage.error(err.message)
@@ -96,20 +96,35 @@ function handleSave() {
 </script>
 
 <template>
-  <div class="bg-white p-8 rounded-xl shadow max-w-xl mx-auto mt-10">
-    <h2 class="text-2xl font-bold mb-4">文献发现</h2>
-    <div class="mb-4 space-y-2">
+  <div class="bg-white p-4 rounded-xl shadow max-w-3xl mx-auto mt-0">
+    <div class="flex justify-between items-center">
+      <h2 class="text-2xl font-bold mb-2">文献发现</h2>
+      <div class="flex gap-4">
+        <el-button
+          v-if="!isEditing"
+          type="primary"
+          size="default"
+          class="text-base"
+          @click="isEditing = true"
+          >编辑</el-button
+        >
+        <el-button v-else type="success" size="default" class="text-base" @click="handleSave"
+          >保存</el-button
+        >
+      </div>
+    </div>
+    <div class="mb-0 space-y-3">
       <!-- 标题 -->
       <div class="flex items-start">
-        <span class="w-14 flex-shrink-0 text-gray-600 mt-1">标题</span>
+        <span class="w-20 flex-shrink-0 text-gray-600 mt-1 text-base">标题</span>
         <div class="flex-1">
-          <div class="flex flex-wrap gap-2 mt-0">
+          <div class="flex flex-wrap gap-3 mt-0">
             <span
               v-for="(term, idx) in titleTerms"
               :key="idx"
-              class="bg-blue-500 text-white px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
+              class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2"
             >
-              {{ term }}
+              {{ term.value }}
               <span
                 v-if="isEditing"
                 class="cursor-pointer font-bold text-base ml-1"
@@ -122,8 +137,9 @@ function handleSave() {
               v-model="titleInput"
               placeholder="输入后按下回车添加"
               clearable
-              size="small"
-              class="w-40"
+              size="default"
+              class="w-56 text-sm"
+              :disabled="titleTerms.length >= 3"
               @keyup.enter="addTerm('title')"
             />
           </div>
@@ -131,15 +147,15 @@ function handleSave() {
       </div>
       <!-- 作者 -->
       <div class="flex items-start">
-        <span class="w-14 flex-shrink-0 text-gray-600 mt-1">作者</span>
+        <span class="w-20 flex-shrink-0 text-gray-600 mt-1 text-base">作者</span>
         <div class="flex-1">
-          <div class="flex flex-wrap gap-2 mt-0">
+          <div class="flex flex-wrap gap-3 mt-0">
             <span
               v-for="(term, idx) in authorTerms"
               :key="idx"
-              class="bg-green-500 text-white px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
+              class="bg-green-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2"
             >
-              {{ term }}
+              {{ term.value }}
               <span
                 v-if="isEditing"
                 class="cursor-pointer font-bold text-base ml-1"
@@ -152,8 +168,9 @@ function handleSave() {
               v-model="authorInput"
               placeholder="输入后按下回车添加"
               clearable
-              size="small"
-              class="w-40"
+              size="default"
+              class="w-56 text-sm"
+              :disabled="authorTerms.length >= 3"
               @keyup.enter="addTerm('author')"
             />
           </div>
@@ -161,15 +178,15 @@ function handleSave() {
       </div>
       <!-- 领域 -->
       <div class="flex items-start">
-        <span class="w-14 flex-shrink-0 text-gray-600 mt-1">领域</span>
+        <span class="w-20 flex-shrink-0 text-gray-600 mt-1 text-base">领域</span>
         <div class="flex-1">
-          <div class="flex flex-wrap gap-2 mt-0">
+          <div class="flex flex-wrap gap-3 mt-0">
             <span
               v-for="(term, idx) in fieldTerms"
               :key="idx"
-              class="bg-purple-500 text-white px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
+              class="bg-purple-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2"
             >
-              {{ term }}
+              {{ term.value }}
               <span
                 v-if="isEditing"
                 class="cursor-pointer font-bold text-base ml-1"
@@ -182,17 +199,14 @@ function handleSave() {
               v-model="fieldInput"
               placeholder="输入后按下回车添加"
               clearable
-              size="small"
-              class="w-40"
+              size="default"
+              class="w-56 text-sm"
+              :disabled="fieldTerms.length >= 3"
               @keyup.enter="addTerm('field')"
             />
           </div>
         </div>
       </div>
-    </div>
-    <div class="flex gap-2 mt-4">
-      <el-button v-if="!isEditing" type="primary" @click="isEditing = true">编辑</el-button>
-      <el-button v-else type="success" @click="handleSave">保存</el-button>
     </div>
   </div>
 </template>
