@@ -1,12 +1,27 @@
-<!-- eslint-disable vue/attributes-order -->
-<!-- filepath: c:\Users\Windows11\Desktop\小学期\frontend\src\views\research\Projects.vue -->
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 页面标题和发布按钮 -->
       <div class="flex justify-between items-center mb-8">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">科研项目</h1>
+          <div class="flex items-center space-x-3">
+            <svg
+              class="w-8 h-8 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 7a2 2 0 012-2h3.172a2 2 0 011.414.586l1.828 1.828A2 2 0 0012.828 8H19a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+              />
+              <circle cx="8.5" cy="17.5" r="1.5" fill="#3b82f6" />
+              <circle cx="15.5" cy="17.5" r="1.5" fill="#3b82f6" />
+            </svg>
+            <h1 class="text-3xl font-bold text-gray-900">科研项目</h1>
+          </div>
           <p class="mt-2 text-gray-600">寻找合作伙伴，推动科研进展</p>
         </div>
         <div class="flex space-x-4">
@@ -159,8 +174,8 @@
 
             <!-- 项目列表 -->
             <div
-              v-else
               v-for="project in paginatedProjects"
+              v-else
               :key="project.id"
               class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
             >
@@ -221,10 +236,16 @@
                     <img
                       :src="getAvatarUrl(project.owner.imgUrl)"
                       :alt="project.owner.name"
-                      class="w-8 h-8 rounded-full mr-3"
+                      class="w-8 h-8 rounded-full mr-3 cursor-pointer"
+                      @click="goToUser(project.owner.id)"
                     />
                     <div>
-                      <p class="text-sm font-medium text-gray-900">{{ project.owner.name }}</p>
+                      <span
+                        class="text-sm font-medium text-blue-600 cursor-pointer hover:underline"
+                        @click="goToUser(project.owner.id)"
+                      >
+                        {{ project.owner.name }}
+                      </span>
                       <p class="text-xs text-gray-500">{{ project.owner.institution }}</p>
                     </div>
                   </div>
@@ -913,6 +934,10 @@ const checkInviteProject = (project: Project) => {
     return false
   }
   return true
+}
+
+const goToUser = (userId: number) => {
+  router.push(`/user/${userId}`)
 }
 
 onMounted(() => {

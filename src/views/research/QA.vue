@@ -6,19 +6,34 @@
       <!-- 页面标题和发布按钮 -->
       <div class="flex justify-between items-center mb-8">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">科研问答</h1>
+          <div class="flex items-center space-x-3">
+            <svg
+              class="w-8 h-8 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+              />
+            </svg>
+            <h1 class="text-3xl font-bold text-gray-900">科研问答</h1>
+          </div>
           <p class="mt-2 text-gray-600">分享知识，解决科研难题</p>
         </div>
         <div class="flex space-x-3">
           <button
-            @click="router.push('/research/my-questions')"
             class="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors border border-gray-200 hover:bg-gray-50"
+            @click="router.push('/research/my-questions')"
           >
             我的问答
           </button>
           <button
-            @click="showPublishDialog = true"
             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm"
+            @click="showPublishDialog = true"
           >
             <svg
               class="w-5 h-5 inline-block mr-2"
@@ -71,14 +86,14 @@
 
               <!-- 分类筛选 -->
               <div class="relative">
-              <select
-                v-model="selectedCategory"
-                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">全部分类</option>
+                <select
+                  v-model="selectedCategory"
+                  class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">全部分类</option>
                   <optgroup label="计算机科学与技术">
                     <option value="人工智能">人工智能</option>
-                <option value="机器学习">机器学习</option>
+                    <option value="机器学习">机器学习</option>
                     <option value="深度学习">深度学习</option>
                     <option value="计算机视觉">计算机视觉</option>
                     <option value="自然语言处理">自然语言处理</option>
@@ -136,7 +151,7 @@
                     <option value="元宇宙">元宇宙</option>
                   </optgroup>
                   <optgroup label="学术方法">
-                <option value="论文写作">论文写作</option>
+                    <option value="论文写作">论文写作</option>
                     <option value="学术规范">学术规范</option>
                     <option value="研究方法">研究方法</option>
                     <option value="实验设计">实验设计</option>
@@ -162,7 +177,7 @@
                     <option value="空间科学">空间科学</option>
                     <option value="其他">其他</option>
                   </optgroup>
-              </select>
+                </select>
               </div>
 
               <!-- 排序方式 -->
@@ -177,10 +192,23 @@
             </div>
 
             <!-- 搜索状态显示 -->
-            <div v-if="selectedCategory" class="mt-4 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div
+              v-if="selectedCategory"
+              class="mt-4 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3"
+            >
               <div class="flex items-center space-x-2">
-                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <svg
+                  class="w-5 h-5 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
                 </svg>
                 <span class="text-sm text-blue-800">
                   当前分类：<span class="font-medium">{{ selectedCategory }}</span>
@@ -188,8 +216,8 @@
                 </span>
               </div>
               <button
-                @click="clearSearch"
                 class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                @click="clearSearch"
               >
                 清除筛选
               </button>
@@ -214,19 +242,19 @@
                 <div class="flex items-start justify-between mb-4">
                   <div class="flex-1">
                     <div class="flex items-center gap-3 mb-2">
-                    <h3
+                      <h3
                         class="text-xl font-semibold text-gray-900 hover:text-blue-600 cursor-pointer"
-                      @click="viewQuestion(question.id)"
-                    >
-                      {{ question.title }}
-                    </h3>
+                        @click="viewQuestion(question.id)"
+                      >
+                        {{ question.title }}
+                      </h3>
                       <!-- 是否回答状态 -->
                       <span
                         :class="[
                           'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                          question.answerNum > 0 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-yellow-100 text-yellow-700'
+                          question.answerNum > 0
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-yellow-100 text-yellow-700',
                         ]"
                       >
                         {{ question.answerNum > 0 ? '已回答' : '未回答' }}
@@ -235,9 +263,9 @@
                       <span
                         :class="[
                           'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                          question.bestAnswer 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-yellow-100 text-yellow-700'
+                          question.bestAnswer
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-yellow-100 text-yellow-700',
                         ]"
                       >
                         {{ question.bestAnswer ? '已解决' : '未解决' }}
@@ -253,7 +281,10 @@
                   </div>
 
                   <!-- 关注按钮或我的提问标签 -->
-                  <div v-if="question.user?.id === userStore.user?.id" class="ml-4 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-100 text-blue-700">
+                  <div
+                    v-if="question.user?.id === userStore.user?.id"
+                    class="ml-4 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-100 text-blue-700"
+                  >
                     <svg
                       class="w-4 h-4 inline-block mr-1"
                       fill="none"
@@ -271,13 +302,13 @@
                   </div>
                   <button
                     v-else
-                    @click="toggleFollow(question.id)"
                     :class="[
                       'ml-4 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                       question.followed
                         ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
                     ]"
+                    @click="toggleFollow(question.id)"
                   >
                     <svg
                       class="w-4 h-4 inline-block mr-1"
@@ -303,26 +334,28 @@
 
                 <!-- 问题元信息 -->
                 <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <div class="flex items-center">
-                      <img
-                        :src="getAvatarUrl(question.user?.imgUrl)"
-                        :alt="question.user?.name || '未知用户'"
+                  <div class="flex items-center">
+                    <img
+                      :src="getAvatarUrl(question.user?.imgUrl)"
+                      :alt="question.user?.name || '未知用户'"
                       class="w-8 h-8 rounded-full mr-3"
                     />
                     <div>
-                      <p 
+                      <p
                         class="text-sm font-medium text-gray-900 hover:text-blue-600 cursor-pointer transition-colors"
                         @click="goToUserDetail(question.user?.id || 0)"
                       >
                         {{ question.user?.name || '未知用户' }}
                       </p>
-                      <p class="text-xs text-gray-500">{{ question.user?.institution || '未知机构' }}</p>
+                      <p class="text-xs text-gray-500">
+                        {{ question.user?.institution || '未知机构' }}
+                      </p>
                     </div>
                   </div>
                   <div class="text-sm text-gray-500">
                     发布于 {{ formatTime(question.createAt) }}
                   </div>
-                  </div>
+                </div>
 
                 <!-- 回答预览 -->
                 <div v-if="question.bestAnswer" class="mt-4 pt-4 border-t border-gray-200">
@@ -333,7 +366,7 @@
                         :alt="question.bestAnswer.user?.name || '未知用户'"
                         class="w-6 h-6 rounded-full mr-2"
                       />
-                      <span 
+                      <span
                         class="text-sm font-medium text-gray-700 hover:text-blue-600 cursor-pointer transition-colors"
                         @click="goToUserDetail(question.bestAnswer.user?.id || 0)"
                       >
@@ -404,7 +437,7 @@
                       </svg>
                       {{ question.followNum }} 关注
                     </span>
-                </div>
+                  </div>
 
                   <div class="flex space-x-3">
                     <button
@@ -467,8 +500,8 @@
             <h3 class="text-lg font-medium text-gray-900 mb-2">暂无问题</h3>
             <p class="text-gray-500 mb-4">还没有人发布问题</p>
             <button
-              @click="showPublishDialog = true"
               class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+              @click="showPublishDialog = true"
             >
               发布第一个问题
             </button>
@@ -480,13 +513,13 @@
               <button
                 v-for="page in totalPages"
                 :key="page"
-                @click="changePage(page)"
                 :class="[
                   'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                   currentPage === page
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-gray-700 hover:bg-gray-100',
                 ]"
+                @click="changePage(page)"
               >
                 {{ page }}
               </button>
@@ -503,21 +536,21 @@
               <button
                 v-for="tag in popularTags.slice(0, 10)"
                 :key="tag.name"
-                @click="searchByTag(tag.name)"
                 :class="[
                   'flex items-center justify-between w-full text-left px-3 py-2 rounded-lg transition-colors',
                   selectedCategory === tag.name
                     ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                    : 'hover:bg-gray-50 text-gray-700'
+                    : 'hover:bg-gray-50 text-gray-700',
                 ]"
+                @click="searchByTag(tag.name)"
               >
                 <span class="text-sm font-medium">{{ tag.name }}</span>
-                <span 
+                <span
                   :class="[
                     'text-xs px-2 py-1 rounded-full',
                     selectedCategory === tag.name
                       ? 'bg-blue-200 text-blue-800'
-                      : 'bg-gray-100 text-gray-500'
+                      : 'bg-gray-100 text-gray-500',
                   ]"
                 >
                   {{ tag.count }}
@@ -533,9 +566,25 @@
               <!-- 加载状态 -->
               <div v-if="loadingActiveUsers" class="text-center py-6">
                 <div class="inline-flex items-center px-3 py-2 text-sm text-gray-500">
-                  <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    class="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-400"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   加载中...
                 </div>
@@ -543,28 +592,39 @@
 
               <div
                 v-for="user in activeUsers.slice(0, 10)"
+                v-show="!loadingActiveUsers"
                 :key="user.id"
                 class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
                 @click="goToUserDetail(user.id)"
-                v-show="!loadingActiveUsers"
               >
-                <img :src="getAvatarUrl(user.imgUrl)" :alt="user.name" class="w-10 h-10 rounded-full" />
+                <img
+                  :src="getAvatarUrl(user.imgUrl)"
+                  :alt="user.name"
+                  class="w-10 h-10 rounded-full"
+                />
                 <div class="flex-1 min-w-0">
-                  <p 
+                  <p
                     class="text-sm font-medium text-gray-800 truncate group-hover:text-blue-600 transition-colors"
                     @click.stop="goToUserDetail(user.id)"
                   >
                     {{ user.name }}
                   </p>
-                  <p class="text-xs text-gray-500">{{ user.answerCount }} 回答 · {{ user.institution }}</p>
+                  <p class="text-xs text-gray-500">
+                    {{ user.answerCount }} 回答 · {{ user.institution }}
+                  </p>
                 </div>
-                <svg 
-                  class="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  class="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  ></path>
                 </svg>
               </div>
 
@@ -595,14 +655,17 @@
     </div>
 
     <!-- 发布问题对话框 -->
-    <div v-if="showPublishDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      v-if="showPublishDialog"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
       <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div class="px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">发布科研问题</h3>
             <button
-              @click="showPublishDialog = false"
               class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showPublishDialog = false"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -616,7 +679,7 @@
           </div>
         </div>
 
-        <form @submit.prevent="publishQuestion" class="p-6 space-y-6">
+        <form class="p-6 space-y-6" @submit.prevent="publishQuestion">
           <!-- 问题标题 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">问题标题</label>
@@ -657,9 +720,9 @@
           <!-- 操作按钮 -->
           <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
-              @click="showPublishDialog = false"
               type="button"
               class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              @click="showPublishDialog = false"
             >
               取消
             </button>
@@ -685,8 +748,8 @@
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">回答问题</h3>
             <button
-              @click="showAnswerForm = false"
               class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showAnswerForm = false"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -706,7 +769,7 @@
           <p class="text-sm text-gray-600 line-clamp-2">{{ selectedQuestion.content }}</p>
         </div>
 
-        <form @submit.prevent="submitAnswer" class="p-6 space-y-6">
+        <form class="p-6 space-y-6" @submit.prevent="submitAnswer">
           <!-- 回答内容 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">你的回答</label>
@@ -722,9 +785,9 @@
           <!-- 操作按钮 -->
           <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
-              @click="showAnswerForm = false"
               type="button"
               class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              @click="showAnswerForm = false"
             >
               取消
             </button>
@@ -741,14 +804,17 @@
     </div>
 
     <!-- 分享问题对话框 -->
-    <div v-if="showShareDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      v-if="showShareDialog"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
       <div class="bg-white rounded-lg max-w-md w-full mx-4">
         <div class="px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">分享问题</h3>
             <button
-              @click="showShareDialog = false"
               class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showShareDialog = false"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -768,21 +834,11 @@
             <label class="block text-sm font-medium text-gray-700 mb-3">选择分享格式</label>
             <div class="space-y-2">
               <label class="flex items-center">
-                <input
-                  v-model="shareFormat"
-                  type="radio"
-                  value="simple"
-                  class="mr-3"
-                />
+                <input v-model="shareFormat" type="radio" value="simple" class="mr-3" />
                 <span class="text-sm">简洁格式（仅链接）</span>
               </label>
               <label class="flex items-center">
-                <input
-                  v-model="shareFormat"
-                  type="radio"
-                  value="detailed"
-                  class="mr-3"
-                />
+                <input v-model="shareFormat" type="radio" value="detailed" class="mr-3" />
                 <span class="text-sm">详细格式（包含问题信息）</span>
               </label>
             </div>
@@ -791,7 +847,9 @@
           <!-- 预览 -->
           <div v-if="selectedQuestionForShare">
             <label class="block text-sm font-medium text-gray-700 mb-2">预览</label>
-            <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto">
+            <div
+              class="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto"
+            >
               {{ getShareText(selectedQuestionForShare, shareFormat) }}
             </div>
           </div>
@@ -800,16 +858,16 @@
         <!-- 分享问题对话框底部美化按钮区域 -->
         <div class="flex justify-end gap-4 pt-6 pb-2 px-2 border-t border-gray-200">
           <button
-            @click="showShareDialog = false"
             class="px-5 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors shadow-sm"
-            style="min-width: 80px;"
+            style="min-width: 80px"
+            @click="showShareDialog = false"
           >
             取消
           </button>
           <button
-            @click="copyShareText"
             class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-            style="min-width: 110px;"
+            style="min-width: 110px"
+            @click="copyShareText"
           >
             复制到剪贴板
           </button>
@@ -822,7 +880,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import {
   createQuestion,
@@ -834,8 +892,12 @@ import {
   getTopAnswerUsers,
   getResearchAreaStats,
 } from '@/api/modules/question'
-import type { Question, CreateQuestionRequest, AnswerQuestionRequest, QuestionListItem } from '@/api/types/question'
-import { RESEARCH_CATEGORIES, getPopularCategories } from '../../utils/categories'
+import type {
+  Question,
+  CreateQuestionRequest,
+  AnswerQuestionRequest,
+  QuestionListItem,
+} from '@/api/types/question'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -888,7 +950,43 @@ const loadingActiveUsers = ref(false)
 
 // 新增：科研领域常量数组，保持与Profile.vue一致
 const RESEARCH_AREAS = [
-  "计算机科学", "人工智能", "机器学习", "数据科学", "生物信息学", "物理学", "化学", "数学", "材料科学", "环境科学", "地球科学", "天文学", "医学", "药学", "心理学", "社会学", "经济学", "管理学", "法学", "教育学", "历史学", "哲学", "语言学", "政治学", "艺术学", "农学", "工程学", "电子科学", "自动化", "交通运输", "能源科学", "海洋科学", "统计学", "信息科学", "新闻传播学", "体育学", "其他"
+  '计算机科学',
+  '人工智能',
+  '机器学习',
+  '数据科学',
+  '生物信息学',
+  '物理学',
+  '化学',
+  '数学',
+  '材料科学',
+  '环境科学',
+  '地球科学',
+  '天文学',
+  '医学',
+  '药学',
+  '心理学',
+  '社会学',
+  '经济学',
+  '管理学',
+  '法学',
+  '教育学',
+  '历史学',
+  '哲学',
+  '语言学',
+  '政治学',
+  '艺术学',
+  '农学',
+  '工程学',
+  '电子科学',
+  '自动化',
+  '交通运输',
+  '能源科学',
+  '海洋科学',
+  '统计学',
+  '信息科学',
+  '新闻传播学',
+  '体育学',
+  '其他',
 ]
 
 // 计算属性
@@ -940,12 +1038,12 @@ const filteredQuestions = computed(() => {
 
 const totalPages = computed(() => {
   let filtered = questions.value
-  
+
   // 如果是我的关注模式，使用关注的问题数据
   if (sortBy.value === 'my-followed') {
     filtered = myFollowedQuestions.value
   }
-  
+
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(
@@ -962,27 +1060,6 @@ const totalPages = computed(() => {
 })
 
 // 获取头像URL
-const API_BASE_URL = (window as any).VITE_API_BASE_URL || '/api'
-
-function getUserAvatar(user: any) {
-  if (!user) return '/default-avatar.png'
-  if (user.avatar) {
-    if (/^https?:\/\//.test(user.avatar)) {
-      return user.avatar
-    }
-    return API_BASE_URL + user.avatar
-  }
-  if (user.imgUrl) {
-    if (/^https?:\/\//.test(user.imgUrl)) {
-      return user.imgUrl
-    }
-    if (user.imgUrl.startsWith('/')) {
-      return user.imgUrl
-    }
-    return API_BASE_URL + user.imgUrl
-  }
-  return '/default-avatar.png'
-}
 
 const getAvatarUrl = (imgUrl: string) => {
   if (!imgUrl || imgUrl === '') {
@@ -997,14 +1074,14 @@ const getAvatarUrl = (imgUrl: string) => {
 // 方法
 const formatTime = (dateString: string) => {
   if (!dateString) return '未知时间'
-  
+
   const date = new Date(dateString)
-  
+
   // 检查日期是否有效
   if (isNaN(date.getTime())) {
     return '未知时间'
   }
-  
+
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const minutes = Math.floor(diff / (1000 * 60))
@@ -1044,47 +1121,51 @@ const loadQuestions = async () => {
           followNum: item.question.followNum,
           readNum: item.question.readNum,
           followed: item.followed, // 添加关注状态
-          bestAnswer: item.question.bestAnswer ? {
-            id: item.question.bestAnswer.id.toString(),
-            user: item.question.bestAnswer.user || {
-              id: item.question.bestAnswer.userId,
-              name: '未知用户',
-              email: '',
-              gender: '',
-              bio: '',
-              researchArea: '',
-              institution: '',
-              title: '',
-              imgUrl: '',
-              createdAt: '',
-              followerNum: 0,
-              subjectNum: 0,
-              publishNum: 0,
-              likeNum: 0,
-              readerNum: 0,
-            },
-            content: item.question.bestAnswer.content || '',
-            createdAt: item.question.bestAnswer.createdAt || '',
-            likeNum: item.question.bestAnswer.likeNum || 0,
-          } : undefined,
-          answers: item.answerWithReplies ? item.answerWithReplies.map(reply => ({
-            id: (reply.answer.id || 0).toString(),
-            user: reply.answer.user,
-            content: reply.answer.content || '',
-            createdAt: reply.answer.createdAt || '',
-            likeNum: reply.answer.likeNum || 0,
-            liked: reply.liked || false,
-            childAnswers: reply.replies.map(childReply => ({
-              id: (childReply.id || 0).toString(),
-              user: childReply.user,
-              content: childReply.content || '',
-              parentUserId: (reply.answer.userId || 0).toString(),
-              parentUserName: reply.answer.user?.name || '未知用户',
-              createdAt: childReply.createdAt || '',
-              likeNum: childReply.likeNum || 0,
-              liked: false, // 2级回答暂时使用默认状态
-            })),
-          })) : [],
+          bestAnswer: item.question.bestAnswer
+            ? {
+                id: item.question.bestAnswer.id.toString(),
+                user: item.question.bestAnswer.user || {
+                  id: item.question.bestAnswer.userId,
+                  name: '未知用户',
+                  email: '',
+                  gender: '',
+                  bio: '',
+                  researchArea: '',
+                  institution: '',
+                  title: '',
+                  imgUrl: '',
+                  createdAt: '',
+                  followerNum: 0,
+                  subjectNum: 0,
+                  publishNum: 0,
+                  likeNum: 0,
+                  readerNum: 0,
+                },
+                content: item.question.bestAnswer.content || '',
+                createdAt: item.question.bestAnswer.createdAt || '',
+                likeNum: item.question.bestAnswer.likeNum || 0,
+              }
+            : undefined,
+          answers: item.answerWithReplies
+            ? item.answerWithReplies.map(reply => ({
+                id: (reply.answer.id || 0).toString(),
+                user: reply.answer.user,
+                content: reply.answer.content || '',
+                createdAt: reply.answer.createdAt || '',
+                likeNum: reply.answer.likeNum || 0,
+                liked: reply.liked || false,
+                childAnswers: reply.replies.map(childReply => ({
+                  id: (childReply.id || 0).toString(),
+                  user: childReply.user,
+                  content: childReply.content || '',
+                  parentUserId: (reply.answer.userId || 0).toString(),
+                  parentUserName: reply.answer.user?.name || '未知用户',
+                  createdAt: childReply.createdAt || '',
+                  likeNum: childReply.likeNum || 0,
+                  liked: false, // 2级回答暂时使用默认状态
+                })),
+              }))
+            : [],
         }))
       } else if (response.data && Array.isArray(response.data.questions)) {
         // 兼容旧格式
@@ -1112,7 +1193,7 @@ const loadMyFollowedQuestions = async () => {
   try {
     loadingFollowed.value = true
     const response = await getMyFollowedQuestions()
-    
+
     if (response && response.code === '200') {
       // 处理新的API响应格式
       if (Array.isArray(response.data)) {
@@ -1129,47 +1210,51 @@ const loadMyFollowedQuestions = async () => {
           followNum: item.question.followNum || 0,
           readNum: item.question.readNum || 0,
           followed: item.followed || false, // 添加关注状态
-          bestAnswer: item.question.bestAnswer ? {
-            id: (item.question.bestAnswer.id || 0).toString(),
-            user: item.question.bestAnswer.user || {
-              id: item.question.bestAnswer.userId || 0,
-              name: '未知用户',
-              email: '',
-              gender: '',
-              bio: '',
-              researchArea: '',
-              institution: '',
-              title: '',
-              imgUrl: '',
-              createdAt: '',
-              followerNum: 0,
-              subjectNum: 0,
-              publishNum: 0,
-              likeNum: 0,
-              readerNum: 0,
-            },
-            content: item.question.bestAnswer.content || '',
-            createdAt: item.question.bestAnswer.createdAt || '',
-            likeNum: Number(item.question.bestAnswer.likeNum) || 0,
-          } : undefined,
-          answers: item.answerWithReplies ? item.answerWithReplies.map(reply => ({
-            id: (reply.answer.id || 0).toString(),
-            user: reply.answer.user,
-            content: reply.answer.content || '',
-            createdAt: reply.answer.createdAt || '',
-            likeNum: Number(reply.answer.likeNum) || 0,
-            liked: reply.liked || false,
-            childAnswers: reply.replies.map(childReply => ({
-              id: (childReply.id || 0).toString(),
-              user: childReply.user,
-              content: childReply.content || '',
-              parentUserId: (reply.answer.userId || 0).toString(),
-              parentUserName: reply.answer.user?.name || '未知用户',
-              createdAt: childReply.createdAt || '',
-              likeNum: Number(childReply.likeNum) || 0,
-              liked: false, // 2级回答暂时使用默认状态
-            })),
-          })) : [],
+          bestAnswer: item.question.bestAnswer
+            ? {
+                id: (item.question.bestAnswer.id || 0).toString(),
+                user: item.question.bestAnswer.user || {
+                  id: item.question.bestAnswer.userId || 0,
+                  name: '未知用户',
+                  email: '',
+                  gender: '',
+                  bio: '',
+                  researchArea: '',
+                  institution: '',
+                  title: '',
+                  imgUrl: '',
+                  createdAt: '',
+                  followerNum: 0,
+                  subjectNum: 0,
+                  publishNum: 0,
+                  likeNum: 0,
+                  readerNum: 0,
+                },
+                content: item.question.bestAnswer.content || '',
+                createdAt: item.question.bestAnswer.createdAt || '',
+                likeNum: Number(item.question.bestAnswer.likeNum) || 0,
+              }
+            : undefined,
+          answers: item.answerWithReplies
+            ? item.answerWithReplies.map(reply => ({
+                id: (reply.answer.id || 0).toString(),
+                user: reply.answer.user,
+                content: reply.answer.content || '',
+                createdAt: reply.answer.createdAt || '',
+                likeNum: Number(reply.answer.likeNum) || 0,
+                liked: reply.liked || false,
+                childAnswers: reply.replies.map(childReply => ({
+                  id: (childReply.id || 0).toString(),
+                  user: childReply.user,
+                  content: childReply.content || '',
+                  parentUserId: (reply.answer.userId || 0).toString(),
+                  parentUserName: reply.answer.user?.name || '未知用户',
+                  createdAt: childReply.createdAt || '',
+                  likeNum: Number(childReply.likeNum) || 0,
+                  liked: false, // 2级回答暂时使用默认状态
+                })),
+              }))
+            : [],
         }))
       } else if (response.data && Array.isArray(response.data.questions)) {
         // 兼容旧格式
@@ -1204,7 +1289,7 @@ const toggleFollow = async (questionId: string) => {
     console.log('开始关注操作:', {
       questionId,
       currentFollowed: question.followed,
-      currentFollowNum: question.followNum
+      currentFollowNum: question.followNum,
     })
 
     if (question.followed) {
@@ -1212,16 +1297,16 @@ const toggleFollow = async (questionId: string) => {
       console.log('执行取消关注操作')
       const response = await unfollowQuestion({ questionId: questionId })
       console.log('取消关注响应:', response)
-      
+
       if (response && response.code === '200') {
         question.followed = false
         question.followNum = Math.max(0, question.followNum - 1)
-      
-      // 如果在我的关注模式下，从关注列表中移除
-      if (sortBy.value === 'my-followed') {
-        myFollowedQuestions.value = myFollowedQuestions.value.filter(q => q.id !== questionId)
+
+        // 如果在我的关注模式下，从关注列表中移除
+        if (sortBy.value === 'my-followed') {
+          myFollowedQuestions.value = myFollowedQuestions.value.filter(q => q.id !== questionId)
         }
-        
+
         ElMessage.success('取消关注成功')
       } else {
         console.error('取消关注失败:', response)
@@ -1235,10 +1320,10 @@ const toggleFollow = async (questionId: string) => {
       console.log('执行关注操作')
       const response = await followQuestion({ questionId })
       console.log('关注响应:', response)
-      
+
       if (response && response.code === '200') {
         question.followed = true
-      question.followNum++
+        question.followNum++
         ElMessage.success('关注成功')
       } else {
         console.error('关注失败:', response)
@@ -1257,13 +1342,13 @@ const toggleFollow = async (questionId: string) => {
 const searchByTag = (tagName: string) => {
   // 设置分类筛选
   selectedCategory.value = tagName
-  
+
   // 清除搜索查询
   searchQuery.value = ''
-  
+
   // 重置页码
   currentPage.value = 1
-  
+
   // 滚动到顶部
   scrollToTop()
 }
@@ -1272,13 +1357,13 @@ const publishQuestion = async () => {
   try {
     publishing.value = true
     console.log('开始发布问题...')
-    
+
     const requestData: CreateQuestionRequest = {
       title: newQuestion.value.title,
       content: newQuestion.value.content,
       researchArea: newQuestion.value.researchArea,
     }
-    
+
     console.log('发布问题请求数据:', requestData)
     const response = await createQuestion(requestData)
     console.log('发布问题响应:', response)
@@ -1293,7 +1378,7 @@ const publishQuestion = async () => {
 
       showPublishDialog.value = false
       ElMessage.success('问题发布成功！')
-      
+
       // 重新加载问题列表
       console.log('重新加载问题列表...')
       await loadQuestions()
@@ -1327,7 +1412,7 @@ const submitAnswer = async () => {
   try {
     answering.value = true
     console.log('开始提交回答...')
-    
+
     const requestData: AnswerQuestionRequest = {
       questionId: parseInt(selectedQuestion.value.id),
       content: newAnswer.value.content.trim(),
@@ -1341,13 +1426,13 @@ const submitAnswer = async () => {
     if (response && response.code === '200') {
       // 更新本地问题数据
       selectedQuestion.value.answerNum++
-      
+
       // 重置表单
       newAnswer.value.content = ''
       showAnswerForm.value = false
-      
+
       ElMessage.success('回答提交成功！')
-      
+
       // 重新加载问题列表以获取最新数据
       await loadQuestions()
     } else {
@@ -1355,7 +1440,7 @@ const submitAnswer = async () => {
     }
   } catch (error: any) {
     console.error('提交回答失败:', error)
-    
+
     // 详细的错误信息
     if (error.response) {
       console.error('错误响应:', error.response.data)
@@ -1514,7 +1599,7 @@ onMounted(() => {
 })
 
 // 监听排序方式变化
-watch(sortBy, (newValue) => {
+watch(sortBy, newValue => {
   currentPage.value = 1 // 重置页码
   scrollToTop() // 滚动到顶部
   if (newValue === 'my-followed') {
@@ -1538,7 +1623,7 @@ watch(selectedCategory, () => {
 const scrollToTop = () => {
   window.scrollTo({
     top: 0,
-    behavior: 'smooth'
+    behavior: 'smooth',
   })
 }
 
@@ -1562,8 +1647,10 @@ const clearSearch = () => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-clamp: 2;
 }
 
 .line-clamp-3 {
@@ -1571,6 +1658,7 @@ const clearSearch = () => {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-clamp: 3;
 }
 
 /* 自定义渐变色 */
