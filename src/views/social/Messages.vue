@@ -1012,11 +1012,16 @@ const formatTime = (dateString: string | Date | undefined | null) => {
 const openSettingsDialog = async () => {
   try {
     const response = await messagesAPI.getMessageSettings()
-    console.log('设置数据:', response) // 调试日志
-
-    if (response && response.data && response.data.settings) {
-      Object.assign(messageSettings, response.data.settings)
-    }
+    const s = response?.data || {}
+    // 字段映射
+    Object.assign(messageSettings, {
+      newMessage: !!s.conversation,
+      followActivity: !!s.activity,
+      systemNotice: !!s.system,
+      emailNotification: !!s.email,
+      allowStrangerMessage: !!s.stranger,
+      showOnlineStatus: !!s.online,
+    })
     showSettingsDialog.value = true
   } catch (error) {
     console.error('加载设置失败:', error)
@@ -1315,23 +1320,21 @@ const getActivityLabel = (type: string) => {
 
 // 页面初始化
 onMounted(async () => {
-  console.log('Messages组件挂载，开始初始化') // 调试日志
-
-  // 先加载设置，但不显示对话框
   try {
     const response = await messagesAPI.getMessageSettings()
-    console.log('初始化设置数据:', response) // 调试日志
-
-    if (response && response.data && response.data.settings) {
-      Object.assign(messageSettings, response.data.settings)
-    }
+    const s = response?.data || {}
+    Object.assign(messageSettings, {
+      newMessage: !!s.conversation,
+      followActivity: !!s.activity,
+      systemNotice: !!s.system,
+      emailNotification: !!s.email,
+      allowStrangerMessage: !!s.stranger,
+      showOnlineStatus: !!s.online,
+    })
   } catch (error) {
     console.warn('加载设置失败，使用默认设置:', error)
   }
-
-  // 并行加载数据
   await Promise.all([loadCurrentCategory(), loadAllFriends()])
-  console.log('Messages组件初始化完成') // 调试日志
 })
 </script>
 

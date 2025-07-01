@@ -1122,7 +1122,6 @@ const initializeWebSocket = () => {
 const handleConnected = () => {
   isConnected.value = true
   isOfflineMode.value = false
-  ElMessage.success('连接成功')
   console.log('WebSocket 连接成功')
 }
 
