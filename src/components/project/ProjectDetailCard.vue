@@ -63,10 +63,14 @@
                     <img
                       :src="getAvatarUrl(props.project.owner?.imgUrl || '')"
                       :alt="props.project.owner?.name || '负责人'"
-                      class="w-10 h-10 rounded-full object-cover border-2 border-slate-200"
+                      class="w-10 h-10 rounded-full object-cover border-2 border-slate-200 cursor-pointer"
+                      @click="goToUser(props.project.owner?.id)"
                     />
                     <div>
-                      <p class="font-medium text-slate-900">
+                      <p
+                        class="font-medium text-slate-900 text-blue-600 cursor-pointer hover:underline"
+                        @click="goToUser(props.project.owner?.id)"
+                      >
                         {{ props.project.owner?.name || '未知' }}
                       </p>
                       <p class="text-sm text-slate-500">
@@ -96,7 +100,10 @@
                         class="w-10 h-10 rounded-full object-cover border-2 border-slate-200 flex-shrink-0"
                       />
                       <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-slate-900 truncate">
+                        <p
+                          class="text-sm font-medium text-slate-900 truncate text-blue-600 cursor-pointer hover:underline"
+                          @click="goToUser(collaborator.id)"
+                        >
                           {{ collaborator.name }}
                         </p>
                         <p class="text-xs text-slate-500 truncate">
@@ -392,6 +399,8 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+
 interface Project {
   id: number
   title: string
@@ -407,6 +416,7 @@ interface Project {
   endDate?: string
   contactInfo?: string
   owner?: {
+    id: number
     name: string
     institution: string
     title: string
@@ -432,6 +442,8 @@ const emit = defineEmits<{
   accept: [number]
   reject: [number]
 }>()
+
+const router = useRouter()
 
 const getStatusColor = (status: string) => {
   const colors = {
@@ -512,5 +524,9 @@ const acceptInvite = () => {
 }
 const rejectInvite = () => {
   emit('reject', props.project.id)
+}
+
+const goToUser = (userId?: number) => {
+  if (userId) router.push(`/user/${userId}`)
 }
 </script>

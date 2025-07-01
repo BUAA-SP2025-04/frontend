@@ -5,7 +5,7 @@
       <div class="flex justify-between items-center mb-8">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-            <svg
+            <!-- <svg
               class="w-8 h-8 mr-3 text-indigo-600"
               fill="none"
               stroke="currentColor"
@@ -19,16 +19,17 @@
                 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 
                 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
               />
-            </svg>
+            </svg> -->
             学习档案
           </h1>
+          <p class="text-gray-600 mt-2">云端存储，管理您的学习笔记</p>
         </div>
       </div>
 
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- 左侧分类树 -->
         <div class="lg:w-1/4">
-          <div class="bg-white rounded-lg shadow p-6 sticky top-8">
+          <div class="bg-white rounded-lg shadow p-6">
             <div
               :class="[
                 'text-lg font-medium mb-4 flex items-center justify-between pt-3 pl-0 pr-3 pb-3 left-0 rounded-lg cursor-pointer transition-colors hover:bg-indigo-50 group',
@@ -139,7 +140,7 @@
           </div>
 
           <!-- 笔记列表 -->
-          <div v-if="viewMode === 'list'" class="bg-white rounded-lg shadow">
+          <div v-if="viewMode === 'list' && filteredAnnos.length>0" class="bg-white rounded-lg shadow">
             <div
               v-for="anno in filteredAnnos"
               :key="anno.id"
@@ -246,6 +247,35 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- 空状态 -->
+          <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"> 
+            <svg
+              class="w-16 h-16 text-gray-300 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 
+                1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 
+                3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"
+              ></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">暂无笔记</h3>
+            <p v-if="annotations.length===0" class="text-gray-500 mb-4">你还没有上传任何笔记</p>
+            <p v-else class="text-gray-500 mb-4">这篇文献没有任何笔记</p>
+            <button
+              @click="toPdfReader(selectedPaper)"
+              v-if="selectedPaper>0"
+              class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              去阅读这篇文献
+            </button>
           </div>
 
           <!-- 分页 -->
