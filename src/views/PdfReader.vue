@@ -807,7 +807,7 @@ const percentToPx = (percent: number, total: number) => {
 }
 
 const showGenerateAbstractBtn = computed(() => {
-  return globalStore.lastRoute === '/library'
+  return globalStore.lastRoute !== '/publication'
 })
 </script>
 
