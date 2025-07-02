@@ -458,6 +458,7 @@ import {
   getUserDetail,
   getUserPapers,
   unfollow,
+  getUserStrangerSetting
 } from '@/api/modules/user'
 import type { Paper, UserDetail } from '@/api/types/user'
 import type { Author } from '@/api/types/publication'
@@ -844,6 +845,18 @@ const handleChat = async () => {
 }
 
 const handleMessageSend = async (userId: number) => {
+  // 新增：判断对方是否允许私信
+  try {
+    const res = await getUserStrangerSetting(userId.toString())
+    if (res && res.data === false) {
+      ElMessage.warning('该用户已关闭私信，无法发送消息')
+      return
+    }
+  } catch (e) {
+    ElMessage.error('无法获取用户私信设置，请稍后重试')
+    return
+  }
+
   // 生成标准格式的 conversationId
   const myId = currentUserId.value
   const conversationId = `conv_${Math.min(myId, userId)}_${Math.max(myId, userId)}`
