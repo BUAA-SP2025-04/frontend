@@ -452,8 +452,9 @@ const validateMaxMembers = () => {
 
   // 编辑模式下，检查是否小于已招募人数
   if (props.isEdit && props.editProject) {
-    if (value < props.editProject.recruitedNum) {
-      formErrors.value.maxMembers = `团队规模不能小于已招募人数(${props.editProject.recruitedNum}人)`
+    const currentRecruitedNum = newProject.value.collaborators.length
+    if (value < currentRecruitedNum) {
+      formErrors.value.maxMembers = `团队规模不能小于已招募人数(${currentRecruitedNum}人)`
       return false
     }
   }
@@ -631,8 +632,9 @@ const saveProject = async () => {
 
   // 编辑模式下额外验证
   if (props.isEdit && props.editProject) {
-    if (newProject.value.maxMembers < props.editProject.recruitedNum) {
-      ElMessage.error(`团队规模不能小于已招募人数(${props.editProject.recruitedNum}人)`)
+    const currentRecruitedNum = newProject.value.collaborators.length
+    if (newProject.value.maxMembers < currentRecruitedNum) {
+      ElMessage.error(`团队规模不能小于已招募人数(${currentRecruitedNum}人)`)
       return
     }
   }
