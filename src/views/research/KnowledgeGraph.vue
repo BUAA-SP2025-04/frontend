@@ -461,7 +461,9 @@
                           : formatNumber(selectedNode.subscribeNum || 0)
                       }}
                     </span>
-                    <span class="text-xs text-slate-600 dark:text-slate-400">用户数</span>
+                    <span class="text-xs text-slate-600 dark:text-slate-400">{{
+                      selectedNode.type === 'user' ? '粉丝数' : '用户数'
+                    }}</span>
                   </div>
 
                   <div
