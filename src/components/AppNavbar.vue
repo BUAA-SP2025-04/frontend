@@ -1,5 +1,7 @@
 <template>
-  <nav class="bg-gradient-to-r from-slate-50/90 via-white/95 to-neutral-100/90 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
+  <nav
+    class="bg-gradient-to-r from-slate-50/90 via-white/95 to-neutral-100/90 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50 shadow-sm"
+  >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <!-- 左侧 Logo 和主导航 -->
@@ -19,7 +21,7 @@
             KnoWeb
           </router-link>
 
-         <!-- 主导航菜单 -->
+          <!-- 主导航菜单 -->
           <div class="hidden md:ml-6 md:flex md:space-x-8">
             <router-link
               to="/"
@@ -200,7 +202,9 @@
                 :alt="currentUser?.name"
                 class="h-8 w-8 rounded-full object-cover ring-2 ring-white shadow-sm"
               />
-              <span class="hidden md:block text-slate-700 font-medium">{{ currentUser?.name }}</span>
+              <span class="hidden md:block text-slate-700 font-medium">{{
+                currentUser?.name
+              }}</span>
               <svg
                 class="h-4 w-4 text-slate-400 transition-transform duration-200"
                 :class="{ 'rotate-180': showUserMenu }"
@@ -701,6 +705,4 @@ nav {
 .rotate-180 {
   transform: rotate(180deg);
 }
-
-
 </style>
