@@ -29,11 +29,7 @@
                 <template v-if="f.researchArea && f.researchArea.trim() !== ''">
                   <div style="display: inline-block">
                     <el-tag
-                      v-for="area in f.researchArea
-                        .split(',')
-                        .map((a: string) => a.trim())
-                        .filter(Boolean)
-                        .slice(0, 3)"
+                      v-for="area in getResearchAreas(f.researchArea).slice(0, 3)"
                       :key="area"
                       size="small"
                       class="mr-1 mb-1"
@@ -41,31 +37,14 @@
                       {{ area }}
                     </el-tag>
                     <el-tooltip
-                      v-if="
-                        f.researchArea
-                          .split(',')
-                          .map((a: string) => a.trim())
-                          .filter(Boolean).length > 3
-                      "
+                      v-if="getResearchAreas(f.researchArea).length > 3"
                       effect="dark"
-                      :content="
-                        f.researchArea
-                          .split(',')
-                          .map((a: string) => a.trim())
-                          .filter(Boolean)
-                          .slice(3)
-                          .join('，')
-                      "
+                      :content="getResearchAreas(f.researchArea).slice(3).join('，')"
                       type="info"
                       placement="top"
                     >
                       <el-tag size="small" type="info" effect="plain" class="more-areas"
-                        >+{{
-                          f.researchArea
-                            .split(',')
-                            .map((a: string) => a.trim())
-                            .filter(Boolean).length - 3
-                        }}</el-tag
+                        >+{{ getResearchAreas(f.researchArea).length - 3 }}</el-tag
                       >
                     </el-tooltip>
                   </div>
@@ -100,11 +79,7 @@
                 <template v-if="f.researchArea && f.researchArea.trim() !== ''">
                   <div style="display: inline-block">
                     <el-tag
-                      v-for="area in f.researchArea
-                        .split(',')
-                        .map((a: string) => a.trim())
-                        .filter(Boolean)
-                        .slice(0, 3)"
+                      v-for="area in getResearchAreas(f.researchArea).slice(0, 3)"
                       :key="area"
                       size="small"
                       class="mr-1 mb-1"
@@ -112,31 +87,14 @@
                       {{ area }}
                     </el-tag>
                     <el-tooltip
-                      v-if="
-                        f.researchArea
-                          .split(',')
-                          .map((a: string) => a.trim())
-                          .filter(Boolean).length > 3
-                      "
+                      v-if="getResearchAreas(f.researchArea).length > 3"
                       effect="dark"
-                      :content="
-                        f.researchArea
-                          .split(',')
-                          .map((a: string) => a.trim())
-                          .filter(Boolean)
-                          .slice(3)
-                          .join('，')
-                      "
+                      :content="getResearchAreas(f.researchArea).slice(3).join('，')"
                       type="info"
                       placement="top"
                     >
                       <el-tag size="small" type="info" effect="plain" class="more-areas"
-                        >+{{
-                          f.researchArea
-                            .split(',')
-                            .map((a: string) => a.trim())
-                            .filter(Boolean).length - 3
-                        }}</el-tag
+                        >+{{ getResearchAreas(f.researchArea).length - 3 }}</el-tag
                       >
                     </el-tooltip>
                   </div>
@@ -155,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineEmits, defineProps, onMounted, ref } from 'vue'
+import { defineEmits, defineProps, onMounted, ref, watch } from 'vue'
 import { getFollowers, getFollowing } from '@/api/modules/user'
 import { useRouter } from 'vue-router'
 // import { UserDetail } from '@/api/types/user'
@@ -172,11 +130,48 @@ const router = useRouter()
 const followers = ref<any[]>([])
 const following = ref<any[]>([])
 
-onMounted(async () => {
-  const followersRes = await getFollowers(props.id)
-  const followingRes = await getFollowing(props.id)
-  followers.value = followersRes.data
-  following.value = followingRes.data
+// 获取研究领域数组的辅助函数
+const getResearchAreas = (researchArea: string): string[] => {
+  if (!researchArea || researchArea.trim() === '') {
+    return []
+  }
+  return researchArea
+    .split(',')
+    .map((a: string) => a.trim())
+    .filter(Boolean)
+}
+
+// 获取数据的函数
+const fetchData = async () => {
+  try {
+    const followersRes = await getFollowers(props.id)
+    const followingRes = await getFollowing(props.id)
+    followers.value = followersRes.data
+    following.value = followingRes.data
+  } catch (error) {
+    console.error('获取关注数据失败:', error)
+    followers.value = []
+    following.value = []
+  }
+}
+
+// 监听 props.id 的变化
+watch(
+  () => props.id,
+  newId => {
+    if (newId) {
+      fetchData()
+    }
+  },
+  { immediate: true }
+)
+
+onMounted(() => {
+  // 如果 watch 的 immediate 为 true，这里就不需要重复调用
+  // 但为了确保数据加载，我们保留这个调用
+  if (props.id) {
+    fetchData()
+  }
 })
 
 const handleClick = (f: any) => {
@@ -246,9 +241,7 @@ const handleClick = (f: any) => {
   object-fit: cover;
   background: #e5e7eb;
   border: 1px solid #e0e7ff;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .follower-item:hover .follower-avatar {
   transform: scale(1.05);

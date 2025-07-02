@@ -416,7 +416,7 @@
                   <el-button size="small" type="default" plain @click="viewProjectDetail(project)">
                     查看详情
                   </el-button>
-                  <el-button size="small" type="default" plain @click="applyToProject(project)">
+                  <el-button :disabled="project.owner.id === userStore.user?.id" size="small" type="default" plain @click="applyToProject(project)">
                     申请加入
                   </el-button>
                 </div>
@@ -806,7 +806,7 @@ const handleShowFollowers = async () => {
     followingList.value = []
     showFollowersDialog.value = true
   } else {
-    ElMessage.warning('由于改用户的隐私设置，无法查看其关注信息')
+    ElMessage.warning('由于该用户的隐私设置，无法查看其关注信息')
   }
 }
 
