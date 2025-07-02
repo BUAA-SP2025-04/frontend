@@ -717,7 +717,8 @@ const filteredProjects = computed(() => {
         p.title.toLowerCase().includes(query) ||
         p.description.toLowerCase().includes(query) ||
         (p.researchArea || '').toLowerCase().includes(query) ||
-        (p.collaborationCondition || '').toLowerCase().includes(query)
+        (p.collaborationCondition || '').toLowerCase().includes(query) ||
+        (p.owner?.name || '').toLowerCase().includes(query)
     )
   }
 
