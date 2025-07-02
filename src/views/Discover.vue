@@ -146,12 +146,30 @@
           </div>
 
           <!-- 搜索建议标签 -->
-          <div v-if="!isAdvancedSearch" class="mt-4 flex flex-wrap gap-2 justify-center">
+          <div v-if="!isAdvancedSearch && !userStore.isAuthenticated" class="mt-4 flex flex-wrap gap-2 justify-center">
             <button
               v-for="suggestion in searchSuggestions"
               :key="suggestion"
               class="px-4 py-2 text-sm bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 text-gray-700 hover:text-indigo-700 rounded-full transition-all duration-200 cursor-pointer border border-gray-200 hover:border-indigo-300 hover:shadow-md transform hover:scale-105 font-medium"
-              @click="selectSuggestion(suggestion)"
+              @click="selectSuggestion(suggestion, 0)"
+            >
+              {{ suggestion }}
+            </button>
+          </div>
+          <div v-if="!isAdvancedSearch && userStore.isAuthenticated" class="mt-4 flex flex-wrap gap-2 justify-center">
+            <button
+              v-for="suggestion in institution"
+              :key="suggestion"
+              class="px-4 py-2 text-sm bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 text-gray-700 hover:text-indigo-700 rounded-full transition-all duration-200 cursor-pointer border border-gray-200 hover:border-indigo-300 hover:shadow-md transform hover:scale-105 font-medium"
+              @click="selectSuggestion(suggestion, 0)"
+            >
+              {{ suggestion }}
+            </button>
+            <button
+              v-for="suggestion in area"
+              :key="suggestion"
+              class="px-4 py-2 text-sm bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 text-gray-700 hover:text-indigo-700 rounded-full transition-all duration-200 cursor-pointer border border-gray-200 hover:border-indigo-300 hover:shadow-md transform hover:scale-105 font-medium"
+              @click="selectSuggestion(suggestion, 1)"
             >
               {{ suggestion }}
             </button>
@@ -425,7 +443,7 @@
                       ></path>
                     </svg>
                   </template>
-                  <el-option value="relevance" label="按相关性排序"></el-option>
+                  <!-- <el-option value="relevance" label="按相关性排序"></el-option> -->
                   <el-option value="followers" label="按粉丝数排序"></el-option>
                   <el-option value="publications" label="按发表数量排序"></el-option>
                   <el-option value="projects" label="按项目数排序"></el-option>
@@ -664,6 +682,8 @@ import {
   ElTooltip,
 } from 'element-plus'
 import { Back, Female, Male, Search } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
+import { getInstitution, getArea } from '@/api/modules/graph'
 
 const router = useRouter()
 const route = useRoute()
@@ -673,13 +693,16 @@ const activeCollapse = ref('')
 const searchSuggestions = ref([
   '人工智能',
   '机器学习',
-  '深度学习',
-  '计算机视觉',
-  '自然语言处理',
+  '数据科学',
+  '经济学',
+  '统计学',
   '清华大学',
   '北京大学',
-  'MIT',
+  '北京航空航天大学',
 ])
+
+const institution = ref([])
+const area = ref([])
 
 // 用户类型定义
 interface User {
@@ -708,6 +731,7 @@ const filters = reactive({
 const searchQuery = ref('')
 const searchType = ref('name')
 const searchString = ref('')
+const userStore = useUserStore()
 
 // 分页
 const currentPage = ref(1)
@@ -870,8 +894,8 @@ const performSearch = async () => {
   }
 }
 
-const selectSuggestion = (suggestion: string) => {
-  if (suggestion) {
+const selectSuggestion = (suggestion: string, type: number) => {
+  if (!userStore.isAuthenticated && suggestion) {
     searchQuery.value = suggestion
     if (suggestion == '清华大学' || suggestion == '北京大学' || suggestion == 'MIT') {
       searchType.value = 'institution'
@@ -879,6 +903,14 @@ const selectSuggestion = (suggestion: string) => {
       searchType.value = 'field'
     }
     // performSearch()
+  } else {
+    if (type == 0) {
+      searchQuery.value = suggestion
+      searchType.value = 'institution'
+    } else {
+      searchQuery.value = suggestion
+      searchType.value = 'field'
+    }
   }
 }
 
@@ -926,6 +958,29 @@ onMounted(() => {
     searchType.value = 'field'
     searchQuery.value = field.trim()
     performSearch()
+  }
+  if (userStore.isAuthenticated) {
+    getInstitution(userStore.user?.id as number).then(res => {
+    // 取出count最大的前4项机构
+    if (res && res.data && Array.isArray(res.data.links)) {
+      const topInstitutions = res.data.links
+        .filter((link: any) => link.attr && typeof link.attr.count === 'number' && link.formatter !== "WORKS_IN")
+        .sort((a: any, b: any) => b.attr.count - a.attr.count)
+        .slice(0, 4)
+        .map((link: any) => link.toId)
+      institution.value = topInstitutions
+    }
+    })
+    getArea(userStore.user?.id as number).then(res => {
+      if (res && res.data && Array.isArray(res.data.links)) {
+      const topAreas = res.data.links
+        .filter((link: any) => link.attr && typeof link.attr.count === 'number' && link.formatter !== "WORKS_IN")
+        .sort((a: any, b: any) => b.attr.count - a.attr.count)
+        .slice(0, 4)
+        .map((link: any) => link.toId)
+      area.value = topAreas
+    }
+    })
   }
 })
 
@@ -1143,9 +1198,7 @@ const performAdvancedSearch = async () => {
   transition: all 0.2s ease-in-out;
 }
 .filter-collapse :deep(.el-collapse-item__header:hover) {
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.1),
-    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   border-color: #e5e7eb;
 }
 .filter-collapse :deep(.el-collapse-item__header.is-active) {
@@ -1265,9 +1318,7 @@ const performAdvancedSearch = async () => {
 }
 .custom-select .el-input__wrapper:hover {
   border-color: #a5b4fc;
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.1),
-    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 .custom-select .el-input__inner {
   font-weight: 500;

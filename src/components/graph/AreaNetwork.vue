@@ -129,6 +129,13 @@ const graphContainer = ref<HTMLElement | null>(null)
 let chart: echarts.ECharts | null = null
 const userStore = useUserStore()
 
+const linkTypeColorMap: Record<string, string> = {
+  MAJORS_IN: '#10b981', // 绿色
+  FOLLOWS_AREA: '#a855f7', // 紫色
+  BELONGS_TO: '#3b82f6', // 蓝色
+  DEFAULT: '#64748b', // 灰色
+}
+
 const initializeChart = () => {
   if (!graphContainer.value) return
   chart = echarts.init(graphContainer.value, props.isDarkMode ? 'dark' : undefined)
@@ -148,6 +155,7 @@ const loadGraphData = async () => {
 
     const response = await getArea(user.id)
     if (response.data) {
+      // 处理API返回的节点数据
       const processedNodes = response.data.nodes.map((node: any) => {
         if (typeof node.id === 'string') {
           // 研究领域节点（字符串ID）
@@ -171,7 +179,54 @@ const loadGraphData = async () => {
         }
       })
 
-      const processedLinks = response.data.links.map((link: any) => ({
+      // 处理连接数据：对相同toId和fromId的连接，优先保留MAJORS_IN类型
+      const linkMap = new Map()
+      response.data.links.forEach((link: any) => {
+        const key = `${link.fromId.toString()}-${link.toId.toString()}`
+        const reverseKey = `${link.toId.toString()}-${link.fromId.toString()}`
+
+        // 检查是否已存在连接
+        const existingLink = linkMap.get(key) || linkMap.get(reverseKey)
+
+        if (!existingLink) {
+          // 如果不存在连接，直接添加
+          linkMap.set(key, link)
+        } else {
+          // 如果存在连接，检查当前连接是否为 MAJORS_IN 类型
+          const currentFormatter = link.formatter || 'MAJORS_IN'
+          const existingFormatter = existingLink.formatter || 'MAJORS_IN'
+
+          if (currentFormatter === 'MAJORS_IN' && existingFormatter !== 'MAJORS_IN') {
+            // 当前连接是 MAJORS_IN，替换现有连接
+            linkMap.delete(key)
+            linkMap.delete(reverseKey)
+            linkMap.set(key, link)
+          }
+          // 如果当前连接不是 MAJORS_IN 或现有连接已经是 MAJORS_IN，则保持现有连接
+        }
+      })
+
+      // 分离 MAJORS_IN 和其他类型的连接
+      const majorsInLinks = Array.from(linkMap.values()).filter(
+        (link: any) => (link.formatter || 'MAJORS_IN') === 'MAJORS_IN'
+      )
+      const otherLinks = Array.from(linkMap.values()).filter(
+        (link: any) => (link.formatter || 'MAJORS_IN') !== 'MAJORS_IN'
+      )
+
+      // 对非 MAJORS_IN 连接按 attr.count 排序，只保留最大的5个
+      const sortedOtherLinks = otherLinks
+        .sort((a: any, b: any) => {
+          const countA = Number(a.attr?.count) || 0
+          const countB = Number(b.attr?.count) || 0
+          return countB - countA
+        })
+        .slice(0, 5)
+
+      // 合并 MAJORS_IN 连接和筛选后的其他连接
+      const allKeptLinks = [...majorsInLinks, ...sortedOtherLinks]
+
+      const processedLinks = allKeptLinks.map((link: any) => ({
         source: link.fromId.toString(),
         target: link.toId.toString(),
         label: { show: false, formatter: link.formatter || 'MAJORS_IN' },
@@ -203,6 +258,7 @@ const loadUserGraph = async (userId: string) => {
 
     const response = await getArea(userId)
     if (response.data) {
+      // 处理API返回的节点数据
       const processedNodes = response.data.nodes.map((node: any) => {
         if (typeof node.id === 'string') {
           // 研究领域节点（字符串ID）
@@ -226,7 +282,54 @@ const loadUserGraph = async (userId: string) => {
         }
       })
 
-      const processedLinks = response.data.links.map((link: any) => ({
+      // 处理连接数据：对相同toId和fromId的连接，优先保留MAJORS_IN类型
+      const linkMap = new Map()
+      response.data.links.forEach((link: any) => {
+        const key = `${link.fromId.toString()}-${link.toId.toString()}`
+        const reverseKey = `${link.toId.toString()}-${link.fromId.toString()}`
+
+        // 检查是否已存在连接
+        const existingLink = linkMap.get(key) || linkMap.get(reverseKey)
+
+        if (!existingLink) {
+          // 如果不存在连接，直接添加
+          linkMap.set(key, link)
+        } else {
+          // 如果存在连接，检查当前连接是否为 MAJORS_IN 类型
+          const currentFormatter = link.formatter || 'MAJORS_IN'
+          const existingFormatter = existingLink.formatter || 'MAJORS_IN'
+
+          if (currentFormatter === 'MAJORS_IN' && existingFormatter !== 'MAJORS_IN') {
+            // 当前连接是 MAJORS_IN，替换现有连接
+            linkMap.delete(key)
+            linkMap.delete(reverseKey)
+            linkMap.set(key, link)
+          }
+          // 如果当前连接不是 MAJORS_IN 或现有连接已经是 MAJORS_IN，则保持现有连接
+        }
+      })
+
+      // 分离 MAJORS_IN 和其他类型的连接
+      const majorsInLinks = Array.from(linkMap.values()).filter(
+        (link: any) => (link.formatter || 'MAJORS_IN') === 'MAJORS_IN'
+      )
+      const otherLinks = Array.from(linkMap.values()).filter(
+        (link: any) => (link.formatter || 'MAJORS_IN') !== 'MAJORS_IN'
+      )
+
+      // 对非 MAJORS_IN 连接按 attr.count 排序，只保留最大的5个
+      const sortedOtherLinks = otherLinks
+        .sort((a: any, b: any) => {
+          const countA = Number(a.attr?.count) || 0
+          const countB = Number(b.attr?.count) || 0
+          return countB - countA
+        })
+        .slice(0, 5)
+
+      // 合并 MAJORS_IN 连接和筛选后的其他连接
+      const allKeptLinks = [...majorsInLinks, ...sortedOtherLinks]
+
+      const processedLinks = allKeptLinks.map((link: any) => ({
         source: link.fromId.toString(),
         target: link.toId.toString(),
         label: { show: false, formatter: link.formatter || 'MAJORS_IN' },
@@ -253,34 +356,75 @@ const loadUserGraph = async (userId: string) => {
 }
 
 const prepareChartData = (nodes: any[], links: any[]) => {
-  const chartNodes = nodes.map(node => ({
-    id: node.id,
-    name: node.name,
-    symbolSize: node.type == 'user' ? Math.min(
-      50,
-      30 + (Number(node.publicationNum) || 0) * 1.5 + (Number(node.projectNum) || 0) * 2.5
-    ) : Math.min(50, 30 + (Number(node.publicationNum) || 0) * 1.5 + (Number(node.projectNum) || 0) * 1.5 + (Number(node.subscribeNum) || 0) * 1),
-    itemStyle: {
-      color: node.type === 'user' ? '#8b5cf6' : '#10b981',
-    },
-    symbol: node.type === 'user' ? 'circle' : 'rect',
-    category: node.category,
-    ...node,
-  }))
+  // 统计每个to节点的link类型（只取第一个指向它的link类型）
+  const toNodeTypeMap: Record<string, string> = {}
+  links.forEach(link => {
+    if (!toNodeTypeMap[link.target]) {
+      toNodeTypeMap[link.target] = link.relationshipType
+    }
+  })
 
-  const chartLinks = links.map(link => ({
-    source: link.source,
-    target: link.target,
-    value: 1,
-    lineStyle: {
-      color: '#10b981',
-      width: link.attr && !isNaN(Number(link.attr.count)) ? Math.max(2, Number(link.attr.count)) : 2,
-      type: 'solid',
-    },
-    label: link.label,
-    relationshipType: link.label?.formatter || 'MAJORS_IN',
-    ...link,
-  }))
+  const chartNodes = nodes.map(node => {
+    // 如果该节点是to节点，优先用linkTypeColorMap，否则用原有逻辑
+    const toType = toNodeTypeMap[node.id]
+    const color = toType
+      ? linkTypeColorMap[toType] || linkTypeColorMap.DEFAULT
+      : node.type === 'user'
+      ? '#8b5cf6'
+      : '#10b981'
+    return {
+      id: node.id,
+      name: node.name,
+      symbolSize:
+        node.type == 'user'
+          ? Math.min(
+              50,
+              30 + (Number(node.publicationNum) || 0) * 1.5 + (Number(node.projectNum) || 0) * 2.5
+            )
+          : Math.min(
+              50,
+              30 +
+                (Number(node.publicationNum) || 0) * 1.5 +
+                (Number(node.projectNum) || 0) * 1.5 +
+                (Number(node.subscribeNum) || 0) * 1
+            ),
+      itemStyle: {
+        color,
+      },
+      symbol: node.type === 'user' ? 'circle' : 'rect',
+      category: node.category,
+      ...node,
+    }
+  })
+
+  const chartLinks = links.map(link => {
+    // 根据关系类型选择颜色
+    const color = linkTypeColorMap[link.relationshipType] || linkTypeColorMap.DEFAULT
+
+    // 计算连线粗细，基于 attr.count
+    let lineWidth = 2 // 默认宽度
+    if (link.attr && link.attr.count !== undefined && link.attr.count !== null) {
+      const count = Number(link.attr.count)
+      if (!isNaN(count) && count > 0) {
+        // 根据 count 值计算宽度，可以调整这个公式来获得更好的视觉效果
+        lineWidth = Math.max(1, Math.min(8, 2 + count * 0.5))
+      }
+    }
+
+    return {
+      source: link.source,
+      target: link.target,
+      value: 1,
+      lineStyle: {
+        color,
+        width: lineWidth,
+        type: 'solid',
+      },
+      label: link.label,
+      relationshipType: link.label?.formatter || 'MAJORS_IN',
+      ...link,
+    }
+  })
 
   return { nodes: chartNodes, links: chartLinks }
 }
@@ -318,9 +462,8 @@ const updateChart = (chartInstance: echarts.ECharts, data: any) => {
           scale: true,
           lineStyle: {
             width: 4,
-            color: '#10b981',
             shadowBlur: 10,
-            shadowColor: 'rgba(16, 185, 129, 0.5)',
+            shadowColor: 'rgba(0, 0, 0, 0.3)',
           },
           itemStyle: {
             shadowBlur: 10,
@@ -358,6 +501,8 @@ const updateChart = (chartInstance: echarts.ECharts, data: any) => {
             } 个</div>
             `
           }
+        } else if (params.dataType === 'edge') {
+          return formatEdgeTooltip(params.data)
         }
         return ''
       },
@@ -441,6 +586,35 @@ const loadAreaResearchers = async (areaName: string, researchersData: any) => {
   } finally {
     loading.value = false
   }
+}
+
+const formatEdgeTooltip = (edge: any) => {
+  const sourceNode = graphNodes.value.find(node => node.id.toString() === edge.source)
+  const targetNode = graphNodes.value.find(node => node.id.toString() === edge.target)
+
+  // 获取连接强度信息
+  let strengthText = ''
+  if (edge.attr && edge.attr.count !== undefined && edge.attr.count !== null) {
+    const count = Number(edge.attr.count)
+    if (!isNaN(count) && count > 0) {
+      strengthText = ` (强度: ${count})`
+    }
+  }
+
+  if (sourceNode && targetNode) {
+    return `
+      <div>
+        <div style=\"font-size: 12px; color: #64748b; line-height: 1.4;\">
+          <span style=\"color: #334155; font-weight: 500;\">${sourceNode.name}</span>
+          <span style=\"margin: 0 4px; color: #8b5cf6; font-weight: bold;\">${
+            edge.relationshipType == 'FOLLOWS_AREA' ? '关注' : '研究'
+          }${strengthText}</span>
+          <span style=\"color: #334155; font-weight: 500;\">${targetNode.name}</span>
+        </div>
+      </div>
+    `
+  }
+  return ''
 }
 
 // 应用分页
