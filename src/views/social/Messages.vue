@@ -802,6 +802,7 @@ const markAllAsRead = async () => {
 
     await messagesAPI.markAllAsRead(apiCategory)
     ElMessage.success('已全部标记为已读')
+    await notificationStore.clearNotifications()
 
     // 前端直接更新状态，避免重新请求
     updateAllAsRead()
@@ -1274,63 +1275,49 @@ const getNotificationTitle = (content: string, type: string) => {
   return titleMap[type] || '系统通知'
 }
 
-// 🔥 新增辅助函数：从content解析活动类型
+// 🔥 优化：解析活动类型
 const parseActivityType = (content: string) => {
-  if (content.includes('上传') || content.includes('论文')) return 'publish_paper'
-  if (content.includes('关注的问题')) return 'question_answer'
-  else if (content.includes('关注')) return 'follow'
-
-  if (content.includes('项目')) return 'start_project'
-  if (content.includes('会议')) return 'join_conference'
-  if (content.includes('点赞')) return 'like'
-  if (content.includes('评论')) return 'comment'
-  
-  return 'follow' // 默认类型
+  if (/关注了你|你关注的用户|关注/.test(content)) return 'follow'
+  if (/上传了新成果|上传/.test(content)) return 'publish_paper'
+  if (/申请加入|申请请求|提交申请/.test(content)) return 'join_project'
+  if (/同意了.*申请/.test(content)) return 'accept_application'
+  if (/论文/.test(content)) return 'publish_paper'
+  if (/回答被点赞|被点赞/.test(content)) return 'like'
+  if (/有了新回答/.test(content)) return 'answer'
+  if (/评论/.test(content)) return 'comment'
+  return 'activity'
 }
 
-// 🔥 新增辅助函数：从content解析内容信息
+// 🔥 优化：解析内容信息
 const parseContentFromActivity = (content: string) => {
-  // 根据活动类型生成对应的标题和描述
-  if (content.includes('成果')) {
-    return {
-      title: '项目动态',
-      description: content,
-    }
-  } else if (content.includes('发表') || content.includes('论文')) {
-    return {
-      title: '发表成果',
-      description: content,
-    }
-  } else if (content.includes('关注')) {
-    return {
-      title: '问题回答',
-      description: content,
-    }
-  } else if (content.includes('会议')) {
-    return {
-      title: '会议活动',
-      description: content,
-    }
-  } else if (content.includes('点赞')) {
-    return {
-      title: '获得点赞',
-      description: content,
-    }
-  } else if (content.includes('评论')) {
-    return {
-      title: '新增评论',
-      description: content,
-    }
-  } else if(content.includes('加入请求')) {
-    return {
-      title: '项目申请',
-      description: content,
-    }
+  if (/你的问题有了新回答/.test(content)) {
+    return { title: '新回答提醒', description: content }
   }
-  return {
-    title: '动态更新',
-    description: content,
+  if (/你关注的问题有了新回答/.test(content)) {
+    return { title: '关注问题新回答', description: content }
   }
+  if (/关注了你/.test(content)) {
+    return { title: '新增关注', description: content }
+  }
+  if (/申请加入|申请请求|提交申请/.test(content)) {
+    return { title: '项目申请', description: content }
+  }
+  if (/同意了.*申请/.test(content)) {
+    return { title: '申请通过', description: content }
+  }
+  if (/被点赞/.test(content)) {
+    return { title: '获得点赞', description: content }
+  }
+  if (/上传了新成果/.test(content)) {
+    return { title: '新成果上传', description: content }
+  }
+  if (/论文/.test(content)) {
+    return { title: '发表论文', description: content }
+  }
+  if (/评论/.test(content)) {
+    return { title: '新增评论', description: content }
+  }
+  return { title: '动态提醒', description: content }
 }
 
 // 加载全部好友
@@ -1402,6 +1389,20 @@ const getActivityLabel = (type: string) => {
   }
   return labels[type] || '动态更新'
 }
+// 新增：加载所有消息
+const loadAllMessages = async () => {
+  // 加载私信
+  activeCategory.value = 'chat'
+  await loadCurrentCategory()
+  // 加载系统通知
+  activeCategory.value = 'system'
+  await loadCurrentCategory()
+  // 加载动态提醒
+  activeCategory.value = 'activity'
+  await loadCurrentCategory()
+  // 恢复默认激活分类
+  activeCategory.value = 'chat'
+}
 
 // 页面初始化
 onMounted(async () => {
@@ -1419,7 +1420,7 @@ onMounted(async () => {
   } catch (error) {
     console.warn('加载设置失败，使用默认设置:', error)
   }
-  await Promise.all([loadCurrentCategory(), loadAllFriends()])
+  await Promise.all([loadAllMessages(), loadAllFriends()])
 })
 </script>
 

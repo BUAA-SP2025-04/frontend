@@ -724,7 +724,7 @@
                       >
                         <path
                           stroke-linecap="round"
-                          stroke-linejoin="round"
+                          stroke-linejoin="round"                          
                           stroke-width="2"
                           d="M13 10V3L4 14h7v7l9-11h-7z"
                         />
@@ -2054,4 +2054,32 @@ mark {
   padding: 1px 2px;
   border-radius: 2px;
 }
+</style>
+<style>
+.el-popover {
+  background-color: #fff !important;
+  color: #222 !important;
+}
+html.dark .el-popover {
+  background-color: #1f2937 !important; /* Tailwind 的 bg-gray-800 */
+  color: #f3f4f6 !important;           /* Tailwind 的 text-gray-100 */
+}
+
+.el-popper__arrow,
+.el-popper__arrow::before,
+.el-popover__arrow,
+.el-popover__arrow::before {
+  background: #fff !important;
+  border-color: #e5e7eb !important;  
+    border-width: 1px !important;
+  border-style: solid !important;
+}
+html.dark .el-popper__arrow,
+html.dark .el-popper__arrow::before,
+html.dark .el-popover__arrow,
+html.dark .el-popover__arrow::before {
+  display: none !important;
+}
+
+
 </style>
