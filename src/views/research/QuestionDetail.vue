@@ -1675,14 +1675,14 @@ const submitAnswer = async () => {
     let isReplyToQuestion = replyingToAnswerId.value === null && isReplyingToQuestion.value
     let isReplyToAnswer = false
     let isReplyToChildAnswer = false
-    let targetAnswerId = null
+    let targetAnswerId: number | null = null
     
     if (replyingToAnswerId.value !== null && replyingToAnswerId.value !== undefined) {
       // 先查找1级回答
       const answer = question.value.answers?.find(a => a.id === replyingToAnswerId.value?.toString())
       if (answer) {
         isReplyToAnswer = true
-        targetAnswerId = answer.id
+        targetAnswerId = Number(answer.id)
       } else {
         // 查找2级回答
         for (const parentAnswer of question.value.answers || []) {
@@ -1691,7 +1691,7 @@ const submitAnswer = async () => {
           )
           if (childAnswer) {
             isReplyToChildAnswer = true
-            targetAnswerId = parentAnswer.id // 2级回复应该添加到其父级1级回答中
+            targetAnswerId = Number(parentAnswer.id) // 2级回复应该添加到其父级1级回答中
             break
           }
         }
@@ -1701,7 +1701,7 @@ const submitAnswer = async () => {
     const requestData: AnswerQuestionRequest = {
       questionId: parseInt(question.value.id),
       content: newAnswerContent.value.trim(),
-      answerId: targetAnswerId ? parseInt(targetAnswerId) : -1, // 如果是回复某个回答，使用该回答的ID，否则为-1
+      answerId: targetAnswerId !== null ? targetAnswerId : -1, // 如果是回复某个回答，使用该回答的ID，否则为-1
     }
     console.log('提交回答请求数据:', requestData)
 
@@ -1711,7 +1711,7 @@ const submitAnswer = async () => {
     if (response && response.code === '200') {
       // 如果是2级回复，立即添加到对应的1级回答中
       if (isReplyToAnswer || isReplyToChildAnswer) {
-        const targetAnswer = question.value.answers?.find(a => a.id === targetAnswerId)
+        const targetAnswer = question.value.answers?.find(a => Number(a.id) === targetAnswerId)
         if (targetAnswer && response.data) {
           // 创建新的2级回复对象
           const newChildAnswer = {
