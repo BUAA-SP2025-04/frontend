@@ -1033,7 +1033,7 @@ const getActivityTagColor = (type: string) => {
     join_conference: 'bg-orange-100 text-orange-700 border border-orange-200',
     like: 'bg-pink-100 text-pink-700 border border-pink-200',
     comment: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
-    answer: 'bg-cyan-100 text-cyan-700 border border-cyan-200',
+    question_answer: 'bg-cyan-100 text-cyan-700 border border-cyan-200',
     accept_application: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
     activity: 'bg-gray-100 text-gray-700 border border-gray-200',
   }
@@ -1438,7 +1438,7 @@ const getActivityLabel = (type: string) => {
     join_conference: '会议参与',
     like: '点赞互动',
     comment: '评论互动',
-    answer: '回答更新',
+    question_answer: '回答更新',
     accept_application: '申请通过',
     join_project: '项目申请',
   }

@@ -583,24 +583,43 @@ watch(isAuthenticated, (newValue, oldValue) => {
   }
 })
 
+const parseActivityType = (content: string) => {
+  if (/上传了新成果|上传/.test(content)) return 'publish_paper'
+  if (/申请加入|申请请求|提交申请/.test(content)) return 'start_project'
+  if (/同意了.*申请/.test(content)) return 'start_project'
+  if (/论文/.test(content)) return 'publish_paper'
+  if (/回答被点赞|被点赞/.test(content)) return 'like'
+  if (/有了新回答/.test(content)) return 'question_answer'
+  if (/评论/.test(content)) return 'comment'
+  if (/关注了你|你关注的用户|关注/.test(content)) return 'follow'
+  return 'activity'
+}
+
 const handleNotificationClick = async (notification: Notification) => {
   if (!notification.isRead) {
+    const type = parseActivityType(notification.content)
     await notificationStore.markNotificationAsRead(notification.type, notification.id)
-  }
-  showNotifications.value = false
-
-  // 根据通知类型跳转
-  switch (notification.type) {
-    case 'comment':
-      router.push('/timeline')
-      break
-    case 'activity':
+    switch (type) {
+    case 'follow':
       router.push(`/user/${notification.senderId}`)
       break
-    case 'system':
-      // 系统通知不跳转
+    case 'publish_paper':
+      router.push(`/publication/${notification.publicationId}`)
+      break
+    case 'start_project':
+      router.push(`/research/my-workspace`)
+      break
+    case 'question_answer':
+      router.push(`/research/my-questions`)
+      break
+    case 'like':
+      router.push(`/research/my-questions`)
       break
   }
+  }
+  showNotifications.value = false
+  // 根据通知类型跳转
+  
 }
 
 const logout = async () => {
