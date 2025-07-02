@@ -946,7 +946,21 @@ const handleActivityClick = (activity: ActivityNotification) => {
   if (!activity.isRead) {
     markAsReadLocal('activity', activity.id)
   }
-  router.push(`/user/${activity.user.id}`)
+  console.log(activity)
+  switch(activity.type) {
+    case 'follow':
+      router.push(`/user/${activity.user.id}`)
+      break
+    case 'publish_paper':
+      router.push(`/publication/${activity.publicationId}`)
+      break
+    case 'start_project':
+      router.push(`/research/my-workspace`)
+      break
+    case 'question_answer':
+      router.push(`/research/my-questions`)
+      break
+  }
 }
 
 const getFullImageUrl = (imageUrl: string | null) => {
@@ -970,6 +984,7 @@ const getActivityTagColor = (type: string) => {
     join_conference: 'bg-orange-100 text-orange-700 border border-orange-200',
     like: 'bg-red-100 text-red-700 border border-red-200',
     comment: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
+    question_answer: 'bg-purple-100 text-purple-700 border border-purple-200',
   }
   return colors[type] || 'bg-gray-100 text-gray-700 border border-gray-200'
 }
@@ -1262,12 +1277,14 @@ const getNotificationTitle = (content: string, type: string) => {
 // 🔥 新增辅助函数：从content解析活动类型
 const parseActivityType = (content: string) => {
   if (content.includes('上传') || content.includes('论文')) return 'publish_paper'
+  if (content.includes('关注的问题')) return 'question_answer'
   else if (content.includes('关注')) return 'follow'
 
   if (content.includes('项目')) return 'start_project'
   if (content.includes('会议')) return 'join_conference'
   if (content.includes('点赞')) return 'like'
   if (content.includes('评论')) return 'comment'
+  
   return 'follow' // 默认类型
 }
 
@@ -1281,12 +1298,12 @@ const parseContentFromActivity = (content: string) => {
     }
   } else if (content.includes('发表') || content.includes('论文')) {
     return {
-      title: '发表论文',
+      title: '发表成果',
       description: content,
     }
   } else if (content.includes('关注')) {
     return {
-      title: '新增关注',
+      title: '问题回答',
       description: content,
     }
   } else if (content.includes('会议')) {
@@ -1304,8 +1321,12 @@ const parseContentFromActivity = (content: string) => {
       title: '新增评论',
       description: content,
     }
+  } else if(content.includes('加入请求')) {
+    return {
+      title: '项目申请',
+      description: content,
+    }
   }
-
   return {
     title: '动态更新',
     description: content,
@@ -1372,11 +1393,12 @@ const loadAllFriends = async () => {
 const getActivityLabel = (type: string) => {
   const labels: Record<string, string> = {
     follow: '新增关注',
-    publish_paper: '论文发表',
-    start_project: '项目启动',
+    publish_paper: '成果发表',
+    start_project: '项目申请',
     join_conference: '会议参与',
     like: '点赞互动',
     comment: '评论互动',
+    question_answer: '问题回答',
   }
   return labels[type] || '动态更新'
 }
