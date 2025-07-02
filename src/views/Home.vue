@@ -484,16 +484,16 @@
               <h3
                 class="text-2xl font-bold text-gray-900 mb-4 group-hover:text-teal-600 transition-colors"
               >
-                学术社交
+                知识图谱
               </h3>
               <p class="text-gray-600 mb-6 leading-relaxed">
-                连接志同道合的研究者，分享学术动态，建立合作关系
+                可视化展示研究者、机构、领域之间的关系, 便捷探索研究者、机构、领域之间的关系
               </p>
               <router-link
                 to="/research/knowledge-graph"
                 class="inline-flex items-center text-teal-600 hover:text-teal-700 font-bold group-hover:translate-x-2 transition-all duration-300"
               >
-                查看动态
+                查看图谱
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
@@ -529,16 +529,16 @@
               <h3
                 class="text-2xl font-bold text-gray-900 mb-4 group-hover:text-rose-600 transition-colors"
               >
-                PDF阅读器
+                科研问答
               </h3>
               <p class="text-gray-600 mb-6 leading-relaxed">
-                智能PDF阅读工具，支持文本提取、标注和坐标定位
+                科研问答，便捷获取科研信息，与同行学者交流讨论
               </p>
               <router-link
-                to="/pdf-reader"
+                to="/research/qa"
                 class="inline-flex items-center text-rose-600 hover:text-rose-700 font-bold group-hover:translate-x-2 transition-all duration-300"
               >
-                开始阅读
+                前往提问
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
