@@ -416,7 +416,7 @@
                   <el-button size="small" type="default" plain @click="viewProjectDetail(project)">
                     查看详情
                   </el-button>
-                  <el-button size="small" type="default" plain @click="applyToProject(project)">
+                  <el-button :disabled="project.owner.id === userStore.user?.id" size="small" type="default" plain @click="applyToProject(project)">
                     申请加入
                   </el-button>
                 </div>
@@ -458,6 +458,7 @@ import {
   getUserDetail,
   getUserPapers,
   unfollow,
+  getUserStrangerSetting
 } from '@/api/modules/user'
 import type { Paper, UserDetail } from '@/api/types/user'
 import type { Author } from '@/api/types/publication'
@@ -805,7 +806,7 @@ const handleShowFollowers = async () => {
     followingList.value = []
     showFollowersDialog.value = true
   } else {
-    ElMessage.warning('由于改用户的隐私设置，无法查看其关注信息')
+    ElMessage.warning('由于该用户的隐私设置，无法查看其关注信息')
   }
 }
 
@@ -844,6 +845,18 @@ const handleChat = async () => {
 }
 
 const handleMessageSend = async (userId: number) => {
+  // 新增：判断对方是否允许私信
+  try {
+    const res = await getUserStrangerSetting(userId.toString())
+    if (res && res.data === false) {
+      ElMessage.warning('该用户已关闭私信，无法发送消息')
+      return
+    }
+  } catch (e) {
+    ElMessage.error('无法获取用户私信设置，请稍后重试')
+    return
+  }
+
   // 生成标准格式的 conversationId
   const myId = currentUserId.value
   const conversationId = `conv_${Math.min(myId, userId)}_${Math.max(myId, userId)}`

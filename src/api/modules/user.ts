@@ -97,3 +97,9 @@ export function getFollowing(id: string | number) {
     params: { id },
   })
 }
+
+export function getUserStrangerSetting(uid: string) {
+  return request.get('/user/setting/stranger', {
+    params: { uid },
+  })
+}

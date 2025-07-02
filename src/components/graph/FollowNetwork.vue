@@ -352,8 +352,6 @@ const prepareChartData = (nodes: any[], links: any[]) => {
 
 // 更新图表
 const updateChart = (chartInstance: echarts.ECharts, data: any) => {
-  console.log(111)
-  console.log(data)
   const option = {
     animationDuration: 1500,
     series: [

@@ -520,7 +520,7 @@
                   :class="{ 'justify-center': graphType !== 'follow' }"
                 >
                   <button
-                    v-if="!(graphType === 'institution' && selectedNode?.type === 'user')"
+                    v-if="showDetail"
                     @click="loadUserGraph(selectedNode.id)"
                     :class="{ 'col-span-2': selectedNode?.type !== 'user' }"
                     class="flex items-center justify-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-sm transition-all duration-200 text-sm"
@@ -532,7 +532,7 @@
                   <button
                     v-if="selectedNode?.type === 'user'"
                     :class="{
-                      'col-span-2': graphType === 'institution' && selectedNode?.type === 'user',
+                      'col-span-2': !showDetail,
                     }"
                     @click="goToUserProfile(selectedNode.id)"
                     class="flex items-center justify-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-medium shadow-sm transition-all duration-200 text-sm"
@@ -613,7 +613,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { onClickOutside } from '@vueuse/core'
 import { Female, Male, Moon, Sunny } from '@element-plus/icons-vue'
-import { getUserDetail } from '../../api/modules/user'
+import { getUserDetail, getShowFollow } from '../../api/modules/user'
 import { getResearcherByArea, getResearcherByInstitution } from '../../api/modules/graph'
 import { useUserStore } from '@/stores/user'
 import FollowNetwork from '@/components/graph/FollowNetwork.vue'
@@ -629,6 +629,7 @@ const optionsDropdown = ref<HTMLElement | null>(null)
 const followNetworkRef = ref<any>(null)
 const institutionNetworkRef = ref<any>(null)
 const areaNetworkRef = ref<any>(null)
+const showFollow = ref(false)
 
 // 基础状态
 const loading = ref(false)
@@ -691,13 +692,15 @@ onBeforeUnmount(() => {
 const handleNodeClick = async (nodeData: any) => {
   // 立即设置选中的节点，显示基本信息
   selectedNode.value = nodeData
-
   // 根据节点类型处理
   if (nodeData.type === 'user') {
     loadingUserDetail.value = true
 
     try {
-      const response = await getUserDetail(nodeData.id)
+      const [response, res] = await Promise.all([
+        getUserDetail(nodeData.id),
+        getShowFollow(nodeData.id),
+      ])
       if (response.data) {
         // 合并原始节点数据和详细信息
         selectedNode.value = {
@@ -709,6 +712,9 @@ const handleNodeClick = async (nodeData: any) => {
           initials: response.data.name ? response.data.name.charAt(0) : nodeData.initials,
         }
         console.log('用户详细信息获取成功')
+      }
+      if (res.data) {
+        showFollow.value = res.data
       }
     } catch (error) {
       console.error('获取用户详细信息失败:', error)
@@ -845,6 +851,8 @@ const loadUserGraph = async (nodeId: string) => {
       followNetworkRef.value.loadUserGraph(nodeId)
     } else if (graphType.value === 'area' && areaNetworkRef.value) {
       areaNetworkRef.value.loadUserGraph(nodeId)
+    } else if (graphType.value === 'institution' && institutionNetworkRef.value) {
+      institutionNetworkRef.value.loadUserGraph(nodeId)
     }
   } else if (
     selectedNode.value?.type === 'language' ||
@@ -975,6 +983,10 @@ const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement
   img.style.display = 'none'
 }
+
+const showDetail = computed(() => {
+  return (selectedNode.value?.type === 'user' && showFollow.value && graphType.value === 'follow') || (selectedNode.value?.type !== 'user')
+})
 </script>
 
 <style scoped>
