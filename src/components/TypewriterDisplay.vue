@@ -32,7 +32,7 @@
 
       <div v-else class="empty-state">
         <div class="empty-icon">📄</div>
-        <p>点击开始生成摘要</p>
+        <p>等待摘要生成</p>
       </div>
     </div>
 
@@ -43,11 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { marked } from 'marked'
-import { md2pdfstream, md2pdf, runWorkflow } from '@/api/modules/abstract'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+import { md2pdf, runWorkflow } from '@/api/modules/abstract'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 
@@ -57,17 +55,20 @@ interface Props {
   autoStart?: boolean
   typingSpeed?: number
   useTypewriter?: boolean
+  title?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   autoStart: true,
   typingSpeed: 100,
   useTypewriter: false,
+  title: '',
 })
 
 const emit = defineEmits<{
   complete: [content: string]
   error: [error: string]
+  downloadingPdf: [downloading: boolean]
 }>()
 
 const contentRef = ref<HTMLElement>()
@@ -79,6 +80,7 @@ const error = ref('')
 const currentIndex = ref(0)
 const isStreaming = ref(false)
 const streamStartTime = ref(0)
+const downloadingPdf = ref(false)
 
 const renderedContent = computed(() => {
   if (!displayedContent.value) return ''
@@ -237,6 +239,9 @@ const pdfOptions = {
 
 // 优化现有下载方法
 const downloadPdf = async (filename = '摘要.pdf') => {
+  if (downloadingPdf.value) return
+  emit('downloadingPdf', true)
+  downloadingPdf.value = true
   const content = fullContent.value || displayedContent.value || '暂无摘要内容'
 
   // 检查是否有有效内容
@@ -267,7 +272,7 @@ const downloadPdf = async (filename = '摘要.pdf') => {
 
     let fileUrl = response.data
 
-    const pdfBlob = await request.get(fileUrl, { responseType: 'blob' }) as Blob
+    const pdfBlob = (await request.get(fileUrl, { responseType: 'blob' })) as Blob
     // 3. 创建下载链接
     const url = URL.createObjectURL(pdfBlob)
     const link = document.createElement('a')
@@ -284,6 +289,9 @@ const downloadPdf = async (filename = '摘要.pdf') => {
     console.error('PDF下载失败:', error)
     ElMessage.error('PDF下载失败，请重试')
     return false
+  } finally {
+    downloadingPdf.value = false
+    emit('downloadingPdf', false)
   }
 }
 
@@ -333,7 +341,7 @@ const generateMarkdownDocument = (content: string) => {
 
   // 生成文档头部信息
   const header = `
-
+# ${props.title}摘要
 ## KnoWeb服务:基于AI的文档摘要
 
 ## 文档信息
@@ -463,14 +471,17 @@ defineExpose({
   background: #fefefe;
   border-radius: 8px;
   min-height: 300px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.12),
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   border: 1px solid #e5e7eb;
   position: relative;
 
   /* 论文纸纹理背景 */
   background-image: 
-    /* 纸张纤维纹理 */ repeating-linear-gradient(
+    /* 纸张纤维纹理 */
+    repeating-linear-gradient(
       90deg,
       transparent,
       transparent 1px,
@@ -487,8 +498,14 @@ defineExpose({
     /* 纸张底色 */ linear-gradient(135deg, #fefefe 0%, #fafafa 50%, #f5f5f5 100%);
 
   /* 添加纸张质感 */
-  background-size: 20px 20px, 20px 20px, 100% 100%;
-  background-position: 0 0, 0 0, 0 0;
+  background-size:
+    20px 20px,
+    20px 20px,
+    100% 100%;
+  background-position:
+    0 0,
+    0 0,
+    0 0;
 }
 
 .typewriter-content::before {
@@ -499,12 +516,8 @@ defineExpose({
   right: 0;
   bottom: 0;
   background: 
-    /* 纸张边缘阴影 */ linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.02) 2%,
-      transparent 4%
-    ),
+    /* 纸张边缘阴影 */
+    linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.02) 2%, transparent 4%),
     linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 2%, transparent 4%);
   border-radius: 8px;
   pointer-events: none;
@@ -961,4 +974,4 @@ defineExpose({
     opacity: 0;
   }
 }
-</style> 
+</style>

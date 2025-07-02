@@ -75,7 +75,7 @@ export interface Question {
   user: QuestionUser
   title: string
   content: string
-  createAt: string
+  createdAt: string
   researchArea: string
   answerNum: number
   likeNum: number
@@ -84,6 +84,7 @@ export interface Question {
   bestAnswer?: QuestionAnswer
   answers?: QuestionAnswer[]
   followed?: boolean // 添加关注状态字段
+  solved?: boolean
 }
 
 // 问题列表项 - 新的API返回格式
@@ -112,6 +113,7 @@ export interface QuestionListItem {
       likeNum: number
       isSelected: number
     } | null
+    solved?: boolean
   }
   answerWithReplies: AnswerWithReplies[] | null
   followed: boolean
@@ -182,6 +184,7 @@ export interface QuestionDetailApiResponse {
       likeNum: number
       isSelected: number
     } | null
+    solved?: boolean
   }
   answerWithReplies: AnswerWithReplies[]
   relatedQuestions: RelatedQuestion[]
@@ -194,7 +197,7 @@ export interface QuestionDetailResponse {
   user: QuestionUser
   title: string
   content: string
-  createAt: string
+  createdAt: string
   researchArea: string
   answerNum: number
   likeNum: number
@@ -203,6 +206,7 @@ export interface QuestionDetailResponse {
   bestAnswer?: QuestionAnswer
   answers: QuestionAnswer[]
   followed?: boolean
+  solved?: boolean
 }
 
 // 创建问题请求

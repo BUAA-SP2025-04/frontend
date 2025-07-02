@@ -30,8 +30,8 @@
             <button class="tool-btn" @click="listAllAnnotations">
               <i class="fas fa-trash-alt">学习档案</i>
             </button>
-            <button 
-              class="tool-btn" 
+            <button
+              class="tool-btn"
               :class="{ active: activeTool === 'highlight' }"
               @click="toggleHighlightMode"
             >
@@ -88,7 +88,7 @@
             }"
             @mouseenter="showAnnotationPopup(annotation, $event)"
             @mouseleave="activePopup = null"
-            @click="editingAnnoId = annotation.id, showAnnoEditDialog = true"
+            @click=";(editingAnnoId = annotation.id), (showAnnoEditDialog = true)"
           >
             <i class="fas fa-comment"></i>
           </div>
@@ -174,7 +174,11 @@
           <span class="dialog-footer">
             <el-button @click="showAnnoEditDialog = false">取消</el-button>
             <el-button type="primary" @click="editAnnotation()">编辑</el-button>
-            <el-button type="primary" @click="deleteAnnotation(editingAnnoId), showAnnoEditDialog = false">删除</el-button>
+            <el-button
+              type="primary"
+              @click="(deleteAnnotation(editingAnnoId), (showAnnoEditDialog = false))"
+              >删除</el-button
+            >
           </span>
         </template>
       </el-dialog>
@@ -188,25 +192,25 @@
         </el-form>
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="showCommentEditDialog = false, newAnno.comment = ''">取消</el-button>
+            <el-button @click=";(showCommentEditDialog = false), (newAnno.comment = '')"
+              >取消</el-button
+            >
             <el-button type="primary" @click="editAnnotationComment()">确定</el-button>
           </span>
         </template>
       </el-dialog>
-
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch, computed, onUnmounted, reactive } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import VuePdfEmbed from 'vue-pdf-embed'
 import type { UploadFile } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getPublicationFile } from '@/api/modules/publication'
 import { annotationAPI } from '@/api/modules/annotation'
-import { uploadFile } from '@/api/modules/abstract'
 import type { Annotation, HighlightPreview, PopupPosition } from '@/api/types/annotation'
 import { useUserStore } from '@/stores/user'
 import { useGlobalStore } from '@/stores/global'
@@ -226,7 +230,7 @@ const resizeObserver = ref<ResizeObserver | null>(null)
 
 const paperId = ref(0)
 const allowEdit = ref(0)
-
+const title = ref('')
 const route = useRoute()
 
 // 批注相关状态
@@ -323,9 +327,10 @@ const nextPage = () => {
 onMounted(async () => {
   initUserInfo()
   currentPage.value = 1
-  if(route.query.paperId) paperId.value = parseInt(route.query.paperId as string)
-  if(route.query.allowEdit) allowEdit.value = parseInt(route.query.allowEdit as string)
-  if(route.query.page) currentPage.value = parseInt(route.query.page as string)
+  if (route.query.paperId) paperId.value = parseInt(route.query.paperId as string)
+  if (route.query.allowEdit) allowEdit.value = parseInt(route.query.allowEdit as string)
+  if (route.query.page) currentPage.value = parseInt(route.query.page as string)
+  if (route.query.title) title.value = route.query.title as string
   const urlParam = route.query.url as string | undefined
   if (urlParam) {
     showDownload.value = true
@@ -349,6 +354,24 @@ onMounted(async () => {
           redrawAnnotations()
         })
         if (pdfContainer.value) resizeObserver.value.observe(pdfContainer.value)
+      }
+      // 新增：如果有 annoId，自动滚动并高亮
+      if (route.query.annoId) {
+        await nextTick()
+        setTimeout(() => {
+          const anno = annotations.value.find(a => a.id == route.query.annoId)
+          if (anno && anno.page == currentPage.value) {
+            // 计算 marker 的位置
+            const marker = document.querySelector(
+              `.annotation-marker` // 这里可根据实际结构调整
+            ) as HTMLElement
+            if (marker) {
+              marker.scrollIntoView({ block: 'center', behavior: 'smooth' })
+              marker.classList.add('highlight-anno')
+              setTimeout(() => marker.classList.remove('highlight-anno'), 2000)
+            }
+          }
+        }, 1200)
       }
     } catch (e) {
       pdfUrl.value = ''
@@ -382,7 +405,7 @@ const uploadToDify = async () => {
 
     router.push({
       name: 'AbstractGenerator',
-      query: { url: fileUrl },
+      query: { url: fileUrl, title: title.value },
     })
   } catch (error: any) {
     console.error('跳转失败:', error)
@@ -443,9 +466,9 @@ const initAnnotationCanvas = async () => {
   while (annotationLayer.value.firstChild) {
     annotationLayer.value.removeChild(annotationLayer.value.firstChild)
   }
-  
-  await annotationLayer.value.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
+
+  await annotationLayer.value.appendChild(canvas)
+  const ctx = canvas.getContext('2d')
   if (ctx) {
     canvasContext.value = ctx
     redrawAnnotations()
@@ -468,23 +491,23 @@ watch(currentPage, () => {
 
 // 重绘所有批注
 const redrawAnnotations = async () => {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  const ctx = canvasContext.value;
-  if (!ctx) return;
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  await new Promise(resolve => setTimeout(resolve, 500))
+  const ctx = canvasContext.value
+  if (!ctx) return
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   // console.log(ctx.canvas.width, ctx.canvas.height)
   // console.log(annotationLayer.value?.getBoundingClientRect().height, innerHeight)
   annotations.value
     .filter(anno => anno.page === currentPage.value)
     .forEach(anno => {
-      console.log("初始化数据值")
+      console.log('初始化数据值')
       // const rect = ctx.getBoundingClientRect()
-      if(anno.x<1) anno.x = percentToPx(anno.x, ctx.canvas.width)
-      if(anno.y<1) anno.y = percentToPx(anno.y, ctx.canvas.height)
-      if(anno.width<1) anno.width = percentToPx(anno.width, ctx.canvas.width)
-      if(anno.height<1) anno.height = percentToPx(anno.height, ctx.canvas.height)
-      if(anno.markerX<1) anno.markerX = percentToPx(anno.markerX, ctx.canvas.width)
-      if(anno.markerY<1) anno.markerY = percentToPx(anno.markerY, ctx.canvas.height)
+      if (anno.x < 1) anno.x = percentToPx(anno.x, ctx.canvas.width)
+      if (anno.y < 1) anno.y = percentToPx(anno.y, ctx.canvas.height)
+      if (anno.width < 1) anno.width = percentToPx(anno.width, ctx.canvas.width)
+      if (anno.height < 1) anno.height = percentToPx(anno.height, ctx.canvas.height)
+      if (anno.markerX < 1) anno.markerX = percentToPx(anno.markerX, ctx.canvas.width)
+      if (anno.markerY < 1) anno.markerY = percentToPx(anno.markerY, ctx.canvas.height)
       // 绘制高亮区域
       ctx.fillStyle = 'rgba(255, 255, 0, 0.25)'
       // console.log(anno.x, anno.y, anno.width, anno.height)
@@ -499,10 +522,24 @@ const redrawAnnotations = async () => {
 }
 
 // 显示批注弹窗
-const showAnnotationPopup = (annotation: Annotation|{ id: string; page: number; x: number; y: number; 
-    width: number; height: number; comment: string; markerX: number; markerY: number; paperId: number }, 
-    event: MouseEvent) => {
-  activePopup.value = annotation;
+const showAnnotationPopup = (
+  annotation:
+    | Annotation
+    | {
+        id: string
+        page: number
+        x: number
+        y: number
+        width: number
+        height: number
+        comment: string
+        markerX: number
+        markerY: number
+        paperId: number
+      },
+  event: MouseEvent
+) => {
+  activePopup.value = annotation
   popupPosition.value = {
     x: event.pageX + 300 < window.innerWidth ? event.pageX + 20 : event.pageX - 300,
     y: event.pageY + 10,
@@ -511,8 +548,8 @@ const showAnnotationPopup = (annotation: Annotation|{ id: string; page: number; 
 
 // 切换高亮模式
 const toggleHighlightMode = async () => {
-  activeTool.value = activeTool.value === 'highlight' ? null : 'highlight';
-  
+  activeTool.value = activeTool.value === 'highlight' ? null : 'highlight'
+
   if (activeTool.value === 'highlight') {
     if (!annotationLayer) await initAnnotationCanvas()
     attachEventListeners()
@@ -694,7 +731,7 @@ const editAnnotation = () => {
   let anno = annotations.value.find(a => a.id === editingAnnoId.value)
   if (anno) newAnno.comment = anno.comment
   showCommentEditDialog.value = true
-};
+}
 
 // 编辑批注内容
 const editAnnotationComment = async () => {
@@ -706,9 +743,9 @@ const editAnnotationComment = async () => {
     newAnno.comment = ''
     editingAnnoId.value = ''
   } catch (error) {
-    ElMessage.error("编辑失败")
+    ElMessage.error('编辑失败')
   }
-};
+}
 
 // 导出批注
 const downloadAnnotations = () => {
@@ -792,10 +829,10 @@ const listAllAnnotations = () => {
 onMounted(() => {
   // 初始加载完成后设置批注层
   setTimeout(async () => {
-    await initAnnotationCanvas();
-    attachEventListeners();
-  }, 1000);
-});
+    await initAnnotationCanvas()
+    attachEventListeners()
+  }, 1000)
+})
 
 // 像素值转百分比
 const pxToPercent = (px: number, total: number) => {
@@ -808,10 +845,9 @@ const percentToPx = (percent: number, total: number) => {
 }
 
 const showGenerateAbstractBtn = computed(() => {
-  return globalStore.lastRoute === '/library'
+  return globalStore.lastRoute !== '/publication'
 })
 </script>
-
 
 <style>
 /* 添加一些基本样式 */
@@ -1101,4 +1137,6 @@ footer {
 .annotation-layer.active {
   pointer-events: auto; /* 批注模式时捕获事件 */
 }
+
+/* .highlight-anno { background: #ffe066 !important; transition: background 0.5s; } */
 </style>

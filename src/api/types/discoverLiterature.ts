@@ -17,10 +17,10 @@ export interface DiscoverLiterature {
   summary: string
   authors: string[]
   link: string
-  pdf: string
-  primaryCategory: string
-  categories: string[]
+  fields: string[]
   published: string
+  publicationId: string
+  receiverId: string
 }
 
 export interface DiscoverLiteratureGroup {
@@ -44,4 +44,12 @@ export interface DiscoverLiteratureResponse {
   code: string
   message: string
   data: DiscoverLiteratureGroup
+}
+
+export interface addResponse {
+  data: {
+    code: string
+    message: string
+    data: string
+  }
 }

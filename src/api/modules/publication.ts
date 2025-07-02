@@ -97,4 +97,3 @@ export function hasApplication(id: number | string): Promise<likeResponse> {
 export function apply(publicationId: number | string, receiverId: number | string) {
   return request.post('/apply', { publicationId, receiverId })
 }
-
