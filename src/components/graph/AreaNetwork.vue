@@ -178,7 +178,6 @@ const loadGraphData = async () => {
           }
         }
       })
-
       // 处理连接数据：对相同toId和fromId的连接，优先保留MAJORS_IN类型
       const linkMap = new Map()
       response.data.links.forEach((link: any) => {
@@ -233,14 +232,24 @@ const loadGraphData = async () => {
         relationshipType: link.formatter || 'MAJORS_IN',
       }))
 
-      graphNodes.value = processedNodes
+      // 过滤节点：只保留在最终边中出现的节点
+      const relatedNodeIds = new Set<string>()
+      processedLinks.forEach((link: any) => {
+        relatedNodeIds.add(link.source)
+        relatedNodeIds.add(link.target)
+      })
+      const filteredNodes = processedNodes.filter((node: any) => {
+        return relatedNodeIds.has(node.id.toString())
+      })
+
+      graphNodes.value = filteredNodes
       graphLinks.value = processedLinks
-      nodeCount.value = processedNodes.length
+      nodeCount.value = filteredNodes.length
       linkCount.value = processedLinks.length
 
-      const chartData = prepareChartData(processedNodes, processedLinks)
+      const chartData = prepareChartData(filteredNodes, processedLinks)
       updateChart(chart, chartData)
-      emit('nodeCountChange', processedNodes.length)
+      emit('nodeCountChange', filteredNodes.length)
       emit('linkCountChange', processedLinks.length)
     }
   } catch (error) {
@@ -281,7 +290,6 @@ const loadUserGraph = async (userId: string) => {
           }
         }
       })
-
       // 处理连接数据：对相同toId和fromId的连接，优先保留MAJORS_IN类型
       const linkMap = new Map()
       response.data.links.forEach((link: any) => {
@@ -336,14 +344,24 @@ const loadUserGraph = async (userId: string) => {
         relationshipType: link.formatter || 'MAJORS_IN',
       }))
 
-      graphNodes.value = processedNodes
+      // 过滤节点：只保留在最终边中出现的节点
+      const relatedNodeIds = new Set<string>()
+      processedLinks.forEach((link: any) => {
+        relatedNodeIds.add(link.source)
+        relatedNodeIds.add(link.target)
+      })
+      const filteredNodes = processedNodes.filter((node: any) => {
+        return relatedNodeIds.has(node.id.toString())
+      })
+
+      graphNodes.value = filteredNodes
       graphLinks.value = processedLinks
-      nodeCount.value = processedNodes.length
+      nodeCount.value = filteredNodes.length
       linkCount.value = processedLinks.length
 
-      const chartData = prepareChartData(processedNodes, processedLinks)
+      const chartData = prepareChartData(filteredNodes, processedLinks)
       updateChart(chart, chartData)
-      emit('nodeCountChange', processedNodes.length)
+      emit('nodeCountChange', filteredNodes.length)
       emit('linkCountChange', processedLinks.length)
 
       console.log('用户领域网络加载完成')

@@ -985,7 +985,7 @@ const handleImageError = (event: Event) => {
 }
 
 const showDetail = computed(() => {
-  return (selectedNode.value?.type === 'user' && showFollow.value && graphType.value === 'follow') || (selectedNode.value?.type !== 'user')
+  return (selectedNode.value?.type === 'user' &&  showFollow.value && graphType.value === 'follow') || (selectedNode.value?.type !== 'user') || graphType.value === 'institution' || graphType.value === 'area'
 })
 </script>
 
