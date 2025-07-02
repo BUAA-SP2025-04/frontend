@@ -37,8 +37,8 @@
         <div class="text-center">
           <!-- 打字机效果标题 -->
           <h1 class="text-6xl md:text-7xl font-extrabold mb-8 leading-tight">
-            <span class="block animate-slide-up">连接全球</span>
-            <span
+            <span class="block animate-slide-up mb-4">连接全球</span>
+            <span 
               class="block bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent animate-slide-up"
               style="animation-delay: 0.3s"
             >
@@ -47,14 +47,10 @@
           </h1>
 
           <!-- 副标题 -->
-          <p
-            class="text-xl md:text-2xl text-indigo-100 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in"
-            style="animation-delay: 0.6s"
-          >
-            KnoWeb 是专为科研人员打造的<span class="text-yellow-300 font-semibold"
-              >下一代学术社交平台</span
-            >， 汇聚全球研究者，分享前沿成果，促进学术合作
-          </p>
+          <div class="text-xl md:text-2xl text-indigo-100 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in" style="animation-delay: 0.6s">
+            <div>KnoWeb 是专为科研人员打造的<span class="text-yellow-300 font-semibold">下一代学术社交平台</span><br></div>
+            <div class="mt-3">汇聚全球研究者，分享前沿成果，促进学术合作</div>
+          </div>
 
           <!-- 按钮组 -->
           <div
