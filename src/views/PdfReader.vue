@@ -90,7 +90,6 @@
             @mouseleave="activePopup = null"
             @click="editingAnnoId = annotation.id, showAnnoEditDialog = true"
           >
-            // <div class="cancel-marker">×</div>
             <i class="fas fa-comment"></i>
           </div>
         </div>
