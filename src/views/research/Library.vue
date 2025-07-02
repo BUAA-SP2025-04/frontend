@@ -762,7 +762,7 @@
                 v-model="authorInput"
                 placeholder="输入作者姓名后按回车添加"
                 clearable
-                @keyup.enter="addInputToArray(authorInput, newPaper.authors)"
+                @keyup.enter="addAuthorTag()"
               ></el-input>
               <div class="tag-container">
                 <div v-for="(author, index) in newPaper.authors" :key="index" class="tag">
@@ -800,7 +800,7 @@
                 v-model="tagInput"
                 placeholder="输入关键词后按回车添加"
                 clearable
-                @keyup.enter="addInputToArray(tagInput, newPaper.tags)"
+                @keyup.enter="addKeywordTag()"
               ></el-input>
               <div class="tag-container">
                 <div v-for="(tag, index) in newPaper.tags" :key="index" class="tag">
@@ -1746,12 +1746,24 @@ const showNewFolderDialog = () => {
   newFolder.name = ''
 }
 
-// 通用添加方法
-function addInputToArray(inputRef: string, array: string[]) {
-  if (!inputRef) return
-  array.push(inputRef)
-  inputRef = ''
+// 添加作者 tag
+function addAuthorTag() {
+  const val = authorInput.value.trim()
+  if (val && !newPaper.authors.includes(val)) {
+    newPaper.authors.push(val)
+  }
+  authorInput.value = ''
 }
+
+// 添加关键词 tag
+function addKeywordTag() {
+  const val = tagInput.value.trim()
+  if (val && !newPaper.tags.includes(val)) {
+    newPaper.tags.push(val)
+  }
+  tagInput.value = ''
+}
+
 </script>
 
 <style scoped>
