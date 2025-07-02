@@ -37,8 +37,8 @@
         <div class="text-center">
           <!-- 打字机效果标题 -->
           <h1 class="text-6xl md:text-7xl font-extrabold mb-8 leading-tight">
-            <span class="block animate-slide-up">连接全球</span>
-            <span
+            <span class="block animate-slide-up mb-4">连接全球</span>
+            <span 
               class="block bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent animate-slide-up"
               style="animation-delay: 0.3s"
             >
@@ -47,14 +47,10 @@
           </h1>
 
           <!-- 副标题 -->
-          <p
-            class="text-xl md:text-2xl text-indigo-100 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in"
-            style="animation-delay: 0.6s"
-          >
-            KnoWeb 是专为科研人员打造的<span class="text-yellow-300 font-semibold"
-              >下一代学术社交平台</span
-            >， 汇聚全球研究者，分享前沿成果，促进学术合作
-          </p>
+          <div class="text-xl md:text-2xl text-indigo-100 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in" style="animation-delay: 0.6s">
+            <div>KnoWeb 是专为科研人员打造的<span class="text-yellow-300 font-semibold">下一代学术社交平台</span><br></div>
+            <div class="mt-3">汇聚全球研究者，分享前沿成果，促进学术合作</div>
+          </div>
 
           <!-- 按钮组 -->
           <div
@@ -488,16 +484,16 @@
               <h3
                 class="text-2xl font-bold text-gray-900 mb-4 group-hover:text-teal-600 transition-colors"
               >
-                学术社交
+                知识图谱
               </h3>
               <p class="text-gray-600 mb-6 leading-relaxed">
-                连接志同道合的研究者，分享学术动态，建立合作关系
+                可视化展示研究者、机构、领域之间的关系, 便捷探索研究者、机构、领域之间的关系
               </p>
               <router-link
                 to="/research/knowledge-graph"
                 class="inline-flex items-center text-teal-600 hover:text-teal-700 font-bold group-hover:translate-x-2 transition-all duration-300"
               >
-                查看动态
+                查看图谱
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
@@ -533,16 +529,16 @@
               <h3
                 class="text-2xl font-bold text-gray-900 mb-4 group-hover:text-rose-600 transition-colors"
               >
-                PDF阅读器
+                科研问答
               </h3>
               <p class="text-gray-600 mb-6 leading-relaxed">
-                智能PDF阅读工具，支持文本提取、标注和坐标定位
+                科研问答，便捷获取科研信息，与同行学者交流讨论
               </p>
               <router-link
-                to="/pdf-reader"
+                to="/research/qa"
                 class="inline-flex items-center text-rose-600 hover:text-rose-700 font-bold group-hover:translate-x-2 transition-all duration-300"
               >
-                开始阅读
+                前往提问
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"

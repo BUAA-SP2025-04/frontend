@@ -108,7 +108,7 @@
                 </div>
 
                 <!-- 筛选工具栏 -->
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-4 mb-6">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
                       <select
@@ -169,8 +169,7 @@
                 <div
                   v-for="question in filteredQuestions"
                   :key="question.id"
-                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative cursor-pointer"
-                  @click="viewQuestion(question.id)"
+                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative"
                 >
                   <!-- 右上角操作按钮区（查看详情、编辑、删除） -->
                   <div class="flex space-x-2 absolute top-4 right-4 z-10">
@@ -374,7 +373,7 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 1 1-18 0 9 9 0 0118 0z"
                   ></path>
                 </svg>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">暂无问题</h3>
@@ -397,7 +396,7 @@
                   <h3 class="text-lg font-semibold text-gray-900">我回答的问题</h3>
                   <span class="text-sm text-gray-500">共 {{ myAnswers.length }} 个问题</span>
                 </div>
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-4 mb-6">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
                       <select
@@ -436,8 +435,7 @@
                 <div
                   v-for="question in filteredAnswers"
                   :key="question.id"
-                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative cursor-pointer"
-                  @click="viewQuestion(question.id)"
+                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative"
                 >
                   <!-- 右上角操作按钮区（仅查看详情） -->
                   <div class="flex space-x-2 absolute top-4 right-4 z-10">
@@ -609,7 +607,7 @@
                     >共 {{ followedQuestions.length }} 个问题</span
                   >
                 </div>
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-4 mb-6">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
                       <select
@@ -653,8 +651,7 @@
                 <div
                   v-for="question in filteredFollowedQuestions"
                   :key="question.id"
-                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative cursor-pointer"
-                  @click="viewQuestion(question.id)"
+                  class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 mb-6 relative"
                 >
                   <!-- 右上角操作按钮区（仅查看详情） -->
                   <div class="flex space-x-2 absolute top-4 right-4 z-10">
@@ -825,7 +822,7 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
       <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-t-lg">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">发布新问题</h3>
             <button
@@ -882,7 +879,7 @@
           <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               type="button"
-              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              class="px-6 py-2 my-modal-cancel"
               @click="showPublishDialog = false"
             >
               取消
@@ -890,7 +887,7 @@
             <button
               type="submit"
               :disabled="loading"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              class="px-6 py-2 my-modal-confirm"
             >
               {{ loading ? '发布中...' : '发布问题' }}
             </button>
@@ -904,8 +901,8 @@
       v-if="showEditDialog"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
-        <div class="px-6 py-4 border-b border-gray-200">
+      <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-t-lg">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">编辑问题</h3>
             <button
@@ -923,7 +920,6 @@
             </button>
           </div>
         </div>
-
         <form class="p-6 space-y-6" @submit.prevent="updateQuestion">
           <!-- 问题标题 -->
           <div>
@@ -931,118 +927,46 @@
             <input
               v-model="editingQuestion.title"
               type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="简洁明确地描述你的问题..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
-
-          <!-- 问题分类 -->
+          <!-- 问题描述 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">详细描述</label>
+            <textarea
+              v-model="editingQuestion.content"
+              rows="6"
+              placeholder="详细描述你的问题，包括背景、遇到的困难、期望的解决方案等..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            ></textarea>
+          </div>
+          <!-- 分类选择 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">问题分类</label>
             <select
               v-model="editingQuestion.researchArea"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
-              <option value="">选择分类</option>
-              <option value="人工智能">人工智能</option>
-              <option value="机器学习">机器学习</option>
-              <option value="深度学习">深度学习</option>
-              <option value="计算机视觉">计算机视觉</option>
-              <option value="自然语言处理">自然语言处理</option>
-              <option value="数据科学">数据科学</option>
-              <option value="大数据分析">大数据分析</option>
-              <option value="算法与数据结构">算法与数据结构</option>
-              <option value="软件工程">软件工程</option>
-              <option value="系统架构">系统架构</option>
-              <option value="网络安全">网络安全</option>
-              <option value="数据库">数据库</option>
-              <option value="云计算">云计算</option>
-              <option value="物联网">物联网</option>
-              <option value="区块链">区块链</option>
-              <option value="数学建模">数学建模</option>
-              <option value="统计学">统计学</option>
-              <option value="优化理论">优化理论</option>
-              <option value="图论">图论</option>
-              <option value="数值分析">数值分析</option>
-              <option value="理论物理">理论物理</option>
-              <option value="实验物理">实验物理</option>
-              <option value="量子计算">量子计算</option>
-              <option value="材料科学">材料科学</option>
-              <option value="化学工程">化学工程</option>
-              <option value="生物信息学">生物信息学</option>
-              <option value="生物医学">生物医学</option>
-              <option value="基因组学">基因组学</option>
-              <option value="药物发现">药物发现</option>
-              <option value="环境科学">环境科学</option>
-              <option value="气候变化">气候变化</option>
-              <option value="能源技术">能源技术</option>
-              <option value="机械工程">机械工程</option>
-              <option value="电子工程">电子工程</option>
-              <option value="通信工程">通信工程</option>
-              <option value="控制理论">控制理论</option>
-              <option value="机器人学">机器人学</option>
-              <option value="航空航天">航空航天</option>
-              <option value="土木工程">土木工程</option>
-              <option value="经济学">经济学</option>
-              <option value="金融科技">金融科技</option>
-              <option value="社会科学">社会科学</option>
-              <option value="心理学">心理学</option>
-              <option value="认知科学">认知科学</option>
-              <option value="教育学">教育学</option>
-              <option value="医学影像">医学影像</option>
-              <option value="临床研究">临床研究</option>
-              <option value="公共卫生">公共卫生</option>
-              <option value="农业科技">农业科技</option>
-              <option value="食品科学">食品科学</option>
-              <option value="海洋科学">海洋科学</option>
-              <option value="地球科学">地球科学</option>
-              <option value="天文学">天文学</option>
-              <option value="空间科学">空间科学</option>
-              <option value="纳米技术">纳米技术</option>
-              <option value="生物技术">生物技术</option>
-              <option value="再生医学">再生医学</option>
-              <option value="精准医疗">精准医疗</option>
-              <option value="数字孪生">数字孪生</option>
-              <option value="边缘计算">边缘计算</option>
-              <option value="5G/6G技术">5G/6G技术</option>
-              <option value="虚拟现实">虚拟现实</option>
-              <option value="增强现实">增强现实</option>
-              <option value="元宇宙">元宇宙</option>
-              <option value="论文写作">论文写作</option>
-              <option value="学术规范">学术规范</option>
-              <option value="研究方法">研究方法</option>
-              <option value="实验设计">实验设计</option>
-              <option value="数据分析方法">数据分析方法</option>
-              <option value="其他">其他</option>
+              <option value="">请选择研究领域</option>
+              <option v-for="area in RESEARCH_AREAS" :key="area" :value="area">{{ area }}</option>
             </select>
           </div>
-
-          <!-- 问题描述 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >问题描述（支持Markdown）</label
-            >
-            <textarea
-              v-model="editingQuestion.content"
-              rows="8"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-              required
-            ></textarea>
-          </div>
-
           <!-- 操作按钮 -->
           <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               type="button"
-              class="px-6 py-2 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors border border-gray-300"
+              class="px-6 py-2 my-modal-cancel"
               @click="showEditDialog = false"
             >
               取消
             </button>
             <button
               type="submit"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              class="px-6 py-2 my-modal-confirm"
             >
               保存修改
             </button>
@@ -1128,7 +1052,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   createQuestion,
   deleteQuestion as deleteQuestionApi,
@@ -1389,6 +1313,24 @@ const editQuestion = (question: Question) => {
 }
 
 const deleteQuestion = async (questionId: string) => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要删除该问题吗？此操作不可撤销！',
+      '删除确认',
+      {
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+        customClass: 'my-question-modal',
+        center: true,
+        showClose: true,
+        confirmButtonClass: 'my-modal-confirm',
+        cancelButtonClass: 'my-modal-cancel',
+      }
+    )
+  } catch {
+    // 用户取消
+    return
+  }
   loading.value = true
   try {
     await deleteQuestionApi({ questionId })
@@ -1599,5 +1541,48 @@ onMounted(() => {
 :deep(.project-tabs .el-tabs__active-bar) {
   background-color: #3b82f6;
   height: 3px;
+}
+
+:deep(.my-question-modal) {
+  border-radius: 16px;
+  min-width: 380px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+  padding: 0;
+}
+:deep(.my-question-modal .el-message-box__header) {
+  font-weight: bold;
+  color: #2563eb;
+  text-align: center;
+  font-size: 20px;
+  background: linear-gradient(to right, #e0f2fe, #f0f9ff);
+  border-radius: 16px 16px 0 0;
+  padding: 24px 0 8px 0;
+}
+:deep(.my-question-modal .el-message-box__content) {
+  text-align: center;
+  font-size: 16px;
+  color: #334155;
+  padding: 24px 0 12px 0;
+}
+:deep(.my-modal-confirm) {
+  background: linear-gradient(to right, #2563eb, #38bdf8) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+  border: none;
+  min-width: 90px;
+}
+:deep(.my-modal-cancel) {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+  border: none;
+  min-width: 90px;
+}
+:deep(.my-question-modal .el-message-box__btns) {
+  justify-content: center;
+  padding-bottom: 24px;
+  gap: 16px;
 }
 </style>

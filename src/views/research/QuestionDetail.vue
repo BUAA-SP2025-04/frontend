@@ -57,11 +57,11 @@
             class="bg-white rounded-xl shadow-lg border border-gray-200 mb-6 overflow-hidden"
           >
             <div class="p-8">
-              <!-- 问题标题和操作 -->
+              <!-- 页面标题和操作按钮 -->
               <div class="flex items-start justify-between mb-6">
                 <div class="flex-1">
                   <h1
-                    class="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4"
+                    class="text-3xl font-bold text-gray-900 mb-4"
                   >
                     {{ question.title }}
                   </h1>
@@ -177,7 +177,12 @@
                   <button
                     v-if="isQuestionAuthor"
                     @click="handleSetSolvedStatus"
-                    class="px-3 py-1.5 text-xs bg-gradient-to-r from-gray-600 to-gray-400 text-white rounded-lg hover:from-gray-700 hover:to-gray-500 transition-all font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    :class="[
+                      'px-3 py-1.5 text-xs rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
+                      question.solved
+                        ? 'bg-gradient-to-r from-gray-200 to-gray-100 text-gray-800 hover:from-gray-300 hover:to-gray-200'
+                        : 'bg-gradient-to-r from-gray-700 to-gray-500 text-white hover:from-gray-800 hover:to-gray-600'
+                    ]"
                   >
                     <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -233,7 +238,7 @@
                     </div>
                   </div>
                   <div class="text-sm text-gray-500">
-                    发布于 {{ formatTime(question.createAt) }}
+                    发布于 {{ formatTime(question.createdAt) }}
                   </div>
                 </div>
 
@@ -310,16 +315,17 @@
 
             <!-- 回答列表 -->
             <div>
-              <template v-for="(answer, idx) in sortedAnswers" :key="answer.id">
-                <div
-                  :class="[
-                    'transition-all duration-300',
-                    answer.id === question.bestAnswer?.id
-                      ? 'bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border-l-4 border-green-500'
-                      : 'bg-white hover:bg-gray-50',
-                  ]"
-                  class="p-8"
-                >
+              <div
+                v-for="answer in sortedAnswers"
+                :key="answer.id"
+                :class="[
+                  'transition-all duration-300',
+                  answer.id === question.bestAnswer?.id
+                    ? 'bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border-l-4 border-green-500'
+                    : 'bg-white hover:bg-gray-50',
+                ]"
+                class="p-8"
+              >
                   <!-- 最佳回答标识 -->
                   <div v-if="answer.id === question.bestAnswer?.id" class="mb-4 flex items-center">
                     <div
@@ -459,6 +465,25 @@
                             {{ formatTime(childAnswer.createdAt) }}
                           </p>
                         </div>
+                        <button
+                          @click="startReply(parseInt(childAnswer.id))"
+                          class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-600 hover:from-blue-100 hover:to-cyan-100 transition-all border border-blue-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ml-2"
+                        >
+                          <svg
+                            class="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                            />
+                          </svg>
+                          回复
+                        </button>
                       </div>
 
                       <!-- 二级回答内容 -->
@@ -467,49 +492,10 @@
                           class="prose prose-sm max-w-none mb-3 text-gray-700"
                           :source="childAnswer.content"
                         />
-
-                        <!-- 二级回答操作 -->
-                        <div class="flex items-center space-x-3 text-xs">
-                          <button
-                            @click="toggleLike(childAnswer.id)"
-                            :class="[
-                              'flex items-center space-x-1 transition-all px-2 py-1 rounded-md',
-                              childAnswer.liked
-                                ? 'text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100'
-                                : 'text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100',
-                            ]"
-                          >
-                            <svg
-                              class="w-4 h-4"
-                              :fill="childAnswer.liked ? 'currentColor' : 'none'"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                              />
-                            </svg>
-                            <span>{{ childAnswer.likeNum }}</span>
-                          </button>
-                          <button
-                            @click="startReply(parseInt(childAnswer.id))"
-                            class="text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 px-2 py-1 rounded-md transition-all"
-                          >
-                            回复
-                          </button>
-                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div
-                  v-if="idx < sortedAnswers.length - 1"
-                  class="mx-8 my-4 border-t border-gray-200"
-                ></div>
-              </template>
             </div>
           </div>
 
@@ -610,7 +596,7 @@
         <div class="lg:col-span-1">
           <!-- 问题统计 -->
           <div
-            class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6 overflow-hidden"
+            class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl shadow-lg border border-gray-200 p-6 mb-6 overflow-hidden"
           >
             <h3
               class="text-lg font-semibold text-gray-900 mb-4 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent"
@@ -631,7 +617,7 @@
               >
                 <span class="text-gray-600">浏览数</span>
                 <span class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg shadow-sm">{{
-                  question.answerNum
+                  question.readNum || 0
                 }}</span>
               </div>
               <div
@@ -648,14 +634,14 @@
                 <span class="text-gray-600">发布时间</span>
                 <span
                   class="font-semibold text-gray-800 px-2 py-1 bg-white rounded-lg text-xs shadow-sm"
-                  >{{ formatDate(question.createAt) }}</span
+                  >{{ formatDate(question.createdAt) }}</span
                 >
               </div>
             </div>
           </div>
 
           <!-- 相关问题 -->
-          <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 overflow-hidden">
+          <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl shadow-lg border border-gray-200 p-6 overflow-hidden">
             <h3
               class="text-lg font-semibold text-gray-900 mb-4 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent"
             >
@@ -1092,7 +1078,7 @@ const question = ref<QuestionDetailResponse>({
   },
   title: '',
   content: '',
-  createAt: '',
+  createdAt: '',
   researchArea: '',
   answerNum: 0,
   likeNum: 0,
@@ -1259,7 +1245,7 @@ const loadQuestionDetail = async () => {
         currentUserId && questionData.userId === parseInt(currentUserId.toString())
       )
 
-      // 直接将answerWithReplies映射为answer + childAnswers
+      // 重新组织数据结构：每个1级回答包含所有属于该问题的2级回复
       const mappedAnswers = answersData.map((item: any) => {
         const answer = item.answer
         return {
@@ -1285,7 +1271,28 @@ const loadQuestionDetail = async () => {
           createdAt: answer.createdAt || new Date().toISOString(),
           likeNum: Number(answer.likeNum) || 0,
           liked: item.liked || false, // 添加点赞状态
-          childAnswers: (item.replies || []).map((reply: any) => ({
+          childAnswers: [] as any[], // 初始化为空数组，稍后填充
+        }
+      })
+
+      // 收集所有2级回复，并按1级回答ID分组
+      const allReplies: any[] = []
+      answersData.forEach((item: any) => {
+        if (item.replies && item.replies.length > 0) {
+          item.replies.forEach((reply: any) => {
+            allReplies.push({
+              ...reply,
+              parentAnswerId: item.answer.id?.toString() || '',
+            })
+          })
+        }
+      })
+
+      // 将2级回复分配到对应的1级回答中
+      mappedAnswers.forEach((answer) => {
+        answer.childAnswers = allReplies
+          .filter((reply) => reply.parentAnswerId === answer.id)
+          .map((reply) => ({
             id: reply.id?.toString() || '',
             user: reply.user || {
               id: reply.userId || 0,
@@ -1308,10 +1315,7 @@ const loadQuestionDetail = async () => {
             parentUserId: answer.user.id?.toString() || '',
             parentUserName: answer.user.name || '',
             createdAt: reply.createdAt || new Date().toISOString(),
-            likeNum: Number(reply.likeNum) || 0,
-            liked: false, // 2级回答暂时使用默认状态
-          })),
-        }
+          }))
       })
 
       question.value = {
@@ -1335,7 +1339,7 @@ const loadQuestionDetail = async () => {
         },
         title: questionData.title || '',
         content: questionData.content || '',
-        createAt: questionData.createdAt || new Date().toISOString(), // API返回的是createdAt
+        createdAt: questionData.createdAt || new Date().toISOString(), // API返回的是createdAt
         researchArea: questionData.researchArea || '未分类',
         answerNum: questionData.answerNum || 0,
         likeNum: Number(questionData.likeNum) || 0,
@@ -1493,21 +1497,8 @@ const toggleLike = async (answerId: string) => {
   try {
     console.log('开始点赞回答:', answerId)
 
-    // 先查找1级回答
-    let answer = question.value.answers?.find(a => a.id === answerId)
-    let isChildAnswer = false
-
-    // 如果没找到1级回答，查找2级回答
-    if (!answer) {
-      for (const parentAnswer of question.value.answers || []) {
-        const childAnswer = parentAnswer.childAnswers?.find(ca => ca.id === answerId)
-        if (childAnswer) {
-          answer = childAnswer
-          isChildAnswer = true
-          break
-        }
-      }
-    }
+    // 只处理1级回答的点赞
+    const answer = question.value.answers?.find(a => a.id === answerId)
 
     if (!answer) {
       ElMessage.error('找不到对应的回答')
@@ -1679,10 +1670,38 @@ const submitAnswer = async () => {
 
   try {
     console.log('开始提交回答...')
+    
+    // 判断是回复问题、1级回答还是2级回答
+    let isReplyToQuestion = replyingToAnswerId.value === null && isReplyingToQuestion.value
+    let isReplyToAnswer = false
+    let isReplyToChildAnswer = false
+    let targetAnswerId: number | null = null
+    
+    if (replyingToAnswerId.value !== null && replyingToAnswerId.value !== undefined) {
+      // 先查找1级回答
+      const answer = question.value.answers?.find(a => a.id === replyingToAnswerId.value?.toString())
+      if (answer) {
+        isReplyToAnswer = true
+        targetAnswerId = Number(answer.id)
+      } else {
+        // 查找2级回答
+        for (const parentAnswer of question.value.answers || []) {
+          const childAnswer = parentAnswer.childAnswers?.find(
+            ca => ca.id === replyingToAnswerId.value?.toString()
+          )
+          if (childAnswer) {
+            isReplyToChildAnswer = true
+            targetAnswerId = Number(parentAnswer.id) // 2级回复应该添加到其父级1级回答中
+            break
+          }
+        }
+      }
+    }
+    
     const requestData: AnswerQuestionRequest = {
       questionId: parseInt(question.value.id),
       content: newAnswerContent.value.trim(),
-      answerId: replyingToAnswerId.value || -1, // 如果是回复某个回答，使用该回答的ID，否则为-1
+      answerId: targetAnswerId !== null ? targetAnswerId : -1, // 如果是回复某个回答，使用该回答的ID，否则为-1
     }
     console.log('提交回答请求数据:', requestData)
 
@@ -1690,12 +1709,76 @@ const submitAnswer = async () => {
     console.log('提交回答响应:', response)
 
     if (response && response.code === '200') {
+      // 如果是2级回复，立即添加到对应的1级回答中
+      if (isReplyToAnswer || isReplyToChildAnswer) {
+        const targetAnswer = question.value.answers?.find(a => Number(a.id) === targetAnswerId)
+        if (targetAnswer && response.data) {
+          // 创建新的2级回复对象
+          const newChildAnswer = {
+            id: response.data.id?.toString() || Date.now().toString(),
+            user: userStore.user ? {
+              id: typeof userStore.user.id === 'string' ? parseInt(userStore.user.id) : userStore.user.id,
+              name: userStore.user.name || '当前用户',
+              email: userStore.user.email || '',
+              gender: userStore.user.gender || '',
+              bio: userStore.user.bio || '',
+              researchArea: userStore.user.researchArea || '',
+              title: userStore.user.title || '',
+              imgUrl: userStore.user.imgUrl || '', // 保持原始格式，让getAvatarUrl函数处理
+              institution: userStore.user.institution || '',
+              createdAt: userStore.user.createdAt || '',
+              followerNum: userStore.user.followerNum || 0,
+              subjectNum: userStore.user.subjectNum || 0,
+              publishNum: userStore.user.publishNum || 0,
+              likeNum: 0, // 用户对象中没有likeNum字段
+              readerNum: 0, // 用户对象中没有readerNum字段
+            } : {
+              id: 0,
+              name: '当前用户',
+              email: '',
+              gender: '',
+              bio: '',
+              researchArea: '',
+              title: '',
+              imgUrl: '', // 保持原始格式，让getAvatarUrl函数处理
+              institution: '',
+              createdAt: '',
+              followerNum: 0,
+              subjectNum: 0,
+              publishNum: 0,
+              likeNum: 0,
+              readerNum: 0,
+            },
+            content: newAnswerContent.value.trim(),
+            parentUserId: targetAnswer.user.id?.toString() || '',
+            parentUserName: targetAnswer.user.name || '',
+            createdAt: new Date().toISOString(),
+            likeNum: 0,
+            liked: false,
+          }
+          
+          // 添加到对应1级回答的childAnswers中
+          if (!targetAnswer.childAnswers) {
+            targetAnswer.childAnswers = []
+          }
+          targetAnswer.childAnswers.push(newChildAnswer as any)
+        }
+      }
+      
       newAnswerContent.value = ''
       replyingToAnswerId.value = null // 重置回复状态
       isReplyingToQuestion.value = false
-      ElMessage.success(replyingToAnswerId.value ? '回复发布成功！' : '回答发布成功！')
+      
+      // 根据回复类型显示不同的成功消息
+      if (isReplyToQuestion) {
+        ElMessage.success('回答发布成功！')
+      } else if (isReplyToAnswer || isReplyToChildAnswer) {
+        ElMessage.success('回复发布成功！')
+      } else {
+        ElMessage.success('回答发布成功！')
+      }
 
-      // 重新加载问题详情
+      // 重新加载问题详情，确保所有数据正确显示
       console.log('重新加载问题详情...')
       await loadQuestionDetail()
     } else {
@@ -1895,7 +1978,7 @@ watch(
         },
         title: '',
         content: '',
-        createAt: '',
+        createdAt: '',
         researchArea: '',
         answerNum: 0,
         likeNum: 0,
@@ -2022,7 +2105,7 @@ const handleSetSolvedStatus = async () => {
   try {
     const res = await setSolvedStatus({ questionId: question.value.id, solved: newSolved })
     if (res && res.code === '200') {
-      question.value.solved = newSolved ? 'yes' : null
+      question.value.solved = newSolved
       ElMessage.success(newSolved ? '已标记为已解决' : '已标记为未解决')
     } else {
       ElMessage.error(res?.message || '操作失败')

@@ -129,6 +129,13 @@ const graphContainer = ref<HTMLElement | null>(null)
 let chart: echarts.ECharts | null = null
 const userStore = useUserStore()
 
+const linkTypeColorMap: Record<string, string> = {
+  BELONGS_TO: '#f59e42', // 蓝色
+  WORKS_IN: '#3b82f6', // 橙色
+  COOPERATE: '#64748b', // 紫色
+  DEFAULT: '#a855f7', // 灰色
+}
+
 const initializeChart = () => {
   if (!graphContainer.value) return
   chart = echarts.init(graphContainer.value, props.isDarkMode ? 'dark' : undefined)
@@ -188,29 +195,101 @@ const loadGraphData = async () => {
               : link.fromId.toString()
           })
       )
-      // 只保留与自己有关的机构节点和所有用户节点
+      // 只保留与自己有关的连接，优先保留 WORKS_IN 类型的连接
+      const filteredLinks = response.data.links.filter((link: any) => {
+        return (
+          (link.fromId.toString() === userIdStr &&
+            relatedInstitutionIds.has(link.toId.toString())) ||
+          (link.toId.toString() === userIdStr && relatedInstitutionIds.has(link.fromId.toString()))
+        )
+      })
+
+      // 分离 WORKS_IN 和其他类型的连接
+      const worksInLinks = filteredLinks.filter(
+        (link: any) => (link.formatter || 'BELONGS_TO') === 'WORKS_IN'
+      )
+      const otherLinks = filteredLinks.filter(
+        (link: any) => (link.formatter || 'BELONGS_TO') !== 'WORKS_IN'
+      )
+
+      // 对非 WORKS_IN 连接按 attr.count 排序，只保留最大的4个
+      const sortedOtherLinks = otherLinks
+        .sort((a: any, b: any) => {
+          const countA = Number(a.attr?.count) || 0
+          const countB = Number(b.attr?.count) || 0
+          return countB - countA
+        })
+        .slice(0, 4)
+
+      // 获取需要保留的机构ID（WORKS_IN连接 + 前4个其他连接）
+      const keptInstitutionIds = new Set()
+
+      // 添加 WORKS_IN 连接的机构ID
+      worksInLinks.forEach((link: any) => {
+        if (link.fromId.toString() === userIdStr) {
+          keptInstitutionIds.add(link.toId.toString())
+        } else {
+          keptInstitutionIds.add(link.fromId.toString())
+        }
+      })
+
+      // 添加前4个其他连接的机构ID
+      sortedOtherLinks.forEach((link: any) => {
+        if (link.fromId.toString() === userIdStr) {
+          keptInstitutionIds.add(link.toId.toString())
+        } else {
+          keptInstitutionIds.add(link.fromId.toString())
+        }
+      })
+
+      // 更新 relatedInstitutionIds，只保留需要显示的机构
+      const finalInstitutionIds = new Set(
+        Array.from(relatedInstitutionIds).filter(id => keptInstitutionIds.has(id))
+      )
+
+      // 重新过滤节点，只保留最终需要的机构节点
       const processedNodes = apiNodes.filter((node: any) => {
         if (node.type === 'user') return true
-        if (node.type === 'language') return relatedInstitutionIds.has(node.id)
+        if (node.type === 'language') return finalInstitutionIds.has(node.id)
         return false
       })
 
-      // 只保留与自己有关的连接
-      const processedLinks = response.data.links
-        .filter((link: any) => {
-          return (
-            (link.fromId.toString() === userIdStr &&
-              relatedInstitutionIds.has(link.toId.toString())) ||
-            (link.toId.toString() === userIdStr &&
-              relatedInstitutionIds.has(link.fromId.toString()))
-          )
-        })
-        .map((link: any) => ({
-          source: link.fromId.toString(),
-          target: link.toId.toString(),
-          label: { show: false, formatter: link.formatter || 'BELONGS_TO' },
-          relationshipType: link.formatter || 'BELONGS_TO',
-        }))
+      // 合并 WORKS_IN 连接和筛选后的其他连接
+      const allKeptLinks = [...worksInLinks, ...sortedOtherLinks]
+
+      // 去重处理：如果两个节点间有多个连接，优先保留 WORKS_IN 类型
+      const linkMap = new Map()
+      allKeptLinks.forEach((link: any) => {
+        const key = `${link.fromId.toString()}-${link.toId.toString()}`
+        const reverseKey = `${link.toId.toString()}-${link.fromId.toString()}`
+
+        // 检查是否已存在连接
+        const existingLink = linkMap.get(key) || linkMap.get(reverseKey)
+
+        if (!existingLink) {
+          // 如果不存在连接，直接添加
+          linkMap.set(key, link)
+        } else {
+          // 如果存在连接，检查当前连接是否为 WORKS_IN 类型
+          const currentFormatter = link.formatter || 'BELONGS_TO'
+          const existingFormatter = existingLink.formatter || 'BELONGS_TO'
+
+          if (currentFormatter === 'WORKS_IN' && existingFormatter !== 'WORKS_IN') {
+            // 当前连接是 WORKS_IN，替换现有连接
+            linkMap.delete(key)
+            linkMap.delete(reverseKey)
+            linkMap.set(key, link)
+          }
+          // 如果当前连接不是 WORKS_IN 或现有连接已经是 WORKS_IN，则保持现有连接
+        }
+      })
+
+      const processedLinks = Array.from(linkMap.values()).map((link: any) => ({
+        source: link.fromId.toString(),
+        target: link.toId.toString(),
+        label: { show: false, formatter: link.formatter || 'BELONGS_TO' },
+        relationshipType: link.formatter || 'BELONGS_TO',
+      }))
 
       graphNodes.value = processedNodes
       graphLinks.value = processedLinks
@@ -229,6 +308,24 @@ const loadGraphData = async () => {
   }
 }
 
+const formatNodeTooltip = (node: any) => {
+  return `
+    <div class="font-bold text-lg">${node.name}</div>
+    <div class="text-sm opacity-75 mt-1">${
+      node.title == 'null' || node.title == null ? '未知职位' : node.title
+    } ${node.gender === 'male' ? '男' : '女'}</div>
+    ${node.institution ? `<div class=\"text-sm opacity-75\">${node.institution}</div>` : ''}
+    <div class=\"text-sm opacity-75 mt-1\">论文: ${node.publicationNum ?? 0} 篇，项目: ${
+    node.projectNum ?? 0
+  } 个</div>
+    ${
+      node.followerNum
+        ? `<div class=\"text-sm opacity-75\">关注者: ${node.followerNum}人</div>`
+        : ''
+    }
+  `
+}
+
 // 加载特定用户的机构网络数据
 const loadUserGraph = async (userId: string) => {
   if (!chart) return
@@ -237,7 +334,8 @@ const loadUserGraph = async (userId: string) => {
 
     const response = await getInstitution(userId)
     if (response.data) {
-      const processedNodes = response.data.nodes.map((node: any) => {
+      // 处理API返回的节点数据
+      const apiNodes = response.data.nodes.map((node: any) => {
         if (typeof node.id === 'string') {
           // 机构节点（字符串ID）
           return {
@@ -260,7 +358,103 @@ const loadUserGraph = async (userId: string) => {
         }
       })
 
-      const processedLinks = response.data.links.map((link: any) => ({
+      // 只保留与当前用户有关联的机构节点
+      const userIdStr = String(userId)
+      const relatedInstitutionIds = new Set(
+        response.data.links
+          .filter(
+            (link: any) =>
+              link.fromId.toString() === userIdStr || link.toId.toString() === userIdStr
+          )
+          .map((link: any) => {
+            // 机构节点id为字符串
+            return link.fromId.toString() === userIdStr
+              ? link.toId.toString()
+              : link.fromId.toString()
+          })
+      )
+
+      // 分离 WORKS_IN 和其他类型的连接
+      const worksInLinks = response.data.links.filter(
+        (link: any) => (link.formatter || 'BELONGS_TO') === 'WORKS_IN'
+      )
+      const otherLinks = response.data.links.filter(
+        (link: any) => (link.formatter || 'BELONGS_TO') !== 'WORKS_IN'
+      )
+
+      // 对非 WORKS_IN 连接按 attr.count 排序，只保留最大的4个
+      const sortedOtherLinks = otherLinks
+        .sort((a: any, b: any) => {
+          const countA = Number(a.attr?.count) || 0
+          const countB = Number(b.attr?.count) || 0
+          return countB - countA
+        })
+        .slice(0, 4)
+
+      // 获取需要保留的机构ID（WORKS_IN连接 + 前4个其他连接）
+      const keptInstitutionIds = new Set()
+
+      // 添加 WORKS_IN 连接的机构ID
+      worksInLinks.forEach((link: any) => {
+        if (link.fromId.toString() === userIdStr) {
+          keptInstitutionIds.add(link.toId.toString())
+        } else {
+          keptInstitutionIds.add(link.fromId.toString())
+        }
+      })
+
+      // 添加前4个其他连接的机构ID
+      sortedOtherLinks.forEach((link: any) => {
+        if (link.fromId.toString() === userIdStr) {
+          keptInstitutionIds.add(link.toId.toString())
+        } else {
+          keptInstitutionIds.add(link.fromId.toString())
+        }
+      })
+
+      // 更新 relatedInstitutionIds，只保留需要显示的机构
+      const finalInstitutionIds = new Set(
+        Array.from(relatedInstitutionIds).filter(id => keptInstitutionIds.has(id))
+      )
+
+      // 重新过滤节点，只保留最终需要的机构节点
+      const processedNodes = apiNodes.filter((node: any) => {
+        if (node.type === 'user') return true
+        if (node.type === 'language') return finalInstitutionIds.has(node.id)
+        return false
+      })
+
+      // 合并 WORKS_IN 连接和筛选后的其他连接
+      const allKeptLinks = [...worksInLinks, ...sortedOtherLinks]
+
+      // 去重处理：如果两个节点间有多个连接，优先保留 WORKS_IN 类型
+      const linkMap = new Map()
+      allKeptLinks.forEach((link: any) => {
+        const key = `${link.fromId.toString()}-${link.toId.toString()}`
+        const reverseKey = `${link.toId.toString()}-${link.fromId.toString()}`
+
+        // 检查是否已存在连接
+        const existingLink = linkMap.get(key) || linkMap.get(reverseKey)
+
+        if (!existingLink) {
+          // 如果不存在连接，直接添加
+          linkMap.set(key, link)
+        } else {
+          // 如果存在连接，检查当前连接是否为 WORKS_IN 类型
+          const currentFormatter = link.formatter || 'BELONGS_TO'
+          const existingFormatter = existingLink.formatter || 'BELONGS_TO'
+
+          if (currentFormatter === 'WORKS_IN' && existingFormatter !== 'WORKS_IN') {
+            // 当前连接是 WORKS_IN，替换现有连接
+            linkMap.delete(key)
+            linkMap.delete(reverseKey)
+            linkMap.set(key, link)
+          }
+          // 如果当前连接不是 WORKS_IN 或现有连接已经是 WORKS_IN，则保持现有连接
+        }
+      })
+
+      const processedLinks = Array.from(linkMap.values()).map((link: any) => ({
         source: link.fromId.toString(),
         target: link.toId.toString(),
         label: { show: false, formatter: link.formatter || 'BELONGS_TO' },
@@ -288,7 +482,22 @@ const loadUserGraph = async (userId: string) => {
 }
 
 const prepareChartData = (nodes: any[], links: any[], centerUser: boolean = false) => {
+  // 统计每个to节点的link类型（只取第一个指向它的link类型）
+  const toNodeTypeMap: Record<string, string> = {}
+  links.forEach(link => {
+    if (!toNodeTypeMap[link.target]) {
+      toNodeTypeMap[link.target] = link.relationshipType
+    }
+  })
+
   const chartNodes = nodes.map(node => {
+    // 如果该节点是to节点，优先用linkTypeColorMap，否则用原有逻辑
+    const toType = toNodeTypeMap[node.id]
+    const color = toType
+      ? linkTypeColorMap[toType] || linkTypeColorMap.DEFAULT
+      : node.type === 'user'
+      ? '#8b5cf6'
+      : '#3b82f6'
     const baseNode = {
       id: node.id,
       name: node.name,
@@ -306,14 +515,12 @@ const prepareChartData = (nodes: any[], links: any[], centerUser: boolean = fals
                 (Number(node.subscribeNum) || 0) * 1
             ),
       itemStyle: {
-        color: node.type === 'user' ? '#8b5cf6' : '#3b82f6',
+        color,
       },
       symbol: node.type === 'user' ? 'circle' : 'diamond',
       category: node.category,
       ...node,
     }
-
-    // 只在初始化时设置当前用户居中
     if (centerUser && node.type === 'user' && node.id === userStore.user?.id) {
       return {
         ...baseNode,
@@ -322,23 +529,37 @@ const prepareChartData = (nodes: any[], links: any[], centerUser: boolean = fals
         fixed: true,
       }
     }
-
     return baseNode
   })
 
-  const chartLinks = links.map(link => ({
-    source: link.source,
-    target: link.target,
-    value: 1,
-    lineStyle: {
-      color: '#3b82f6',
-      width: link.attr && !isNaN(Number(link.attr.count)) ? Math.max(2, Number(link.attr.count)) : 2,
-      type: 'solid',
-    },
-    label: link.label,
-    relationshipType: link.label?.formatter || 'BELONGS_TO',
-    ...link,
-  }))
+  const chartLinks = links.map(link => {
+    // 根据关系类型选择颜色
+    const color = linkTypeColorMap[link.relationshipType] || linkTypeColorMap.DEFAULT
+
+    // 计算连线粗细，基于 attr.count
+    let lineWidth = 2 // 默认宽度
+    if (link.attr && link.attr.count !== undefined && link.attr.count !== null) {
+      const count = Number(link.attr.count)
+      if (!isNaN(count) && count > 0) {
+        // 根据 count 值计算宽度，可以调整这个公式来获得更好的视觉效果
+        lineWidth = Math.max(1, Math.min(8, 2 + count * 0.5))
+      }
+    }
+
+    return {
+      source: link.source,
+      target: link.target,
+      value: 1,
+      lineStyle: {
+        color,
+        width: lineWidth,
+        type: 'solid',
+      },
+      label: link.label,
+      relationshipType: link.label?.formatter || 'BELONGS_TO',
+      ...link,
+    }
+  })
 
   return { nodes: chartNodes, links: chartLinks }
 }
@@ -417,6 +638,8 @@ const updateChart = (chartInstance: echarts.ECharts, data: any) => {
             <div class="text-sm opacity-75">关注者: ${params.data.subscribeNum || 0} 人</div>
             `
           }
+        } else if (params.dataType === 'edge') {
+          return formatEdgeTooltip(params.data)
         }
         return ''
       },
@@ -434,6 +657,40 @@ const handleNodeClick = (nodeData: any) => {
 
 const refreshGraph = () => {
   loadGraphData()
+}
+
+const formatEdgeTooltip = (edge: any) => {
+  const sourceNode = graphNodes.value.find(node => node.id.toString() === edge.source)
+  const targetNode = graphNodes.value.find(node => node.id.toString() === edge.target)
+
+  // 获取连接强度信息
+  let strengthText = ''
+  if (edge.attr && edge.attr.count !== undefined && edge.attr.count !== null) {
+    const count = Number(edge.attr.count)
+    if (!isNaN(count) && count > 0) {
+      strengthText = ` (强度: ${count})`
+    }
+  }
+
+  console.log(edge)
+  if (sourceNode && targetNode) {
+    // 根据关系类型显示不同的文本
+    let relationshipText = '关注'
+    if (edge.relationshipType == 'WORKS_IN') {
+      relationshipText = '隶属于'
+    }
+
+    return `
+      <div>
+        <div style=\"font-size: 12px; color: #64748b; line-height: 1.4;\">
+          <span style=\"color: #334155; font-weight: 500;\">${sourceNode.name}</span>
+          <span style=\"margin: 0 4px; color: #8b5cf6; font-weight: bold;\">${relationshipText}${strengthText}</span>  
+          <span style=\"color: #334155; font-weight: 500;\">${targetNode.name}</span>
+        </div>
+      </div>
+    `
+  }
+  return ''
 }
 
 // 加载机构对应的科研人员
@@ -471,8 +728,34 @@ const loadInstitutionResearchers = async (institutionName: string, researchersDa
       }
     })
 
-    // 处理连接数据
-    const processedLinks = links.map((link: any) => ({
+    // 处理连接数据，去重处理：如果两个节点间有多个连接，优先保留 WORKS_IN 类型
+    const linkMap = new Map()
+    links.forEach((link: any) => {
+      const key = `${link.fromId.toString()}-${link.toId.toString()}`
+      const reverseKey = `${link.toId.toString()}-${link.fromId.toString()}`
+
+      // 检查是否已存在连接
+      const existingLink = linkMap.get(key) || linkMap.get(reverseKey)
+
+      if (!existingLink) {
+        // 如果不存在连接，直接添加
+        linkMap.set(key, link)
+      } else {
+        // 如果存在连接，检查当前连接是否为 WORKS_IN 类型
+        const currentFormatter = link.formatter || 'WORKS_IN'
+        const existingFormatter = existingLink.formatter || 'WORKS_IN'
+
+        if (currentFormatter === 'WORKS_IN' && existingFormatter !== 'WORKS_IN') {
+          // 当前连接是 WORKS_IN，替换现有连接
+          linkMap.delete(key)
+          linkMap.delete(reverseKey)
+          linkMap.set(key, link)
+        }
+        // 如果当前连接不是 WORKS_IN 或现有连接已经是 WORKS_IN，则保持现有连接
+      }
+    })
+
+    const processedLinks = Array.from(linkMap.values()).map((link: any) => ({
       source: link.fromId.toString(),
       target: link.toId.toString(),
       label: { show: false, formatter: link.formatter || 'WORKS_IN' },

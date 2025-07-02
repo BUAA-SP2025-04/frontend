@@ -134,7 +134,7 @@
             <!-- 问题元信息 -->
             <div class="flex items-center justify-between text-sm text-gray-500">
               <div class="flex items-center space-x-4">
-                <span class="text-gray-400">{{ formatTime(question.createAt) }}</span>
+                <span class="text-gray-400">{{ formatTime(question.createdAt) }}</span>
               </div>
 
               <div class="flex items-center space-x-4">

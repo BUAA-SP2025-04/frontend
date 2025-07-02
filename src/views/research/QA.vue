@@ -322,7 +322,7 @@
                     </div>
                   </div>
                   <div class="text-sm text-gray-500">
-                    发布于 {{ formatTime(question.createAt) }}
+                    发布于 {{ formatTime(question.createdAt) }}
                   </div>
                 </div>
 
@@ -986,14 +986,14 @@ const filteredQuestions = computed(() => {
   // 排序
   switch (sortBy.value) {
     case 'latest':
-      filtered.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
+      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       break
     case 'hot':
       filtered.sort((a, b) => b.answerNum - a.answerNum)
       break
     case 'my-followed':
       // 我的关注按最新时间排序
-      filtered.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
+      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       break
   }
 
@@ -1080,7 +1080,7 @@ const loadQuestions = async () => {
           user: item.question.user,
           title: item.question.title,
           content: item.question.content,
-          createAt: item.question.createdAt,
+          createdAt: item.question.createdAt,
           researchArea: item.question.researchArea || '未分类',
           answerNum: item.question.answerNum,
           likeNum: item.question.likeNum,
@@ -1145,7 +1145,7 @@ const loadMyFollowedQuestions = async () => {
           user: item.question.user,
           title: item.question.title || '',
           content: item.question.content || '',
-          createAt: item.question.createdAt || '',
+          createdAt: item.question.createdAt || '',
           researchArea: item.question.researchArea || '未分类',
           answerNum: item.question.answerNum || 0,
           likeNum: Number(item.question.likeNum) || 0,
