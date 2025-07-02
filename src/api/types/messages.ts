@@ -67,7 +67,7 @@ export interface SystemNotification {
 // 动态提醒（兼容后端多种结构）
 export interface ActivityNotification {
   id: number
-  type: 'publish_paper' | 'start_project' | 'join_conference' | 'follow' | 'like' | 'comment' | 'activity'
+  type: 'publish_paper' | 'start_project' | 'join_conference' | 'follow' | 'like' | 'comment' | 'activity'  | 'join_project'       | 'accept_application'  | "answer" | "like_answer"
   isRead: boolean
   createdAt: string
   userId?: number
