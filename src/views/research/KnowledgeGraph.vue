@@ -461,7 +461,7 @@
                           : formatNumber(selectedNode.subscribeNum || 0)
                       }}
                     </span>
-                    <span class="text-xs text-slate-600 dark:text-slate-400">关注者</span>
+                    <span class="text-xs text-slate-600 dark:text-slate-400">用户数</span>
                   </div>
 
                   <div

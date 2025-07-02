@@ -4,7 +4,7 @@ export interface Notification {
   name: string
   createdAt: string
   isRead: boolean
-  type: 'publish_paper' | 'start_project' | 'join_conference' | 'follow' | 'like' | 'comment' | 'activity' | 'question_answer'
+  type: 'publish_paper' | 'start_project' | 'join_conference' | 'follow' | 'like' | 'comment' | 'activity' | 'question_answer' | 'system'
   userId: number
   publicationId: number
   avatarUrl: string
