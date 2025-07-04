@@ -45,13 +45,13 @@
                     <button
                       v-for="type in graphTypes"
                       :key="type.value"
-                      @click="graphType = type.value"
                       :class="[
                         'relative h-12 px-2 rounded-xl text-sm font-medium transition-all duration-300 flex flex-col items-center justify-center overflow-hidden group',
                         graphType === type.value
                           ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 transform scale-105 border-0'
                           : 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600 hover:shadow-md hover:scale-102 hover:border-blue-300 dark:hover:border-blue-600',
                       ]"
+                      @click="graphType = type.value"
                     >
                       <!-- 选中状态的背景光效 -->
                       <div
@@ -93,18 +93,18 @@
                     <button
                       v-for="layout in layoutOptions"
                       :key="layout.value"
-                      @click="
-                        () => {
-                          layoutType = layout.value
-                          updateLayout()
-                        }
-                      "
                       :class="[
                         'relative h-12 px-2 rounded-xl text-sm font-medium transition-all duration-300 flex flex-col items-center justify-center overflow-hidden group',
                         layoutType === layout.value
                           ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 transform scale-105 border-0'
                           : 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600 hover:shadow-md hover:scale-102 hover:border-emerald-300 dark:hover:border-emerald-600',
                       ]"
+                      @click="
+                        () => {
+                          layoutType = layout.value
+                          updateLayout()
+                        }
+                      "
                     >
                       <!-- 选中状态的背景光效 -->
                       <div
@@ -138,8 +138,8 @@
                 <!-- 控制按钮 -->
                 <div class="flex flex-col gap-3 pt-2">
                   <button
-                    @click="resetGraph"
                     class="w-full flex items-center justify-center py-2.5 px-4 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition-all"
+                    @click="resetGraph"
                   >
                     <i class="fas fa-undo mr-2"></i>
                     重置视图
@@ -239,7 +239,6 @@
               <!-- 深色模式切换按钮 -->
               <div class="flex items-center">
                 <button
-                  @click="toggleDarkMode"
                   :class="[
                     'flex items-center gap-2 px-3 py-2 rounded-lg shadow-sm border transition-colors',
                     isDarkMode
@@ -247,6 +246,7 @@
                       : 'bg-white border-slate-200 text-slate-600 hover:text-blue-500 hover:border-blue-300',
                   ]"
                   title="切换显示模式"
+                  @click="toggleDarkMode"
                 >
                   <el-icon v-if="!isDarkMode" class="text-base">
                     <Moon />
@@ -265,37 +265,37 @@
               <!-- 关注网络组件 -->
               <FollowNetwork
                 v-if="graphType === 'follow'"
+                ref="followNetworkRef"
                 :layout-type="layoutType"
                 :is-dark-mode="isDarkMode"
                 :selected-node="selectedNode"
                 @node-click="handleNodeClick"
                 @node-count-change="handleNodeCountChange"
                 @link-count-change="handleLinkCountChange"
-                ref="followNetworkRef"
               />
 
               <!-- 机构网络组件 -->
               <InstitutionNetwork
                 v-else-if="graphType === 'institution'"
+                ref="institutionNetworkRef"
                 :layout-type="layoutType"
                 :is-dark-mode="isDarkMode"
                 :selected-node="selectedNode"
                 @node-click="handleNodeClick"
                 @node-count-change="handleNodeCountChange"
                 @link-count-change="handleLinkCountChange"
-                ref="institutionNetworkRef"
               />
 
               <!-- 领域网络组件 -->
               <AreaNetwork
                 v-else-if="graphType === 'area'"
+                ref="areaNetworkRef"
                 :layout-type="layoutType"
                 :is-dark-mode="isDarkMode"
                 :selected-node="selectedNode"
                 @node-click="handleNodeClick"
                 @node-count-change="handleNodeCountChange"
                 @link-count-change="handleLinkCountChange"
-                ref="areaNetworkRef"
               />
             </div>
           </div>
@@ -521,9 +521,9 @@
                 >
                   <button
                     v-if="showDetail"
-                    @click="loadUserGraph(selectedNode.id)"
                     :class="{ 'col-span-2': selectedNode?.type !== 'user' }"
                     class="flex items-center justify-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-sm transition-all duration-200 text-sm"
+                    @click="loadUserGraph(selectedNode.id)"
                   >
                     <i class="fas fa-refresh mr-1"></i>
                     查看详情
@@ -534,8 +534,8 @@
                     :class="{
                       'col-span-2': !showDetail,
                     }"
-                    @click="goToUserProfile(selectedNode.id)"
                     class="flex items-center justify-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-medium shadow-sm transition-all duration-200 text-sm"
+                    @click="goToUserProfile(selectedNode.id)"
                   >
                     <i class="fas fa-home mr-1"></i>
                     前往主页
@@ -930,7 +930,7 @@ watch([graphType], async () => {
   await nextTick()
   if (selectedNode.value && selectedNode.value.type === 'user') {
     if (graphType.value === 'follow' && followNetworkRef.value) {
-      followNetworkRef.value.loadUserGraph(selectedNode.value.id) 
+      followNetworkRef.value.loadUserGraph(selectedNode.value.id)
     } else if (graphType.value === 'institution' && institutionNetworkRef.value) {
       institutionNetworkRef.value.loadUserGraph(selectedNode.value.id)
     } else if (graphType.value === 'area' && areaNetworkRef.value) {
@@ -985,13 +985,21 @@ const handleImageError = (event: Event) => {
 }
 
 const showDetail = computed(() => {
-  return (selectedNode.value?.type === 'user' && showFollow.value && graphType.value === 'follow') || (selectedNode.value?.type !== 'user')
+  return (
+    (selectedNode.value?.type === 'user' && showFollow.value && graphType.value === 'follow') ||
+    selectedNode.value?.type !== 'user'
+  )
 })
 </script>
 
 <style scoped>
 .research-graph-container {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
 }
 
 .graph-container {

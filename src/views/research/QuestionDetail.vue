@@ -4,8 +4,8 @@
       <!-- 返回按钮 -->
       <div class="mb-6">
         <button
-          @click="goBack"
           class="flex items-center text-gray-600 hover:text-blue-600 transition-colors bg-white px-4 py-2 rounded-lg border border-gray-200 hover:border-blue-200 shadow-sm hover:shadow-md"
+          @click="goBack"
         >
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -60,9 +60,7 @@
               <!-- 页面标题和操作按钮 -->
               <div class="flex items-start justify-between mb-6">
                 <div class="flex-1">
-                  <h1
-                    class="text-3xl font-bold text-gray-900 mb-4"
-                  >
+                  <h1 class="text-3xl font-bold text-gray-900 mb-4">
                     {{ question.title }}
                   </h1>
                   <div class="flex flex-wrap gap-2 mb-4">
@@ -84,14 +82,22 @@
                       ]"
                     >
                       <template v-if="question.solved">
-                        <svg class="w-4 h-4 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        <svg
+                          class="w-4 h-4 mr-1 text-green-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                         已解决
                       </template>
-                      <template v-else>
-                        未解决
-                      </template>
+                      <template v-else> 未解决 </template>
                     </span>
                   </div>
                 </div>
@@ -100,8 +106,8 @@
                 <div class="flex space-x-3 ml-6">
                   <!-- 回复问题按钮 -->
                   <button
-                    @click="replyToQuestion"
                     class="px-3 py-1.5 text-xs bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    @click="replyToQuestion"
                   >
                     <svg
                       class="w-4 h-4 inline-block mr-1"
@@ -122,13 +128,13 @@
                   <!-- 根据是否为问题作者显示不同按钮 -->
                   <button
                     v-if="!isQuestionAuthor"
-                    @click="toggleFollow"
                     :class="[
                       'px-3 py-1.5 text-xs rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
                       isFollowing
                         ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700'
                         : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-gray-100 hover:to-gray-200 border border-gray-200',
                     ]"
+                    @click="toggleFollow"
                   >
                     <svg
                       class="w-4 h-4 inline-block mr-1"
@@ -149,13 +155,13 @@
                   <!-- 问题作者显示设置最佳回答按钮 -->
                   <button
                     v-if="isQuestionAuthor"
-                    @click="showBestAnswerDialog = true"
                     :class="[
                       'px-3 py-1.5 text-xs rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
-                      hasBestAnswer 
-                        ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700' 
-                        : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
+                      hasBestAnswer
+                        ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700'
+                        : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700',
                     ]"
+                    @click="showBestAnswerDialog = true"
                   >
                     <svg
                       class="w-4 h-4 inline-block mr-1"
@@ -176,23 +182,33 @@
                   <!-- 设置问题是否解决按钮，仅作者可见，放在最佳回答和分享之间 -->
                   <button
                     v-if="isQuestionAuthor"
-                    @click="handleSetSolvedStatus"
                     :class="[
                       'px-3 py-1.5 text-xs rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
                       question.solved
                         ? 'bg-gradient-to-r from-gray-200 to-gray-100 text-gray-800 hover:from-gray-300 hover:to-gray-200'
-                        : 'bg-gradient-to-r from-gray-700 to-gray-500 text-white hover:from-gray-800 hover:to-gray-600'
+                        : 'bg-gradient-to-r from-gray-700 to-gray-500 text-white hover:from-gray-800 hover:to-gray-600',
                     ]"
+                    @click="handleSetSolvedStatus"
                   >
-                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    <svg
+                      class="w-4 h-4 inline-block mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                     {{ question.solved ? '标记为未解决' : '标记为已解决' }}
                   </button>
 
                   <button
-                    @click="showShareDialog = true"
                     class="px-3 py-1.5 text-xs bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    @click="showShareDialog = true"
                   >
                     <svg
                       class="w-5 h-5 inline-block mr-2"
@@ -326,75 +342,148 @@
                 ]"
                 class="p-8"
               >
-                  <!-- 最佳回答标识 -->
-                  <div v-if="answer.id === question.bestAnswer?.id" class="mb-4 flex items-center">
-                    <div
-                      class="flex items-center bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-full shadow-md"
-                    >
-                      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clip-rule="evenodd"
-                        ></path>
-                      </svg>
-                      <span class="text-sm font-medium"> ✨ 最佳回答 </span>
+                <!-- 最佳回答标识 -->
+                <div v-if="answer.id === question.bestAnswer?.id" class="mb-4 flex items-center">
+                  <div
+                    class="flex items-center bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-full shadow-md"
+                  >
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                    <span class="text-sm font-medium"> ✨ 最佳回答 </span>
+                  </div>
+                </div>
+
+                <!-- 回答者信息 -->
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center">
+                    <img
+                      :src="getAvatarUrl(answer.user.imgUrl)"
+                      :alt="answer.user.name"
+                      class="w-12 h-12 rounded-full mr-3 ring-2 ring-gray-200"
+                    />
+                    <div>
+                      <p
+                        class="font-medium text-gray-800 hover:text-blue-600 cursor-pointer transition-colors"
+                        @click="goToUserDetail(answer.user.id)"
+                      >
+                        {{ answer.user.name }}
+                      </p>
+                      <p class="text-sm text-gray-500">
+                        {{ answer.user.institution }} · {{ formatTime(answer.createdAt) }}
+                      </p>
                     </div>
                   </div>
 
-                  <!-- 回答者信息 -->
-                  <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center">
+                  <!-- 回答操作 -->
+                  <div class="flex items-center space-x-3">
+                    <!-- 点赞 -->
+                    <button
+                      :class="[
+                        'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
+                        answer.liked
+                          ? 'bg-gradient-to-r from-red-100 to-pink-100 text-red-600 hover:from-red-200 hover:to-pink-200 border border-red-200'
+                          : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 hover:from-gray-100 hover:to-gray-200 border border-gray-200',
+                      ]"
+                      @click="toggleLike(answer.id)"
+                    >
+                      <svg
+                        class="w-5 h-5"
+                        :fill="answer.liked ? 'currentColor' : 'none'"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M16.5 3.75c-1.74 0-3.41.81-4.5 2.09A6.235 6.235 0 0 0 7.5 3.75C4.42 3.75 2 6.09 2 9.08c0 3.4 3.4 6.36 8.55 11.13a1.5 1.5 0 0 0 2.1 0C18.6 15.44 22 12.48 22 9.08c0-2.99-2.42-5.33-5.5-5.33z"
+                        />
+                      </svg>
+                      <span>{{ answer.likeNum }}</span>
+                    </button>
+
+                    <!-- 回复 -->
+                    <button
+                      class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-600 hover:from-blue-100 hover:to-cyan-100 transition-all border border-blue-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                      @click="startReply(parseInt(answer.id))"
+                    >
+                      <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                        />
+                      </svg>
+                      回复
+                    </button>
+
+                    <!-- 分享 -->
+                    <!-- <button
+                        @click="shareAnswer(answer.id)"
+                        class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 hover:from-gray-100 hover:to-gray-200 transition-all border border-gray-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+                        </svg>
+                        分享
+                      </button> -->
+                  </div>
+                </div>
+
+                <!-- 回答内容 -->
+                <Markdown
+                  :class="[
+                    'prose prose-lg max-w-none mb-6',
+                    answer.id === question.bestAnswer?.id
+                      ? 'bg-green text-gray-700 rounded-xl p-6'
+                      : 'bg-white text-gray-700 rounded-xl p-6',
+                  ]"
+                  :source="answer.content"
+                />
+
+                <!-- 二级回答区域 -->
+                <div
+                  v-if="answer.childAnswers && answer.childAnswers.length > 0"
+                  class="ml-8 border-l-2 border-gray-200"
+                >
+                  <div
+                    v-for="childAnswer in answer.childAnswers"
+                    :key="childAnswer.id"
+                    class="p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg mb-4 last:mb-0 border border-gray-200 shadow-sm"
+                  >
+                    <!-- 二级回答者信息 -->
+                    <div class="flex items-center mb-3">
                       <img
-                        :src="getAvatarUrl(answer.user.imgUrl)"
-                        :alt="answer.user.name"
-                        class="w-12 h-12 rounded-full mr-3 ring-2 ring-gray-200"
+                        :src="getAvatarUrl(childAnswer.user.imgUrl)"
+                        :alt="childAnswer.user.name"
+                        class="w-8 h-8 rounded-full mr-2 ring-1 ring-gray-200"
                       />
-                      <div>
+                      <div class="flex-1">
                         <p
-                          class="font-medium text-gray-800 hover:text-blue-600 cursor-pointer transition-colors"
-                          @click="goToUserDetail(answer.user.id)"
+                          class="text-sm font-medium text-gray-800 hover:text-blue-600 cursor-pointer transition-colors"
+                          @click="goToUserDetail(childAnswer.user.id)"
                         >
-                          {{ answer.user.name }}
+                          {{ childAnswer.user.name }}
                         </p>
-                        <p class="text-sm text-gray-500">
-                          {{ answer.user.institution }} · {{ formatTime(answer.createdAt) }}
+                        <p class="text-xs text-gray-500">
+                          回复 {{ childAnswer.parentUserName }} ·
+                          {{ formatTime(childAnswer.createdAt) }}
                         </p>
                       </div>
-                    </div>
-
-                    <!-- 回答操作 -->
-                    <div class="flex items-center space-x-3">
-                      <!-- 点赞 -->
                       <button
-                        @click="toggleLike(answer.id)"
-                        :class="[
-                          'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
-                          answer.liked
-                            ? 'bg-gradient-to-r from-red-100 to-pink-100 text-red-600 hover:from-red-200 hover:to-pink-200 border border-red-200'
-                            : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 hover:from-gray-100 hover:to-gray-200 border border-gray-200',
-                        ]"
-                      >
-                        <svg
-                          class="w-5 h-5"
-                          :fill="answer.liked ? 'currentColor' : 'none'"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M16.5 3.75c-1.74 0-3.41.81-4.5 2.09A6.235 6.235 0 0 0 7.5 3.75C4.42 3.75 2 6.09 2 9.08c0 3.4 3.4 6.36 8.55 11.13a1.5 1.5 0 0 0 2.1 0C18.6 15.44 22 12.48 22 9.08c0-2.99-2.42-5.33-5.5-5.33z"
-                          />
-                        </svg>
-                        <span>{{ answer.likeNum }}</span>
-                      </button>
-
-                      <!-- 回复 -->
-                      <button
-                        @click="startReply(parseInt(answer.id))"
-                        class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-600 hover:from-blue-100 hover:to-cyan-100 transition-all border border-blue-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-600 hover:from-blue-100 hover:to-cyan-100 transition-all border border-blue-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ml-2"
+                        @click="startReply(parseInt(childAnswer.id))"
                       >
                         <svg
                           class="w-5 h-5"
@@ -411,91 +500,18 @@
                         </svg>
                         回复
                       </button>
-
-                      <!-- 分享 -->
-                      <!-- <button
-                        @click="shareAnswer(answer.id)"
-                        class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 hover:from-gray-100 hover:to-gray-200 transition-all border border-gray-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
-                        </svg>
-                        分享
-                      </button> -->
                     </div>
-                  </div>
 
-                  <!-- 回答内容 -->
-                  <Markdown
-                    :class="[
-                      'prose prose-lg max-w-none mb-6',
-                      answer.id === question.bestAnswer?.id
-                        ? 'bg-green text-gray-700 rounded-xl p-6'
-                        : 'bg-white text-gray-700 rounded-xl p-6',
-                    ]"
-                    :source="answer.content"
-                  />
-
-                  <!-- 二级回答区域 -->
-                  <div
-                    v-if="answer.childAnswers && answer.childAnswers.length > 0"
-                    class="ml-8 border-l-2 border-gray-200"
-                  >
-                    <div
-                      v-for="childAnswer in answer.childAnswers"
-                      :key="childAnswer.id"
-                      class="p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg mb-4 last:mb-0 border border-gray-200 shadow-sm"
-                    >
-                      <!-- 二级回答者信息 -->
-                      <div class="flex items-center mb-3">
-                        <img
-                          :src="getAvatarUrl(childAnswer.user.imgUrl)"
-                          :alt="childAnswer.user.name"
-                          class="w-8 h-8 rounded-full mr-2 ring-1 ring-gray-200"
-                        />
-                        <div class="flex-1">
-                          <p
-                            class="text-sm font-medium text-gray-800 hover:text-blue-600 cursor-pointer transition-colors"
-                            @click="goToUserDetail(childAnswer.user.id)"
-                          >
-                            {{ childAnswer.user.name }}
-                          </p>
-                          <p class="text-xs text-gray-500">
-                            回复 {{ childAnswer.parentUserName }} ·
-                            {{ formatTime(childAnswer.createdAt) }}
-                          </p>
-                        </div>
-                        <button
-                          @click="startReply(parseInt(childAnswer.id))"
-                          class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-600 hover:from-blue-100 hover:to-cyan-100 transition-all border border-blue-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ml-2"
-                        >
-                          <svg
-                            class="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                            />
-                          </svg>
-                          回复
-                        </button>
-                      </div>
-
-                      <!-- 二级回答内容 -->
-                      <div class="ml-10">
-                        <Markdown
-                          class="prose prose-sm max-w-none mb-3 text-gray-700"
-                          :source="childAnswer.content"
-                        />
-                      </div>
+                    <!-- 二级回答内容 -->
+                    <div class="ml-10">
+                      <Markdown
+                        class="prose prose-sm max-w-none mb-3 text-gray-700"
+                        :source="childAnswer.content"
+                      />
                     </div>
                   </div>
                 </div>
+              </div>
             </div>
           </div>
 
@@ -533,8 +549,8 @@
                     </span>
                   </div>
                   <button
-                    @click="cancelAnswerReply"
                     class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors bg-white px-2 py-1 rounded-md"
+                    @click="cancelAnswerReply"
                   >
                     取消回复
                   </button>
@@ -575,15 +591,15 @@
               <div class="flex justify-end mt-6 pt-6 border-t border-gray-200">
                 <button
                   v-if="replyingToAnswerId"
-                  @click="cancelAnswerReply"
                   class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 rounded-lg hover:from-gray-100 hover:to-gray-200 transition-all font-medium mr-3 border border-gray-200 shadow-md"
+                  @click="cancelAnswerReply"
                 >
                   取消回复
                 </button>
                 <button
-                  @click="submitAnswer"
                   :disabled="!newAnswerContent.trim()"
                   class="px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  @click="submitAnswer"
                 >
                   {{ replyingToAnswerId ? '发布回复' : '发布回答' }}
                 </button>
@@ -641,7 +657,9 @@
           </div>
 
           <!-- 相关问题 -->
-          <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl shadow-lg border border-gray-200 p-6 overflow-hidden">
+          <div
+            class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl shadow-lg border border-gray-200 p-6 overflow-hidden"
+          >
             <h3
               class="text-lg font-semibold text-gray-900 mb-4 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent"
             >
@@ -735,8 +753,8 @@
               {{ hasBestAnswer ? '重新设置最佳回答' : '选择最佳回答' }}
             </h3>
             <button
-              @click="showBestAnswerDialog = false"
               class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-white"
+              @click="showBestAnswerDialog = false"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -880,8 +898,8 @@
                   </button>
                   <button
                     v-else
-                    @click.stop="selectBestAnswer(answer.id)"
                     class="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all text-sm shadow-md hover:shadow-lg"
+                    @click.stop="selectBestAnswer(answer.id)"
                   >
                     {{ hasBestAnswer ? '设为最佳' : '选择为最佳' }}
                   </button>
@@ -895,8 +913,8 @@
           class="px-6 py-4 border-t border-gray-200 flex justify-end bg-gradient-to-r from-gray-50 to-gray-100"
         >
           <button
-            @click="showBestAnswerDialog = false"
             class="px-4 py-2 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors border border-gray-200 shadow-sm"
+            @click="showBestAnswerDialog = false"
           >
             取消
           </button>
@@ -914,8 +932,8 @@
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">分享问题</h3>
             <button
-              @click="showShareDialog = false"
               class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-white"
+              @click="showShareDialog = false"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -979,8 +997,8 @@
           <!-- 操作按钮 -->
           <div class="flex space-x-3 pt-4">
             <button
-              @click="copyShareText"
               class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all font-medium shadow-md hover:shadow-lg flex items-center justify-center"
+              @click="copyShareText"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -993,8 +1011,8 @@
               复制文本
             </button>
             <button
-              @click="exportAsImage"
               class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-medium shadow-md hover:shadow-lg flex items-center justify-center"
+              @click="exportAsImage"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -1289,10 +1307,10 @@ const loadQuestionDetail = async () => {
       })
 
       // 将2级回复分配到对应的1级回答中
-      mappedAnswers.forEach((answer) => {
+      mappedAnswers.forEach(answer => {
         answer.childAnswers = allReplies
-          .filter((reply) => reply.parentAnswerId === answer.id)
-          .map((reply) => ({
+          .filter(reply => reply.parentAnswerId === answer.id)
+          .map(reply => ({
             id: reply.id?.toString() || '',
             user: reply.user || {
               id: reply.userId || 0,
@@ -1489,10 +1507,6 @@ const toggleFollow = async () => {
   }
 }
 
-const shareQuestion = () => {
-  showShareDialog.value = true
-}
-
 const toggleLike = async (answerId: string) => {
   try {
     console.log('开始点赞回答:', answerId)
@@ -1533,57 +1547,6 @@ const toggleLike = async (answerId: string) => {
   }
 }
 
-const toggleComments = (answerId: string) => {
-  // 这里可以添加显示/隐藏评论的逻辑
-}
-
-const toggleCommentLike = (commentId: string) => {
-  // 这里可以添加评论点赞的逻辑
-}
-
-const replyToComment = (answerId: string, commentId: string, replyId?: string) => {
-  replyingTo.value[commentId] = true
-  replyContents.value[commentId] = ''
-}
-
-const getReplyPlaceholder = (commentId: string) => {
-  return '写下你的回复...'
-}
-
-const cancelReply = (commentId: string) => {
-  replyingTo.value[commentId] = false
-  replyContents.value[commentId] = ''
-  delete replyTargets.value[commentId]
-}
-
-const submitReply = async (answerId: string, commentId: string) => {
-  const content = replyContents.value[commentId]?.trim()
-  if (!content) return
-
-  try {
-    // 这里可以添加提交回复的逻辑
-    cancelReply(commentId)
-    ElMessage.success('回复发布成功')
-  } catch (error) {
-    console.error('提交回复失败:', error)
-    ElMessage.error('发布失败')
-  }
-}
-
-const addComment = async (answerId: string) => {
-  const content = newComments.value[answerId]?.trim()
-  if (!content) return
-
-  try {
-    // 这里可以添加添加评论的逻辑
-    newComments.value[answerId] = ''
-    ElMessage.success('评论发布成功')
-  } catch (error) {
-    console.error('发布评论失败:', error)
-    ElMessage.error('发布失败')
-  }
-}
-
 const selectBestAnswer = async (answerId: string) => {
   try {
     console.log('开始设置最佳答案:', answerId)
@@ -1615,71 +1578,23 @@ const selectBestAnswer = async (answerId: string) => {
   }
 }
 
-const shareAnswer = (answerId: string) => {
-  const url = `${window.location.href}#answer-${answerId}`
-
-  // 查找对应的回答
-  let answer = question.value.answers?.find(a => a.id === answerId)
-  let isChildAnswer = false
-
-  // 如果没找到1级回答，查找2级回答
-  if (!answer) {
-    for (const parentAnswer of question.value.answers || []) {
-      const childAnswer = parentAnswer.childAnswers?.find(ca => ca.id === answerId)
-      if (childAnswer) {
-        answer = childAnswer
-        isChildAnswer = true
-        break
-      }
-    }
-  }
-
-  if (!answer) {
-    ElMessage.error('找不到对应的回答')
-    return
-  }
-
-  // 构建分享文本
-  const shareText = `💡 科研问答 - 精彩回答分享
-
-📝 问题：${question.value.title}
-
-💬 ${isChildAnswer ? '回复' : '回答'}：${answer.content.substring(0, 100)}${answer.content.length > 100 ? '...' : ''}
-
-👤 ${isChildAnswer ? '回复者' : '回答者'}：${answer.user?.name || '未知用户'}
-🏫 机构：${answer.user?.institution || '未知机构'}
-
-👍 点赞数：${answer.likeNum} 个
-
-🔗 查看详情：${url}
-
-#科研问答 #${question.value.researchArea || '科研'} #KnoWeb`
-
-  navigator.clipboard
-    .writeText(shareText)
-    .then(() => {
-      ElMessage.success('回答详情已复制到剪贴板')
-    })
-    .catch(() => {
-      ElMessage.error('复制失败，请手动复制链接')
-    })
-}
-
 const submitAnswer = async () => {
   if (!newAnswerContent.value.trim()) return
 
   try {
     console.log('开始提交回答...')
-    
+
     // 判断是回复问题、1级回答还是2级回答
     let isReplyToQuestion = replyingToAnswerId.value === null && isReplyingToQuestion.value
     let isReplyToAnswer = false
     let isReplyToChildAnswer = false
     let targetAnswerId: number | null = null
-    
+
     if (replyingToAnswerId.value !== null && replyingToAnswerId.value !== undefined) {
       // 先查找1级回答
-      const answer = question.value.answers?.find(a => a.id === replyingToAnswerId.value?.toString())
+      const answer = question.value.answers?.find(
+        a => a.id === replyingToAnswerId.value?.toString()
+      )
       if (answer) {
         isReplyToAnswer = true
         targetAnswerId = Number(answer.id)
@@ -1697,7 +1612,7 @@ const submitAnswer = async () => {
         }
       }
     }
-    
+
     const requestData: AnswerQuestionRequest = {
       questionId: parseInt(question.value.id),
       content: newAnswerContent.value.trim(),
@@ -1716,39 +1631,44 @@ const submitAnswer = async () => {
           // 创建新的2级回复对象
           const newChildAnswer = {
             id: response.data.id?.toString() || Date.now().toString(),
-            user: userStore.user ? {
-              id: typeof userStore.user.id === 'string' ? parseInt(userStore.user.id) : userStore.user.id,
-              name: userStore.user.name || '当前用户',
-              email: userStore.user.email || '',
-              gender: userStore.user.gender || '',
-              bio: userStore.user.bio || '',
-              researchArea: userStore.user.researchArea || '',
-              title: userStore.user.title || '',
-              imgUrl: userStore.user.imgUrl || '', // 保持原始格式，让getAvatarUrl函数处理
-              institution: userStore.user.institution || '',
-              createdAt: userStore.user.createdAt || '',
-              followerNum: userStore.user.followerNum || 0,
-              subjectNum: userStore.user.subjectNum || 0,
-              publishNum: userStore.user.publishNum || 0,
-              likeNum: 0, // 用户对象中没有likeNum字段
-              readerNum: 0, // 用户对象中没有readerNum字段
-            } : {
-              id: 0,
-              name: '当前用户',
-              email: '',
-              gender: '',
-              bio: '',
-              researchArea: '',
-              title: '',
-              imgUrl: '', // 保持原始格式，让getAvatarUrl函数处理
-              institution: '',
-              createdAt: '',
-              followerNum: 0,
-              subjectNum: 0,
-              publishNum: 0,
-              likeNum: 0,
-              readerNum: 0,
-            },
+            user: userStore.user
+              ? {
+                  id:
+                    typeof userStore.user.id === 'string'
+                      ? parseInt(userStore.user.id)
+                      : userStore.user.id,
+                  name: userStore.user.name || '当前用户',
+                  email: userStore.user.email || '',
+                  gender: userStore.user.gender || '',
+                  bio: userStore.user.bio || '',
+                  researchArea: userStore.user.researchArea || '',
+                  title: userStore.user.title || '',
+                  imgUrl: userStore.user.imgUrl || '', // 保持原始格式，让getAvatarUrl函数处理
+                  institution: userStore.user.institution || '',
+                  createdAt: userStore.user.createdAt || '',
+                  followerNum: userStore.user.followerNum || 0,
+                  subjectNum: userStore.user.subjectNum || 0,
+                  publishNum: userStore.user.publishNum || 0,
+                  likeNum: 0, // 用户对象中没有likeNum字段
+                  readerNum: 0, // 用户对象中没有readerNum字段
+                }
+              : {
+                  id: 0,
+                  name: '当前用户',
+                  email: '',
+                  gender: '',
+                  bio: '',
+                  researchArea: '',
+                  title: '',
+                  imgUrl: '', // 保持原始格式，让getAvatarUrl函数处理
+                  institution: '',
+                  createdAt: '',
+                  followerNum: 0,
+                  subjectNum: 0,
+                  publishNum: 0,
+                  likeNum: 0,
+                  readerNum: 0,
+                },
             content: newAnswerContent.value.trim(),
             parentUserId: targetAnswer.user.id?.toString() || '',
             parentUserName: targetAnswer.user.name || '',
@@ -1756,7 +1676,7 @@ const submitAnswer = async () => {
             likeNum: 0,
             liked: false,
           }
-          
+
           // 添加到对应1级回答的childAnswers中
           if (!targetAnswer.childAnswers) {
             targetAnswer.childAnswers = []
@@ -1764,11 +1684,11 @@ const submitAnswer = async () => {
           targetAnswer.childAnswers.push(newChildAnswer as any)
         }
       }
-      
+
       newAnswerContent.value = ''
       replyingToAnswerId.value = null // 重置回复状态
       isReplyingToQuestion.value = false
-      
+
       // 根据回复类型显示不同的成功消息
       if (isReplyToQuestion) {
         ElMessage.success('回答发布成功！')
@@ -1904,28 +1824,6 @@ const formatPreviewContent = (content: string) => {
 }
 
 // 判断是回复1级还是2级回答
-const getReplyType = () => {
-  if (replyingToAnswerId.value === null && isReplyingToQuestion.value) {
-    return 'question'
-  } else if (replyingToAnswerId.value !== undefined && replyingToAnswerId.value !== null) {
-    // 先查找1级回答
-    const answer = question.value.answers?.find(a => a.id === replyingToAnswerId.value?.toString())
-    if (answer) {
-      return 'answer'
-    }
-
-    // 如果没找到1级回答，查找2级回答
-    for (const parentAnswer of question.value.answers || []) {
-      const childAnswer = parentAnswer.childAnswers?.find(
-        ca => ca.id === replyingToAnswerId.value?.toString()
-      )
-      if (childAnswer) {
-        return 'reply'
-      }
-    }
-  }
-  return 'unknown'
-}
 
 const goToQuestion = (questionId: string) => {
   // 检查是否跳转到当前问题
@@ -2086,17 +1984,6 @@ function fallbackCopyTextToClipboard(text: string) {
 }
 
 // 设置问题是否解决
-const toggleSolved = async () => {
-  // 这里应调用后端接口，前端先本地模拟
-  if (question.value.solved) {
-    question.value.solved = false
-    ElMessage.success('已标记为未解决')
-  } else {
-    question.value.solved = true
-    ElMessage.success('已标记为已解决')
-  }
-  // TODO: 调用后端接口同步状态
-}
 
 // 设置问题是否解决，调用后端接口
 const handleSetSolvedStatus = async () => {
@@ -2122,6 +2009,7 @@ const handleSetSolvedStatus = async () => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-clamp: 2;
 }
 
 /* 增强的Markdown样式 */
@@ -2145,6 +2033,7 @@ const handleSetSolvedStatus = async () => {
   background: linear-gradient(to right, #0891b2, #3b82f6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .prose h2 {
